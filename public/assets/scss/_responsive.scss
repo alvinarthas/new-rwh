@@ -19,6 +19,15 @@ File: Responsive
   .button-menu-mobile {
     display: block !important;
   }
+  .navbar-nav {
+    margin: 0px;
+    display: inline-block;
+
+    li {
+      display: inline-block;
+      line-height: 1px;
+    }
+  }
 }
 
 @media (min-width: 768px) and (max-width: 991px) {
@@ -51,17 +60,14 @@ File: Responsive
     margin-top: 95px;
   }
   .topbar .topbar-left {
-    height: 72px;
+    height: 75px;
   }
-  .navbar-nav {
-    margin: 0px;
-    display: inline-block;
 
-    li {
-      display: inline-block;
-      line-height: 1px;
-    }
+  .navbar-default {
+    background-color: $white;
+    box-shadow: 0 0px 24px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02);
   }
+  
   .navbar-nav.navbar-right {
     float: right;
   }

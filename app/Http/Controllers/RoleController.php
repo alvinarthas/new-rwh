@@ -50,11 +50,11 @@ class RoleController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $role = new Modul(array(
+            $role = new Role(array(
                 // Informasi Pribadi
                 'role_name' => $request->role_name,
                 'company_id' => 1,
-                // 'creator' => $request->modul_icon,
+                'creator' => session('user_id'),
 
             ));
 
@@ -115,7 +115,7 @@ class RoleController extends Controller
             $role = Modul::where('id',$id)->first();
 
             $role->role_name = $request->role_name;
-            // $modul->creatpr = $request->modul_icon;
+            $modul->creator = session('user_id');
 
             $role->save();
 

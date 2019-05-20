@@ -10,19 +10,21 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
 Route::get('/','HomeController@index')->name('getHome');
 Route::post('login','HomeController@login')->name('Login');
 
 Route::middleware(['checkUser'])->group(function () {
+    // Absensi
+    Route::get('/absensi/register','AbsensiController@register')->name('absensiRegister');
+    Route::get('/absensi/kehadiran','AbsensiController@kehadiran')->name('absensiHadir');
+    Route::get('/absensi/log','AbsensiController@log')->name('absensiLog');
 
-    // Employee Management
-    Route::get('/employee','EmployeeController@index')->name('getEmployee');
-    Route::get('/employee/create','EmployeeController@create')->name('createEmployee');
-    Route::post('/employee/store','EmployeeController@store')->name('storeEmployee');
-    Route::get('/employee/{id}/edit','EmployeeController@edit')->name('editEmployee');
-    Route::put('/employee/{id}/update','EmployeeController@update')->name('updateEmployee');
-    Route::delete('/employee/{id}/delete','EmployeeController@update')->name('destroyEmployee');
+    // Account
+    Route::get('/account/profile','AccountController@profile')->name('showProfile');
+    Route::get('/account/change_pass','AccountController@getchange_pass')->name('getChangePass');
+    Route::get('/account/change_foto','AccountController@getchange_foto')->name('getChangeFoto');
+    Route::post('/account/change_foto','AccountController@change_foto')->name('changeFoto');
+    Route::post('/account/change_pass','AccountController@change_pass')->name('changePass');
 
     // Menu Mapping
     Route::get('/menumapping','MenuController@index')->name('getMapping');
@@ -30,12 +32,35 @@ Route::middleware(['checkUser'])->group(function () {
     Route::post('/storemapping','MenuController@store')->name('storeMapping');
     Route::post('/deletemapping','MenuController@delete')->name('deleteMapping');
 
+    // Role Mapping
+    Route::get('rolemapping','RoleMappingController@index')->name('getRoleMapping');
+    Route::get('/rolemapping/{id}/edit','RoleMappingController@edit')->name('editRoleMapping');
+    Route::put('/rolemapping/{id}/update','RoleMappingController@update')->name('updateRoleMapping');
+    Route::delete('/rolemapping/{id}/delete','RoleMappingController@destroy')->name('destroyRoleMapping');
+
     Route::resources([
+        // Employee
+        'employee' => 'EmployeeController',
         // Modul Management
         'modul' => 'ModulController',
         // Sub Modul Management
         'submodul' => 'SubModulController',
+        // Role Management
+        'role' => 'RoleController',
     ]);
 
+
+    Route::get('logout','HomeController@logout')->name('Logout');
 });
 
+// ------------------------ HELPER -------------------------------------------------
+// Fingerprint System
+Route::get('/finger/register','FingerPrintController@register')->name('fingerRegister');
+Route::post('/finger/processregister','FingerPrintController@process_register')->name('fingerProcessRegister');
+Route::get('/finger/getac','FingerPrintController@get_ac')->name('fingerGetAc');
+Route::get('/finger/message','FingerPrintController@message')->name('fingerMessage');
+Route::get('/finger/checkreg','FingerPrintController@checkreg')->name('fingerCheckReg');
+Route::get('/finger/verifikasi','FingerPrintController@verification')->name('fingerVerifikasi');
+Route::post('/finger/processverifikasi','FingerPrintController@process_verification')->name('fingerProcessVerification');
+Route::get('/finger/ajxlog','FingerPrintController@ajxlog')->name('fingerAjxLog');
+Route::get('/finger/ajxfulllog','FingerPrintController@ajxfulllog')->name('fingerAjxFullLog');

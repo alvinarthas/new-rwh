@@ -8,6 +8,10 @@
     
 @endsection
 
+@section('judul')
+    
+@endsection
+
 @section('content')
 
 @endsection

@@ -12,11 +12,10 @@ Tambah Data Pegawai
 @endsection
 
 @section('content')
-
     @if($jenis == "create")
-        <form class="form-horizontal" role="form" action="{{ route('storeEmployee') }}" enctype="multipart/form-data" method="POST">
+        <form class="form-horizontal" role="form" action="{{ route('employee.store') }}" enctype="multipart/form-data" method="POST">
     @elseif($jenis == "edit")
-        <form class="form-horizontal" role="form" action="{{ route('updateEmployee',['id' => $employee->id]) }}" enctype="multipart/form-data" method="POST">
+        <form class="form-horizontal" role="form" action="{{ route('employee.update',['id' => $employee->id]) }}" enctype="multipart/form-data" method="POST">
             {{ method_field('PUT') }}
     @endif
 

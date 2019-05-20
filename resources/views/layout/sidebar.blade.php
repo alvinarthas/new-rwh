@@ -9,19 +9,31 @@
         <!-- User -->
         <div class="user-box">
             <div class="user-img">
-                <img src="{{ asset('assets/images/users/alvin.jpg') }}" alt="user-img" title="Mat Helme" class="rounded-circle img-thumbnail img-responsive">
-                <div class="user-status offline"><i class="mdi mdi-adjust"></i></div>
+                <img src="{{ asset('assets/images/employee/foto/'.session('foto')) }}" alt="user-img" title="Mat Helme" class="rounded-circle img-thumbnail img-responsive">
+                <div class="user-status online"><i class="mdi mdi-adjust"></i></div>
             </div>
             <h5><a href="#">Superadmin</a> </h5>
             <ul class="list-inline">
                 <li class="list-inline-item">
-                    <a href="#" >
-                        <i class="mdi mdi-settings"></i>
+                    <a href="{{route('showProfile')}}" >
+                        <i class="mdi mdi-human-male"></i>
                     </a>
                 </li>
 
                 <li class="list-inline-item">
-                    <a href="#" class="text-custom">
+                    <a href="{{route('getChangeFoto')}}" >
+                        <i class="fa fa-photo"></i>
+                    </a>
+                </li>
+
+                <li class="list-inline-item">
+                    <a href="{{route('getChangePass')}}" >
+                        <i class="mdi mdi-textbox-password"></i>
+                    </a>
+                </li>
+
+                <li class="list-inline-item">
+                    <a href="{{route('Logout')}}" class="text-custom">
                         <i class="mdi mdi-power"></i>
                     </a>
                 </li>
@@ -37,7 +49,7 @@
                         <a href="javascript:void(0);" class="waves-effect"><i class="{{$modul->modul_icon}}"></i><span>{{$modul->modul_desc}}</span> <span class="menu-arrow"></span></a>
                             <ul class="list-unstyled">
                                 @foreach (SubModul::getSub($modul->modul_id) as $sub)
-                                    <li><a href="/{{$sub->submodul_page}}">{{$sub->submodul_desc}}</a></li>
+                                    <li><a href="{{route(''.$sub->submodul_page.'')}}">{{$sub->submodul_desc}}</a></li>
                                 @endforeach
                             </ul>
                     </li>

@@ -78,6 +78,11 @@ function($) {
         $.fn.popover && $('[data-toggle="popover"]').popover()
     },
 
+    //initializing toast
+    Components.prototype.initToastPlugin = function() {
+        $.fn.toast && $('[data-toggle="toast"]').toast()
+    },
+
     //initializing custom modal
     Components.prototype.initCustomModalPlugin = function() {
         $('[data-plugin="custommodal"]').on('click', function(e) {
@@ -194,6 +199,7 @@ function($) {
         var $this = this;
         this.initTooltipPlugin(),
         this.initPopoverPlugin(),
+        this.initToastPlugin(),
         this.initNiceScrollPlugin(),
         this.initCustomModalPlugin(),
         this.initRangeSlider(),

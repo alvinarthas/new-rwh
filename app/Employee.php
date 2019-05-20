@@ -14,4 +14,9 @@ class Employee extends Model
     protected $hidden = [
         'password', 'bck_pass',
     ];
+
+
+    public function rolemapping(){
+        return $this->belongsTo('App\RoleMapping','username','username');
+    }
 }

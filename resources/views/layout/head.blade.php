@@ -9,6 +9,10 @@
     <title>Royal Warehouse - Enterprise Resource Planning -</title>
     
     @yield('css')
+    <!-- Notification css (Toastr) -->
+    <link href="{{ asset('assets/plugins/toastr/toastr.min.css') }}" rel="stylesheet" type="text/css" />
+
+
     <!-- App css -->
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet" type="text/css" />

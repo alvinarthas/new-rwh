@@ -10,4 +10,8 @@ class RoleMapping extends Model
     protected $fillable = [
         'username', 'company_id','role_id'
     ];
+
+    public function role(){
+        return $this->belongsTo('App\Role');
+    }
 }

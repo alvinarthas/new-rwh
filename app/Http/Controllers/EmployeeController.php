@@ -134,7 +134,7 @@ class EmployeeController extends Controller
             ));
             // success
             if($employee->save()){
-                return redirect()->route('getEmployee');
+                return redirect()->route('employee.index')->with('status', 'Data berhasil dibuat');
             // fail
             }else{
                 return redirect()->back()->withErrors($e);
@@ -283,7 +283,7 @@ class EmployeeController extends Controller
             
             $employee->save();
             
-            return redirect()->route('getEmployee');
+            return redirect()->route('employee.index')->with('status', 'Data berhasil dirubah');;
         }
     }
 
@@ -298,6 +298,7 @@ class EmployeeController extends Controller
             unlink(public_path('assets/images/employee/bpjs').$employee->scanbpjs);
         $employee->delete();
 
-        return redirect()->back();
+        return redirect()->back()->with('status', 'Data berhasil dihapus');;
     }
+
 }
