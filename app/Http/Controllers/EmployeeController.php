@@ -10,6 +10,8 @@ use App\Exceptions\Handler;
 
 use App\Employee;
 use App\Bank;
+use App\DemoUser;
+use Carbon\Carbon;
 
 class EmployeeController extends Controller
 {
@@ -31,7 +33,6 @@ class EmployeeController extends Controller
             'username' => 'required|string',
             'password' => 'required',
             'nama' => 'required|string',
-            'nip' => 'required|string',
             'alamat' => 'required|string',
             'telepon' => 'required',
             'ktp' => 'required|string',
@@ -45,6 +46,13 @@ class EmployeeController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
+            if($request->nip == ''){
+                $rowmember = Employee::where('mulai_kerja',$request->mulai_kerja)->count();
+                $tgl = Carbon::createFromFormat('Y-m-d',$request->mulai_kerja)->format('dmy');
+                $nip = "Royal".$tgl.$rowmember+1;
+            }else{
+                $nip = $request->nip;
+            }
             $scanfoto = "noimage.jpg";
             $scanktp = "noimage.jpg";
             $scansima = "noimage.jpg";
@@ -97,7 +105,7 @@ class EmployeeController extends Controller
             $employee = new Employee(array(
                 // Informasi Pribadi
                 'name' => $request->nama,
-                'nip' => $request->nip,
+                'nip' => $nip,
                 'address' => $request->alamat,
                 'phone' => $request->telepon,
                 'email' => $request->email,
@@ -134,6 +142,13 @@ class EmployeeController extends Controller
             ));
             // success
             if($employee->save()){
+
+                $fingeruser = new DemoUser(array(
+                    'user_id' => $employee->id,
+                    'user_name' => $employee->username
+                ));
+
+                $fingeruser->save();
                 return redirect()->route('employee.index')->with('status', 'Data berhasil dibuat');
             // fail
             }else{

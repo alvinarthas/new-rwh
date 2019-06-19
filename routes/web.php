@@ -11,6 +11,7 @@
 |
 */
 Route::get('/','HomeController@index')->name('getHome');
+Route::get('/index2','HomeController@index2')->name('getHome2');
 Route::post('login','HomeController@login')->name('Login');
 
 Route::middleware(['checkUser'])->group(function () {

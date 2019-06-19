@@ -19,21 +19,18 @@ class MenuController extends Controller
     }
 
     public function show($id){
-        $currents = MenuMapping::current($id);
-        $rests = MenuMapping::rest($id);
-
+        $currents = json_decode (json_encode(MenuMapping::current($id)),FALSE);
+        $rests = json_decode (json_encode(MenuMapping::rest($id)),FALSE);
         return view('menumapping.form',compact('currents','rests','id'));
     }
 
     public function store(Request $request){
         $checkbox = $request->rest;
-
         foreach($checkbox as $rest){
             $store = new MenuMapping(array(
                 'user_id' => $request->user_id,
-                'submodul_id' => $rest
+                'submapping_id' => $rest
             ));
-
             $store->save();
         }
 
@@ -44,7 +41,7 @@ class MenuController extends Controller
         $checkbox = $request->current;
 
         foreach($checkbox as $current){
-            $store = MenuMapping::where('id',$current)->first();
+            $store = MenuMapping::where('submapping_id',$current)->where('user_id',$request->user_id)->first();
 
             $store->delete();
         }

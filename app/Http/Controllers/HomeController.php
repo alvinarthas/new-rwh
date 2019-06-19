@@ -19,6 +19,14 @@ class HomeController extends Controller
         }
     }
 
+    public function index2(Request $request){
+        if ($request->session()->has('isLoggedIn')) {
+            return view('home.home');
+        }else{
+            return view('login.login');
+        }
+    }
+
     public function login(Request $request){
         // Validate
         $validator = Validator::make($request->all(), [
