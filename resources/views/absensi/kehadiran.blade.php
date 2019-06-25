@@ -62,7 +62,7 @@
 </div>
 
 <div class="row" id="logTabel">
-    
+
 </div>
 @endsection
 
@@ -93,13 +93,13 @@
         function formatState (opt) {
             if (!opt.id) {
                 return opt.text.toUpperCase();
-            } 
+            }
 
-            var optimage = $(opt.element).attr('data-image'); 
+            var optimage = $(opt.element).attr('data-image');
             console.log(optimage)
             if(!optimage){
                 return opt.text.toUpperCase();
-            } else {                    
+            } else {
                 var $opt = $(
                 '<span><img src="' + optimage + '" width="30px" /> ' + opt.text.toUpperCase() + '</span>'
                 );
@@ -127,12 +127,12 @@
                 success		:	function(data){
                     $("#logTabel").html(data);
                     // $('#responsive-datatable').DataTable();
-                }
+                },
             });
         }
 
         function verifikasiLog(id){
-            setTimeout(function(){ 
+            setTimeout(function(){
                 $.ajax({
                     url         :   "{{route('fingerAjxLog')}}",
                     data        :   {
