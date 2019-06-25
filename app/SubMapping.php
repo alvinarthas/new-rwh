@@ -4,10 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class JenisMapping extends Model
+class SubMapping extends Model
 {
-    protected $table ='jenismapping';
+    protected $table ='sub_mapping';
     protected $fillable = [
-        'mapping_id', 'jenis'
+        'submodul_id', 'jenis_id'
     ];  
 }
