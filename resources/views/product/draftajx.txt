@@ -1,0 +1,50 @@
+{{-- @php($i++) --}}
+                            <td>{{$i}}</td>
+                            <td>{{$prd->prod_id}}</td>
+                            {{-- <input type="hidden" name="pid{{ $i }}" id="pid{{ $i }}" value="{{ $prd->prod_id }}"/> --}}
+                            <td>{{$prd->prod_id_new}}</td>
+                            <td>{{$prd->name}}</td>
+                            <td>{{$prd->category}}</td>
+                            <td>{{ $prd->name }}</td>
+                            <td>{{ $prd->name }}</td>
+                            <td>{{ $prd->name }}</td>
+                            <td>{{ $prd->name }}</td>
+                            <td>{{ $prd->name }}</td>
+                            {{-- <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td> --}}
+                            {{-- <td>
+                                @php($postingan = DB::table('tblpotrxdet')->where('prod_id', $prd->prod_id)->join('tblpotrxdet.trx_id','tblpotrx.trx_id')->where('tblpotrx.month',$month)->where('year',$year)->sum('tblpotrxdet.qty');)
+                                {{ $postingan }}
+                            </td>
+                            <td>
+                                @php
+                                    $harga_dis = DB::table('tblmanageharga')->select('harga_distributor')->where('prod_id', $prd->prod_id)->where('year',$year)->where('month', $month)->get();
+                                    if($data1['harga_dis']==0){
+					                    if($month==1){
+                                            $harga_dis = DB::table('tblmanageharga')->select('harga_distributor')->where('prod_id', $prd->prod_id)->where('year',$year-1)->where('month', 12)->get();
+                                        }
+					                    else{
+                                            $harga_dis = DB::table('tblmanageharga')->select('harga_distributor')->where('prod_id', $prd->prod_id)->where('year',$year)->where('month', $month-1)->get();
+	                    				}
+
+				                    }
+                                @endphp
+                                <label for="textfield"></label>
+                                <input name="price_dis{{ $i }}" type="text" id="price_dis{{ $i }}" value="{{ number_format($harga_dis) }}" size="15" maxlength="15"/>
+                            </td>
+                            <td>
+                                <label for="textfield"></label>
+                                <input name="price_mod{{ $i }}" type="text" id="price_mod{{ $i }}" value="{{ number_format($data1['harga_modal']) }}" size="15" maxlength="15"/>
+                            </td>
+                            <td>
+                                @php($selisih=$data1['harga_distributor']-$data1['harga_modal'];)
+                                {{ number_format($selisih) }}
+                            </td>
+                            <td>
+                                @php($bonus=$postingan*$selisih;)
+                                {{ number_format($bonus) }}
+                            </td> --}}
+
+                            @php($postingan = DB::table('tblpotrxdet')->where('prod_id', $prd->prod_id)->join('tblpotrx','tblpotrxdet.trx_id','=','tblpotrx.trx_id')->where('tblpotrx.month',$month)->where('tblpotrx.year',$year)->sum('tblpotrxdet.qty');)

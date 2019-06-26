@@ -4,11 +4,11 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Perusahaan extends Model
+class Company extends Model
 {
-    protected $table ='tblperusahaan';
+    protected $table ='tblcompany';
     protected $fillable = [
-        'nama','alamat','telp','creator'
+        'company_id','company_name','company_address', 'company_phone', 'company_email', 'company_est', 'company_ceo'
     ];
 
     public $timestamps = false;

@@ -8,6 +8,12 @@ class Koordinator extends Model
 {
     protected $table ='tblkoordinator';
     protected $fillable = [
-        'nama', 'alamat','ktp','telp','nama','memberid'
+        'nama','alamat','telp', 'ktp', 'memberid'
     ];
+
+    public $timestamps = false;
+
+    public function rolemapping(){
+        return $this->belongsTo('App\RoleMapping','username','username');
+    }
 }

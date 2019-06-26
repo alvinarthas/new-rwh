@@ -41,7 +41,8 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/rolemapping/{id}/edit','RoleMappingController@edit')->name('editRoleMapping');
     Route::put('/rolemapping/{id}/update','RoleMappingController@update')->name('updateRoleMapping');
     Route::delete('/rolemapping/{id}/delete','RoleMappingController@destroy')->name('destroyRoleMapping');
-
+    Route::get('/manageproduct','ProductController@manage')->name('manageproduct');
+    Route::get('/showProdAjx','ProductController@showProdAjx')->name('showProdAjx');
     Route::resources([
         // Employee
         'employee' => 'EmployeeController',
@@ -53,6 +54,16 @@ Route::middleware(['checkUser'])->group(function () {
         'role' => 'RoleController',
         // Member Management
         'member' => 'MemberController',
+        // Perusahaan
+        'perusahaan' => 'PerusahaanController',
+        // Product
+        'product' => 'ProductController',
+        // Koordinator
+        'koordinator' => 'KoordinatorController',
+        // Sub Koordinator
+        'subkoordinator' => 'SubkoordinatorController',
+        // Manage Harga
+        'manageharga' => 'ManageHargaController',
     ]);
 
     Route::get('ajxmember','MemberController@ajxmember');
