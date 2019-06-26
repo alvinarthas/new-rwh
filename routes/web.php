@@ -10,6 +10,9 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+// Route::get('user','UserController@index');
+Route::get('/testuser','TestController@index');
+Route::get('/user/json','MemberController@json');
 Route::get('/','HomeController@index')->name('getHome');
 Route::get('/index2','HomeController@index2')->name('getHome2');
 Route::post('login','HomeController@login')->name('Login');
@@ -48,9 +51,11 @@ Route::middleware(['checkUser'])->group(function () {
         'submodul' => 'SubModulController',
         // Role Management
         'role' => 'RoleController',
+        // Member Management
+        'member' => 'MemberController',
     ]);
 
-
+    Route::get('ajxmember','MemberController@ajxmember');
     Route::get('logout','HomeController@logout')->name('Logout');
 });
 

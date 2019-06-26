@@ -34,44 +34,44 @@ Tambah Data Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Nama Lengkap</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" parsley-trigger="change" requiredq name="nama" id="nama" value="@isset($employee->name){{$employee->name}}@endisset">
+                                    <input type="text" class="form-control" parsley-trigger="change" required name="nama" id="nama" value="@isset($employee->name){{$employee->name}}@endisset">
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Nomor Induk Pegawai</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" parsley-trigger="change" requiredq name="nip" id="nip" value="@isset($employee->nip){{$employee->nip}}@endisset">
+                                    <input type="text" class="form-control" parsley-trigger="change" required name="nip" id="nip" value="@isset($employee->nip){{$employee->nip}}@endisset">
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Alamat</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" parsley-trigger="change" requiredq name="alamat" id="alamat" value="@isset($employee->address){{$employee->address}}@endisset">
+                                    <input type="text" class="form-control" parsley-trigger="change" required name="alamat" id="alamat" value="@isset($employee->address){{$employee->address}}@endisset">
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Telepon</label>
                                 <div class="col-10">
-                                    <input type="number" class="form-control" parsley-trigger="change" requiredq name="telepon" id="telepon" value="@isset($employee->phone){{$employee->phone}}@endisset">
+                                    <input type="number" class="form-control" parsley-trigger="change" required name="telepon" id="telepon" value="@isset($employee->phone){{$employee->phone}}@endisset">
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">E-mail</label>
                                 <div class="col-10">
-                                    <input type="email" class="form-control" parsley-trigger="change" requiredq name="email" id="email" value="@isset($employee->email){{$employee->email}}@endisset">
+                                    <input type="email" class="form-control" parsley-trigger="change" required name="email" id="email" value="@isset($employee->email){{$employee->email}}@endisset">
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Tempat Lahir</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" name="tempat_lahir" parsley-trigger="change" requiredq id="tempat_lahir" value="@isset($employee->tmpt_lhr){{$employee->tmpt_lhr}}@endisset">
+                                    <input type="text" class="form-control" name="tempat_lahir" parsley-trigger="change" required id="tempat_lahir" value="@isset($employee->tmpt_lhr){{$employee->tmpt_lhr}}@endisset">
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Tanggal Lahir</label>
                                 <div class="col-10">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" requiredq placeholder="yyyy/mm/dd" name="tanggal_lahir" id="tanggal_lahir"  value="@isset($employee->tgl_lhr){{$employee->tgl_lhr}}@endisset"  data-date-format='yyyy-mm-dd'>
+                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="tanggal_lahir" id="tanggal_lahir"  value="@isset($employee->tgl_lhr){{$employee->tgl_lhr}}@endisset"  data-date-format='yyyy-mm-dd'>
                                         <div class="input-group-append">
                                             <span class="input-group-text"><i class="ti-calendar"></i></span>
                                         </div>
@@ -82,7 +82,7 @@ Tambah Data Pegawai
                                 <label class="col-2 col-form-label">Mulai Bekerja</label>
                                 <div class="col-10">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" requiredq placeholder="yyyy/mm/dd" name="mulai_kerja" id="mulai_kerja"  value="@isset($employee->mulai_kerja){{$employee->mulai_kerja}}@endisset" data-date-format='yyyy-mm-dd'>
+                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="mulai_kerja" id="mulai_kerja"  value="@isset($employee->mulai_kerja){{$employee->mulai_kerja}}@endisset" data-date-format='yyyy-mm-dd'>
                                         <div class="input-group-append">
                                             <span class="input-group-text"><i class="ti-calendar"></i></span>
                                         </div>
@@ -117,13 +117,13 @@ Tambah Data Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Username</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" name="username" id="username" parsley-trigger="change" requiredq>
+                                    <input type="text" class="form-control" name="username" id="username" parsley-trigger="change" required>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Password</label>
                                 <div class="col-10">
-                                    <input type="password" class="form-control" name="password" id="password" parsley-trigger="change" requiredq>
+                                    <input type="password" class="form-control" name="password" id="password" parsley-trigger="change" required>
                                 </div>
                             </div>
                         </div>
@@ -183,7 +183,7 @@ Tambah Data Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Nomor KTP</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" name="ktp" id="ktp" value="@isset($employee->ktp){{$employee->ktp}}@endisset" parsley-trigger="change" requiredq>
+                                    <input type="text" class="form-control" name="ktp" id="ktp" value="@isset($employee->ktp){{$employee->ktp}}@endisset" parsley-trigger="change" required>
                                 </div>
                             </div>
                             <div class="form-group row">

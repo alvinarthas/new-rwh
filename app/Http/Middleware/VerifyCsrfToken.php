@@ -20,6 +20,6 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         '/finger/processregister',
-        '/finger/processverifikasi'
+        '/finger/processverifikasi',
     ];
 }
