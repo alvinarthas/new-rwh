@@ -11,8 +11,6 @@ class Subkoordinator extends Model
         'nama','alamat','telp', 'ktp', 'memberid', 'creator', 'created'
     ];
 
-    public $timestamps = false;
-
     public function rolemapping(){
         return $this->belongsTo('App\RoleMapping','username','username');
     }

@@ -46,6 +46,7 @@ class HomeController extends Controller
             if($user && Hash::check($request->password, $user->password)){
                 $request->session()->put('username', $request->username);
                 $request->session()->put('user_id', $user->id);
+                $request->session()->put('nip', $user->nip);
                 $request->session()->put('foto', $user->scanfoto);
                 $request->session()->put('isLoggedIn', 'Ya');
 

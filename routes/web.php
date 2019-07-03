@@ -43,6 +43,8 @@ Route::middleware(['checkUser'])->group(function () {
     Route::delete('/rolemapping/{id}/delete','RoleMappingController@destroy')->name('destroyRoleMapping');
     Route::get('/manageproduct','ProductController@manage')->name('manageproduct');
     Route::get('/showProdAjx','ProductController@showProdAjx')->name('showProdAjx');
+    
+    // Resources 
     Route::resources([
         // Employee
         'employee' => 'EmployeeController',
@@ -66,11 +68,25 @@ Route::middleware(['checkUser'])->group(function () {
         'manageharga' => 'ManageHargaController',
     ]);
 
+    // Bank Member
+        Route::get('/bankmember','BankMemberController@create')->name('createBankMember');
+        Route::post('/bankmember/{ktp}','BankMemberController@store')->name('storeBankMember');
+        Route::get('/bankmember/edit','BankMemberController@edit')->name('editBankMember');
+        Route::put('/bankmember/{ktp}/update/{bid}','BankMemberController@update')->name('updateBankMember');
+        Route::get('/bankmember/delete','BankMemberController@destroy')->name('destroyBankMember');
+    // Perusahaan Member
+        Route::get('perusahaanmember','PerusahaanMemberController@create')->name('createPerusahaanMember');
+        Route::post('perusahaanmember/{ktp}','PerusahaanMemberController@store')->name('storePerusahaanMember');
+        Route::get('perusahaanmember/edit','PerusahaanMemberController@edit')->name('editPerusahaanMember');
+        Route::put('perusahaanmember/{ktp}/update/{pid}','PerusahaanMemberController@update')->name('updatePerusahaanMember');
+        Route::get('perusahaanmember/delete','PerusahaanMemberController@destroy')->name('destroyPerusahaanMember');
+        
     Route::get('ajxmember','MemberController@ajxmember');
     Route::get('logout','HomeController@logout')->name('Logout');
 });
 
 // ------------------------ HELPER -------------------------------------------------
+Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
 // Fingerprint System
 Route::get('/finger/register','FingerPrintController@register')->name('fingerRegister');
 Route::post('/finger/processregister','FingerPrintController@process_register')->name('fingerProcessRegister');

@@ -8,6 +8,7 @@ class SubMapping extends Model
 {
     protected $table ='sub_mapping';
     protected $fillable = [
-        'submodul_id', 'jenis_id'
+        'id','submodul_id', 'jenis_id'
     ];  
+    public $incrementing = false;
 }

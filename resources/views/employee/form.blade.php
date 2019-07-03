@@ -92,7 +92,7 @@ Tambah Data Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Upload Foto Personal</label>
                                 <div class="col-10">
-                                    <input type="file" class="dropify" data-height="100" name="scanfoto" id="scanfoto" />
+                                    <input type="file" class="dropify" data-height="100" name="scanfoto" id="scanfoto" data-default-file="@isset($employee->scanfoto){{ asset('assets/images/employee/foto/'.$employee->scanfoto) }}@endisset" />
                                 </div>
                             </div>
                         </div>
@@ -189,7 +189,7 @@ Tambah Data Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Upload KTP</label>
                                 <div class="col-10">
-                                    <input type="file" class="dropify" data-height="100" name="scanktp" id="scanktp" />
+                                    <input type="file" class="dropify" data-height="100" name="scanktp" id="scanktp" data-default-file="@isset($employee->scanktp){{ asset('assets/images/employee/ktp/'.$employee->scanktp) }}@endisset" />
                                 </div>
                             </div>
                         </div>
@@ -211,15 +211,15 @@ Tambah Data Pegawai
                     <div class="col-12">
                         <div class="p-20">
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Nomor KTP</label>
+                                <label class="col-2 col-form-label">Nomor SIM A</label>
                                 <div class="col-10">
                                     <input type="text" class="form-control" name="sima" id="sima" value="@isset($employee->sima){{$employee->sima}}@endisset">
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Upload KTP</label>
+                                <label class="col-2 col-form-label">Upload SIM A</label>
                                 <div class="col-10">
-                                    <input type="file" class="dropify" data-height="100" name="scansima" id="scansima" />
+                                    <input type="file" class="dropify" data-height="100" name="scansima" id="scansima" data-default-file="@isset($employee->scansima){{ asset('assets/images/sima/'.$employee->scansima) }}@endisset"/>
                                 </div>
                             </div>
                         </div>
@@ -247,9 +247,9 @@ Tambah Data Pegawai
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Upload KTP</label>
+                                <label class="col-2 col-form-label">Upload SIMC</label>
                                 <div class="col-10">
-                                    <input type="file" class="dropify" data-height="100" name="scansimc" id="scansimc"/>
+                                    <input type="file" class="dropify" data-height="100" name="scansimc" id="scansimc" data-default-file="@isset($employee->scansimc){{ asset('assets/images/employee/simc/'.$employee->scansimc) }}@endisset"/>
                                 </div>
                             </div>
                         </div>
@@ -277,9 +277,9 @@ Tambah Data Pegawai
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Upload KTP</label>
+                                <label class="col-2 col-form-label">Upload sIM B1</label>
                                 <div class="col-10">
-                                    <input type="file" class="dropify" data-height="100" name="scansimb" id="scansimb" />
+                                    <input type="file" class="dropify" data-height="100" name="scansimb" id="scansimb" data-default-file="@isset($employee->scansimb){{ asset('assets/images/employee/simb/'.$employee->scansimb) }}@endisset" />
                                 </div>
                             </div>
                         </div>
@@ -307,9 +307,9 @@ Tambah Data Pegawai
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Upload KTP</label>
+                                <label class="col-2 col-form-label">Upload NPWP</label>
                                 <div class="col-10">
-                                    <input type="file" class="dropify" data-height="100" name="scannpwp" id="scannpwp" />
+                                    <input type="file" class="dropify" data-height="100" name="scannpwp" id="scannpwp" data-default-file="@isset($employee->scannpwp){{ asset('assets/images/employee/npwp/'.$employee->scannpwp) }}@endisset"/>
                                 </div>
                             </div>
                         </div>
@@ -337,9 +337,9 @@ Tambah Data Pegawai
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Upload KTP</label>
+                                <label class="col-2 col-form-label">Upload BPJS</label>
                                 <div class="col-10">
-                                    <input type="file" class="dropify" data-height="100" name="scanbpjs" id="scanbpjs" />
+                                    <input type="file" class="dropify" data-height="100" name="scanbpjs" id="scanbpjs" data-default-file="@isset($employee->scanbpjs){{ asset('assets/images/employee/bpjs/'.$employee->scanbpjs) }}@endisset"/>
                                 </div>
                             </div>
                         </div>

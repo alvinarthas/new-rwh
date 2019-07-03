@@ -19,9 +19,9 @@
             @foreach($datas as $data)
             <tr>
                 <td>{{$i}}</td>
-                <td>{{$data->nama}}</td>
+                <td><a href="{{route('member.show',['id' => $data->ktp])}}">{{$data->nama}}</a></td>
                 {{-- Gambar KTP --}}
-                @if ($data->scanktp == "noimage.jpg")
+                @if ($data->scanktp == "noimage.jpg" || $data->scanktp == '')
                     <td>Empty</td>
                 @else
                     <td>Have Filled</td>

@@ -16,6 +16,6 @@ class DataKota extends Model
     }
 
     public static function getCity($city){
-        return DataKota::select('kod_pusdatin_kota','kab_kota')->first();
+        return DataKota::select('kode_pusdatin_kota','kab_kota')->where('kode_pusdatin_kota',$city)->first();
     }
 }

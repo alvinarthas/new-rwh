@@ -11,8 +11,6 @@ class Koordinator extends Model
         'nama','alamat','telp', 'ktp', 'memberid'
     ];
 
-    public $timestamps = false;
-
     public function rolemapping(){
         return $this->belongsTo('App\RoleMapping','username','username');
     }

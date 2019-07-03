@@ -1,6 +1,7 @@
 @php
     use App\Modul;
     use App\SubModul;
+    use App\MenuMapping;
 @endphp
 <!-- ========== Left Sidebar Start ========== -->
 <div class="left side-menu">
@@ -44,16 +45,30 @@
         <!--- Sidemenu -->
         <div id="sidebar-menu">
             <ul>
-                @foreach (Modul::getAllModul() as $modul)
-                    <li class="has_sub">
-                        <a href="javascript:void(0);" class="waves-effect"><i class="{{$modul->modul_icon}}"></i><span>{{$modul->modul_desc}}</span> <span class="menu-arrow"></span></a>
-                            <ul class="list-unstyled">
-                                @foreach (SubModul::getSub($modul->modul_id) as $sub)
-                                    <li><a href="{{route(''.$sub->submodul_page.'')}}">{{$sub->submodul_desc}}</a></li>
-                                @endforeach
-                            </ul>
-                    </li>
-                @endforeach
+                @if (session('nip') == "SA")
+                    @foreach (Modul::getAllModul() as $modul)
+                        <li class="has_sub">
+                            <a href="javascript:void(0);" class="waves-effect"><i class="{{$modul->modul_icon}}"></i><span>{{$modul->modul_desc}}</span> <span class="menu-arrow"></span></a>
+                                <ul class="list-unstyled">
+                                    @foreach (SubModul::getSub($modul->modul_id) as $sub)
+                                        <li><a href="{{route(''.$sub->submodul_page.'')}}">{{$sub->submodul_desc}}</a></li>
+                                    @endforeach
+                                </ul>
+                        </li>
+                    @endforeach
+                @else
+                    @foreach (MenuMapping::getModul(session('user_id')) as $modul)
+                        <li class="has_sub">
+                            <a href="javascript:void(0);" class="waves-effect"><i class="{{$modul->modul_icon}}"></i><span>{{$modul->modul_desc}}</span> <span class="menu-arrow"></span></a>
+                                <ul class="list-unstyled">
+                                    @foreach (MenuMapping::getModul(session('user_id'),$modul->modul_id) as $sub)
+                                        <li><a href="{{route(''.$sub->submodul_page.'')}}">{{$sub->submodul_desc}}</a></li>
+                                    @endforeach
+                                </ul>
+                        </li>
+                    @endforeach
+                @endif
+                
             </ul>
             <div class="clearfix"></div>
         </div>

@@ -197,6 +197,8 @@ class EmployeeController extends Controller
 
                 $scanfoto = $request->nip.'.'.$request->scanfoto->getClientOriginalExtension();
                 $request->scanfoto->move(public_path('assets/images/employee/foto/'),$scanfoto);
+            }else{
+                $scanfoto = $employee->scanfoto;
             }
 
             // Upload KTP
@@ -208,6 +210,8 @@ class EmployeeController extends Controller
 
                 $scanktp = $request->nip.'.'.$request->scanktp->getClientOriginalExtension();
                 $request->scanktp->move(public_path('assets/images/employee/ktp/'),$scanktp);
+            }else{
+                $scanktp = $employee->scanktp;
             }
 
             // Upload SIM A
@@ -219,6 +223,8 @@ class EmployeeController extends Controller
 
                 $scansima = $request->nip.'.'.$request->scansima->getClientOriginalExtension();
                 $request->scansima->move(public_path('assets/images/employee/sima/'),$scansima);
+            }else{
+                $scansima = $employee->scansima;
             }
 
             // Upload SIM B
@@ -230,6 +236,8 @@ class EmployeeController extends Controller
 
                 $scansimb = $request->nip.'.'.$request->scansimb->getClientOriginalExtension();
                 $request->scansimb->move(public_path('assets/images/employee/simb/'),$scansimb);
+            }else{
+                $scansimb = $employee->scansimb;
             }
 
             // Upload SIM C
@@ -241,6 +249,8 @@ class EmployeeController extends Controller
 
                 $scansimc = $request->nip.'.'.$request->scansimc->getClientOriginalExtension();
                 $request->scansimc->move(public_path('assets/images/employee/simc/'),$scansimc);
+            }else{
+                $scansimc = $employee->scansimc;
             }
 
             // Upload NPWP
@@ -252,6 +262,8 @@ class EmployeeController extends Controller
 
                 $scannpwp = $request->nip.'.'.$request->scannpwp->getClientOriginalExtension();
                 $request->scannpwp->move(public_path('assets/images/employee/npwp/'),$scannpwp);
+            }else{
+                $scannpwp = $employee->scannpwp;
             }
 
             // Upload BPJS
@@ -263,6 +275,8 @@ class EmployeeController extends Controller
 
                 $scanbpjs = $request->nip.'.'.$request->scanbpjs->getClientOriginalExtension();
                 $request->scanbpjs->move(public_path('assets/images/employee/bpjs/'),$scanbpjs);
+            }else{
+                $scanbpjs = $employee->scanbpjs;
             }
 
             // Informasi Pribadi

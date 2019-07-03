@@ -20,7 +20,7 @@
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Jenis Member</label>
                                     <div class="col-10">
-                                        <select class="form-control select2" parsley-trigger="change" name="jenis" id="jenis" required onchange="pilihJenis(this.value)">
+                                        <select class="form-control select2" parsley-trigger="change" name="jenis" id="jenis" required>
                                             <option value="#" selected disabled>Pilih Jenis Member</option>
                                             <option value="0">Terdaftar di Perusahaan</option>
                                             <option value="1">Tidak terdaftar di perusahaan</option>
@@ -60,7 +60,8 @@
                         </div>
                     </div>
                     <div class="form-group text-left m-b-0">
-                        <a href="#" class="btn btn-primary btn-rounded w-md waves-effect waves-light m-b-5" onclick="showMember()">Show Data</a>
+                        <a href="{{route('member.create')}}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5" onclick="showMember()">Tambah Member</a>
+                        <a href="javascript:;" class="btn btn-primary btn-rounded w-md waves-effect waves-light m-b-5" onclick="showMember()">Show Data</a>
                     </div>
                 </div>
                 <div class="card-box" id="member-list" style="display:none">
@@ -99,10 +100,20 @@
         });
     });
 
-    var jenis = $('#jenis').val();
-    var perusahaan = $('#perusahaan').val();
-    var bank = $('#bank').val();
-
+    $('#jenis').on('change', function () {
+        id = $('#jenis').val();
+        console.log(id)
+        if(id == 2){
+            document.getElementById("company_show").style.display = 'none';
+            document.getElementById("bank_show").style.display = 'none';
+        }else if(id == 3){
+            document.getElementById("company_show").style.display = 'none';
+            document.getElementById("bank_show").style.display = 'block';
+        }else{
+            document.getElementById("company_show").style.display = 'block';
+            document.getElementById("bank_show").style.display = 'none';
+        }
+    });
 
     //setup before functions
     var typingTimer;                //timer identifier
@@ -124,6 +135,9 @@
     //user is "finished typing," do something
     function doneTyping () {
         var search = $('#search').val();
+        var jenis = $('#jenis').val();
+        var perusahaan = $('#perusahaan').val();
+        var bank = $('#bank').val();
         console.log(search)
         $.ajax({
             url : 'ajxmember',
@@ -143,6 +157,9 @@
     }
 
     function getDatas(page) {
+        var jenis = $('#jenis').val();
+        var perusahaan = $('#perusahaan').val();
+        var bank = $('#bank').val();
         $.ajax({
             url : 'ajxmember?page=' + page,
             type : "get",
@@ -161,21 +178,10 @@
         });
     }
 
-    function pilihJenis(id){
-        console.log(id)
-        if(id == 2){
-            document.getElementById("company_show").style.display = 'none';
-            document.getElementById("bank_show").style.display = 'none';
-        }else if(id == 3){
-            document.getElementById("company_show").style.display = 'none';
-            document.getElementById("bank_show").style.display = 'block';
-        }else{
-            document.getElementById("company_show").style.display = 'block';
-            document.getElementById("bank_show").style.display = 'none';
-        }
-    }
-
     function showMember(){
+        var jenis = $('#jenis').val();
+        var perusahaan = $('#perusahaan').val();
+        var bank = $('#bank').val();
         $.ajax({
             url : 'ajxmember',
             type : "get",

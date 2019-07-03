@@ -40,6 +40,12 @@ Tambah Data Member
                                 </div>
                             </div>
                             <div class="form-group row">
+                                <label class="col-2 col-form-label">Nomor KTP</label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control" parsley-trigger="change" required name="ktp" id="ktp" value="@isset($member->ktp){{$member->ktp}}@endisset">
+                                </div>
+                            </div>
+                            <div class="form-group row">
                                 <label class="col-2 col-form-label">Nama Ibu Kandung</label>
                                 <div class="col-10">
                                     <input type="text" class="form-control" parsley-trigger="change" required name="ibu" id="ibu" value="@isset($member->ibu){{$member->ibu}}@endisset">
@@ -77,7 +83,7 @@ Tambah Data Member
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Provinsi</label>
                                 <div class="col-10">
-                                    <select class="form-control select2" parsley-trigger="change" name="prov" id="prov">
+                                    <select class="form-control select2" parsley-trigger="change" name="prov" id="prov" onchange="getKota(this.value)">
                                         <option value="#" disabled selected>Pilih Provinsi</option>
                                         @foreach ($provinsi as $prov)
                                             @isset($member->prov)
@@ -182,6 +188,20 @@ Tambah Data Member
     </script>
 
     <script>
+        function getKota(id){
+            $.ajax({
+                url : "{{route('getDataKota')}}",
+                type : "get",
+                dataType: 'html',
+                data:{
+                    prov: id,
+                },
+            }).done(function (data) {
+                $('#city').html(data);
+            }).fail(function (msg) {
+                alert('Gagal menampilkan data, silahkan refresh halaman.');
+            });
+        }
         // Date Picker
         jQuery('#tanggal_lahir').datepicker();
         jQuery('#mulai_kerja').datepicker();

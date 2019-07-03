@@ -11,8 +11,6 @@ class Product extends Model
         'company_id','prod_id','name','category', 'stock', 'price', 'supplier', 'buy_price', 'prod_id_new'
     ];
 
-    public $timestamps = false;
-
     public function rolemapping(){
         return $this->belongsTo('App\RoleMapping','username','username');
     }

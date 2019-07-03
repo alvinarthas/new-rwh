@@ -13,8 +13,9 @@ use App\Koordinator;
 use App\SubKoordinator;
 use App\Perusahaan;
 use App\Bank;
-
-use DataTables;
+use App\PerusahaanMember;
+use App\BankMember;
+use App\MenuMapping;
 
 class MemberController extends Controller
 {
@@ -29,7 +30,7 @@ class MemberController extends Controller
         $keyword = $request->get('search');
         $perusahaan = Perusahaan::orderBy('nama')->get();
         $bank = Bank::bankMember();
-        return view('member.index',compact('keyword','perusahaan','bank'));
+        return view('member.index',compact('keyword','perusahaan','bank','page'));
     }
 
     public function ajxmember(Request $request){
@@ -37,19 +38,17 @@ class MemberController extends Controller
         $jenis = $request->get('jenis');
         $perusahaan = $request->get('perusahaan');
         $bank = $request->get('bank');
-        
         if($jenis == 0){
-            $datas = Member::select('tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->where('perusahaanmember.perusahaan_id',$perusahaan)->where('tblmember.nama','LIKE',$keyword.'%')->where('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->paginate(10);
+            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->where('perusahaanmember.perusahaan_id',$perusahaan)->where('tblmember.nama','LIKE',$keyword.'%')->where('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->paginate(10);
         }elseif ($jenis == 1) {
-            $datas = Member::select('tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->whereNotIn('tblmember.ktp',DB::raw("SELECT m.ktp FROM perusahaanmember p INNER JOIN tblmember m ON m.ktp = p.ktp WHERE p.id = $perusahaan"))->where('tblmember.nama','LIKE',$keyword.'%')->where('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->paginate(10);
+            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->whereNotIn('tblmember.ktp',DB::raw("SELECT m.ktp FROM perusahaanmember p INNER JOIN tblmember m ON m.ktp = p.ktp WHERE p.id = $perusahaan"))->where('tblmember.nama','LIKE',$keyword.'%')->where('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->paginate(10);
         }elseif($jenis==2){
-            $datas = Member::select('ktp','nama','scanktp','cetak')->where('tblmember.nama','LIKE',$keyword.'%')->where('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->paginate(2);
+            $datas = Member::select('id','ktp','nama','scanktp','cetak')->where('tblmember.nama','LIKE',$keyword.'%')->where('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->paginate(10);
         }elseif ($jenis == 3) {
-            $datas = Member::select('tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('bankmember','tblmember.ktp','=','bankmember.ktp')->where('bankmember.bank_id',$bank)->where('tblmember.nama','LIKE',$keyword.'%')->where('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->paginate(10);
+            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('bankmember','tblmember.ktp','=','bankmember.ktp')->where('bankmember.bank_id',$bank)->where('tblmember.nama','LIKE',$keyword.'%')->where('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->paginate(10);
         }
         $datas->withPath('yourPath');
         $datas->appends($request->all());
-
         if ($request->ajax()) {
             return response()->json(view('member.list',compact('datas'))->render());
         }
@@ -84,12 +83,8 @@ class MemberController extends Controller
             'telp' => 'required|string',
             'ktp' => 'required|string',
             'tempat_lahir' => 'required',
-            'tgl_lahir' => 'required|string',
-            'prov' => 'required|email|unique:tblemployee',
-            'city' => 'required',
+            'tanggal_lahir' => 'required|string',
             'ibu' => 'required',
-            'koordinator' => 'required',
-            'subkoor' => 'required',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -101,28 +96,32 @@ class MemberController extends Controller
             $month=	date("m");
             $year=	date("y");
             $last_member = Member::lastMember();
-
-            $member_id=substr($last_member,12);
-			$member_id=intval($member_id);
-			$member_id=$member_id+2;
-			
-            $leng = strlen($member_id);
+            if($last_member){
+                $member_id=substr($last_member->member_id,12);
+                $member_id=intval($member_id);
+                $member_id=$member_id+2;
+                
+                $leng = strlen($member_id);
+                
+                switch ($leng) 
+                {
+                    case 4:
+                    $member_id="RWHMB".$month.$year."000".$member_id;
+                    break;
+                    case 5:
+                    $member_id="RWHMB".$month.$year."00".$member_id;
+                    break;
+                    case 6:
+                    $member_id="RWHMB".$month.$year."0".$member_id;
+                    break;
+                    case 7:
+                    $member_id="RWHMB".$month.$year.$member_id;
+                    break;
+                }
+            }else{
+                $member_id="RWHMB".$month.$year."0001001";
+            }
             
-            switch ($leng) 
-			{
-				case 4:
-				$member_id="RWHMB".$month.$year."000".$member_id;
-				break;
-				case 5:
-				$member_id="RWHMB".$month.$year."00".$member_id;
-				break;
-				case 6:
-				$member_id="RWHMB".$month.$year."0".$member_id;
-				break;
-				case 7:
-				$member_id="RWHMB".$month.$year.$member_id;
-				break;
-			}
 
             // Upload KTP
             $scanktp = "noimage.jpg";
@@ -132,7 +131,7 @@ class MemberController extends Controller
                 $request->scanktp->move(public_path('assets/images/member/ktp/'),$scanktp);
             }
 
-            $member = new Employee(array(
+            $member = new Member(array(
                 'member_id' => $member_id,
                 'koordinator' => $request->koordinator,
                 'scanktp' => $scanktp,
@@ -142,7 +141,7 @@ class MemberController extends Controller
                 'alamat' => $request->alamat,
                 'telp' => $request->telp,
                 'tempat_lahir' => $request->tempat_lahir,
-                'tgl_lahir' => $request->tgl_lahir,
+                'tgl_lahir' => $request->tanggal_lahir,
                 'ibu' => $request->ibu,
                 'creator' => session('user_id'),
                 'status' => 'RWH',
@@ -152,10 +151,10 @@ class MemberController extends Controller
 
             ));
             // success
-            if($member->save()){
-                return redirect()->route('employee.index')->with('status', 'Data berhasil dibuat');
-            // fail
-            }else{
+            try{
+                $member->save();
+                return redirect()->route('member.index')->with('status', 'Data berhasil diubah');
+            }catch(\Exception $e){
                 return redirect()->back()->withErrors($e);
             }
         }
@@ -169,7 +168,14 @@ class MemberController extends Controller
      */
     public function show($id)
     {
-        //
+        $member = Member::where('ktp',$id)->first();
+        $provinsi = DataKota::getProvinsi();
+        $koordinator = Koordinator::all();
+        $subkoor = SubKoordinator::all();
+        $bankmember = BankMember::where('ktp',$id)->get();
+        $perusahaanmember = PerusahaanMember::where('ktp',$id)->get();
+        $page = MenuMapping::getMap(session('user_id'),"MBMB");
+        return view('member.show',compact('provinsi','koordinator','subkoor','member','bankmember','perusahaanmember','page'));
     }
 
     /**
@@ -184,7 +190,7 @@ class MemberController extends Controller
         $provinsi = DataKota::getProvinsi();
         $koordinator = Koordinator::all();
         $subkoor = SubKoordinator::all();
-        $member = Member::where('id',$id)->first();
+        $member = Member::where('ktp',$id)->first();
         return view('member.form',compact('provinsi','koordinator','subkoor','member','jenis'));
     }
 
@@ -204,12 +210,8 @@ class MemberController extends Controller
             'telp' => 'required|string',
             'ktp' => 'required|string',
             'tempat_lahir' => 'required',
-            'tgl_lahir' => 'required|string',
-            'prov' => 'required|email|unique:tblemployee',
-            'city' => 'required',
+            'tanggal_lahir' => 'required',
             'ibu' => 'required',
-            'koordinator' => 'required',
-            'subkoor' => 'required',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -217,7 +219,7 @@ class MemberController extends Controller
         // Validation success
         }else{
 
-            $datamember = Member::where('id',$id)->first();
+            $datamember = Member::where('ktp',$id)->first();
 
             // Upload KTP
             if($request->scanktp <> NULL|| $request->scanktp <> ''){
@@ -228,6 +230,8 @@ class MemberController extends Controller
 
                 $scanktp = $request->ktp.'.'.$request->scanktp->getClientOriginalExtension();
                 $request->scanktp->move(public_path('assets/images/member/ktp/'),$scanktp);
+            }else{
+                $scanktp = $datamember->scanktp;
             }
 
                 $datamember->koordinator = $request->koordinator;
@@ -238,16 +242,17 @@ class MemberController extends Controller
                 $datamember->alamat = $request->alamat;
                 $datamember->telp = $request->telp;
                 $datamember->tempat_lahir = $request->tempat_lahir;
-                $datamember->tgl_lahir = $request->tgl_lahir;
+                $datamember->tgl_lahir = $request->tanggal_lahir;
                 $datamember->ibu = $request->ibu;
                 $datamember->creator = session('user_id');
                 $datamember->prov = $request->prov;
                 $datamember->city = $request->city;
+
             // success
-            if($member->save()){
-                return redirect()->route('employee.index')->with('status', 'Data berhasil diubah');
-            // fail
-            }else{
+            try{
+                $datamember->save();
+                return redirect()->route('member.index')->with('status', 'Data berhasil diubah');
+            }catch(\Exception $e){
                 return redirect()->back()->withErrors($e);
             }
         }
