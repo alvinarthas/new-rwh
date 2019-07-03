@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\User;
-use App\Member;
+use App\BankMember;
 
 class TestController extends Controller
 {
-    public function index(){
-        $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/new ktp/ktp';
+    public function index5(){
+        $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/atm';
         if (is_dir($dir)){
             $files = scandir($dir);
             // echo "<pre>";
@@ -20,8 +20,10 @@ class TestController extends Controller
             for ($i=0; $i < $filecount ; $i++) { 
                 if ($files[$i] != '.' && $files[$i] != '..') {
                     $subdir = $dir."/".$files[$i];
-                    $filebaru = $subdir."/".$files[$i].".jpg";
+                    // $filebaru = $subdir."/".$files[$i].".jpg";
                     $subfiles = array_values(array_diff(scandir($subdir), array('..', '.')));
+                    echo "<pre>";
+                    print_r($subfiles);
                     if(is_array($subfiles) && $subfiles <> null){
                         $member = Member::where('ktp',$files[$i])->first();
                         if($member != null){
@@ -32,6 +34,45 @@ class TestController extends Controller
                     }
                 }
             }
+        }
+    }
+
+    public function index(){
+        $bankmember = BankMember::all();
+
+        foreach ($bankmember as $key) {
+            $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/atm/'.str_replace(' ', '', $key->ktp).'/'.str_replace(' ', '', $key->norek);
+
+            if(!is_dir($dir)){
+            }else{
+                $filebaru = $dir."/".str_replace(' ', '', $key->norek).".jpg";
+                $subfiles = array_values(array_diff(scandir($dir), array('..', '.')));
+                if(is_array($subfiles) && $subfiles <> null){
+                    // rename($dir."/".$subfiles[0],$filebaru);
+                    // echo $subfiles[0]."<br>";
+                    // echo "<pre>";
+                    // print_r($subfiles);
+                    $atm = BankMember::where('ktp',str_replace(' ', '', $key->ktp))->first();
+                    $atm->scanatm = str_replace(' ', '', $key->norek).".jpg";
+                    $atm->update();
+                }
+                
+                // echo "<pre>";
+                // print_r($subfiles);
+                // echo "enggak<br>";
+            }
+        }
+    }
+
+    public function index4(){
+        foreach(BM2::all() as $key){
+            $member = Member::where('ktp',$key->ktp)->first();
+            if($member){
+                echo $member->ktp."<br>";
+            }else{
+                echo "Ga ada Cuk <br>";
+            }
+            echo "----------- <br>";
         }
     }
 

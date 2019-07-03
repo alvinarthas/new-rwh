@@ -117,6 +117,7 @@ Informasi Data Member
                                         </select>
                                     </div>
                                 </div>
+                                
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Koordinator</label>
                                     <div class="col-10">
@@ -124,18 +125,19 @@ Informasi Data Member
                                             <option value="#" disabled selected>Pilih Koordinator</option>
                                             @foreach ($koordinator as $koor)
                                                 @isset($member->koor)
-                                                    @if ($koordinator->id == $member->koordinator)
-                                                        <option value="{{$koordinator->id}}" selected>{{$koordinator->nama}}</option>
+                                                    @if ($koor->id == $member->koordinator)
+                                                        <option value="{{$koor->id}}" selected>{{$koor->nama}}</option>
                                                     @else
-                                                        <option value="{{$koordinator->id}}">{{$koordinator->nama}}</option>
+                                                        <option value="{{$koor->id}}">{{$koor->nama}}</option>
                                                     @endif
                                                 @else
-                                                    <option value="{{$koordinator->id}}">{{$koordinator->nama}}</option>
+                                                    <option value="{{$koor->id}}">{{$koor->nama}}</option>
                                                 @endisset
                                             @endforeach
                                         </select>
                                     </div>
                                 </div>
+                                
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Sub Koordinator</label>
                                     <div class="col-10">
