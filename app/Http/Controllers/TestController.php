@@ -41,7 +41,7 @@ class TestController extends Controller
         $bankmember = BankMember::all();
 
         foreach ($bankmember as $key) {
-            $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/atm/'.str_replace(' ', '', $key->ktp).'/'.str_replace(' ', '', $key->norek);
+            $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/tabungan/'.str_replace(' ', '', $key->ktp).'/'.str_replace(' ', '', $key->norek);
 
             if(!is_dir($dir)){
             }else{
@@ -49,12 +49,12 @@ class TestController extends Controller
                 $subfiles = array_values(array_diff(scandir($dir), array('..', '.')));
                 if(is_array($subfiles) && $subfiles <> null){
                     // rename($dir."/".$subfiles[0],$filebaru);
-                    // echo $subfiles[0]."<br>";
+                    echo $subfiles[0]."<br>";
                     // echo "<pre>";
                     // print_r($subfiles);
-                    $atm = BankMember::where('ktp',str_replace(' ', '', $key->ktp))->first();
-                    $atm->scanatm = str_replace(' ', '', $key->norek).".jpg";
-                    $atm->update();
+                    // $atm = BankMember::where('ktp',str_replace(' ', '', $key->ktp))->first();
+                    // $atm->scantabungan = str_replace(' ', '', $key->norek).".jpg";
+                    // $atm->update();
                 }
                 
                 // echo "<pre>";
