@@ -8,6 +8,8 @@
     <link href="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Multi Item Selection examples -->
     <link href="{{ asset('assets/plugins/datatables/select.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
+    {{-- Select2 --}}
+    <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
 @endsection
 @section('content')
     <div class="container">
@@ -45,12 +47,12 @@
                                 
                                 <div id="bank_show" style="display:none">
                                     <div class="form-group row">
-                                        <label class="col-2 col-form-label">Bank</label>
+                                        <label class="col-2 col-form-label">Nama Bank</label>
                                         <div class="col-10">
                                             <select class="form-control select2" parsley-trigger="change" name="bank" id="bank">
-                                                <option value="#" selected disabled>Pilih Bank</option>
+                                                <option value="#" disabled selected>Pilih Bank</option>
                                                 @foreach ($bank as $ba)
-                                                    <option value="{{$ba->id}}">{{$ba->nama}}</option>
+                                                        <option value="{{$ba->id}}" data-image="{{asset('assets/images/bank/'.$ba->icon)}}">{{$ba->nama}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -80,6 +82,9 @@
 @endsection
 
 @section('js')
+    {{-- Select2 --}}
+    <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
+    
     <!-- Required datatable js -->
     <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
@@ -99,6 +104,27 @@
             e.preventDefault();
         });
     });
+
+    $(".select2").select2({
+        templateResult: formatState,
+        templateSelection: formatState
+    });
+    function formatState (opt) {
+        if (!opt.id) {
+            return opt.text.toUpperCase();
+        } 
+
+        var optimage = $(opt.element).attr('data-image'); 
+        console.log(optimage)
+        if(!optimage){
+        return opt.text.toUpperCase();
+        } else {                    
+            var $opt = $(
+            '<span><img src="' + optimage + '" width="60px" /> ' + opt.text.toUpperCase() + '</span>'
+            );
+            return $opt;
+        }
+    };
 
     $('#jenis').on('change', function () {
         id = $('#jenis').val();
