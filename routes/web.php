@@ -66,6 +66,8 @@ Route::middleware(['checkUser'])->group(function () {
         'subkoordinator' => 'SubkoordinatorController',
         // Manage Harga
         'manageharga' => 'ManageHargaController',
+        // Purchasing
+        'purchase' => 'PurchaseController',
     ]);
 
     // Bank Member
@@ -87,6 +89,7 @@ Route::middleware(['checkUser'])->group(function () {
 
 // ------------------------ HELPER -------------------------------------------------
 Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
+Route::get('/showpurchase','PurchaseController@showPurchase')->name('showPurchase');
 // Fingerprint System
 Route::get('/finger/register','FingerPrintController@register')->name('fingerRegister');
 Route::post('/finger/processregister','FingerPrintController@process_register')->name('fingerProcessRegister');

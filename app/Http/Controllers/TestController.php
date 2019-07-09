@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 
 use App\User;
 use App\BankMember;
+use App\Product;
+use App\ManageHarga2;
 
 class TestController extends Controller
 {
@@ -37,7 +39,7 @@ class TestController extends Controller
         }
     }
 
-    public function index(){
+    public function index6(){
         $bankmember = BankMember::all();
 
         foreach ($bankmember as $key) {
@@ -113,5 +115,17 @@ class TestController extends Controller
             
         }
         
+    }
+
+    public function index(){
+        foreach(ManageHarga2::groupBy('prod_id')->distinct()->get() as $key){
+            $product = Product::where('prod_id',$key->prod_id)->first();
+            if($product){
+                echo $key->prod_id." ADA <br>";
+            }else{
+                ManageHarga2::where('prod_id',$key->prod_id)->delete();
+                echo $key->prod_id." Ga Ada <br>";
+            }
+        }
     }
 }   
