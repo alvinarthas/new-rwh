@@ -10,4 +10,8 @@ class Purchase extends Model
     protected $fillable = [
         'month','year','creator','supplier','notes','id_jurnal','tgl','approve'
     ];
+
+    public function supplier(){
+        return $this->belongsTo('App\Perusahaan','supplier');
+    }
 }

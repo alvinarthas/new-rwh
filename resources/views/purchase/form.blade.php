@@ -10,6 +10,8 @@
     <link href="{{ asset('assets/plugins/datatables/select.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     {{-- Select2 --}}
     <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
+    {{-- Date Picker --}}
+    <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
 @endsection
 
 @section('judul')
@@ -60,7 +62,7 @@ Form Purchasing
                         </div>
                     </div>
                     <div class="form-group text-left m-b-0">
-                        <a href="javascript:;" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5" onclick="chooseSupplier()">Pilih Supplier</a>
+                        <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="chooseSupplier()">Pilih Supplier</a>
                     </div>
                 </div>
                 @endif
@@ -77,6 +79,8 @@ Form Purchasing
 @section('js')
     {{-- Select2 --}}
     <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
+    {{-- Date Picker --}}
+    <script src="{{ asset('assets/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
 @endsection
 
 @section('script-js')

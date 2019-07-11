@@ -1,0 +1,36 @@
+<div class="row">
+    <div class="col-12">
+        <div class="card-box table-responsive">
+            <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                <thead>
+                    <th>No</th>
+                    <th>Transaction ID</th>
+                    <th>Posting Period</th>
+                    <th>Supplier</th>
+                    <th>PO Date</th>
+                    <th>Option</th>
+                </thead>
+                <tbody>
+                    @php($i=1)
+                    @foreach ($purchases as $purchase)
+                        <tr>
+                            <td>{{$i}}</td>
+                            <td>PO.{{$purchase->id}}</td>
+                            <td>{{date("F", mktime(0, 0, 0, $purchase->month, 10))}} {{$purchase->year}}</td>
+                            <td>{{$purchase->supplier()->first()->nama}}</td>
+                            <td>{{$purchase->tgl}}</td>
+                            <td>
+                                <a href="{{route('purchase.edit',['id'=>$purchase->id])}}" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Responsive Datatable
+$('#responsive-datatable').DataTable();
+</script>

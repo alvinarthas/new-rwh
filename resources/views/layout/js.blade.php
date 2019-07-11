@@ -21,7 +21,7 @@
 
 @if (session('status'))
     <script>
-        var status = {{session('status')}};
+        var status = "{{session('status')}}";
         // Display a success toast, with a title
         toastr.success(status, 'Success')
     </script>

@@ -85,11 +85,16 @@ Route::middleware(['checkUser'])->group(function () {
         
     Route::get('ajxmember','MemberController@ajxmember');
     Route::get('logout','HomeController@logout')->name('Logout');
+    // ------------------------ HELPER -------------------------------------------------
+    Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
+    // purchase helper
+    Route::get('/showpurchase','PurchaseController@showPurchase')->name('showPurchase');
+    Route::get('/addpurchase','PurchaseController@addPurchase')->name('addPurchase');
+    Route::get('/showindexpurchase','PurchaseController@showIndexPurchase')->name('showIndexPurchase');
+    Route::get('/destroydetailpurchase','PurchaseController@destroyPurchaseDetail')->name('destroyPurchaseDetail');
+
 });
 
-// ------------------------ HELPER -------------------------------------------------
-Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
-Route::get('/showpurchase','PurchaseController@showPurchase')->name('showPurchase');
 // Fingerprint System
 Route::get('/finger/register','FingerPrintController@register')->name('fingerRegister');
 Route::post('/finger/processregister','FingerPrintController@process_register')->name('fingerProcessRegister');

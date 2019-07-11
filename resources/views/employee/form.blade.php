@@ -71,7 +71,7 @@ Tambah Data Pegawai
                                 <label class="col-2 col-form-label">Tanggal Lahir</label>
                                 <div class="col-10">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="tanggal_lahir" id="tanggal_lahir"  value="@isset($employee->tgl_lhr){{$employee->tgl_lhr}}@endisset"  data-date-format='yyyy-mm-dd'>
+                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="tanggal_lahir" id="tanggal_lahir"  value="@isset($employee->tgl_lhr){{$employee->tgl_lhr}}@endisset"  data-date-format='yyyy-mm-dd' autocomplete="off">
                                         <div class="input-group-append">
                                             <span class="input-group-text"><i class="ti-calendar"></i></span>
                                         </div>
@@ -82,7 +82,7 @@ Tambah Data Pegawai
                                 <label class="col-2 col-form-label">Mulai Bekerja</label>
                                 <div class="col-10">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="mulai_kerja" id="mulai_kerja"  value="@isset($employee->mulai_kerja){{$employee->mulai_kerja}}@endisset" data-date-format='yyyy-mm-dd'>
+                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="mulai_kerja" id="mulai_kerja"  value="@isset($employee->mulai_kerja){{$employee->mulai_kerja}}@endisset" data-date-format='yyyy-mm-dd' autocomplete="off">
                                         <div class="input-group-append">
                                             <span class="input-group-text"><i class="ti-calendar"></i></span>
                                         </div>
