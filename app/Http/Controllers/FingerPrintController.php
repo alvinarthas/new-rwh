@@ -110,7 +110,18 @@ class FingerPrintController extends Controller
         
     }
 
-    public function process_verification(Request $request){
+    public function purchaseApproval(Request $request){
+        if (isset($request->user_id) && !empty($request->user_id)) {
+            $time_limit_ver = 10;
+
+            $finger = DemoFinger::where('user_id',$request->user_id)->first();
+            
+            echo "$request->user_id;".$finger->finger_data.";SecurityKey;".$time_limit_ver.";".route('fingerProcessVerification',['keterangan'=>$request->keterangan]).";".route('fingerGetAc').";extraParams";
+        }
+        
+    }
+
+    public function purchaseApprovalProcess(Request $request){
         if (isset($request->VerPas) && !empty($request->VerPas)) {
             // initialize
             $data 		= explode(";",$request->VerPas);

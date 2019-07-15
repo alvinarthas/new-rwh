@@ -259,6 +259,12 @@ class PurchaseController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $purchase = Purchase::where('id',$id)->first();
+        try {
+            $purchase->delete();
+            return "true";
+        } catch (\Exception $e) {
+            return response()->json($e);
+        }
     }
 }

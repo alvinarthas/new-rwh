@@ -11,6 +11,7 @@
                     <th>Option</th>
                 </thead>
                 <tbody>
+                    @csrf
                     @php($i=1)
                     @foreach ($purchases as $purchase)
                         <tr>
@@ -20,7 +21,8 @@
                             <td>{{$purchase->supplier()->first()->nama}}</td>
                             <td>{{$purchase->tgl}}</td>
                             <td>
-                                <a href="{{route('purchase.edit',['id'=>$purchase->id])}}" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
+                                <a href="{{route('purchase.edit',['id'=>$purchase->id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
+                                <a href="javascrip:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$purchase->id}})">Delete</a>
                             </td>
                         </tr>
                     @endforeach
@@ -33,4 +35,54 @@
 <script>
 // Responsive Datatable
 $('#responsive-datatable').DataTable();
+
+function deletePurchase(id){
+    var token = $("meta[name='csrf-token']").attr("content");
+
+    swal({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'No, cancel!',
+        confirmButtonClass: 'btn btn-success',
+        cancelButtonClass: 'btn btn-danger m-l-10',
+        buttonsStyling: false
+    }).then(function () {
+        $.ajax({
+            url: "purchase/"+id,
+            type: 'DELETE',
+            data: {
+                "id": id,
+                "_token": token,
+            },
+        }).done(function (data) {
+            swal(
+                'Deleted!',
+                'Your file has been deleted.',
+                'success'
+            )
+            location.reload();
+        }).fail(function (msg) {
+            swal(
+                'Failed',
+                'Your imaginary file is safe :)',
+                'error'
+            )
+        });
+        
+    }, function (dismiss) {
+        // dismiss can be 'cancel', 'overlay',
+        // 'close', and 'timer'
+        if (dismiss === 'cancel') {
+            console.log("eh ga kehapus");
+            swal(
+                'Cancelled',
+                'Your imaginary file is safe :)',
+                'error'
+            )
+        }
+    })
+}
 </script>

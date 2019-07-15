@@ -12,6 +12,7 @@
     <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Sweet Alert css -->
     <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('judul')
@@ -69,6 +70,14 @@ Index Purchasing
 <!-- Sweet Alert Js  -->
 <script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
 <script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
+
+<!-- Required datatable js -->
+<script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
+
+<!-- Responsive examples -->
+<script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
 @endsection
 
 @section('script-js')

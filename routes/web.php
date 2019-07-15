@@ -102,6 +102,8 @@ Route::get('/finger/getac','FingerPrintController@get_ac')->name('fingerGetAc');
 Route::get('/finger/message','FingerPrintController@message')->name('fingerMessage');
 Route::get('/finger/checkreg','FingerPrintController@checkreg')->name('fingerCheckReg');
 Route::get('/finger/verifikasi','FingerPrintController@verification')->name('fingerVerifikasi');
+Route::get('/finger/purchaseapprove','FingerPrintController@purchaseApprove')->name('purchaseApprove');
+Route::post('/finger/purchaseapproveprocess','FingerPrintController@purchaseApproveProcess')->name('purchaseApproveProcess');
 Route::post('/finger/processverifikasi','FingerPrintController@process_verification')->name('fingerProcessVerification');
 Route::get('/finger/ajxlog','FingerPrintController@ajxlog')->name('fingerAjxLog');
 Route::get('/finger/ajxfulllog','FingerPrintController@ajxfulllog')->name('fingerAjxFullLog');
