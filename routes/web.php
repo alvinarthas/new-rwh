@@ -45,9 +45,14 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/manageproduct','ProductController@manage')->name('manageproduct');
     Route::get('/showProdAjx','ProductController@showProdAjx')->name('showProdAjx');
 
-    Route::get('/showBonus', 'BonusController@showBonus')->name('showBonus');
-    Route::get('/createBonus', 'BonusController@createBonus')->name('createBonus');
-    Route::post('/uploadBonus', 'BonusController@uploadBonus')->name('uploadBonus');
+    Route::get('/showBonus', 'BonusController@showBonusPerhitungan')->name('showBonusPerhitungan');
+    Route::get('/createBonus', 'BonusController@createBonusPerhitungan')->name('createBonusPerhitungan');
+    Route::post('/uploadBonus', 'BonusController@uploadBonusPerhitungan')->name('uploadBonusPerhitungan');
+
+    Route::get('/bonus/bayar','BonusController@indexBayar')->name('bonus.bayar');
+    Route::post('/bonus/bayar','BonusController@storeBayar')->name('bonus.storeBayar');
+    Route::get('/createBonusPembayaran', 'BonusController@createBonusPembayaran')->name('createBonusPembayaran');
+    Route::post('/uploadBonusPembayaran', 'BonusController@uploadBonusPembayaran')->name('uploadBonusPembayaran');
 
     // Resources
     Route::resources([

@@ -12,48 +12,98 @@
     <link rel="stylesheet" href="{{ asset('assets/plugins/magnific-popup/dist/magnific-popup.css') }}"/>
     <!--select2-->
     <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css"/>
+    <!--datepicker-->
+    <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
 @endsection
 
 @section('content')
     <div class="row">
         <div class="col-12">
             <div class="card-box table-responsive">
-                <h4 class="m-t-0 header-title">Manage Bonus</h4>
-                @if($jenis == "index")
-                    <p class="text-muted font-14 m-b-30">
-                        <a href="{{ route('bonus.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Perhitungan Bonus</a>
-                    </p>
+                <h2 class="l-h-34">Manage Bonus</h2>
+                @if($bonusapa=="perhitungan")
+                    <h4 class="m-t-0 header-title">Perhitungan Bonus Member</h4>
+                    @if($jenis == "index")
+                        <p class="text-muted font-14 m-b-30">
+                            <a href="{{ route('bonus.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Perhitungan Bonus</a>
+                        </p>
+                    @endif
+                    <div class="form-group row">
+                        <label class="col-2 col-form-label">Nama Perusahaan</label>
+                        <div class="col-10">
+                            <select class="form-control select2" parsley-trigger="change" id="perusahaan" name="perusahaan">
+                                <option value="#" disabled selected>Pilih Perusahaan</option>
+                                @foreach ($perusahaans as $prs)
+                                    <option value="{{$prs->id}}">{{$prs->nama}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                @elseif($bonusapa=="pembayaran")
+                    <h4 class="m-t-0 header-title">Pembayaran Bonus Member</h4>
+                    <div class="form-group row">
+                        <label class="col-2 col-form-label">Tanggal Transaksi</label>
+                        <div class="col-10">
+                            <div class="input-group">
+                                <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="tgl_transaksi" id="tgl_transaksi"  value=""  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                </div>
+                            </div><!-- input-group -->
+                        </div>
+                    </div>
                 @endif
 
                 <div class="form-group row">
-                    <label class="col-2 col-form-label">Nama Perusahaan</label>
-                    <div class="col-10">
-                        <select class="form-control select2" parsley-trigger="change" id="perusahaan" name="perusahaan">
-                            <option value="#" disabled selected>Pilih Perusahaan</option>
-                            @foreach ($perusahaans as $prs)
-                                <option value="{{$prs->id}}">{{$prs->nama}}</option>
-                            @endforeach
+                    <label class="col-2 col-form-label">Bulan & Tahun Bonus</label>
+                    <div class="col-5">
+                        <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" required>
+                            <option value="#" selected disabled>Pilih Bulan</option>
+                            @for ($i = 1; $i <= 12; $i++)
+                                <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="col-5">
+                        <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" required>
+                            <option value="#" selected disabled>Pilih Tahun</option>
+                            @for ($i = 2018; $i <= date('Y'); $i++)
+                                <option value="{{$i}}">{{$i}}</option>
+                            @endfor
                         </select>
                     </div>
                 </div>
-                <div class="form-group row">
-                    <label class="col-2 col-form-label">Bulan & Tahun Bonus</label>
-                    <div class="col-10">
-                        <input type="month" class="form-control" parsley-trigger="change" required name="period" id="period">
+                @if($bonusapa=="pembayaran")
+                    <div class="form-group row">
+                        <label class="col-2 col-form-label">Rekening Bank Tujuan</label>
+                        <div class="col-10">
+                            <select class="form-control select2" parsley-trigger="change" id="rekening" name="rekening">
+                                <option value="#" disabled selected>Pilih Rekening</option>
+                                @foreach ($rekenings as $rek)
+                                    <option value="{{$rek->id}}">{{$rek->nama}}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
     <div class="form-group text-right m-b-0">
-        @if($jenis=="index")
-            <button class="btn btn-primary waves-effect waves-light" onclick="showBonus()" type="submit">
-                Show Bonus
-            </button>
-        @elseif($jenis=="create")
-            <button class="btn btn-primary waves-effect waves-light" onclick="createBonus()" type="submit">
-                Create Bonus
-            </button>
+        @if($bonusapa=="perhitungan")
+            @if($jenis=="index")
+                <button class="btn btn-primary waves-effect waves-light" onclick="showBonusPerhitungan()" type="submit">
+                    Show Bonus
+                </button>
+            @elseif($jenis=="create")
+                <button class="btn btn-primary waves-effect waves-light" onclick="createBonusPerhitungan()" type="submit">
+                    Create Bonus
+                </button>
+            @endif
+        @elseif($bonusapa=="pembayaran")
+        <button class="btn btn-primary waves-effect waves-light" onclick="createBonusPembayaran()" type="submit">
+            Show Bonus
+        </button>
         @endif
     </div>
     <div id="tblBonus">
@@ -80,7 +130,11 @@
     <!-- Select2 -->
     <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
 
+    <!-- number-divider -->
     <script src="{{ asset('assets/plugins/number-divider/number-divider.min.js') }}"></script>
+
+    <!-- Datepicker -->
+    <script src="{{ asset('assets/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
 @endsection
 
 @section('script-js')
@@ -119,43 +173,74 @@
         };
 
     });
-    function showBonus(){
-            var period = $("#period").val()
+    function showBonusPerhitungan(){
+            var bln = $("#bulan").val()
+            var thn = $("#tahun").val()
             var perusahaan = $("#perusahaan").val()
             $.ajax({
-                url         :   "{{route('showBonus')}}",
+                url         :   "{{route('showBonusPerhitungan')}}",
                 data        :   {
-                    date : period,
+                    tahun : thn,
+                    bulan : bln,
                     perusahaan : perusahaan,
                 },
                 type		:	"GET",
                 dataType    :   "html",
                 success		:	function(data){
                     $("#tblBonus").html(data);
+                    console.log(data)
                 },
                 error       :   function(data){
-                    document.getElementById('period').value = '2018-06';
+                    document.getElementById('tahun').value = '2018';
                 }
             });
     }
-    function createBonus(){
-            var period = $("#period").val()
+    function createBonusPerhitungan(){
+            var bln = $("#bulan").val()
+            var thn = $("#tahun").val()
+            console.log(bln)
             var perusahaan = $("#perusahaan").val()
             $.ajax({
-                url         :   "{{route('createBonus')}}",
+                url         :   "{{route('createBonusPerhitungan')}}",
                 data        :   {
-                    date : period,
+                    tahun : thn,
+                    bulan : bln,
                     perusahaan : perusahaan,
                 },
                 type		:	"GET",
                 dataType    :   "html",
                 success		:	function(data){
                     $("#tblBonus").html(data);
+                    console.log(data)
                 },
                 error       :   function(data){
-                    document.getElementById('period').value = '2018-06';
+                    document.getElementById('tahun').value = '2018';
                 }
             });
+    }
+
+    function createBonusPembayaran(){
+        var bln = $("#bulan").val()
+        var thn = $("#tahun").val()
+        console.log(bln)
+        var rekening = $("#rekening").val()
+        $.ajax({
+            url         :   "{{route('createBonusPerhitungan')}}",
+            data        :   {
+                tahun : thn,
+                bulan : bln,
+                rekening : rekening,
+            },
+            type		:	"GET",
+            dataType    :   "html",
+            success		:	function(data){
+                $("#tblBonus").html(data);
+                console.log(data)
+            },
+            error       :   function(data){
+                document.getElementById('tahun').value = '2018';
+            }
+        });
     }
 </script>
 @endsection

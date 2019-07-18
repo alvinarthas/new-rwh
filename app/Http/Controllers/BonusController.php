@@ -5,12 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Bonus;
 use App\BonusGagal;
-use Illuminate\Support\Facades\DB;
 use App\Perusahaan;
-use Cyberduck\LaravelExcel\Contract\ParserInterface;
-use Importer;
-use Excel;
 use App\Imports\BonusImport;
+use Illuminate\Support\Facades\DB;
+use Excel;
+
 
 class BonusController extends Controller
 {
@@ -22,8 +21,17 @@ class BonusController extends Controller
     public function index(Request $request)
     {
         $perusahaans = Perusahaan::all();
+        $bonusapa = "perhitungan";
         $jenis = "index";
-        return view('bonus.index', compact('perusahaans', 'jenis'));
+        return view('bonus.index', compact('perusahaans', 'bonusapa', 'jenis'));
+    }
+
+    public function indexBayar(Request $request)
+    {
+        $bank = Perusahaan::all();
+        $bonusapa = "pembayaran";
+        $jenis = "index";
+        return view('bonus.index', compact('bank', 'bonusapa', 'jenis'));
     }
 
     /**
@@ -34,6 +42,7 @@ class BonusController extends Controller
     public function create()
     {
         $perusahaans = Perusahaan::all();
+        $bonusapa = "perhitungan";
         $jenis = "create";
         return view('bonus.index', compact('perusahaans', 'jenis'));
     }
@@ -46,42 +55,72 @@ class BonusController extends Controller
      */
     public function store(Request $request)
     {
-        echo "<pre>";
-        print_r("anjing");
-        die();
         foreach($request->count as $i){
             $idm = "id_member$i";
             $id_member = $request->$idm;
             $bn = "bonus$i";
             $bonus = $request->$bn;
-            $num = Bonus::where('id_member', $id_member)->where('tahun', $request->tahun2)->where('bulan', $request->bulan2)->count();
+            $bulan = $request->bulan2;
+            $tahun = $request->tahun2;
+            $num = Bonus::where('member_id', $id_member)->where('tahun', $tahun)->where('bulan', $bulan)->count();
 
-            echo "<pre>";
-            print_r($bn);
-            die();
-            if($num==0){
+            // echo "<pre>";
+            // print_r($request->all());
+            // die();
+            if(empty($num)){
                 $data = new Bonus(array(
-                    'id_member' => $id_member,
-                    'bulan'     => $request->bulan2,
-                    'tahun'     => $request->tahun2,
+                    'member_id' => $id_member,
+                    'bulan'     => $bulan,
+                    'tahun'     => $tahun,
                     'bonus'     => $bonus,
                     'creator'   => session('user_id'),
                 ));
-                echo "<pre>";
-                print_r($data);
-                die();
-                // $data->save();
+
+                $data->save();
             }else{
-                $data = Bonus::where('id_member', $id_member)->where('tahun', $request->tahun)->where('bulan', $request->bulan)->get();
+                $data = Bonus::where('member_id', $id_member)->where('tahun', $tahun)->where('bulan', $bulan)->get();
                 $data->bonus = $bonus;
                 $data->creator = session('user_id');
-                echo "<pre>";
-                print_r($data);
-                die();
-                // $data->update();
+                $data->update();
             }
+
         }
-        // return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
+        return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
+    }
+
+    public function storeBayar(Request $request)
+    {
+        foreach($request->count as $i){
+            $idm = "id_member$i";
+            $id_member = $request->$idm;
+            $bn = "bonus$i";
+            $bonus = $request->$bn;
+            $bulan = $request->bulan2;
+            $tahun = $request->tahun2;
+            $num = Bonus::where('member_id', $id_member)->where('tahun', $tahun)->where('bulan', $bulan)->count();
+
+            // echo "<pre>";
+            // print_r($request->all());
+            // die();
+            if(empty($num)){
+                $data = new Bonus(array(
+                    'member_id' => $id_member,
+                    'bulan'     => $bulan,
+                    'tahun'     => $tahun,
+                    'bonus'     => $bonus,
+                    'creator'   => session('user_id'),
+                ));
+
+                $data->save();
+            }else{
+                $data = Bonus::where('member_id', $id_member)->where('tahun', $tahun)->where('bulan', $bulan)->get();
+                $data->bonus = $bonus;
+                $data->creator = session('user_id');
+                $data->update();
+            }
+
+        }
+        return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
     }
 
     /**
@@ -92,7 +131,7 @@ class BonusController extends Controller
      */
     public function show($id)
     {
-
+        //
     }
 
     /**
@@ -129,26 +168,39 @@ class BonusController extends Controller
         //
     }
 
-    public function showBonus(Request $request)
+    public function showBonusPerhitungan(Request $request)
     {
-        $perusahaanmember = DB::table('perusahaanmember')->join('tblmember','perusahaanmember.ktp','=','tblmember.ktp')->where('perusahaanmember.perusahaan_id','LIKE',$request->perusahaan)->orderBy('tblmember.nama', 'asc')->get();
-        $tahun = date('Y', strtotime($request->period));
-        $bulan = date('m', strtotime($request->period));
+        $perusahaan = $request->perusahaan;
+        $perusahaanmember = DB::table('perusahaanmember')->join('tblmember','perusahaanmember.ktp','=','tblmember.ktp')->where('perusahaanmember.perusahaan_id','LIKE',$perusahaan)->orderBy('tblmember.nama', 'asc')->get();
+        $tahun = $request->tahun;
+        $bulan = $request->bulan;
         $bonus = Bonus::where('tahun',$tahun)->where('bulan',$bulan)->get();
         return view('bonus.ajxShowBonus', compact('perusahaanmember', 'bonus'));
     }
 
-    public function createBonus(Request $request)
+    public function createBonusPerhitungan(Request $request)
     {
         $perusahaan = $request->perusahaan;
-        $perusahaanmember = DB::table('perusahaanmember')->join('tblmember','perusahaanmember.ktp','=','tblmember.ktp')->where('perusahaanmember.perusahaan_id','LIKE',$request->perusahaan)->orderBy('tblmember.nama', 'asc')->get();
-        $tahun = date('Y', strtotime($request->period));
-        $bulan = date('m', strtotime($request->period));
+        $perusahaanmember = DB::table('perusahaanmember')->join('tblmember','perusahaanmember.ktp','=','tblmember.ktp')->where('perusahaanmember.perusahaan_id','LIKE',$perusahaan)->orderBy('tblmember.nama', 'asc')->get();
+        $tahun = $request->tahun;
+        $bulan = $request->bulan;
+        $bonusapa = "perhitungan";
         $bonus = Bonus::where('tahun',$tahun)->where('bulan',$bulan)->get();
-        return view('bonus.ajxCreateBonus', compact('perusahaanmember', 'bonus','tahun','bulan','perusahaan'));
+        return view('bonus.ajxCreateBonus', compact('perusahaanmember', 'bonus','tahun','bulan','perusahaan','bonusapa'));
     }
 
-    public function uploadBonus(Request $request)
+    public function createBonusPembayaran(Request $request)
+    {
+        $bank = $request->bank;
+        $bankmember = BankMember::where('namabank','LIKE', $bank)->get();
+        $tahun = $request->tahun;
+        $bulan = $request->bulan;
+        $bonusapa = "pembayaran";
+        $bonus = Bonus::where('tahun',$tahun)->where('bulan',$bulan)->get();
+        return view('bonus.ajxCreateBonus', compact('bankmember', 'bonus','tahun','bulan','bonusapa'));
+    }
+
+    public function uploadBonusPerhitungan(Request $request)
     {
         $this->validate($request, ['file'  => 'required|mimes:xls,xlsx']);
         $path = $request->file('file')->getRealPath();
@@ -195,58 +247,6 @@ class BonusController extends Controller
             }
 
         }
-
-        // if($data->count() > 0){
-        //     foreach($data->toArray() as $key => $value){
-        //         foreach($value as $row){
-        //             echo $row['1'];
-        //             die;
-        //             if(!empty($row['member_id'])){
-        //                 $perusahaan = DB::table('perusahaanmember')->select('perusahaanmember.noid')->join('tblmember','perusahaanmember.ktp','=','tblmember.ktp')->where('perusahaanmember.noid','=',$row['member_id'])->where('tblmember.name','=',$row['nama']);
-        //                 $num_member= $perusahaan['perusahaan.noid']->count();
-        //                 if($num_member==0){
-        //                     $bonusgagal = new BonusGagal;
-        //                     $bonusgagal->ktp = $row['1'];
-        //                     $bonusgagal->member_id = $row['2'];
-        //                     $bonusgagal->nama = $row['3'];
-        //                     $bonusgagal->tahun = $request->tahun;
-        //                     $bonusgagal->bulan = $request->bulan;
-        //                     $bonusgagal->bonus = $row['4'];
-        //                     $bonusgagal->creator = session('user_id');
-        //                     $bonusgagal->perusahaan = $request->perusahaan;
-        //                     $bonusgagal->save();
-        //                 }else{
-        //                     $num_bonus = Bonus::where('id_member', $row['member_id'])->where('tahun', $request->tahun)->where('bulan', $request->bulan)->count();
-
-        //                     if($num_bonus==0){
-        //                         $bonus = new Bonus;
-        //                         $bonus->id_member = $row['member_id'];
-        //                         $bonus->tahun = $request->tahun;
-        //                         $bonus->bulan = $request->bulan;
-        //                         $bonus->bonus = $row['bonus'];
-        //                         $bonus->creator = session('user_id');
-        //                         $bonus->save();
-        //                     }else{
-        //                         $bonus = Bonus::where('id_member', $row['member_id'])->where('tahun',$request->tahun)->where('bulan',$request->bulan)->get();
-        //                         $bonus->bonus;
-        //                         $bonus->update();
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        // return redirect('/createBonus');
+        return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
     }
-
-    // public function transform($row, $header)
-    // {
-    //     $model = new BonusGagal;
-    //     $model->ktp = $row[1];
-    //     $model->member_id = $row[2];
-    //     $model->nama = $row[3];
-    //     $model->bonus = $row[4];
-    //     $model->save();
-    //     return back();
-    // }
 }

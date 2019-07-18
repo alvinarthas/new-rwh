@@ -29,3 +29,25 @@
                     <input name="total_bonus2" type="text" id="total_bonus2" value="" readonly="readonly" />
                 </div>
                 <input type="hidden" name="ctr" value="{{ $i }}"/>
+
+if($num==0){
+                $data = new Bonus(array(
+                    'id_member' => $id_member,
+                    'bulan'     => $request->bulan2,
+                    'tahun'     => $request->tahun2,
+                    'bonus'     => $bonus,
+                    'creator'   => session('user_id'),
+                ));
+                // echo "<pre>";
+                // print_r($data);
+                // die();
+                // $data->save();
+            }else{
+                $data = Bonus::where('id_member', $id_member)->where('tahun', $request->tahun)->where('bulan', $request->bulan)->get();
+                $data->bonus = $bonus;
+                $data->creator = session('user_id');
+                // echo "<pre>";
+                // print_r($data);
+                // die();
+                // $data->update();
+            }
