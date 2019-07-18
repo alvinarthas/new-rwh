@@ -1,0 +1,161 @@
+@extends('layout.main')
+
+@section('css')
+    <!-- DataTables -->
+    <link href="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css"/>
+    <link href="{{ asset('assets/plugins/datatables/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css"/>
+    <!-- Responsive datatable examples -->
+    <link href="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css"/>
+    <!-- Multi Item Selection examples -->
+    <link href="{{ asset('assets/plugins/datatables/select.bootstrap4.min.css') }}" rel="stylesheet" type="text/css"/>
+    <!--venobox lightbox-->
+    <link rel="stylesheet" href="{{ asset('assets/plugins/magnific-popup/dist/magnific-popup.css') }}"/>
+    <!--select2-->
+    <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css"/>
+@endsection
+
+@section('content')
+    <div class="row">
+        <div class="col-12">
+            <div class="card-box table-responsive">
+                <h4 class="m-t-0 header-title">Manage Bonus</h4>
+                @if($jenis == "index")
+                    <p class="text-muted font-14 m-b-30">
+                        <a href="{{ route('bonus.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Perhitungan Bonus</a>
+                    </p>
+                @endif
+
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">Nama Perusahaan</label>
+                    <div class="col-10">
+                        <select class="form-control select2" parsley-trigger="change" id="perusahaan" name="perusahaan">
+                            <option value="#" disabled selected>Pilih Perusahaan</option>
+                            @foreach ($perusahaans as $prs)
+                                <option value="{{$prs->id}}">{{$prs->nama}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">Bulan & Tahun Bonus</label>
+                    <div class="col-10">
+                        <input type="month" class="form-control" parsley-trigger="change" required name="period" id="period">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group text-right m-b-0">
+        @if($jenis=="index")
+            <button class="btn btn-primary waves-effect waves-light" onclick="showBonus()" type="submit">
+                Show Bonus
+            </button>
+        @elseif($jenis=="create")
+            <button class="btn btn-primary waves-effect waves-light" onclick="createBonus()" type="submit">
+                Create Bonus
+            </button>
+        @endif
+    </div>
+    <div id="tblBonus">
+
+    </div> <!-- end row -->
+@endsection
+
+@section('js')
+    <!-- Required datatable js -->
+    <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
+
+    <!-- Responsive examples -->
+    <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
+
+    <!-- Modal-Effect -->
+    <script src="{{ asset('assets/plugins/custombox/dist/custombox.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/custombox/dist/legacy.min.js') }}"></script>
+
+    <!-- Magnific popup -->
+    <script type="text/javascript" src="{{ asset('assets/plugins/magnific-popup/dist/jquery.magnific-popup.min.js') }}"></script>
+
+    <!-- Select2 -->
+    <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
+
+    <script src="{{ asset('assets/plugins/number-divider/number-divider.min.js') }}"></script>
+@endsection
+
+@section('script-js')
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        // Responsive Datatable
+        $('#responsive-datatable').DataTable();
+
+        $('.image-popup').magnificPopup({
+            type: 'image',
+        });
+
+        // Select2
+        $(".select2").select2({
+            templateResult: formatState,
+            templateSelection: formatState
+        });
+
+        function formatState (opt) {
+            if (!opt.id) {
+                return opt.text.toUpperCase();
+            }
+
+            var optimage = $(opt.element).attr('data-image');
+            console.log(optimage)
+            if(!optimage){
+            return opt.text.toUpperCase();
+            } else {
+                var $opt = $(
+                '<span><img src="' + optimage + '" width="60px" /> ' + opt.text.toUpperCase() + '</span>'
+                );
+                return $opt;
+            }
+        };
+
+    });
+    function showBonus(){
+            var period = $("#period").val()
+            var perusahaan = $("#perusahaan").val()
+            $.ajax({
+                url         :   "{{route('showBonus')}}",
+                data        :   {
+                    date : period,
+                    perusahaan : perusahaan,
+                },
+                type		:	"GET",
+                dataType    :   "html",
+                success		:	function(data){
+                    $("#tblBonus").html(data);
+                },
+                error       :   function(data){
+                    document.getElementById('period').value = '2018-06';
+                }
+            });
+    }
+    function createBonus(){
+            var period = $("#period").val()
+            var perusahaan = $("#perusahaan").val()
+            $.ajax({
+                url         :   "{{route('createBonus')}}",
+                data        :   {
+                    date : period,
+                    perusahaan : perusahaan,
+                },
+                type		:	"GET",
+                dataType    :   "html",
+                success		:	function(data){
+                    $("#tblBonus").html(data);
+                },
+                error       :   function(data){
+                    document.getElementById('period').value = '2018-06';
+                }
+            });
+    }
+</script>
+@endsection

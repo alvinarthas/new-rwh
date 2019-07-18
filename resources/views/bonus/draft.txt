@@ -1,0 +1,31 @@
+@php($i = 1)
+                        @foreach($perusahaanmember as $prm)
+                        <tr>
+                            <td>{{$i}}</td>
+                            <td>{{$prm['ktp']}}</td>
+                            <td>{{$prm['noid']}}</td>
+                            <td>{{$prm['nama']}}</td>
+                            @php($data_bonus = $bonus->where('member_id', $prm['noid'])->first())
+                            <td>
+                                <input id="number" value="{{ $data_bonus['bonus'] }}" type="text" name="bonus{{ $i }}">
+                                <input type="hidden" name="id_member{{ $i }}" value="{{ $prm['noid'] }}">
+                            </td>
+                        </tr>
+                        @php
+                            $i++;
+                            $total_bonus = $total_bonus + $data_bonus['bonus'];
+                        @endphp
+                        @endforeach
+
+
+                <div class="row">
+                    <div class="label">Total Bonus</div>
+                    <label for="textfield"></label>
+                    <input name="total_bonus" type="text" id="total_bonus" value="{{ $total_bonus }}" readonly="readonly" />
+                </div>
+                <div class="row">
+                    <div class="label">Total Bonus Tertahan</div>
+                    <label for="textfield"></label>
+                    <input name="total_bonus2" type="text" id="total_bonus2" value="" readonly="readonly" />
+                </div>
+                <input type="hidden" name="ctr" value="{{ $i }}"/>

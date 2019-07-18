@@ -41,10 +41,15 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/rolemapping/{id}/edit','RoleMappingController@edit')->name('editRoleMapping');
     Route::put('/rolemapping/{id}/update','RoleMappingController@update')->name('updateRoleMapping');
     Route::delete('/rolemapping/{id}/delete','RoleMappingController@destroy')->name('destroyRoleMapping');
+
     Route::get('/manageproduct','ProductController@manage')->name('manageproduct');
     Route::get('/showProdAjx','ProductController@showProdAjx')->name('showProdAjx');
-    
-    // Resources 
+
+    Route::get('/showBonus', 'BonusController@showBonus')->name('showBonus');
+    Route::get('/createBonus', 'BonusController@createBonus')->name('createBonus');
+    Route::post('/uploadBonus', 'BonusController@uploadBonus')->name('uploadBonus');
+
+    // Resources
     Route::resources([
         // Employee
         'employee' => 'EmployeeController',
@@ -68,6 +73,8 @@ Route::middleware(['checkUser'])->group(function () {
         'manageharga' => 'ManageHargaController',
         // Purchasing
         'purchase' => 'PurchaseController',
+        // Bonus
+        'bonus' => 'BonusController',
     ]);
 
     // Bank Member
@@ -82,7 +89,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('perusahaanmember/edit','PerusahaanMemberController@edit')->name('editPerusahaanMember');
         Route::put('perusahaanmember/{ktp}/update/{pid}','PerusahaanMemberController@update')->name('updatePerusahaanMember');
         Route::get('perusahaanmember/delete','PerusahaanMemberController@destroy')->name('destroyPerusahaanMember');
-        
+
     Route::get('ajxmember','MemberController@ajxmember');
     Route::get('logout','HomeController@logout')->name('Logout');
     // ------------------------ HELPER -------------------------------------------------
