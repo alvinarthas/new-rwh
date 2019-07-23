@@ -43,6 +43,13 @@ Route::middleware(['checkUser'])->group(function () {
     Route::delete('/rolemapping/{id}/delete','RoleMappingController@destroy')->name('destroyRoleMapping');
     Route::get('/manageproduct','ProductController@manage')->name('manageproduct');
     Route::get('/showProdAjx','ProductController@showProdAjx')->name('showProdAjx');
+
+    // Receive Product
+    Route::get('receiveproduct','ReceiveProductController@index')->name('receiveProd');
+    Route::get('receiveproduct/ajx','ReceiveProductController@ajx')->name('receiveProdAjx');
+    Route::get('receiveproduct/detail','ReceiveProductController@detail')->name('receiveProdDet');
+    Route::post('receiveproduct/store','ReceiveProductController@store')->name('receiveProdStr');
+    Route::get('receiveproduct/delete','ReceiveProductController@delete')->name('receiveProdDel');
     
     // Resources 
     Route::resources([
@@ -68,6 +75,8 @@ Route::middleware(['checkUser'])->group(function () {
         'manageharga' => 'ManageHargaController',
         // Purchasing
         'purchase' => 'PurchaseController',
+        // Sales
+        'sales' => 'SalesController',
     ]);
 
     // Bank Member
@@ -76,6 +85,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('/bankmember/edit','BankMemberController@edit')->name('editBankMember');
         Route::put('/bankmember/{ktp}/update/{bid}','BankMemberController@update')->name('updateBankMember');
         Route::get('/bankmember/delete','BankMemberController@destroy')->name('destroyBankMember');
+
     // Perusahaan Member
         Route::get('perusahaanmember','PerusahaanMemberController@create')->name('createPerusahaanMember');
         Route::post('perusahaanmember/{ktp}','PerusahaanMemberController@store')->name('storePerusahaanMember');

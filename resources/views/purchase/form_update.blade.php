@@ -16,6 +16,8 @@
     <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
     <!-- Sweet Alert css -->
     <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
+    {{-- Fingerprint --}}
+    <link href="{{ asset('assets/fingerprint/ajaxmask.css') }}" rel="stylesheet">
 @endsection
 
 @section('judul')
@@ -138,7 +140,7 @@ Form Update Purchasing
                                             </tr>
                                         @php($i++)
                                         @endforeach
-                                        <input type="input" name="count" id="count" value="{{$i-1}}">
+                                        <input type="hidden" name="count" id="count" value="{{$i-1}}">
                                     </tbody>
                                 </table>
                             </div>
@@ -181,6 +183,14 @@ Form Update Purchasing
                         </div>
                     </div>
                     <div class="form-group text-right m-b-0">
+                        @if ($purchase->approve == 0)
+                        <?php
+                            $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id]));
+                        ?>
+                            <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase</a>
+                        @else
+                            <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Purchase sudah di approve</a>
+                        @endif
                         <button class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Simpan Purchase Order</a>
                     </div>
                 </div>
@@ -199,6 +209,10 @@ Form Update Purchasing
     <!-- Sweet Alert Js  -->
     <script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
     <script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
+    {{-- Fingerprint --}}
+    <script src="{{ asset('assets/fingerprint/jquery.timer.js') }}"></script>
+    <script src="{{ asset('assets/fingerprint/ajaxmask.js') }}"></script>
+
 @endsection
 
 @section('script-js')

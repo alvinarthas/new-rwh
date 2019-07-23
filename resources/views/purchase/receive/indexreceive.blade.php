@@ -3,35 +3,34 @@
         <div class="card-box table-responsive">
             <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                 <thead>
-                    <th>No</th>
                     <th>Transaction ID</th>
-                    <th>Posting Period</th>
                     <th>Supplier</th>
-                    <th>PO Date</th>
-                    <th>Option</th>
+                    <th>Product ID</th>
+                    <th>Product Name</th>
+                    <th>Qty</th>
+                    <th>Unit</th>
+                    <th>Qty Receive</th>
                 </thead>
                 <tbody>
                     @csrf
                     @php($i=1)
-                    @foreach ($purchases as $purchase)
+                    @foreach ($lists as $list)
                         <tr>
-                            <td>{{$i}}</td>
-                            <td>PO.{{$purchase->id}}</td>
-                            <td>{{date("F", mktime(0, 0, 0, $purchase->month, 10))}} {{$purchase->year}}</td>
-                            <td>{{$purchase->supplier()->first()->nama}}</td>
-                            <td>{{$purchase->tgl}}</td>
-                            <td>
-                                <a href="{{route('purchase.edit',['id'=>$purchase->id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
-                                <a href="javascrip:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$purchase->id}})">Delete</a>
-                                @if ($purchase->approve == 0)
-                                <?php
-                                    $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id]));
-                                ?>
-                                    <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase</a>
-                                @else
-                                    <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Purchase sudah di approve</a>
-                                @endif
-                            </td>
+                            <td><a href="{{route('receiveProdDet',['trx_id'=>$list->trx_id])}}" class="btn btn-primary btn-trans waves-effect w-xs waves-danger m-b-5 ">PO.{{$list->trx_id}}</a></td>
+                            <td>{{$list->supplier}}</td>
+                            <td>{{$list->prod_id}}</td>
+                            <td>{{$list->prod_name}}</td>
+                            <td>{{$list->qty}}</td>
+                            <td>{{$list->unit}}</td>
+                            @if ($list->qtyrec == 0)
+                                <td><a href="javascrip:;" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                            @elseif(($list->qtyrec-$list->qty) == 0 )
+                                <td><a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                            @elseif(($list->qtyrec-$list->qty) < 0 )
+                                <td><a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                            @else
+                                <td><a href="javascrip:;" class="btn btn-info btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>

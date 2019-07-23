@@ -8,17 +8,11 @@
     <link href="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Multi Item Selection examples -->
     <link href="{{ asset('assets/plugins/datatables/select.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
-    {{-- Select2 --}}
-    <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
-    <!-- Sweet Alert css -->
-    <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
-    {{-- Fingerprint --}}
-    <link href="{{ asset('assets/fingerprint/ajaxmask.css') }}" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('judul')
-Index Purchasing
+List Receive Product
 @endsection
 
 @section('content')
@@ -52,13 +46,13 @@ Index Purchasing
                         </div>
                     </div>
                     <div class="form-group text-left m-b-0">
-                        <a href="{{route('purchase.create')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add Purchase</a>
                         <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase()">Show Data</a>
+                        <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase('all')">Show ALL Data</a>
                     </div>
                 </div>
 
-                <div id="purchase-list" style="display:none">
-                    <section id="showpurchase">
+                <div id="receive-list" style="display:none">
+                    <section id="showreceive">
                     </section>
                 </div>
             </div>
@@ -67,12 +61,6 @@ Index Purchasing
 @endsection
 
 @section('js')
-{{-- Select2 --}}
-<script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
-<!-- Sweet Alert Js  -->
-<script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
-<script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
-
 <!-- Required datatable js -->
 <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
@@ -80,32 +68,27 @@ Index Purchasing
 <!-- Responsive examples -->
 <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
-
-{{-- Fingerprint --}}
-<script src="{{ asset('assets/fingerprint/jquery.timer.js') }}"></script>
-<script src="{{ asset('assets/fingerprint/ajaxmask.js') }}"></script>
 @endsection
 
 @section('script-js')
 <script>
-    // Select2
-    $(".select2").select2();
 
-    function choosePurchase(){
+    function choosePurchase(id=null){
         bulan = $('#bulan').val();
         tahun = $('#tahun').val();
-
+        
         $.ajax({
-            url : "{{route('showIndexPurchase')}}",
+            url : "{{route('receiveProdAjx')}}",
             type : "get",
             dataType: 'json',
             data:{
                 bulan: bulan,
                 tahun: tahun,
+                jenis: id,
             },
         }).done(function (data) {
-            document.getElementById("purchase-list").style.display = 'block';
-            $('#showpurchase').html(data);
+            document.getElementById("receive-list").style.display = 'block';
+            $('#showreceive').html(data);
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });
