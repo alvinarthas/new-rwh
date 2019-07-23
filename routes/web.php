@@ -41,6 +41,7 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/rolemapping/{id}/edit','RoleMappingController@edit')->name('editRoleMapping');
     Route::put('/rolemapping/{id}/update','RoleMappingController@update')->name('updateRoleMapping');
     Route::delete('/rolemapping/{id}/delete','RoleMappingController@destroy')->name('destroyRoleMapping');
+
     Route::get('/manageproduct','ProductController@manage')->name('manageproduct');
     Route::get('/showProdAjx','ProductController@showProdAjx')->name('showProdAjx');
 
@@ -52,6 +53,16 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('receiveproduct/delete','ReceiveProductController@delete')->name('receiveProdDel');
     
     // Resources 
+    Route::get('/showBonus', 'BonusController@showBonusPerhitungan')->name('showBonusPerhitungan');
+    Route::get('/createBonus', 'BonusController@createBonusPerhitungan')->name('createBonusPerhitungan');
+    Route::post('/uploadBonus', 'BonusController@uploadBonusPerhitungan')->name('uploadBonusPerhitungan');
+
+    Route::get('/bonus/bayar','BonusController@indexBayar')->name('bonus.bayar');
+    Route::post('/bonus/bayar','BonusController@storeBayar')->name('bonus.storeBayar');
+    Route::get('/createBonusPembayaran', 'BonusController@createBonusPembayaran')->name('createBonusPembayaran');
+    Route::post('/uploadBonusPembayaran', 'BonusController@uploadBonusPembayaran')->name('uploadBonusPembayaran');
+
+    // Resources
     Route::resources([
         // Employee
         'employee' => 'EmployeeController',
@@ -77,6 +88,8 @@ Route::middleware(['checkUser'])->group(function () {
         'purchase' => 'PurchaseController',
         // Sales
         'sales' => 'SalesController',
+        // Bonus
+        'bonus' => 'BonusController',
     ]);
 
     // Bank Member
@@ -92,7 +105,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('perusahaanmember/edit','PerusahaanMemberController@edit')->name('editPerusahaanMember');
         Route::put('perusahaanmember/{ktp}/update/{pid}','PerusahaanMemberController@update')->name('updatePerusahaanMember');
         Route::get('perusahaanmember/delete','PerusahaanMemberController@destroy')->name('destroyPerusahaanMember');
-        
+
     Route::get('ajxmember','MemberController@ajxmember');
     Route::get('logout','HomeController@logout')->name('Logout');
     // ------------------------ HELPER -------------------------------------------------
