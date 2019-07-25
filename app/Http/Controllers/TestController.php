@@ -8,10 +8,22 @@ use Illuminate\Support\Facades\Crypt;
 use App\User;
 use App\BankMember;
 use App\Product;
-use App\ManageHarga2;
+use App\PriceDet;
 
 class TestController extends Controller
 {
+    public function index(){
+        foreach(PriceDet::groupBy('prod_id')->distinct()->get() as $key){
+            $product = Product::where('prod_id',$key->prod_id)->first();
+            if($product){
+                echo $key->prod_id." ADA <br>";
+            }else{
+                PriceDet::where('prod_id',$key->prod_id)->delete();
+                echo $key->prod_id." Ga Ada <br>";
+            }
+        }
+    }
+
     public function index5(){
         $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/atm';
         if (is_dir($dir)){
@@ -118,7 +130,7 @@ class TestController extends Controller
         
     }
 
-    public function index(){
+    public function indexaa(){
         // foreach(ManageHarga2::groupBy('prod_id')->distinct()->get() as $key){
         //     $product = Product::where('prod_id',$key->prod_id)->first();
         //     if($product){
@@ -129,7 +141,7 @@ class TestController extends Controller
         //     }
         // }
         $encrypted = Crypt::encryptString('Belajar Laravel Di malasngoding.com');
-		$decrypted = Crypt::decryptString('$2y$10$fY8aUAdGEZs6rKTn8rO.Fede5zkbvYZSX49O8He8hwrn1VZjDW2L.');
+		$decrypted = Crypt::decryptString('$2y$10$Rchoh5O7de3roYe84yGfweyAQFkMHm3SYrevYfBk/oBXzV7A4P4p2');
  
 		echo "Hasil Enkripsi : " . $encrypted;
 		echo "<br/>";

@@ -141,7 +141,7 @@ class PurchaseController extends Controller
             try {
                 $purchase->save();
                 // insert Detail
-                for ($i=0; $i < $request->count ; $i++) { 
+                for ($i=0; $i < $request->count ; $i++) {
                     $purchasedet = new PurchaseDetail(array(
                         'trx_id' => $purchase->id,
                         'prod_id' => $request->prod_id[$i],

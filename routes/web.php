@@ -110,11 +110,18 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('logout','HomeController@logout')->name('Logout');
     // ------------------------ HELPER -------------------------------------------------
     Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
+
     // purchase helper
     Route::get('/showpurchase','PurchaseController@showPurchase')->name('showPurchase');
     Route::get('/addpurchase','PurchaseController@addPurchase')->name('addPurchase');
     Route::get('/showindexpurchase','PurchaseController@showIndexPurchase')->name('showIndexPurchase');
     Route::get('/destroydetailpurchase','PurchaseController@destroyPurchaseDetail')->name('destroyPurchaseDetail');
+
+    // sales helper
+    Route::get('/showsales','SalesController@showSales')->name('showSales');
+    Route::get('/addsales','SalesController@addSales')->name('addSales');
+    Route::get('/showindexsales','SalesController@showIndexSales')->name('showIndexSales');
+    Route::get('/destroydetailsales','SalesController@destroySalesDetail')->name('destroySalesDetail');
 
 });
 
@@ -125,8 +132,12 @@ Route::get('/finger/getac','FingerPrintController@get_ac')->name('fingerGetAc');
 Route::get('/finger/message','FingerPrintController@message')->name('fingerMessage');
 Route::get('/finger/checkreg','FingerPrintController@checkreg')->name('fingerCheckReg');
 Route::get('/finger/verifikasi','FingerPrintController@verification')->name('fingerVerifikasi');
-Route::get('/finger/purchaseapprove','FingerPrintController@purchaseApprove')->name('purchaseApprove');
-Route::post('/finger/purchaseapproveprocess','FingerPrintController@purchaseApproveProcess')->name('purchaseApproveProcess');
 Route::post('/finger/processverifikasi','FingerPrintController@process_verification')->name('fingerProcessVerification');
 Route::get('/finger/ajxlog','FingerPrintController@ajxlog')->name('fingerAjxLog');
 Route::get('/finger/ajxfulllog','FingerPrintController@ajxfulllog')->name('fingerAjxFullLog');
+// Purchase Approve
+Route::get('/finger/purchaseapprove','FingerPrintController@purchaseApprove')->name('purchaseApprove');
+Route::post('/finger/purchaseapproveprocess','FingerPrintController@purchaseApproveProcess')->name('purchaseApproveProcess');
+// Sales Approve
+Route::get('/finger/salesapprove','FingerPrintController@salesApprove')->name('salesApprove');
+Route::post('/finger/salesapproveprocess','FingerPrintController@salesApproveProcess')->name('salesApproveProcess');
