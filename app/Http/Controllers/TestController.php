@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 
 use App\User;
 use App\BankMember;
@@ -13,15 +14,16 @@ use App\PriceDet;
 class TestController extends Controller
 {
     public function index(){
-        foreach(PriceDet::groupBy('prod_id')->distinct()->get() as $key){
-            $product = Product::where('prod_id',$key->prod_id)->first();
-            if($product){
-                echo $key->prod_id." ADA <br>";
-            }else{
-                PriceDet::where('prod_id',$key->prod_id)->delete();
-                echo $key->prod_id." Ga Ada <br>";
-            }
-        }
+        echo $test = Hash::make("canik123");
+        // foreach(PriceDet::groupBy('prod_id')->distinct()->get() as $key){
+        //     $product = Product::where('prod_id',$key->prod_id)->first();
+        //     if($product){
+        //         echo $key->prod_id." ADA <br>";
+        //     }else{
+        //         PriceDet::where('prod_id',$key->prod_id)->delete();
+        //         echo $key->prod_id." Ga Ada <br>";
+        //     }
+        // }
     }
 
     public function index5(){

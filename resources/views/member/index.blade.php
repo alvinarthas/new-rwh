@@ -62,7 +62,7 @@
                         </div>
                     </div>
                     <div class="form-group text-left m-b-0">
-                        <a href="{{route('member.create')}}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5" onclick="showMember()">Tambah Member</a>
+                        <a href="{{route('member.create')}}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Member</a>
                         <a href="javascript:;" class="btn btn-primary btn-rounded w-md waves-effect waves-light m-b-5" onclick="showMember()">Show Data</a>
                     </div>
                 </div>

@@ -106,6 +106,16 @@ Route::middleware(['checkUser'])->group(function () {
         Route::put('perusahaanmember/{ktp}/update/{pid}','PerusahaanMemberController@update')->name('updatePerusahaanMember');
         Route::get('perusahaanmember/delete','PerusahaanMemberController@destroy')->name('destroyPerusahaanMember');
 
+    // INVOICE
+        Route::get('invoice','InvoiceController@index')->name('indexInvoice');
+        Route::get('invoice/view','InvoiceController@view')->name('invoiceView');
+        Route::get('invoice/print','InvoiceController@print')->name('invoicePrint');
+
+    // Delivery Order
+        Route::get('do','DeliveryController@index')->name('indexDo');
+        Route::get('do/view','DeliveryController@view')->name('doView');
+        Route::get('do/print','DeliveryController@print')->name('doPrint');
+
     Route::get('ajxmember','MemberController@ajxmember');
     Route::get('logout','HomeController@logout')->name('Logout');
     // ------------------------ HELPER -------------------------------------------------
