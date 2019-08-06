@@ -10,6 +10,7 @@ use App\DemoDevice;
 use App\DemoFinger;
 use App\DemoLog;
 use App\DemoUser;
+use App\Purchase;
 
 class FingerPrintController extends Controller
 {
@@ -101,7 +102,7 @@ class FingerPrintController extends Controller
 
     public function verification(Request $request){
         if (isset($request->user_id) && !empty($request->user_id)) {
-            $time_limit_ver = 10;
+            $time_limit_ver = 50;
 
             $finger = DemoFinger::where('user_id',$request->user_id)->first();
             
@@ -110,18 +111,54 @@ class FingerPrintController extends Controller
         
     }
 
-    public function purchaseApproval(Request $request){
+    public function purchaseApprove(Request $request){
         if (isset($request->user_id) && !empty($request->user_id)) {
-            $time_limit_ver = 10;
+            $time_limit_ver = 50;
 
             $finger = DemoFinger::where('user_id',$request->user_id)->first();
             
-            echo "$request->user_id;".$finger->finger_data.";SecurityKey;".$time_limit_ver.";".route('fingerProcessVerification',['keterangan'=>$request->keterangan]).";".route('fingerGetAc').";extraParams";
+            echo "$request->user_id;".$finger->finger_data.";SecurityKey;".$time_limit_ver.";".route('purchaseApproveProcess',['trx_id'=>$request->trx_id]).";".route('fingerGetAc').";extraParams";
         }
         
     }
 
-    public function purchaseApprovalProcess(Request $request){
+    public function purchaseApproveProcess(Request $request){
+        if (isset($request->VerPas) && !empty($request->VerPas)) {
+            // initialize
+            $data 		= explode(";",$request->VerPas);
+            $user_id	= $data[0];
+            $vStamp 	= $data[1];   
+            $time 		= $data[2];          
+            $sn 		= $data[3];
+
+            // Get Finger Data
+            $finger = DemoFinger::where('user_id',$user_id)->first();
+
+            // Get Device
+            $device = DemoDevice::where('sn',$sn)->first();
+            // Verification
+            $username = DemoUser::where('user_id',$user_id)->first()->user_name;
+
+            $salt = md5($sn.$finger->finger_data.$device->vc.$time.$user_id.$device->vkey);
+            if (strtoupper($vStamp) == strtoupper($salt)) {
+                // Insert to Log
+               $purchase = Purchase::where('id',$request->trx_id)->first();
+               
+               $purchase->approve = 1;
+               $purchase->approve_by = session('user_id');
+               try{
+                    $purchase->update();
+                    echo route('purchase.index');
+                }catch(\Exception $e){
+                    echo redirect()->back()->withErrors($e);
+                }
+               
+            }
+        }
+        
+    }
+
+    public function process_verification(Request $request){
         if (isset($request->VerPas) && !empty($request->VerPas)) {
             // initialize
             $data 		= explode(";",$request->VerPas);

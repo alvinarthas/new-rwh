@@ -24,7 +24,7 @@ Ubah Password
                     <div class="col-12">
                         <div class="p-20">
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Modul ID</label>
+                                <label class="col-2 col-form-label">Password</label>
                                 <div class="col-10">
                                     <input type="password" class="form-control" parsley-trigger="change" required name="password" id="password">
                                 </div>

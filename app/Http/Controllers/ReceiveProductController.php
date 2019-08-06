@@ -1,0 +1,84 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Exceptions\Handler;
+
+use App\Perusahaan;
+use App\ReceiveDet;
+use App\Purchase;
+use App\PurchaseDetail;
+
+class ReceiveProductController extends Controller
+{
+    public function index(){
+        return view('purchase.receive.index');
+    }
+
+    public function ajx(Request $request){
+        if($request->jenis == "all"){
+            $lists = json_decode (json_encode (ReceiveDet::listReceiveAll()), FALSE);
+        }else{
+            $lists = json_decode (json_encode (ReceiveDet::listReceive($request->bulan,$request->tahun)), FALSE);
+        }
+        
+        
+        if ($request->ajax()) {
+            return response()->json(view('purchase.receive.indexreceive',compact('lists'))->render());
+        }
+    }
+
+    public function detail(Request $request){
+        $trx = Purchase::where('id',$request->trx_id)->first();
+        $details = json_decode (json_encode (ReceiveDet::detailPurchase($request->trx_id)), FALSE);
+        $producttrx = PurchaseDetail::where('trx_id',$request->trx_id)->select('prod_id')->get();
+        $receives = ReceiveDet::where('trx_id',$request->trx_id)->get();
+
+        return view('purchase.receive.form',compact('trx','details','producttrx','receives'));
+    }
+
+    public function store(Request $request){
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'trx_id' => 'required',
+            'product' => 'required',
+            'qty' => 'required|integer',
+            'receive_date' => 'required|date',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            $receive = new ReceiveDet(array(
+                'trx_id' => $request->trx_id,
+                'prod_id' => $request->product,
+                'qty' => $request->qty,
+                'expired_date' => $request->expired_date,
+                'creator' => session('user_id'),
+                'receive_date' => $request->receive_date,
+            ));
+
+            try{
+                $receive->save();
+                // JURNAL
+                return redirect()->back()->with('status', 'Data berhasil dibuat');
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors($e);
+            }
+        }
+    }
+
+    public function delete(Request $request){
+        $receive = ReceiveDet::where('id',$request->id)->first();
+
+        try {
+            $receive->delete();
+            return redirect()->back()->with('status', 'Data berhasil dihapus');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors($e);
+        }
+    }
+}

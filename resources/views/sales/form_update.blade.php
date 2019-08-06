@@ -1,5 +1,4 @@
 @extends('layout.main')
-
 @section('css')
     <!-- DataTables -->
     <link href="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
@@ -19,7 +18,7 @@
 @endsection
 
 @section('judul')
-Form Update Purchasing
+Form Update Sales Order
 @endsection
 
 @section('content')
@@ -28,33 +27,28 @@ Form Update Purchasing
         <div class="col-12">
             {{-- Data Supplier --}}
             <div class="card-box table-responsive">
-                <h4 class="m-t-0 header-title">Supplier Data</h4>
+                <h4 class="m-t-0 header-title">Customer Data</h4>
                 <div class="row">
                     <div class="col-12">
                         <div class="p-20">
                             <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                                 <thead>
                                     <th>No</th>
-                                    <th>Supplier Name</th>
-                                    <th>Company Address</th>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Company Name</th>
                                     <th>Company Phone</th>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td>1</td>
-                                        <td>{{$purchase->supplier()->first()->nama}}</td>
-                                        <td>{{$purchase->supplier()->first()->alamat}}</td>
-                                        <td>{{$purchase->supplier()->first()->telp}}</td>
+                                        <td>{{$sales->customer->apname}}</td>
+                                        <td>{{$sales->customer->apphone}}</td>
+                                        <td>{{$sales->customer->cicn}}</td>
+                                        <td>{{$sales->customer->ciphone}}</td>
                                     </tr>
                                 </tbody>
                             </table>
-            
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label">Posting Period</label>
-                                <div class="col-10">
-                                    <input type="text" class="form-control" value="{{date("F", mktime(0, 0, 0, $purchase->month, 10))}} {{$purchase->year}}">
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -71,7 +65,7 @@ Form Update Purchasing
                                     <select class="form-control select2" parsley-trigger="change" name="select_product" id="select_product">
                                         <option value="#" selected>Pilih Product</option>
                                         @foreach ($products as $product)
-                                            <option value="{{$product->prod_id}}">{{$product->prod_id}} - {{$product->name}} - Rp.{{number_format($product->harga_distributor)}} - Rp.{{number_format($product->harga_modal)}}</option>
+                                            <option value="{{$product->prod_id}}">{{$product->prod_id}} - {{$product->prod->name}}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -96,16 +90,14 @@ Form Update Purchasing
                 </div>
             </div>
             {{-- Form Data --}}
-            <form class="form-horizontal" role="form" action="{{ route('purchase.update',['id'=>$purchase->id]) }}" enctype="multipart/form-data" method="POST">
+            <form class="form-horizontal" role="form" action="{{ route('sales.update',['id'=>$sales->id]) }}" enctype="multipart/form-data" method="POST">
                 {{ method_field('PUT') }}
                 @csrf
                 
-                <input type="hidden" name="bulanpost" id="bulanpost" value="{{$purchase->month}}">
-                <input type="hidden" name="tahunpost" id="tahunpost" value="{{$purchase->year}}">
-                <input type="hidden" name="supplierpost" id="supplierpost" value="{{$purchase->supplier}}">
+                <input type="hidden" name="customer" id="customer" value="{{$sales->customer_id}}">
                 <div class="card-box">
                     <div class="row">
-                        <h4 class="m-t-0 header-title">Purchase Order Item Details</h4>
+                        <h4 class="m-t-0 header-title">Sales Order Item Details</h4>
                         <div class="col-12">
                             <div class="p-20">
                                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
@@ -113,27 +105,27 @@ Form Update Purchasing
                                         <th>No</th>
                                         <th>Product ID</th>
                                         <th>Product Name</th>
+                                        <th>Price</th>
                                         <th>Qty</th>
                                         <th>Unit</th>
-                                        <th>Harga Distributor</th>
-                                        <th>Harga Modal</th>
-                                        <th>Sub Total Distributor</th>
-                                        <th>Sub Total Modal</th>
+                                        <th>Sub Total Price</th>
+                                        <th>BV/ Unit</th>
+                                        <th>Sub Total BV</th>
                                         <th>Option</th>
                                     </thead>
-                                    <tbody id="purchase-list-body">
+                                    <tbody id="sales-list-body">
                                         @php($i=1)
-                                        @foreach ($details as $detail)
+                                        @foreach ($salesdet as $detail)
                                             <tr style="width:100%" id="trow{{$i}}">
                                                 <td>{{$i}}</td>
                                                 <td>{{$detail->prod_id}}</td>
                                                 <td>{{$detail->product->name}}</td>
+                                                <td>Rp. {{number_format($detail->price)}}</td>
                                                 <td>{{$detail->qty}}</td>
                                                 <td>{{$detail->unit}}</td>
-                                                <td>Rp. {{number_format($detail->price_dist)}}</td>
-                                                <td>Rp. {{number_format($detail->price)}}</td>
-                                                <td><input type="hidden" value="{{$detail->price_dist*$detail->qty}}" id="sub_ttl_dist{{$i}}">Rp. {{number_format($detail->price_dist*$detail->qty)}}</td>
-                                                <td><input type="hidden" value="{{$detail->price*$detail->qty}}" id="sub_ttl_mod{{$i}}">Rp. {{number_format($detail->price*$detail->qty)}}</td>
+                                                <td><input type="hidden" value="{{$detail->sub_ttl}}" id="sub_ttl{{$i}}">Rp. {{number_format($detail->sub_ttl)}}</td>
+                                                <td>Rp. {{number_format($detail->pv)}}</td>
+                                                <td>Rp. {{number_format($detail->sub_ttl_bv)}}</td>
                                                 <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem({{$i}},{{$detail->id}})">Delete</a></td>
                                             </tr>
                                         @php($i++)
@@ -145,51 +137,46 @@ Form Update Purchasing
                         </div>
                     </div>
                     <div class="row">
-                        <h4 class="m-t-0 header-title">Purchase Order Date and Notes</h4>
+                        <h4 class="m-t-0 header-title">Sales Order Date</h4>
                         <div class="col-12">
                             <div class="p-20">
                                 <div class="form-group row">
-                                    <label class="col-2 col-form-label">Total Harga Distributor</label>
+                                    <label class="col-2 col-form-label">Total Transaksi</label>
                                     <div class="col-10">
-                                        <input type="number" class="form-control" name="ttl_harga_distributor" id="ttl_harga_distributor" parsley-trigger="change" value="{{$ttl_harga_dist}}" readonly>
+                                        <input type="number" class="form-control" name="ttl_trx" id="ttl_trx" parsley-trigger="change" value="{{$sales->ttl_harga+$sales->ongkir}}" readonly>
+                                        <input type="hidden" class="form-control" name="raw_ttl_trx" id="raw_ttl_trx" parsley-trigger="change" value="{{$sales->ttl_harga}}">
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-2 col-form-label">Total Harga Modal</label>
+                                    <label class="col-2 col-form-label">Ongkos Kirim</label>
                                     <div class="col-10">
-                                        <input type="text" class="form-control" name="ttl_harga_modal" id="ttl_harga_modal" parsley-trigger="change" value="{{$ttl_harga_modal}}" readonly>
+                                        <input type="number" class="form-control" name="ongkir" id="ongkir" parsley-trigger="change" value="{{$sales->ongkir}}">
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-2 col-form-label">PO Date</label>
+                                    <label class="col-2 col-form-label">Transaction Date</label>
                                     <div class="col-10">
                                         <div class="input-group">
-                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="po_date" id="po_date" value="{{$purchase->tgl}}"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="trx_date" id="trx_date"  data-date-format='yyyy-mm-dd' autocomplete="off" value="{{$sales->trx_date}}">
                                             <div class="input-group-append">
                                                 <span class="input-group-text"><i class="ti-calendar"></i></span>
                                             </div>
                                         </div><!-- input-group -->
                                     </div>
                                 </div>
-                                <div class="form-group row">
-                                    <label class="col-2 col-form-label">Notes</label>
-                                    <div class="col-10">
-                                        <input type="text" class="form-control" name="notes" id="notes" parsley-trigger="change">
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="form-group text-right m-b-0">
-                        @if ($purchase->approve == 0)
+                        @if ($sales->approve == 0)
                         <?php
-                            $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id]));
+                            $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sales->id]));
                         ?>
-                            <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase</a>
+                            <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales</a>
                         @else
-                            <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Purchase sudah di approve</a>
+                            <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Sales sudah di approve</a>
                         @endif
-                        <button class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Simpan Purchase Order</a>
+                        <button class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Simpan Sales Order</a>
                     </div>
                 </div>
             </form>
@@ -219,62 +206,100 @@ Form Update Purchasing
 $(".select2").select2();
 
 // Date Picker
-jQuery('#po_date').datepicker();
+jQuery('#trx_date').datepicker();
 
 function addItem(){
-    bulanpost = $('#bulanpost').val();
-    tahunpost = $('#tahunpost').val();
-    select_product = $('#select_product').val();
+    customer = $('#customer').val();
     qty = $('#qty').val();
     unit = $('#unit').val();
     count = $('#count').val();
+    select_product = $('#select_product').val();
 
     $.ajax({
-        url : "{{route('addPurchase')}}",
+        url : "{{route('addSales')}}",
         type : "get",
         dataType: 'json',
         data:{
             select_product: select_product,
-            bulan: bulanpost,
-            tahun: tahunpost,
+            customer: customer,
             qty: qty,
             unit: unit,
             count:count,
         },
     }).done(function (data) {
-        $('#purchase-list-body').append(data.append);
+        $('#sales-list-body').append(data.append);
         $('#count').val(data.count);
         resetall();
-        changeTotalHarga(data.sub_ttl_mod, data.sub_ttl_dist);
+        changeTotalHarga(data.sub_ttl_price);
     }).fail(function (msg) {
         alert('Gagal menampilkan data, silahkan refresh halaman.');
     });
 }
 
-function changeTotalHarga(sub_ttl_mod,sub_ttl_dist){
-    ttl_harga_distributor = parseInt($('#ttl_harga_distributor').val());
-    ttl_harga_modal = parseInt($('#ttl_harga_modal').val());
-    new_total_dist = ttl_harga_distributor+sub_ttl_dist;
-    new_total_modal = ttl_harga_modal+sub_ttl_mod;
-    $('#ttl_harga_distributor').val(new_total_dist);
-    $('#ttl_harga_modal').val(new_total_modal);
+function changeTotalHarga(sub_ttl_price){
+    raw_ttl_trx = parseInt($('#raw_ttl_trx').val());
+    input = parseInt($('#ongkir').val(),10);
+
+    $('#raw_ttl_trx').val(raw_ttl_trx+sub_ttl_price)
+    new_ttl_trx = raw_ttl_trx+sub_ttl_price+input;
+    $('#ttl_trx').val(new_ttl_trx);
 }
 
 function decreaseTotalHarga(id){
-    ttl_harga_distributor = parseInt($('#ttl_harga_distributor').val());
-    ttl_harga_modal = parseInt($('#ttl_harga_modal').val());
-    sub_ttl_dist = $('#sub_ttl_dist'+id).val();
-    sub_ttl_mod = $('#sub_ttl_mod'+id).val();
-    new_total_dist = ttl_harga_distributor-sub_ttl_dist;
-    new_total_modal = ttl_harga_modal-sub_ttl_mod;
-    $('#ttl_harga_distributor').val(new_total_dist);
-    $('#ttl_harga_modal').val(new_total_modal);
+    raw_ttl_trx = parseInt($('#raw_ttl_trx').val());
+    input = parseInt($('#ongkir').val(),10);
+    sub_ttl_price = $('#sub_ttl_price'+id).val();
+
+    $('#raw_ttl_trx').val(raw_ttl_trx-sub_ttl_price)
+    new_ttl_trx = (raw_ttl_trx-sub_ttl_price)+input;
+    $('#ttl_trx').val(new_ttl_trx);
 }
 
 function resetall(){
     $('#select_product').val("#").change();
     $('#qty').val("");
     $('#unit').val("");
+}
+
+function deleteItem(id){
+    count = parseInt($('#count').val()) - 1;
+    decreaseTotalHarga(id);
+    $('#trow'+id).remove();
+    $('#count').val(count);
+}
+
+//setup before functions
+input = document.getElementById("ongkir")
+input.addEventListener("mousewheel", function(event){ this.blur() })
+
+var typingTimer;                //timer identifier
+var doneTypingInterval = 100;  //time in ms, 5 second for example
+var $input = $('#ongkir');
+
+//on keyup, start the countdown
+$input.on('keyup', function () {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(ongkosKirim, doneTypingInterval);
+});
+
+//on keydown, clear the countdown 
+$input.on('keydown', function () {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(ongkosKirim, doneTypingInterval);
+});
+
+function ongkosKirim() {
+    input = $('#ongkir').val();
+    if(input == NaN || input == null || input == ""){
+        $('#ongkir').val(0);
+        input = parseInt($('#ongkir').val());
+    }else{
+        input = parseInt($('#ongkir').val(),10);
+    }
+    $('#ongkir').val(input);
+    raw_ttl_trx = parseInt($('#raw_ttl_trx').val());
+    result = raw_ttl_trx+input;
+    $('#ttl_trx').val(result);
 }
 
 function deleteItem(id,purdet){
@@ -290,7 +315,7 @@ function deleteItem(id,purdet){
         buttonsStyling: false
     }).then(function () {
         $.ajax({
-            url : "{{route('destroyPurchaseDetail')}}",
+            url : "{{route('destroySalesDetail')}}",
             type : "get",
             dataType: 'json',
             data:{

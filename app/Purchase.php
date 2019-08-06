@@ -8,7 +8,7 @@ class Purchase extends Model
 {
     protected $table ='tblpotrx';
     protected $fillable = [
-        'month','year','creator','supplier','notes','id_jurnal','tgl','approve'
+        'month','year','creator','supplier','notes','id_jurnal','tgl','approve','approve_by'
     ];
 
     public function supplier(){

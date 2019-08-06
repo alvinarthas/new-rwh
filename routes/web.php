@@ -45,6 +45,14 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/manageproduct','ProductController@manage')->name('manageproduct');
     Route::get('/showProdAjx','ProductController@showProdAjx')->name('showProdAjx');
 
+    // Receive Product
+    Route::get('receiveproduct','ReceiveProductController@index')->name('receiveProd');
+    Route::get('receiveproduct/ajx','ReceiveProductController@ajx')->name('receiveProdAjx');
+    Route::get('receiveproduct/detail','ReceiveProductController@detail')->name('receiveProdDet');
+    Route::post('receiveproduct/store','ReceiveProductController@store')->name('receiveProdStr');
+    Route::get('receiveproduct/delete','ReceiveProductController@delete')->name('receiveProdDel');
+    
+    // Resources 
     Route::get('/showBonus', 'BonusController@showBonusPerhitungan')->name('showBonusPerhitungan');
     Route::get('/createBonus', 'BonusController@createBonusPerhitungan')->name('createBonusPerhitungan');
     Route::post('/uploadBonus', 'BonusController@uploadBonusPerhitungan')->name('uploadBonusPerhitungan');
@@ -97,6 +105,8 @@ Route::middleware(['checkUser'])->group(function () {
         'manageharga' => 'ManageHargaController',
         // Purchasing
         'purchase' => 'PurchaseController',
+        // Sales
+        'sales' => 'SalesController',
         // Bonus
         'bonus' => 'BonusController',
     ]);
@@ -107,6 +117,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('/bankmember/edit','BankMemberController@edit')->name('editBankMember');
         Route::put('/bankmember/{ktp}/update/{bid}','BankMemberController@update')->name('updateBankMember');
         Route::get('/bankmember/delete','BankMemberController@destroy')->name('destroyBankMember');
+
     // Perusahaan Member
         Route::get('perusahaanmember','PerusahaanMemberController@create')->name('createPerusahaanMember');
         Route::post('perusahaanmember/{ktp}','PerusahaanMemberController@store')->name('storePerusahaanMember');
@@ -114,15 +125,32 @@ Route::middleware(['checkUser'])->group(function () {
         Route::put('perusahaanmember/{ktp}/update/{pid}','PerusahaanMemberController@update')->name('updatePerusahaanMember');
         Route::get('perusahaanmember/delete','PerusahaanMemberController@destroy')->name('destroyPerusahaanMember');
 
+    // INVOICE
+        Route::get('invoice','InvoiceController@index')->name('indexInvoice');
+        Route::get('invoice/view','InvoiceController@view')->name('invoiceView');
+        Route::get('invoice/print','InvoiceController@print')->name('invoicePrint');
+
+    // Delivery Order
+        Route::get('do','DeliveryController@index')->name('indexDo');
+        Route::get('do/view','DeliveryController@view')->name('doView');
+        Route::get('do/print','DeliveryController@print')->name('doPrint');
+
     Route::get('ajxmember','MemberController@ajxmember');
     Route::get('logout','HomeController@logout')->name('Logout');
     // ------------------------ HELPER -------------------------------------------------
     Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
+
     // purchase helper
     Route::get('/showpurchase','PurchaseController@showPurchase')->name('showPurchase');
     Route::get('/addpurchase','PurchaseController@addPurchase')->name('addPurchase');
     Route::get('/showindexpurchase','PurchaseController@showIndexPurchase')->name('showIndexPurchase');
     Route::get('/destroydetailpurchase','PurchaseController@destroyPurchaseDetail')->name('destroyPurchaseDetail');
+
+    // sales helper
+    Route::get('/showsales','SalesController@showSales')->name('showSales');
+    Route::get('/addsales','SalesController@addSales')->name('addSales');
+    Route::get('/showindexsales','SalesController@showIndexSales')->name('showIndexSales');
+    Route::get('/destroydetailsales','SalesController@destroySalesDetail')->name('destroySalesDetail');
 
 });
 
@@ -133,8 +161,12 @@ Route::get('/finger/getac','FingerPrintController@get_ac')->name('fingerGetAc');
 Route::get('/finger/message','FingerPrintController@message')->name('fingerMessage');
 Route::get('/finger/checkreg','FingerPrintController@checkreg')->name('fingerCheckReg');
 Route::get('/finger/verifikasi','FingerPrintController@verification')->name('fingerVerifikasi');
-Route::get('/finger/purchaseapprove','FingerPrintController@purchaseApprove')->name('purchaseApprove');
-Route::post('/finger/purchaseapproveprocess','FingerPrintController@purchaseApproveProcess')->name('purchaseApproveProcess');
 Route::post('/finger/processverifikasi','FingerPrintController@process_verification')->name('fingerProcessVerification');
 Route::get('/finger/ajxlog','FingerPrintController@ajxlog')->name('fingerAjxLog');
 Route::get('/finger/ajxfulllog','FingerPrintController@ajxfulllog')->name('fingerAjxFullLog');
+// Purchase Approve
+Route::get('/finger/purchaseapprove','FingerPrintController@purchaseApprove')->name('purchaseApprove');
+Route::post('/finger/purchaseapproveprocess','FingerPrintController@purchaseApproveProcess')->name('purchaseApproveProcess');
+// Sales Approve
+Route::get('/finger/salesapprove','FingerPrintController@salesApprove')->name('salesApprove');
+Route::post('/finger/salesapproveprocess','FingerPrintController@salesApproveProcess')->name('salesApproveProcess');

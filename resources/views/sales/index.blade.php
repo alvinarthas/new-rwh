@@ -8,17 +8,17 @@
     <link href="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Multi Item Selection examples -->
     <link href="{{ asset('assets/plugins/datatables/select.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
-    {{-- Select2 --}}
-    <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Sweet Alert css -->
     <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
+    {{-- Date Picker --}}
+    <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
     {{-- Fingerprint --}}
     <link href="{{ asset('assets/fingerprint/ajaxmask.css') }}" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('judul')
-Index Purchasing
+Index Sales Order
 @endsection
 
 @section('content')
@@ -30,35 +30,38 @@ Index Purchasing
                         <div class="col-12">
                             <div class="p-20">
                                 <div class="form-group row">
-                                    <label class="col-2 col-form-label">Posting Period</label>
-                                    <div class="col-5">
-                                        <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" required>
-                                            <option value="#" selected disabled>Pilih Bulan</option>
-                                            @for ($i = 1; $i <= 12; $i++)
-                                                <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
-                                            @endfor
-                                        </select>
+                                    <label class="col-2 col-form-label">Start Date</label>
+                                    <div class="col-10">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="trx_start" id="trx_start"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                            </div>
+                                        </div><!-- input-group -->
                                     </div>
-                                    <div class="col-5">
-                                        <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" required>
-                                            <option value="#" selected disabled>Pilih Tahun</option>
-                                            @for ($i = 2018; $i <= date('Y'); $i++)
-                                                <option value="{{$i}}">{{$i}}</option>
-                                            @endfor
-                                        </select>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-2 col-form-label">End Date</label>
+                                    <div class="col-10">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="trx_end" id="trx_end"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                            </div>
+                                        </div><!-- input-group -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="form-group text-left m-b-0">
-                        <a href="{{route('purchase.create')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add Purchase</a>
-                        <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase()">Show Data</a>
+                        <a href="{{route('sales.create')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add Sales</a>
+                        <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="chooseSales()">Show Data</a>
                     </div>
                 </div>
 
-                <div id="purchase-list" style="display:none">
-                    <section id="showpurchase">
+                <div id="sales-list" style="display:none">
+                    <section id="showsales">
                     </section>
                 </div>
             </div>
@@ -67,8 +70,8 @@ Index Purchasing
 @endsection
 
 @section('js')
-{{-- Select2 --}}
-<script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
+{{-- Date Picker --}}
+<script src="{{ asset('assets/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
 <!-- Sweet Alert Js  -->
 <script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
 <script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
@@ -88,24 +91,25 @@ Index Purchasing
 
 @section('script-js')
 <script>
-    // Select2
-    $(".select2").select2();
+    // Date Picker
+    jQuery('#trx_start').datepicker();
+    jQuery('#trx_end').datepicker();
 
-    function choosePurchase(){
-        bulan = $('#bulan').val();
-        tahun = $('#tahun').val();
+    function chooseSales(){
+        start = $('#trx_start').val();
+        end = $('#trx_end').val();
 
         $.ajax({
-            url : "{{route('showIndexPurchase')}}",
+            url : "{{route('showIndexSales')}}",
             type : "get",
             dataType: 'json',
             data:{
-                bulan: bulan,
-                tahun: tahun,
+                start: start,
+                end: end,
             },
         }).done(function (data) {
-            document.getElementById("purchase-list").style.display = 'block';
-            $('#showpurchase').html(data);
+            document.getElementById("sales-list").style.display = 'block';
+            $('#showsales').html(data);
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });

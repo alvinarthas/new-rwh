@@ -3,14 +3,29 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 
 use App\User;
 use App\BankMember;
 use App\Product;
-use App\ManageHarga2;
+use App\PriceDet;
 
 class TestController extends Controller
 {
+    public function index(){
+        echo $test = Hash::make("canik123");
+        // foreach(PriceDet::groupBy('prod_id')->distinct()->get() as $key){
+        //     $product = Product::where('prod_id',$key->prod_id)->first();
+        //     if($product){
+        //         echo $key->prod_id." ADA <br>";
+        //     }else{
+        //         PriceDet::where('prod_id',$key->prod_id)->delete();
+        //         echo $key->prod_id." Ga Ada <br>";
+        //     }
+        // }
+    }
+
     public function index5(){
         $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/atm';
         if (is_dir($dir)){
@@ -117,15 +132,22 @@ class TestController extends Controller
         
     }
 
-    public function index(){
-        foreach(ManageHarga2::groupBy('prod_id')->distinct()->get() as $key){
-            $product = Product::where('prod_id',$key->prod_id)->first();
-            if($product){
-                echo $key->prod_id." ADA <br>";
-            }else{
-                ManageHarga2::where('prod_id',$key->prod_id)->delete();
-                echo $key->prod_id." Ga Ada <br>";
-            }
-        }
+    public function indexaa(){
+        // foreach(ManageHarga2::groupBy('prod_id')->distinct()->get() as $key){
+        //     $product = Product::where('prod_id',$key->prod_id)->first();
+        //     if($product){
+        //         echo $key->prod_id." ADA <br>";
+        //     }else{
+        //         ManageHarga2::where('prod_id',$key->prod_id)->delete();
+        //         echo $key->prod_id." Ga Ada <br>";
+        //     }
+        // }
+        $encrypted = Crypt::encryptString('Belajar Laravel Di malasngoding.com');
+		$decrypted = Crypt::decryptString('$2y$10$Rchoh5O7de3roYe84yGfweyAQFkMHm3SYrevYfBk/oBXzV7A4P4p2');
+ 
+		echo "Hasil Enkripsi : " . $encrypted;
+		echo "<br/>";
+		echo "<br/>";
+		echo "Hasil Dekripsi : " . $decrypted;
     }
 }   
