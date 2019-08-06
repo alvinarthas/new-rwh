@@ -30,7 +30,7 @@ class MemberController extends Controller
         $keyword = $request->get('search');
         $perusahaan = Perusahaan::orderBy('nama')->get();
         $bank = Bank::bankMember();
-        return view('member.index',compact('keyword','perusahaan','bank','page'));
+        return view('member.index',compact('keyword','perusahaan','bank'));
     }
 
     public function ajxmember(Request $request){
@@ -100,10 +100,10 @@ class MemberController extends Controller
                 $member_id=substr($last_member->member_id,12);
                 $member_id=intval($member_id);
                 $member_id=$member_id+2;
-                
+
                 $leng = strlen($member_id);
-                
-                switch ($leng) 
+
+                switch ($leng)
                 {
                     case 4:
                     $member_id="RWHMB".$month.$year."000".$member_id;
@@ -121,7 +121,7 @@ class MemberController extends Controller
             }else{
                 $member_id="RWHMB".$month.$year."0001001";
             }
-            
+
 
             // Upload KTP
             $scanktp = "noimage.jpg";

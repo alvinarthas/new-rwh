@@ -50,9 +50,28 @@ Route::middleware(['checkUser'])->group(function () {
     Route::post('/uploadBonus', 'BonusController@uploadBonusPerhitungan')->name('uploadBonusPerhitungan');
 
     Route::get('/bonus/bayar','BonusController@indexBayar')->name('bonus.bayar');
-    Route::post('/bonus/bayar','BonusController@storeBayar')->name('bonus.storeBayar');
+    Route::get('/bonus/bayar/create','BonusController@createBayar')->name('bonus.createbayar');
+    Route::post('/bonus/bayar/create','BonusController@storeBayar')->name('bonus.storeBayar');
+    Route::get('/showBonusPembayaran', 'BonusController@showBonusPembayaran')->name('showBonusPembayaran');
     Route::get('/createBonusPembayaran', 'BonusController@createBonusPembayaran')->name('createBonusPembayaran');
     Route::post('/uploadBonusPembayaran', 'BonusController@uploadBonusPembayaran')->name('uploadBonusPembayaran');
+    Route::post('/ajxaddrowpembayaran', 'BonusController@ajxAddRowPembayaran')->name('ajxAddRowPembayaran');
+
+    Route::get('/bonus/topup','BonusController@indexTopup')->name('bonus.topup');
+    Route::get('/bonus/topup/create','BonusController@createTopup')->name('bonus.createtopup');
+    Route::post('/bonus/topup/create','BonusController@storeTopup')->name('bonus.storetopup');
+    Route::get('/showBonusTopup', 'BonusController@showBonusTopup')->name('showBonusTopup');
+    Route::get('/createBonusTopup', 'BonusController@createBonusTopup')->name('createBonusTopup');
+    Route::post('/ajxaddrowtopup', 'BonusController@ajxAddRowTopup')->name('ajxAddRowTopup');
+
+    Route::get('/bonus/laporan','BonusController@indexLaporan')->name('bonus.laporan');
+    Route::get('/showBonusLaporan', 'BonusController@showLaporanBonus')->name('showLaporanBonus');
+
+    Route::get('/bonus/bonusgagal','BonusController@indexBonusGagal')->name('bonus.bonusgagal');
+    Route::get('/showBonusLaporanGagal', 'BonusController@showLaporanBonusGagal')->name('showLaporanBonusGagal');
+
+    Route::get('/ajxbonusorder', 'BonusController@ajxBonusOrder')->name('ajxBonusOrder');
+
 
     // Resources
     Route::resources([

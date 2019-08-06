@@ -13,7 +13,4 @@ class Perusahaan extends Model
 
     public $timestamps = false;
 
-    public function rolemapping(){
-        return $this->belongsTo('App\RoleMapping','username','username');
-    }
 }

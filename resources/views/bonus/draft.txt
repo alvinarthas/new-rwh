@@ -51,3 +51,130 @@ if($num==0){
                 // die();
                 // $data->update();
             }
+
+
+                            @foreach($bankmember as $bm)
+                                <tr>
+                                    <td><input type='checkbox' name="count[]" id="count[]" value="{{ $i }}"></td>
+                                    <td>{{$i}}</td>
+                                    <td>{{$bm->namabank}}</td>
+                                    <td>{{$bm->norek}}</td>
+                                    <td>{{$bm->nama}}</td>
+                                    @php
+                                        $data_bonus = $bonus->where('member_id', $bm->norek)->first();
+                                    @endphp
+                                    <td>
+                                        <input class="form-control number" value="{{ number_format($data_bonus['bonus'],0) }}" type="text" name="bonus{{ $i }}">
+                                        <input type="hidden" name="id_member{{ $i }}" value="{{ $bm->noid }}">
+                                        <input type="hidden" name="bulan2" value="{{ $bulan }}">
+                                        <input type="hidden" name="tahun2" value="{{ $tahun }}">
+                                    </td>
+                                </tr>
+                                @php
+                                    $i++;
+                                    $total_bonus = $total_bonus + $data_bonus['bonus'];
+                                @endphp
+                            @endforeach
+
+$(function(){
+        $('.select2').select2({
+            minimumInputLength: 3,
+            allowClear: true,
+            placeholder: 'masukkan nomor rekening',
+            ajax: {
+                dataType: 'json',
+                url: "{{ route('ajxBonusOrder')}}",
+                delay: 800,
+                data: function(params) {
+                    return {
+                    search: params.term
+                    }
+                },
+                processResults: function (data, page) {
+                    return {
+                        results: data
+                    };
+                },
+            }
+        }).on('select2:select', function (evt) {
+            var data = $(".select2 option:selected").text();
+            alert("Data yang dipilih adalah "+data);
+        });
+    });
+
+                                ----------------------------------------------------------
+                                @php
+                                    $no = 1;
+                                    $totalp = 0;
+                                    $prm = PerusahaanMember::where('ktp',$m->ktp)->get();
+                                @endphp
+                                @foreach($prm as $p)
+                                    @php
+                                        $namaperusahaan = Perusahaan::where('id', $p->perusahaan_id)->first()->nama;
+                                        $data_bonus = $bonus->where('member_id', $p->noid)->sum('bonus');
+                                    @endphp
+                                        {{ $no.". ".$namaperusahaan." ".$p->noid."<br><b>Bonus :".$data_bonus."</b><br>" }}
+                                    @php
+                                        $no++;
+                                        $totalp = $totalp + $data_bonus;
+                                    @endphp
+                                @endforeach
+                                @php
+                                    $total_perhitungan = $total_perhitungan + $totalp;
+                                @endphp
+                                {{ "<br><b>Total : ".$total_perhitungan."</b>" }}
+                                -------------------------------------------------------
+
+
+                                @php
+                                    $bm = BankMember::where('ktp',$m->ktp)->get();
+                                    $no = 1;
+                                    $totalr = 0;
+                                @endphp
+                                @foreach ($bm as $b)
+                                    @php
+                                        $bb = $bonusbayar->where('no_rek',$b->norek);
+                                        $d_bonus = $bb->sum('bonus');
+                                        // $d_tgl = $bb->first()->tgl;
+                                        $bank = Bank::where('id',$b->bank_id)->first()->nama;
+                                    @endphp
+                                    {{ $no.". ".$bank." ".$b->norek."<br><b>Bonus :".$d_bonus."</b><br>Tgl :" }}
+                                    @php
+                                        $no++;
+                                        $totalr = $totalr + $d_bonus;
+                                    @endphp
+                                @endforeach
+                                @php
+                                    $total_realisasi = $total_realisasi + $totalr;
+                                    $selisih = $total_perhitungan - $total_realisasi;
+                                @endphp
+                                {{ "<br><b>Total : ".$total_realisasi."</b>" }}
+
+                                ----------------------------------------------
+
+                                @if($selisih != 0)
+                                    <td class="table-danger">
+                                @else
+                                    <td class="table-success">
+                                @endif
+                                    {{ $selisih }}
+
+                                @foreach ($bm as $b)
+                                            @php
+                                                $bb = $bonusbayar->where('no_rek',$b->norek)->select('tgl')->first();
+                                                $d_bonus = $bonusbayar->where('no_rek',$b->norek)->sum('bonus');
+                                                $d_tgl = $bb['tgl'];
+                                                $bank = Bank::where('id',$b->bank_id)->first()->nama;
+                                                {{ $no }}. {{ $bank }} {{ $b->norek }}<br><b>Bonus : {{ $d_bonus }}</b><br>Tgl : {{ $d_tgl }}<br>
+                                            @endphp
+                                            @php
+                                                $no++;
+                                                $totalr = $totalr + $d_bonus;
+                                            @endphp
+                                        @endforeach
+                                        @php
+                                            $total_realisasi = $total_realisasi + $totalr;
+                                            $selisih = $total_perhitungan - $total_realisasi;
+                                        @endphp
+
+
