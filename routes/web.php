@@ -130,6 +130,19 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('invoice/view','InvoiceController@view')->name('invoiceView');
         Route::get('invoice/print','InvoiceController@print')->name('invoicePrint');
 
+    // PAYMENT
+        // Sales
+        Route::get('salespayment','PaymentController@salesIndex')->name('salesIndex');
+        Route::get('salespayment/view','PaymentController@salesView')->name('salesView');
+        Route::get('salespayment/{id}/create','PaymentController@salesCreate')->name('salesCreate');
+        Route::get('salespayment/store','PaymentController@salesStore')->name('salesStore');
+        // Purchase
+        Route::get('purchasepayment','PaymentController@purchaseIndex')->name('purchaseIndex');
+        Route::get('purchasepayment/view','PaymentController@purchaseView')->name('purchaseView');
+        Route::get('purchasepayment/{id}/create','PaymentController@purchaseCreate')->name('purchaseCreate');
+        Route::get('purchasepayment/store','PaymentController@purchaseStore')->name('purchaseStore');
+
+
     // Delivery Order
         Route::get('do','DeliveryController@index')->name('indexDo');
         Route::get('do/view','DeliveryController@view')->name('doView');

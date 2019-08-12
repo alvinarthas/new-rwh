@@ -1,0 +1,70 @@
+<div class="card-box table-responsive">
+    <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+        <thead>
+            <th>No</th>
+            <th>Transaction ID</th>
+            <th>Transaction Date</th>
+            <th>Customer</th>
+            <th>Ongkir</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Option</th>
+        </thead>
+        <tbody>
+            @csrf
+            @php($i=1)
+            @foreach ($sales['data'] as $sale)
+                <tr>
+                    <td>{{$i}}</td>
+                    <td>SO.{{$sale->id}}</td>
+                    <td>{{$sale->trx_date}}</td>
+                    <td>{{$sale->customer->apname}}</td>
+                    <td>{{$sale->ongkir}}</td>
+                    <td>Rp. {{number_format($sale->ttl_harga+$sale->ongkir)}}</td>
+                    <td>{{$sale->status}}</td>
+                    <td>
+                        <a href="javascript:;" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" ><i class="fa fa-file-pdf-o"></i>Detail Payment</a>
+                    </td>
+                </tr>
+            @php($i++)
+            @endforeach
+        </tbody>
+    </table>
+</div>
+
+<div class="card-box">
+    <h4 class="m-t-0 header-title">Transaksi Summary</h4>
+    <div class="col-12">
+        <div class="p-20">
+            <div class="form-group row">
+                <label class="col-2 col-form-label">Total Transaction</label>
+                <div class="col-10">
+                    <input type="text" class="form-control" parsley-trigger="change" value="{{$sales['ttl_trx']}}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-2 col-form-label">Total Sales Order</label>
+                <div class="col-10">
+                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($sales['ttl_sales'])}}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-2 col-form-label">Total Payment</label>
+                <div class="col-10">
+                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($sales['ttl_payment'])}}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-2 col-form-label">Remaining Payment</label>
+                <div class="col-10">
+                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($sales['ttl_sales']-$sales['ttl_payment'])}}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Responsive Datatable
+$('#responsive-datatable').DataTable();
+</script>
