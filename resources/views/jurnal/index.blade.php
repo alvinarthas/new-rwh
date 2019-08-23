@@ -10,10 +10,13 @@
     <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
     {{-- Date Picker --}}
     <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
+    <!-- Sweet Alert css -->
+    <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('judul')
-Index Sales Payment
+Index Jurnal Report
 @endsection
 
 @section('content')
@@ -21,14 +24,17 @@ Index Sales Payment
         <div class="row">
             <div class="col-12">
                 <div class="card-box">
-                    <h4 class="m-t-0 header-title">Choose Transaction Date</h4>
+                    <h4 class="m-t-0 header-title">Choose Jurnal Date</h4>
+                    <p class="text-muted font-14 m-b-30">
+                        <a href="{{ route('jurnal.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Jurnal</a>
+                    </p>
                     <div class="col-12">
                         <div class="p-20">
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Start Date</label>
                                 <div class="col-10">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start_trx" id="start_trx"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start_date" id="start_date"  data-date-format='yyyy-mm-dd' autocomplete="off">
                                         <div class="input-group-append">
                                             <span class="input-group-text"><i class="ti-calendar"></i></span>
                                         </div>
@@ -39,7 +45,7 @@ Index Sales Payment
                                 <label class="col-2 col-form-label">End Date</label>
                                 <div class="col-10">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="end_trx" id="end_trx"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="end_date" id="end_date"  data-date-format='yyyy-mm-dd' autocomplete="off">
                                         <div class="input-group-append">
                                             <span class="input-group-text"><i class="ti-calendar"></i></span>
                                         </div>
@@ -49,45 +55,28 @@ Index Sales Payment
                         </div>
                     </div>
 
-                    <h4 class="m-t-0 header-title">Choose Payment Date</h4>
+                    <h4 class="m-t-0 header-title">Choose Chart of Account</h4>
                     <div class="col-12">
                         <div class="p-20">
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Start Date</label>
+                                <label class="col-2 col-form-label">Pilih COA</label>
                                 <div class="col-10">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start_pay" id="start_pay"  data-date-format='yyyy-mm-dd' autocomplete="off">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class="ti-calendar"></i></span>
-                                        </div>
-                                    </div><!-- input-group -->
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label">End Date</label>
-                                <div class="col-10">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="end_pay" id="end_pay"  data-date-format='yyyy-mm-dd' autocomplete="off">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class="ti-calendar"></i></span>
-                                        </div>
-                                    </div><!-- input-group -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h4 class="m-t-0 header-title">Choose Customer</h4>
-                    <div class="col-12">
-                        <div class="p-20">
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label">Pilih Customer</label>
-                                <div class="col-10">
-                                    <select class="form-control select2" parsley-trigger="change" name="customer" id="customer">
-                                        <option value="all" selected>All</option>
-                                        @foreach ($customers as $customer)
-                                            <option value="{{$customer->id}}">{{$customer->apname}}</option>
+                                    <select class="form-control select2" parsley-trigger="change" name="coa" id="coa" required>
+                                        <option value="#" disabled>Pilih Method</option>
+                                        <option value="all">All Coa</option>
+                                        @foreach ($coas as $coa)
+                                            <option value="{{$coa->AccNo}}">{{$coa->AccName}}</option>
                                         @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Position</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="position" id="position" required>
+                                        <option value="all">Debit &amp; Credit</option>
+                                        <option value="Debet">Debet</option>
+                                        <option value="Credit">Credit</option>
                                     </select>
                                 </div>
                             </div>
@@ -99,8 +88,8 @@ Index Sales Payment
                     </div>
                 </div>
 
-                <div id="sales-list" style="display:none">
-                    <section id="showsales">
+                <div id="jurnal-list" style="display:none">
+                    <section id="showjurnal">
                     </section>
                 </div>
             </div>
@@ -122,24 +111,20 @@ Index Sales Payment
 <!-- Responsive examples -->
 <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
+
+<!-- Sweet Alert Js  -->
+<script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
+<script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
 @endsection
 
 @section('script-js')
 <script>
     // Date Picker
-    jQuery('#end_pay').datepicker({
+    jQuery('#start_date').datepicker({
         todayHighlight: true,
         autoclose: true
     });
-    jQuery('#start_pay').datepicker({
-        todayHighlight: true,
-        autoclose: true
-    });
-    jQuery('#start_trx').datepicker({
-        todayHighlight: true,
-        autoclose: true
-    });
-    jQuery('#end_trx').datepicker({
+    jQuery('#end_date').datepicker({
         todayHighlight: true,
         autoclose: true
     });
@@ -147,26 +132,24 @@ Index Sales Payment
     $(".select2").select2();
 
     function showData(){
-        start_trx = $('#start_trx').val();
-        end_trx = $('#end_trx').val();
-        start_pay = $('#start_pay').val();
-        end_pay = $('#end_pay').val();
-        customer = $('#customer').val();
+        start_date = $('#start_date').val();
+        end_date = $('#end_date').val();
+        coa = $('#coa').val();
+        position = $('#position').val();
 
         $.ajax({
-            url : "{{route('salesView')}}",
+            url : "{{route('jurnal.index')}}",
             type : "get",
             dataType: 'json',
             data:{
-                start_trx: start_trx,
-                end_trx: end_trx,
-                start_pay: start_pay,
-                end_pay: end_pay,
-                customer: customer,
+                start_date: start_date,
+                end_date: end_date,
+                coa: coa,
+                position: position,
             },
         }).done(function (data) {
-            document.getElementById("sales-list").style.display = 'block';
-            $('#showsales').html(data);
+            document.getElementById("jurnal-list").style.display = 'block';
+            $('#showjurnal').html(data);
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });

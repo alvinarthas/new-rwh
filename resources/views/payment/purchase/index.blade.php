@@ -10,13 +10,10 @@
     <link href="{{ asset('assets/plugins/datatables/select.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     {{-- Select2 --}}
     <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
-    <!-- Sweet Alert css -->
-    <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
-    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('judul')
-Index Purchasing
+Purchase Order Payment
 @endsection
 
 @section('content')
@@ -50,7 +47,6 @@ Index Purchasing
                         </div>
                     </div>
                     <div class="form-group text-left m-b-0">
-                        <a href="{{route('purchase.create')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add Purchase</a>
                         <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase()">Show Data</a>
                     </div>
                 </div>
@@ -67,9 +63,6 @@ Index Purchasing
 @section('js')
 {{-- Select2 --}}
 <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
-<!-- Sweet Alert Js  -->
-<script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
-<script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
 
 <!-- Required datatable js -->
 <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
@@ -90,7 +83,7 @@ Index Purchasing
         tahun = $('#tahun').val();
 
         $.ajax({
-            url : "{{route('showIndexPurchase')}}",
+            url : "{{route('purchaseView')}}",
             type : "get",
             dataType: 'json',
             data:{

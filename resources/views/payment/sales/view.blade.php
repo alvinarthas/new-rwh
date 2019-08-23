@@ -23,7 +23,7 @@
                     <td>Rp. {{number_format($sale->ttl_harga+$sale->ongkir)}}</td>
                     <td>{{$sale->status}}</td>
                     <td>
-                        <a href="javascript:;" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" ><i class="fa fa-file-pdf-o"></i>Detail Payment</a>
+                        <a href="{{route('salesCreate',['id'=>$sale->id])}}" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" >Detail Payment</a>
                     </td>
                 </tr>
             @php($i++)

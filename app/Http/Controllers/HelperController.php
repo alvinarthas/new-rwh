@@ -8,6 +8,7 @@ use App\Exceptions\Handler;
 use Illuminate\Support\Facades\DB;
 
 use App\DataKota;
+use App\Saldo;
 
 class HelperController extends Controller
 {
@@ -19,5 +20,13 @@ class HelperController extends Controller
             $html.='<option value="'.$key->kode_pusdatin_kota.'">'.$key->kab_kota.'</option>';
         }
         echo $html;
+    }
+
+    public function checkSaldo(Request $request){
+        $customer = $request->customer;
+
+        $saldo = Saldo::where('customer_id',$customer)->first()->saldo_skrng;
+
+        return $saldo;
     }
 }

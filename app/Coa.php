@@ -8,8 +8,10 @@ class Coa extends Model
 {
     protected $table ='tblcoa';
     protected $fillable = [
-        'id', 'AccNo', 'AccName', 'SaldoNormal', 'StatusAccount', 'SaldoAwal', 'company_id', 'grup', 'StatusAcc', 'AccParent'
+        'AccNo', 'AccName', 'SaldoNormal', 'StatusAccount', 'SaldoAwal', 'company_id', 'grup_id', 'StatusAcc', 'AccParent'
     ];
 
-    public $timestamps = false;
+    public function grup(){
+        return $this->belongsTo('App\CoaGrup');
+    }
 }

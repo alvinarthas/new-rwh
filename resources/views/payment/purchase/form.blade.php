@@ -15,7 +15,7 @@
 @endsection
 
 @section('judul')
-Form Sales Payment
+Form Purchase Payment
 @endsection
 
 @section('content')
@@ -29,7 +29,7 @@ Form Sales Payment
                             <th>No</th>
                             <th>Product ID</th>
                             <th>Product Name</th>
-                            <th>Product Price</th>
+                            <th>Harga Distributor</th>
                             <th>Buy Qty</th>
                             <th>Sub Total</th>
                             <th>Jurnal</th>
@@ -41,9 +41,9 @@ Form Sales Payment
                                     <td>{{$i}}</td>
                                     <td>{{$item->prod_id}}</td>
                                     <td>{{$item->product->name}}</td>
-                                    <td>Rp. {{number_format($item->price)}}</td>
+                                    <td>Rp. {{number_format($item->price_dist)}}</td>
                                     <td>{{$item->qty}}</td>
-                                    <td>Rp. {{number_format($item->sub_ttl)}}</td>
+                                    <td>Rp. {{number_format($item->price_dist*$item->qty)}}</td>
                                     <td></td>
                                 </tr>
                             @php($i++)
@@ -59,13 +59,13 @@ Form Sales Payment
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Transaction ID</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" parsley-trigger="change" value="{{$sales->id}}" readonly>
+                                    <input type="text" class="form-control" parsley-trigger="change" value="{{$purchase->id}}" readonly>
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Transaction Date</label>
+                                <label class="col-2 col-form-label">Posting Period</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" parsley-trigger="change" value="{{$sales->trx_date}}" readonly>
+                                    <input type="text" class="form-control" parsley-trigger="change" value="{{date("F", mktime(0, 0, 0, $item['month'], 10))}} {{$item['year']}}" readonly>
                                 </div>
                             </div>
                         </div>
@@ -76,18 +76,18 @@ Form Sales Payment
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Total Transaction Amount</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($sales->ongkir+$sales->ttl_harga)}}" readonly>
+                                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($ttl_order)}}" readonly>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <h4 class="m-t-0 header-title">Customer Information</h4>
+                    <h4 class="m-t-0 header-title">Supplier Information</h4>
                     <div class="col-12">
                         <div class="p-20">
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Customer Name</label>
+                                <label class="col-2 col-form-label">Supplier Name</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" parsley-trigger="change" value="{{$sales->customer->apname}}" readonly>
+                                    <input type="text" class="form-control" parsley-trigger="change" value="{{$purchase->supplier()->first()->nama}}" readonly>
                                 </div>
                             </div>
                         </div>
@@ -98,32 +98,32 @@ Form Sales Payment
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Payment Status</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" parsley-trigger="change" value="@if($sales->status == 1)Lunas @else() Belum Lunas @endif" readonly>
+                                    <input type="text" class="form-control" parsley-trigger="change" value="@if($purchase->status == 1)Lunas @else() Belum Lunas @endif" readonly>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div class="card-box">
-                    <form class="form-horizontal" role="form" action="{{ route('salesStore') }}" enctype="multipart/form-data" method="POST" id="form">
+                    <form class="form-horizontal" role="form" action="{{ route('purchaseStore') }}" enctype="multipart/form-data" method="POST">
                         @csrf
-                        <input type="hidden" name="trx_id" value="{{$sales->id}}">
+                        <input type="hidden" name="trx_id" value="{{$purchase->id}}">
                         <h4 class="m-t-0 header-title">Insert Payment</h4>
                         <div class="col-12">
                             <div class="p-20">
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Total Transaction to Paid</label>
                                     <div class="col-10">
-                                        <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format(($sales->ongkir+$sales->ttl_harga)-$ttl_pay)}}" readonly>
-                                        <input type="hidden" name="paid" value="{{($sales->ongkir+$sales->ttl_harga)-$ttl_pay}}">
-                                        <input type="hidden" id="customer_info" value="{{$sales->customer_id}}">
+                                        <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($ttl_order-$ttl_pay)}}" readonly>
+                                        <input type="hidden" name="paid" value="{{$ttl_order-$ttl_pay}}">
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Payment Date</label>
                                     <div class="col-10">
                                         <div class="input-group">
-                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="payment_date" id="payment_date"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="payment_date" id="payment_date"  data-date-format='yyyy-mm-dd' autocomplete="off" required>
                                             <div class="input-group-append">
                                                 <span class="input-group-text"><i class="ti-calendar"></i></span>
                                             </div>
@@ -133,45 +133,28 @@ Form Sales Payment
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Payment Method</label>
                                     <div class="col-10">
-                                        <select class="form-control select2" parsley-trigger="change" name="payment_method" id="payment_method" onchange="ifSaldo(this.value)" required>
+                                        <select class="form-control select2" parsley-trigger="change" name="payment_method" id="payment_method" required>
                                             <option value="#" disabled>Pilih Method</option>
                                             @foreach ($coas as $coa)
                                                 <option value="{{$coa->AccNo}}">{{$coa->AccName}}</option>
                                             @endforeach
-                                            <option value="saldo">Saldo</option>
                                         </select>
                                     </div>
                                 </div>
-                                <div id="saldo" style="display:none">
-                                    <div class="form-group row">
-                                        <label class="col-2 col-form-label">Current Saldo</label>
-                                        <div class="col-10">
-                                            <input type="text" class="form-control" parsley-trigger="change" id="current_saldo" name="current_saldo" value="0" readonly>
-                                            <input type="hidden" id="current_saldoraw" name="current_saldoraw" value="0">
-                                        </div>
-                                    </div>
-                                </div>
+                                <div id="saldo"></div>
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Payment Amount</label>
                                     <div class="col-10">
-                                        <input type="text" class="form-control" parsley-trigger="change" id="payment_amount" name="payment_amount" value="{{($sales->ongkir+$sales->ttl_harga)-$ttl_pay}}">
+                                        <input type="number" min="0" class="form-control" parsley-trigger="change" id="payment_amount" name="payment_amount" value="{{$ttl_order-$ttl_pay}}" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Payment Deduction</label>
                                     <div class="col-10">
-                                        <select class="form-control select2" parsley-trigger="change" name="payment_deduction" id="payment_deduction" required onchange="deduction(this.value)">
+                                        <select class="form-control select2" parsley-trigger="change" name="payment_deduction" id="payment_deduction" required>
                                             <option value="No_Deduction">No Deduction</option>
                                             <option value="Biaya_Transfer_Bank">Biaya Transfer Bank</option>
                                         </select>
-                                    </div>
-                                </div>
-                                <div id="deduct" style="display:none">
-                                    <div class="form-group row">
-                                        <label class="col-2 col-form-label">Deduction Amount</label>
-                                        <div class="col-10">
-                                            <input type="text" class="form-control" parsley-trigger="change" id="deduct_amount" name="deduct_amount" value="0">
-                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -184,16 +167,16 @@ Form Sales Payment
                                     <label class="col-2 col-form-label">Next Due Date</label>
                                     <div class="col-10">
                                         <div class="input-group">
-                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="next_due_date" id="next_due_date"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                            <input type="text" class="form-control" parsley-trigger="change" placeholder="yyyy/mm/dd" name="next_due_date" id="next_due_date"  data-date-format='yyyy-mm-dd' autocomplete="off">
                                             <div class="input-group-append">
                                                 <span class="input-group-text"><i class="ti-calendar"></i></span>
                                             </div>
                                         </div><!-- input-group -->
                                     </div>
                                 </div>
-                                @if ($sales->status == 0)
+                                @if ($purchase->status == 0)
                                 <div class="form-group text-right m-b-0">
-                                    <button onsubmit="checkPay()" class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Simpan Sales Order</a>
+                                    <button class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Simpan Purchase Order</a>
                                 </div>
                                 @endif
                             </div>
@@ -218,7 +201,7 @@ Form Sales Payment
                         <tbody>
                             @php($i=1)
                             @foreach ($payment as $pay)
-                                <tr>
+                                    <tr>
                                     <td>{{$i}}</td>
                                     <td>{{$pay->payment_date}}</td>
                                     <td>Rp. {{number_format($pay->payment_amount)}}</td>
@@ -226,7 +209,7 @@ Form Sales Payment
                                     <td>{{$pay->payment_desc}}</td>
                                     <td>{{$pay->deduct_category}}</td>
                                     <td>{{$pay->due_date}}</td>
-                                    <td>{{$pay->jurnal_id}}</td>
+                                    <td></td>
                                     <td><a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5" onclick="deletePayment({{$pay->id}})">Delete</a></td>
                                 </tr>
                             @php($i++)
@@ -271,37 +254,7 @@ Form Sales Payment
         autoclose: true
     });
 
-    function ifSaldo(id){
-        customer = $('#customer_info').val();
-        if(id == "saldo"){
-            $.ajax({
-                url : "{{route('checkSaldo')}}",
-                type : "get",
-                dataType: 'json',
-                data:{
-                    customer: customer,
-                },
-            }).done(function (data) {
-                document.getElementById("saldo").style.display = 'block';
-                $('#current_saldo').val(formatNumber(data));
-                $('#current_saldoraw').val(data);
-            }).fail(function (msg) {
-                alert('Gagal menampilkan data, silahkan refresh halaman.');
-            });
-        }
-    }
-
-    function formatNumber(num) {
-        return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
-    }
-
-    function deduction(id) {
-        if(id == "Biaya_Transfer_Bank"){
-            document.getElementById("deduct").style.display='block';
-        }else{
-            document.getElementById("deduct").style.display='none';
-        }
-    }
+    $(".select2").select2();
 
     function deletePayment(id){
         swal({
@@ -316,7 +269,7 @@ Form Sales Payment
             buttonsStyling: false
         }).then(function () {
             $.ajax({
-                url : "{{route('salesPayDestroy')}}",
+                url : "{{route('purchasePayDestroy')}}",
                 type : "get",
                 dataType: 'json',
                 data:{
@@ -349,30 +302,5 @@ Form Sales Payment
             }
         })
     }
-
-    function checkPay(){
-        console.log("check");
-        input = $('#payment_amount').val();
-        method = $('#payment_method').val();
-        saldo = $('#current_saldoraw').val();
-
-        if(method == "saldo" && input>saldo){
-            toastr.error("Saldo anda tidak mencukupi", 'Error!!!')
-            event.preventDefault();
-        }else{
-            document.getElementById("form").submit();
-        }
-    }
-
-    $("form").submit(function(){
-        input = parseInt($('#payment_amount').val());
-        method = $('#payment_method').val();
-        saldo = parseInt($('#current_saldoraw').val());
-        if(method == "saldo" && input>saldo){
-            toastr.error("Saldo anda tidak mencukupi", 'Error!!!')
-            event.preventDefault();
-        }
-    });
-
 </script>
 @endsection
