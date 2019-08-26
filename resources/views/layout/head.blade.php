@@ -6,7 +6,7 @@
 
     <link rel="shortcut icon" href="{{ asset('assets/images/rwh.ico') }}">
 
-    <title>Royal Warehouse - Enterprise Resource Planning -</title>
+    <title>Royal Warehouse - Enterprise Resource Planning</title>
     
     @yield('css')
     <!-- Notification css (Toastr) -->
