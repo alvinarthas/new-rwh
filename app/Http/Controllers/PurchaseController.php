@@ -10,6 +10,7 @@ use App\Purchase;
 use App\PurchaseDetail;
 use App\Perusahaan;
 use App\ManageHarga;
+use App\Jurnal;
 
 class PurchaseController extends Controller
 {
@@ -127,6 +128,7 @@ class PurchaseController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
+            $id_jurnal = Jurnal::getJurnalID();
             $purchase = new Purchase(array(
                 // Informasi Pribadi
                 'month' => $request->bulanpost,
@@ -136,12 +138,23 @@ class PurchaseController extends Controller
                 'notes' => $request->notes,
                 'tgl' => $request->po_date,
                 'approve' => 0,
+                'jurnal_id' => $id_jurnal,
             ));
             // success
             try {
                 $purchase->save();
+                $date = date_format($purchase->created_at,"Y-m-d");
+                $jurnal_desc = "PO.".$purchase->id;
                 // insert Detail
+                $total_modal=0;
+                $total_tertahan=0;
+                $total_distributor=0;
                 for ($i=0; $i < $request->count ; $i++) {
+                    $selisih = $request->harga_mod[$i] - $request->harga_dist[$i];
+                    $total_modal += ($request->harga_mod[$i] * $request->qty[$i]);
+                    $total_tertahan+=($selisih*$request->qty[$i]);
+                    $total_distributor+=($request->harga_dist[$i]*$request->qty[$i]);
+
                     $purchasedet = new PurchaseDetail(array(
                         'trx_id' => $purchase->id,
                         'prod_id' => $request->prod_id[$i],
@@ -154,10 +167,18 @@ class PurchaseController extends Controller
                     $purchasedet->save();
                 }
 
+                //insert debet Persediaan Barang Indent ( harga modal x qty )
+                Jurnal::addJurnal($id_jurnal,$total_modal,$date,$jurnal_desc,'1-105002','Debet');
+                //insert debet Piutang BOnus TErtahan
+                Jurnal::addJurnal($id_jurnal,$total_tertahan,$date,$jurnal_desc,'1-103005','Debet');
+                //insert credit hutang supplier
+                Jurnal::addJurnal($id_jurnal,$total_distributor,$date,$jurnal_desc,'2-102002','Credit');
+
                 return redirect()->route('purchase.index')->with('status', 'Data berhasil dibuat');
 
             } catch (\Exception $e) {
-                return redirect()->back()->withErrors($e);
+                // return response()->json($e);
+                return redirect()->back()->withErrors($e->errorInfo);
             }
         }
     }
@@ -229,8 +250,17 @@ class PurchaseController extends Controller
 
                 $purchase->update();
                 // insert Detail
+                $total_modal=0;
+                $total_tertahan=0;
+                $total_distributor=0;
                 for ($i=0; $i < $request->count ; $i++) {
+                    
                     if(isset($request->prod_id[$i])){
+                        $selisih = $request->harga_mod[$i] - $request->harga_dist[$i];
+                        $total_modal += ($request->harga_mod[$i] * $request->qty[$i]);
+                        $total_tertahan+=($selisih*$request->qty[$i]);
+                        $total_distributor+=($request->harga_dist[$i]*$request->qty[$i]);
+
                         $purchasedet = new PurchaseDetail(array(
                             'trx_id' => $purchase->id,
                             'prod_id' => $request->prod_id[$i],
@@ -241,6 +271,19 @@ class PurchaseController extends Controller
                             'price_dist' => $request->harga_dist[$i],
                         ));
                         $purchasedet->save();
+
+                        $jurnal1 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1-105002')->first();
+                        $jurnal1->Amount = $jurnal1->Amount+$total_modal;
+                        $jurnal1->update();
+
+                        $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1-103005')->first();
+                        $jurnal2->Amount = $jurnal2->Amount+$total_tertahan;
+                        $jurnal2->update();
+
+                        $jurnal3 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','2-102002')->first();
+                        $jurnal3->Amount = $jurnal2->Amount+$total_distributor;
+                        $jurnal3->update();
+
                     }
                 }
                 return redirect()->route('purchase.index')->with('status', 'Data berhasil dibuat');
@@ -260,6 +303,7 @@ class PurchaseController extends Controller
     public function destroy($id)
     {
         $purchase = Purchase::where('id',$id)->first();
+        Jurnal::where('id_jurnal',$purchase->jurnal_id)->delete();
         try {
             $purchase->delete();
             return "true";

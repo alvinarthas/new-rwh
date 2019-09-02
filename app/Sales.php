@@ -44,4 +44,27 @@ class Sales extends Model
         $data->put('data',$order->get());
         return $data;
     }
+
+    public static function getOrderPayment($start_trx,$end_trx,$start_pay,$end_pay,$customer){
+        $payment = SalesPayment::whereBetween('payment_date',[$start_pay,$end_pay])->sum('payment_amount');
+        $sales = Sales::whereBetween('trx_date',[$start_trx,$end_trx])->where('approve',1);
+        $data = collect();
+
+        if($customer <> "all"){
+            $sales->where('customer_id',$customer);
+        }
+        
+        $ttl_trx = $sales->count('id');
+
+        $ttl_harga = $sales->sum('ttl_harga');
+        $ttl_ongkir = $sales->sum('ongkir');
+        $ttl_sales = $ttl_harga+$ttl_ongkir;
+
+        $data->put('ttl_trx',$ttl_trx);
+        $data->put('ttl_sales',$ttl_sales);
+        $data->put('ttl_payment',$payment);
+        $data->put('data',$sales->orderBy('id','desc')->get());
+
+        return $data;
+    }
 }

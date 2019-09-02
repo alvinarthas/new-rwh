@@ -109,6 +109,10 @@ Route::middleware(['checkUser'])->group(function () {
         'sales' => 'SalesController',
         // Bonus
         'bonus' => 'BonusController',
+        // COA
+        'coa' => 'CoaController',
+        // Jurnal
+        'jurnal' => 'JurnalController',
     ]);
 
     // Member
@@ -136,12 +140,28 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('invoice/view','InvoiceController@view')->name('invoiceView');
         Route::get('invoice/print','InvoiceController@print')->name('invoicePrint');
 
+    // PAYMENT
+        // Sales
+        Route::get('salespayment','PaymentController@salesIndex')->name('salesIndex');
+        Route::get('salespayment/view','PaymentController@salesView')->name('salesView');
+        Route::get('salespayment/{id}/create','PaymentController@salesCreate')->name('salesCreate');
+        Route::post('salespayment/store','PaymentController@salesStore')->name('salesStore');
+        Route::get('salespayment/destroy','PaymentController@salesPayDestroy')->name('salesPayDestroy');
+
+        // Purchase
+        Route::get('purchasepayment','PaymentController@purchaseIndex')->name('purchaseIndex');
+        Route::get('purchasepayment/view','PaymentController@purchaseView')->name('purchaseView');
+        Route::get('purchasepayment/{id}/create','PaymentController@purchaseCreate')->name('purchaseCreate');
+        Route::post('purchasepayment/store','PaymentController@purchaseStore')->name('purchaseStore');
+        Route::get('purchasepayment/destroy','PaymentController@purchasePayDestroy')->name('purchasePayDestroy');
+
     // Delivery Order
         Route::get('do','DeliveryController@index')->name('indexDo');
         Route::get('do/view','DeliveryController@view')->name('doView');
         Route::get('do/print','DeliveryController@print')->name('doPrint');
 
     Route::get('logout','HomeController@logout')->name('Logout');
+
     // ------------------------ HELPER -------------------------------------------------
     Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
 
@@ -156,6 +176,13 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/addsales','SalesController@addSales')->name('addSales');
     Route::get('/showindexsales','SalesController@showIndexSales')->name('showIndexSales');
     Route::get('/destroydetailsales','SalesController@destroySalesDetail')->name('destroySalesDetail');
+
+    // Saldo Helper
+    Route::get('checksaldo','HelperController@checkSaldo')->name('checkSaldo');
+
+    // Jurnal Helper
+    Route::get('jurnaladd','JurnalController@addJurnal')->name('addJurnal');
+    Route::get('jurnaldetaildestroy','JurnalController@detailJuralDestroy')->name('detailJuralDestroy');
 
 });
 

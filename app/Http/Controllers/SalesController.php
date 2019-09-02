@@ -11,6 +11,8 @@ use App\Product;
 use App\PriceDet;
 use App\Sales;
 use App\SalesDet;
+use App\PurchaseDetail;
+use App\Jurnal;
 
 class SalesController extends Controller
 {
@@ -95,6 +97,9 @@ class SalesController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
+            $id_jurnal = Jurnal::getJurnalID();
+            $id_jurnal2 = $id_jurnal+1;
+
             $sales = new Sales(array(
                 'customer_id' => $request->customer,
                 'trx_date' => $request->trx_date,
@@ -102,11 +107,17 @@ class SalesController extends Controller
                 'ttl_harga' => $request->raw_ttl_trx,
                 'ongkir' => $request->ongkir,
                 'approve' => 0,
+                'jurnal_id' => $id_jurnal,
+                'hpp_jurnal_id' => $id_jurnal2,
             ));
             // success
             try {
                 $sales->save();
+                $jurnal_desc = "SO.".$sales->id;
+                $modal = 0;
                 for ($i=0; $i < $request->count ; $i++) {
+                    $avcharga = PurchaseDetail::where('prod_id',$key->id)->avg('price');
+                    $modal += ($request->qty[$i] * $avcharga);
                     $salesdet = new SalesDet(array(
                         'trx_id' => $sales->id,
                         'prod_id' => $request->prod_id[$i],
@@ -120,6 +131,18 @@ class SalesController extends Controller
                     ));
                     $salesdet->save();
                 }
+
+                // Jurnal 1
+                    //insert debet Piutang Usaha Konsumen Masukkan harga total - diskon
+                    Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'1-103001','Debet');
+                    //insert credit pendapatan retail
+                    Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'4-102000','Credit');
+                // Jurnal 2
+                    //insert debet Piutang Usaha Konsumen
+                    Jurnal::addJurnal($id_jurnal2,$modal,$request->trx_date,$jurnal_desc,'5-100001','Debet');
+                    //insert Credit Pendapatan Retail
+                    Jurnal::addJurnal($id_jurnal2,$modal,$request->trx_date,$jurnal_desc,'1-105001','Credit');
+
                 return redirect()->route('sales.index')->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->errorInfo);
@@ -164,9 +187,16 @@ class SalesController extends Controller
             // success
             try {
                 $sales->update();
-                
+
+                $jurnal = Jurnal::where('id_jurnal',$sales->jurnal_id)->first();
+                $jurnal->Amount = $request->raw_ttl_trx;
+                $jurnal->date = $request->trx_date;
+                $jurnal->update();
+
+                $modal = 0;
                 for ($i=0; $i < $request->count ; $i++) {
                     if(isset($request->prod_id[$i])){
+                        $modal += ($request->qty[$i] * $avcharga);
                         $salesdet = new SalesDet(array(
                             'trx_id' => $sales->id,
                             'prod_id' => $request->prod_id[$i],
@@ -181,6 +211,11 @@ class SalesController extends Controller
                         $salesdet->save();
                     }
                 }
+
+                $hpp_jurnal = Jurnal::where('id_jurnal',$sales->hpp_jurnal_id)->first();
+                $hpp_jurnal->Amount = $hpp_jurnal->Amount+$modal;
+                $hpp_jurnal->date = $request->trx_date;
+                $hpp_jurnal->update();
                 return redirect()->route('sales.index')->with('status', 'Data berhasil diubah');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
@@ -191,6 +226,8 @@ class SalesController extends Controller
     public function destroy($id)
     {
         $sales = Sales::where('id',$id)->first();
+        Jurnal::where('id_jurnal',$sales->jurnal_id)->delete();
+        Jurnal::where('id_jurnal',$sales->hpp_jurnal_id)->delete();
         try {
             $sales->delete();
             return "true";
