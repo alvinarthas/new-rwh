@@ -12,6 +12,8 @@
     <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
 @endsection
 @section('content')
+<!-- sample modal content -->
+    <!--  Modal content for the above example -->
     <div class="container">
         <div class="row">
             <div class="col-12">
@@ -44,7 +46,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div id="bank_show" style="display:none">
                                     <div class="form-group row">
                                         <label class="col-2 col-form-label">Nama Bank</label>
@@ -84,7 +86,7 @@
 @section('js')
     {{-- Select2 --}}
     <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
-    
+
     <!-- Required datatable js -->
     <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
@@ -92,6 +94,10 @@
     <!-- Responsive examples -->
     <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
+
+    <!-- Modal-Effect -->
+    <script src="{{ asset('assets/plugins/custombox/dist/custombox.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/custombox/dist/legacy.min.js') }}"></script>
 @endsection
 
 @section('script-js')
@@ -99,7 +105,7 @@
     $(document).ready(function() {
         $(document).on('click', '.pagination a', function (e) {
             $('.datas').append('<img style="position: absolute; left: 0; top: 0; z-index: 100000;" src="../images/loading.gif" />');
-            var url = $(this).attr('href'); 
+            var url = $(this).attr('href');
             getDatas($(this).attr('href').split('page=')[1]);
             e.preventDefault();
         });
@@ -112,13 +118,13 @@
     function formatState (opt) {
         if (!opt.id) {
             return opt.text.toUpperCase();
-        } 
+        }
 
-        var optimage = $(opt.element).attr('data-image'); 
+        var optimage = $(opt.element).attr('data-image');
         console.log(optimage)
         if(!optimage){
         return opt.text.toUpperCase();
-        } else {                    
+        } else {
             var $opt = $(
             '<span><img src="' + optimage + '" width="60px" /> ' + opt.text.toUpperCase() + '</span>'
             );
@@ -152,7 +158,7 @@
         typingTimer = setTimeout(doneTyping, doneTypingInterval);
     });
 
-    //on keydown, clear the countdown 
+    //on keydown, clear the countdown
     $input.on('keydown', function () {
         clearTimeout(typingTimer);
         // typingTimer = setTimeout(doneTyping, doneTypingInterval);
@@ -208,6 +214,7 @@
         var jenis = $('#jenis').val();
         var perusahaan = $('#perusahaan').val();
         var bank = $('#bank').val();
+        console.log(perusahaan, bank)
         $.ajax({
             url : 'ajxmember',
             type : "get",

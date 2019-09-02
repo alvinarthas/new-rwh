@@ -51,8 +51,8 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('receiveproduct/detail','ReceiveProductController@detail')->name('receiveProdDet');
     Route::post('receiveproduct/store','ReceiveProductController@store')->name('receiveProdStr');
     Route::get('receiveproduct/delete','ReceiveProductController@delete')->name('receiveProdDel');
-    
-    // Resources 
+
+    // Resources
     Route::get('/showBonus', 'BonusController@showBonusPerhitungan')->name('showBonusPerhitungan');
     Route::get('/createBonus', 'BonusController@createBonusPerhitungan')->name('createBonusPerhitungan');
     Route::post('/uploadBonus', 'BonusController@uploadBonusPerhitungan')->name('uploadBonusPerhitungan');
@@ -111,6 +111,12 @@ Route::middleware(['checkUser'])->group(function () {
         'bonus' => 'BonusController',
     ]);
 
+    // Member
+        Route::get('ajxmember','MemberController@ajxmember');
+        Route::get('ajxMemberOrder', 'MemberController@ajxMemberOrder')->name('ajxMemberOrder');
+        Route::get('/ajxaddrowcetak', 'MemberController@ajxAddRowCetak')->name('ajxAddRowCetak');
+        Route::post('/exportmember', 'MemberController@exportMember')->name('exportMember');
+
     // Bank Member
         Route::get('/bankmember','BankMemberController@create')->name('createBankMember');
         Route::post('/bankmember/{ktp}','BankMemberController@store')->name('storeBankMember');
@@ -135,7 +141,6 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('do/view','DeliveryController@view')->name('doView');
         Route::get('do/print','DeliveryController@print')->name('doPrint');
 
-    Route::get('ajxmember','MemberController@ajxmember');
     Route::get('logout','HomeController@logout')->name('Logout');
     // ------------------------ HELPER -------------------------------------------------
     Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');

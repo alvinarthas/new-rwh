@@ -25,35 +25,17 @@
     <div class="row">
         <div class="col-12">
             <div class="card-box table-responsive">
-                <h2 class="l-h-34">Manage Bonus </h2>
-                <li class="dropdown">
-                    <a class="waves-effect waves-light" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                        <h4 class="l-h-34"><i class="fa-list rounded-circle"></i>Menu Manage Bonus </h4>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right profile-dropdown ">
-                        <!-- item-->
-                        <a href="{{ route('bonus.index') }}" class="dropdown-item notify-item">Perhitungan Bonus Member</a>
-                        <!-- item-->
-                        <a href="{{ route('bonus.bayar') }}" class="dropdown-item notify-item">Pembayaran Bonus Member</a>
-                        <!-- item-->
-                        <a href="{{ route('bonus.topup') }}" class="dropdown-item notify-item">Top Up Bonus Member</a>
-                        <!-- item-->
-                        <a href="{{ route('bonus.bonusgagal') }}" class="dropdown-item notify-item">Laporan Upload Gagal Perhitungan Bonus Member</a>
-                        <!-- item-->
-                        <a href="{{ route('bonus.laporan') }}" class="dropdown-item notify-item">Laporan Perbandingan Realisasi Bonus</a>
-                    </div>
-                </li>
 
                 @if($bonusapa=="perhitungan" OR $bonusapa=="bonusgagal")
                     @if($bonusapa=="perhitungan")
-                        <h4 class="m-t-0 header-title">Perhitungan Bonus Member</h4>
+                        <h3 class="m-t-0 header-title">Perhitungan Bonus Member</h3>
                         @if($jenis == "index")
                             <p class="text-muted font-14 m-b-30">
                                 <a href="{{ route('bonus.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Perhitungan Bonus</a>
                             </p>
                         @endif
                     @elseif($bonusapa=="bonusgagal")
-                        <h4 class="m-t-0 header-title">Laporan Upload Gagal Perhitungan Bonus Member</h4>
+                        <h3 class="m-t-0 header-title">Laporan Upload Gagal Perhitungan Bonus Member</h3>
                     @endif
                     <div class="form-group row">
                         <label class="col-2 col-form-label">Nama Perusahaan</label>
@@ -68,9 +50,9 @@
                     </div>
                 @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
                     @if($bonusapa=="pembayaran")
-                        <h4 class="m-t-0 header-title">Pembayaran Bonus Member</h4>
+                        <h3 class="m-t-0 header-title">Pembayaran Bonus Member</h3>
                     @elseif($bonusapa=="topup")
-                        <h4 class="m-t-0 header-title">Top Up Bonus Member</h4>
+                        <h3 class="m-t-0 header-title">Top Up Bonus Member</h3>
                     @endif
                     @if($jenis == "index")
                         @if($bonusapa=="pembayaran")
@@ -97,7 +79,7 @@
                 @endif
                 @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran" OR $bonusapa=="laporan" OR $bonusapa=="bonusgagal")
                     @if($bonusapa=="laporan")
-                        <h4 class="m-t-0 header-title">Laporan Realisasi Bonus Member</h4>
+                        <h3 class="m-t-0 header-title">Laporan Realisasi Bonus Member</h3>
                     @endif
                     <div class="form-group row">
                         <label class="col-2 col-form-label">Bulan & Tahun Bonus</label>

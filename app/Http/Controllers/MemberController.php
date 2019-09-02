@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Handler;
 use Illuminate\Support\Facades\DB;
-
+use Excel;
+use PDF;
+use App\Exports\MemberExport2;
 use App\Member;
 use App\DataKota;
 use App\Koordinator;
@@ -50,7 +52,7 @@ class MemberController extends Controller
         $datas->withPath('yourPath');
         $datas->appends($request->all());
         if ($request->ajax()) {
-            return response()->json(view('member.list',compact('datas'))->render());
+            return response()->json(view('member.list',compact('datas','jenis','perusahaan','bank'))->render());
         }
     }
 
@@ -267,5 +269,220 @@ class MemberController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function ajxMemberOrder(Request $request){
+        $keyword = strip_tags(trim($request->keyword));
+        $key = $keyword.'%';
+        $perusahaan = $request->perusahaanid;
+        $bank = $request->bankid;
+        $jenis = $request->jenis;
+        if($jenis == 0){
+            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->where('perusahaanmember.perusahaan_id',$perusahaan)->where('tblmember.nama','LIKE',$key.'%')->orWhere('tblmember.ktp','LIKE',$key.'%')->orderBy('tblmember.nama')->limit(5)->get();
+        }elseif ($jenis == 1) {
+            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->whereNotIn('tblmember.ktp',DB::raw("SELECT m.ktp FROM perusahaanmember p INNER JOIN tblmember m ON m.ktp = p.ktp WHERE p.id = $perusahaan"))->where('tblmember.nama','LIKE',$key.'%')->orWhere('tblmember.ktp','LIKE',$key.'%')->orderBy('tblmember.nama')->limit(5)->get();
+        }elseif($jenis==2){
+            $datas = Member::select('id','ktp','nama')->where('tblmember.nama','LIKE',$key.'%')->orWhere('tblmember.ktp','LIKE',$key.'%')->orderBy('tblmember.nama')->limit(5)->get();
+        }elseif ($jenis == 3) {
+            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama')->join('bankmember','tblmember.ktp','=','bankmember.ktp')->where('bankmember.bank_id',$bank)->where('tblmember.nama','LIKE',$key.'%')->orWhere('tblmember.ktp','LIKE',$key.'%')->orderBy('tblmember.nama')->limit(5)->get();
+        }
+
+        $data = array();
+        $array = json_decode( json_encode($datas), true);
+        foreach ($array as $a) {
+            $arrayName = array('id' =>$a['id'],'ktp' => $a['ktp'], 'nama' => $a['nama']);
+            array_push($data,$arrayName);
+        }
+        echo json_encode($data, JSON_FORCE_OBJECT);
+    }
+
+    public function ajxAddRowCetak(Request $request){
+        $id_member = $request->id_member;
+        $count = $request->count;
+
+        $member = Member::where('id', $id_member)->first();
+        $nama = $member->nama;
+        $member_id = $member->member_id;
+        $ktp = $member->ktp;
+        $alamat = $member->alamat;
+        $ttl = $member->tempat_lahir.", ".$member->tgl_lahir;
+        $append = '<tr style="width:100%" id="trow'.$count.'">
+        <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$nama.'">'.$nama.'</td>
+        <td><input type="hidden" name="id_member[]" id="id_member'.$count.'" value="'.$member_id.'">'.$member_id.'</td>
+        <td><input type="hidden" name="ktp[]" id="ktp'.$count.'" value="'.$ktp.'">'.$ktp.'</td>
+        <td><input type="hidden" name="alamat[]" id="alamat'.$count.'" value="'.$alamat.'">'.$alamat.'</td>
+        <td><input type="hidden" name="ttl[]" id="ttl'.$count.'" value="'.$ttl.'">'.$ttl.'</td>
+        <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect waves-danger" onclick="deleteItem('.$count.')" >x</a></td>
+        </tr>';
+
+        $data = array(
+            'append' => $append,
+            'count' => $count,
+        );
+
+        return response()->json($data);
+    }
+
+    public function exportMember(Request $request)
+    {
+        ini_set('max_execution_time', 3000);
+        $i = 0;
+        $jenis = $request['jns'];
+        $perusahaan = $request['prs'];
+        $bank = $request['bnk'];
+        $menu = $request['menu'];
+        $exportTo = $request['xto'];
+
+        if($menu==0){
+            if($jenis == 0){
+                $datas = PerusahaanMember::where('perusahaan_id', $perusahaan)->join('tblmember','tblmember.ktp', '=', 'perusahaanmember.ktp')->leftJoin('tblkoordinator', 'tblkoordinator.id', '=', 'tblmember.koordinator')->leftJoin('tblsubkoordinator', 'tblsubkoordinator.id', '=', 'tblmember.subkoor')->select('tblmember.member_id','tblmember.ktp','tblmember.nama as namaMember','tblmember.alamat','tblmember.tempat_lahir', 'tblmember.tgl_lahir', 'tblkoordinator.nama AS namaKoor', 'tblsubkoordinator.nama AS namaSubkoor')->orderBy('tblmember.nama')->get();
+            }elseif ($jenis == 1) {
+                $datas = PerusahaanMember::where('perusahaan_id', '!=', $perusahaan)->join('tblmember','tblmember.ktp', '=', 'perusahaanmember.ktp')->leftJoin('tblkoordinator', 'tblkoordinator.id', '=', 'tblmember.koordinator')->leftJoin('tblsubkoordinator', 'tblsubkoordinator.id', '=', 'tblmember.subkoor')->select('tblmember.member_id','tblmember.ktp','tblmember.nama as namaMember','tblmember.alamat','tblmember.tempat_lahir', 'tblmember.tgl_lahir', 'tblkoordinator.nama AS namaKoor', 'tblsubkoordinator.nama AS namaSubkoor')->orderBy('tblmember.nama')->get();
+            }elseif($jenis == 2){
+                $datas = Member::leftJoin('tblkoordinator', 'tblkoordinator.id', '=', 'tblmember.koordinator')->leftJoin('tblsubkoordinator', 'tblsubkoordinator.id', '=', 'tblmember.subkoor')->select('tblmember.member_id','tblmember.ktp','tblmember.nama as namaMember','tblmember.alamat','tblmember.tempat_lahir', 'tblmember.tgl_lahir', 'tblkoordinator.nama AS namaKoor', 'tblsubkoordinator.nama AS namaSubkoor')->orderBy('tblmember.nama')->get();
+            }elseif ($jenis == 3) {
+                $datas = BankMember::where('bank_id', $bank)->join('tblmember', 'tblmember.ktp', '=', 'bankmember.ktp')->leftJoin('tblkoordinator', 'tblkoordinator.id', '=', 'tblmember.koordinator')->leftJoin('tblsubkoordinator', 'tblsubkoordinator.id', '=', 'tblmember.subkoor')->select('tblmember.member_id','tblmember.ktp','tblmember.nama as namaMember','tblmember.alamat','tblmember.tempat_lahir', 'tblmember.tgl_lahir', 'tblkoordinator.nama AS namaKoor', 'tblsubkoordinator.nama AS namaSubkoor')->orderBy('tblmember.nama')->get();
+            }
+        }
+
+        if($exportTo == 0){
+            $data = array();
+            if($menu==0){
+                foreach($datas as $m){
+                    $i++;
+                    $perusahaanmember = PerusahaanMember::where('ktp', $m->ktp)->get();
+                    $perusahaans = "";
+                    foreach($perusahaanmember as $pm){
+                        if($pm->perusahaan_id!=0){
+                            $perusahaan = Perusahaan::where('id', $pm->perusahaan_id)->first()->nama;
+                            $noid = $perusahaan.' '.$pm->noid;
+                        }else{
+                            $noid = "";
+                        }
+                        $perusahaans = $perusahaans."".$noid.", \n";
+                    }
+
+                    $bankmember = BankMember::where('ktp', $m->ktp)->get();
+                    $rekenings = "";
+                    foreach($bankmember as $bm){
+                        $bank = Bank::where('id', $bm->bank_id)->first()->nama;
+                        $rekening = $bank.' '.$bm->norek;
+                        $rekenings = $rekenings."".$rekening.", \n";
+                    }
+
+                    $ttl = $m['tempat_lahir'].", ".$m['tgl_lahir'];
+
+                    $array = array(
+                        // Data Member
+                        'No' => $i,
+                        'Nama' => $m['namaMember'],
+                        'ID_Member' => $m['member_id'],
+                        'No_KTP' => $m['ktp'],
+                        'alamat' => $m['alamat'],
+                        'TTL' => $ttl,
+                        'Koordinator' => $m['namaKoor'],
+                        'Sub Koordinator' => $m['namaSubkoor'],
+                        'Bank Member' => $rekenings,
+                        'Perusahaan Member' => $perusahaans,
+                    );
+                    array_push($data, $array);
+                }
+            }elseif($menu==1){
+                $data = array();
+                foreach($request['id_member'] as $idm){
+                    $i++;
+                    $member = Member::where('member_id', $idm)->first();
+                    $perusahaanmember = PerusahaanMember::where('ktp', $member->ktp)->get();
+                    $perusahaans = "";
+                    foreach($perusahaanmember as $pm){
+                        if($pm->perusahaan_id!=0){
+                            $perusahaan = Perusahaan::where('id', $pm->perusahaan_id)->first()->nama;
+                            $noid = $perusahaan.' '.$pm->noid;
+                        }else{
+                            $noid = "";
+                        }
+                        $perusahaans = $perusahaans."".$noid.", \n";
+                    }
+
+                    $bankmember = BankMember::where('ktp', $member->ktp)->get();
+                    $rekenings = "";
+                    foreach($bankmember as $bm){
+                        $bank = Bank::where('id', $bm->bank_id)->first()->nama;
+                        $rekening = $bank.' '.$bm->norek;
+                        $rekenings = $rekenings."".$rekening.", \n";
+                    }
+
+                    if(!empty($member->koordinator)){
+                        $namaKoor = Koordinator::where('id', $member->koordinator)->first()->nama;
+                    }else{
+                        $namaKoor = "";
+                    }
+
+                    if(!empty($member->subkoor)){
+                        $namaSubkoor = Subkoordinator::where('id', $member->subkoor)->first()->nama;
+                    }else{
+                        $namaSubkoor = "";
+                    }
+
+                    $ttl = $member->tempat_lahir.", ".$member->tgl_lahir;
+                    $array = array(
+                        // Data Member
+                        'No' => $i,
+                        'Nama' => $member->nama,
+                        'ID_Member' => $idm,
+                        'No_KTP' => $member->ktp,
+                        'alamat' => $member->alamat,
+                        'TTL' => $ttl,
+                        'Koordinator' => $namaKoor,
+                        'Sub Koordinator' => $namaSubkoor,
+                        'Bank Member' => $rekenings,
+                        'Perusahaan Member' => $perusahaans,
+                    );
+                    // echo "<pre>";
+                    // print_r($array);
+                    // die();
+                    array_push($data, $array);
+                }
+            }
+            $export = new MemberExport2($data);
+            return Excel::download($export, 'Member.xlsx');
+        }elseif($exportTo == 1){
+            if($menu == 0){
+                $data = array();
+                $count = 0;
+                $pdfke = 0;
+
+                if($datas->count() > 100){
+                    foreach($datas as $d){
+                        $memb = Member::where('member_id', $d['member_id'])->first();
+                        array_push($data, $memb);
+                        $count++;
+                        if($count == 100){
+                            $pdfke++;
+                            $namafile = 'daftar-member-'.$pdfke.'.pdf';
+                            $pdf = PDF::loadview('member.pdfmember',['member'=>$data])->setPaper('a4', 'landscape');
+                            $pdf->save(public_path('download/'.$namafile));
+                            $data = array();
+                            $count = 0;
+                            // echo 'Download File: <a href="'.public_path('download/'.$namafile).'">'.$namafile.'</a><br>';
+                        }
+                    }
+                    $files = glob(public_path('download/*'));
+                    \Zipper::make(public_path('daftar-member.zip'))->add($files)->close();
+                    return response()->download(public_path('daftar-member.zip'));
+                }else{
+                    $pdf = PDF::loadview('member.pdfmember',['member'=>$datas])->setPaper('a4', 'landscape');
+                    return $pdf->download('daftar-member.pdf');
+                }
+            }elseif($menu==1){
+                $data = array();
+                foreach($request['id_member'] as $idm){
+                    $memb = Member::where('member_id', $idm)->first();
+                    array_push($data, $memb);
+                }
+                $pdf = PDF::loadview('member.pdfmember',['member'=>$data])->setPaper('a4', 'landscape');
+                return $pdf->download('daftar-member.pdf');
+            }
+        }
     }
 }

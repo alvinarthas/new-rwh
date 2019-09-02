@@ -141,7 +141,7 @@
                     <input type="hidden" name="bulan2" value="{{ $bulan }}">
                     <input type="hidden" name="tahun2" value="{{ $tahun }}">
                 @endif
-                <input type="hidden" name="ctr" id="ctr" value="{{ $i }}"/>
+                <input type="hidden" name="ctr" id="ctr" value="{{ $i }}">
             </div>
         </div>
     </div>
@@ -160,23 +160,6 @@
         $('#responsive-datatable').DataTable();
 
         $(".number").divide();
-
-        function formatState (opt) {
-            if (!opt.id) {
-                return opt.text.toUpperCase();
-            }
-
-            var optimage = $(opt.element).attr('data-image');
-            console.log(optimage)
-            if(!optimage){
-            return opt.text.toUpperCase();
-            } else {
-                var $opt = $(
-                '<span><img src="' + optimage + '" width="60px" /> ' + opt.text.toUpperCase() + '</span>'
-                );
-                return $opt;
-            }
-        };
     });
 
     function ajx_member(){
