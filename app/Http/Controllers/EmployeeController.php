@@ -327,7 +327,7 @@ class EmployeeController extends Controller
             unlink(public_path('assets/images/employee/bpjs').$employee->scanbpjs);
         $employee->delete();
 
-        return redirect()->back()->with('status', 'Data berhasil dihapus');;
+        return redirect()->back()->with('status', 'Data berhasil dihapus');
     }
 
 }

@@ -153,6 +153,19 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('do','DeliveryController@index')->name('indexDo');
         Route::get('do/view','DeliveryController@view')->name('doView');
         Route::get('do/print','DeliveryController@print')->name('doPrint');
+    
+    // Laporan
+    Route::prefix('laporan')->group(function () {
+        // Balance Sheet Neraca Saldo Awal
+        Route::get('neracaawal','LaporanController@neraca_awal')->name('neracaAwal');
+        // Balance Sheet (Laporan Neraca)
+        Route::get('laporannerace','LaporanController@laporan_neraca')->name('neracaLaporan');
+        Route::get('viewlapnerace','LaporanController@laporan_neraca_view')->name('neracaLaporanView');
+        // General Ledger
+        Route::get('generalledger','LaporanController@index_gl')->name('indexGL');
+        Route::get('viewgl','LaporanController@view_gl')->name('viewGL');
+        Route::get('viewgljurnal','LaporanController@view_glJurnal')->name('viewGlJurnal');
+    });
 
     Route::get('ajxmember','MemberController@ajxmember');
     Route::get('logout','HomeController@logout')->name('Logout');
