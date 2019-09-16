@@ -1,3 +1,6 @@
+@php
+    use Carbon\Carbon;
+@endphp
 <div class="card-box table-responsive">
     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
         <thead>
@@ -23,7 +26,7 @@
                     <td>{{$jurnal->description}}</td>
                     <td>{{$jurnal->notes_item}}</td>
                 </tr>
-            @php($i++)
+            @endforeach
         </tbody>
     </table>
 </div>

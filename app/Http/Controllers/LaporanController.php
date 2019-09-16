@@ -135,10 +135,13 @@ class LaporanController extends Controller
     }
 
     public function view_gl(Request $request){
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+
         $coa = Coa::where('AccNo',$request->coa)->first();
-        $jurnals = Jurnal::where('AccNo',$request->coa)->whereBetween('date',[$start,$end])->get();
-        $total_debet = $jurnal->where('AccPos','Debet')->sum('Amount');
-        $total_credit = $jurnal->where('AccPos','Credit')->sum('Amount');
+        $jurnals = Jurnal::where('AccNo',$request->coa)->whereBetween('date',[$start_date,$end_date])->get();
+        $total_debet = $jurnals->where('AccPos','Debet')->sum('Amount');
+        $total_credit = $jurnals->where('AccPos','Credit')->sum('Amount');
 
         if($coa->SaldoNormal == 'Db'){
             $current = $coa->SaldoAwal+$total_debet-$total_credit;
@@ -161,6 +164,55 @@ class LaporanController extends Controller
         if ($request->ajax()) {
             return response()->json(view('laporan.general_ledger.viewjurnal',compact('jurnals'))->render());
         }
+    }
+
+    // PERUBAHAN MODAL
+    public function perubahanModal(Request $request){
+        if($request->ajax()){
+            $start = $request->start_date;
+            $end = $request->end_date;
+
+            $total_expense_pribadi = Jurnal::totalExpensePribadi($start,$end);
+            $setoran_modal = Jurnal::setoranModal($start,$end);
+            $profit_loss=profitLoss($start,$end);
+            $saldoawal = Coa::where('AccNo','3-100001')->first()->SaldoAwal;
+            $modal_akhir = ModalAkhir($start,$end);
+
+            return response()->json(view('laporan.perubahan_modal.view',compact('end','modal_akhir','profit_loss','setoran_modal','total_expense_pribadi','saldoawal'))->render());
+        }else{
+            return view('laporan.perubahan_modal.index');
+        }
         
     }
+
+    // PROFIT LOSS
+    public function profitLoss(Request $request){
+        if($request->ajax()){
+            $start = $request->start_date;
+            $end = $request->end_date;
+
+            $datalabarugi = Jurnal::dataLabaRugi($start);
+            $total_pendapatan = (Jurnal::totalPendapatan($start,$end))-(Jurnal::totalPotongan($start,$end));
+            $total_cogs = Jurnal::totalCogs($start,$end);
+            $total_pendapatan_lain=(Jurnal::totalPendapatLain($start,$end))-(Jurnal::totalPotonganPendapatan($start,$end));
+            $profit_loss=Jurnal::profitLoss($start,$end);
+            $total_expense = Jurnal::totalExpense($start,$end);
+
+            // Sales Revenue
+            $sales_revenues = Jurnal::salesRevenue($start,$end);
+            // COGS
+            $cogss = Jurnal::dataCogs($start,$end);
+            // Expenses
+            $expensess = Jurnal::dataExpenses($start,$end);
+            // Pendapatan & Bebab Lainnya
+            $pendapatans = Jurnal::dataPendapatandll($start,$end);
+            // LABA / RUGI
+
+            return response()->json(view('laporan.profit_loss.view',compact('start','end','total_pendapatan','total_cogs','total_pendapatan_lain','profit_loss','total_Expense','sales_revenues','cogss','expensess','pendapatans','total_expense','datalabarugi'))->render());
+        }else{
+            return view('laporan.profit_loss.index');
+        }
+    }
+
+    
 }

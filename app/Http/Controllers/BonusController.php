@@ -341,40 +341,17 @@ class BonusController extends Controller
                 // echo "<pre>";
                 // print_r($num);
                 // die();
+                $id_jurnal = Jurnal::getJurnalID();
 
                 if($num==0){
                     $if = "0";
                     if($bonus != 0){
                         $if = "1";
-                        // $jurnal = Jurnal::all();
-                        // if($jurnal->count == 0){
-                        //     $jurnal_id = 1;
-                        // }else{
-                        //     $jurnal_id = $jurnal->last()->jurnal_id+1;
-                        // }
-
-                        // debet kas/bank
-                        // $data2 = new Jurnal(array(
-                        //     'id_jurnal'     => "",
-                        //     'AccNo'         => $AccNo,
-                        //     'AccPos'        => "Debet",
-                        //     'Amount'        => $bonus,
-                        //     'company_id'    => 6,
-                        //     'date'          => $tgl,
-                        //     'description'   => $ket,
-                        //     'creator'       => session('user_id')
-                        // ));
-                        // // credit piutang bonus tertahan
-                        // $data3 = new Jurnal(array(
-                        //     'id_jurnal'     => "",
-                        //     'AccNo'         => '1-103005',
-                        //     'AccPos'        => "Credit",
-                        //     'Amount'        => $bonus,
-                        //     'company_id'    => 6,
-                        //     'date'          => $tgl,
-                        //     'description'   => $ket,
-                        //     'creator'       => session('user_id')
-                        // ));
+                        // Jurnal
+                        //insert debet kas/bank
+                        Jurnal::addJurnal($id_jurnal,$bonus,$tgl,$ket,$AccNo,'Debet');
+                        //insert credit piutang bonus tertahan
+                        Jurnal::addJurnal($id_jurnal,$bonus,$tgl,$ket,'1-103005','Credit');
                         // Top Up Bonus
                         $data1 = new TopUpBonus(array(
                             'no_rek'    => $norek,
@@ -387,37 +364,6 @@ class BonusController extends Controller
                     }
                 }else{
                     $if = "2";
-                    // $data4 = Jurnal::where('id_jurnal', $topup['id_jurnal'])->first();
-
-                    // $jurnal = Jurnal::all();
-                    // if($jurnal->count == 0){
-                    //     $jurnal_id = 1;
-                    // }else{
-                    //     $jurnal_id = $jurnal->last()->jurnal_id+1;
-                    // }
-
-                    // $data6 = new Jurnal(array(
-                    //     'id_jurnal'     => $jurnal_id,
-                    //     'AccNo'         => $AccNo,
-                    //     'AccPos'        => "Debet",
-                    //     'Amount'        => $bonus,
-                    //     'company_id'    => 6,
-                    //     'date'          => $tgl,
-                    //     'description'   => $ket,
-                    //     'creator'       => session('user_id')
-                    // ));
-                    // // credit piutang bonus tertahan
-                    // $data7 = new Jurnal(array(
-                    //     'id_jurnal'     => $jurnal_id,
-                    //     'AccNo'         => '1-103005',
-                    //     'AccPos'        => "Credit",
-                    //     'Amount'        => $bonus,
-                    //     'company_id'    => 6,
-                    //     'date'          => $tgl,
-                    //     'description'   => $ket,
-                    //     'creator'       => session('user_id')
-                    // ));
-                    // topup
                     $data5 = TopUpBonus::where('no_rek',$norek)->where('tgl',$tgl)->where('bank_id',$bank)->first();
                     $data5->bonus = $bonus;
                     $data5->creator = session('user_id');

@@ -4,6 +4,14 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Coa;
+use App\Product;
+use App\ManageHarga;
+use App\Purchase;
+use App\Member;
+use App\BankMember;
+use App\BonusBayar;
+
 class Jurnal extends Model
 {
     protected $table ='tbljurnal';
@@ -63,5 +71,210 @@ class Jurnal extends Model
         ));
 
         $jurnal->save();
+    }
+
+    public static function totalPendapatan($start,$end){
+        $plus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','4-%')->where('tblcoa.SaldoNormal','Cr')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Credit')->sum('Amount');
+
+        $minus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','4-%')->where('tblcoa.SaldoNormal','Cr')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Debet')->sum('Amount');
+
+        return $plus-$minus;
+    }
+
+    public static function totalPotongan($start,$end){
+        $plus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','4-%')->where('tblcoa.SaldoNormal','Db')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Debet')->sum('Amount');
+
+        $minus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','4-%')->where('tblcoa.SaldoNormal','Db')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Credit')->sum('Amount');
+
+        return $plus-$minus;
+    }
+
+    public static function totalCogs($start,$end){
+        $plus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','5-%')->where('tblcoa.SaldoNormal','Db')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Debet')->sum('Amount');
+
+        $minus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','5-%')->where('tblcoa.SaldoNormal','Db')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Credit')->sum('Amount');
+
+        return $plus-$minus;
+    }
+
+    public static function totalExpense($start,$end){
+        $plus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','6-%')->where('tblcoa.AccName','NOT LIKE','%pribadi%')->where('tblcoa.SaldoNormal','Db')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Debet')->sum('Amount');
+
+        $minus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','6-%')->where('tblcoa.AccName','NOT LIKE','%pribadi%')->where('tblcoa.SaldoNormal','Db')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Credit')->sum('Amount');
+
+        return $plus-$minus;
+    }
+
+    public static function totalExpensePribadi($start,$end){
+        $plus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','6-%')->where('tblcoa.AccName','LIKE','%pribadi%')->where('tblcoa.SaldoNormal','Db')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Debet')->sum('Amount');
+
+        $minus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','6-%')->where('tblcoa.AccName','LIKE','%pribadi%')->where('tblcoa.SaldoNormal','Db')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Credit')->sum('Amount');
+
+        return $plus-$minus;
+    }
+
+    public static function setoranModal($start,$end){
+        $data = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.description','LIKE','%setoran modal%')->where('tblcoa.SaldoNormal','Db')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Debet')->sum('Amount');
+
+        return $data;
+    }
+
+    public static function totalPendapatLain($start,$end){
+        $plus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','8-%')->where('tblcoa.SaldoNormal','Cr')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Credit')->sum('Amount');
+
+        $minus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','8-%')->where('tblcoa.SaldoNormal','Cr')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Debet')->sum('Amount');
+
+        return $plus-$minus;
+    }
+
+    public static function totalPotonganPendapatan($start,$end){
+        $plus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','8-%')->where('tblcoa.SaldoNormal','Db')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Debet')->sum('Amount');
+
+        $minus = Jurnal::join('tblcoa','tbljurnal.AccNo','=','tblcoa.AccNo')->where('tbljurnal.AccNo','LIKE','8-%')->where('tblcoa.SaldoNormal','Db')->whereBetween('tbljurnal.date',[$start,$end])->where('tbljurnal.AccPos','Credit')->sum('Amount');
+
+        return $plus-$minus;
+    }
+
+    // SUM
+    public static function profitLoss($start,$end){
+        $total_pendapatan = (Jurnal::totalPendapatan($start,$end))-(Jurnal::totalPotongan($start,$end));
+        $total_pendapatan_lain=(Jurnal::totalPendapatLain($start,$end))-(Jurnal::totalPotonganPendapatan($start,$end));
+        $total_cogs = Jurnal::totalCogs($start,$end);
+        $total_expense = Jurnal::totalExpense($start,$end);
+
+        return $total_pendapatan-$total_cogs-$total_expense+$total_pendapatan_lain;
+    }
+
+    public static function ModalAkhir($start,$end){
+        $saldoawal = Coa::where('AccNo','3-100001')->first()->SaldoAwal;
+        $profit_loss = profitLoss($start,$end);
+        $total_expense_pribadi = Jurnal::totalExpensePribadi($start,$end);
+        $setoran_modal = Jurnal::setoranModal($start,$end);
+
+        return $saldoawal+$profit_loss+$setoran_modal-$total_expense_pribadi;
+    }
+
+    // SALES REVENUE
+    public static function salesRevenue($start,$end){
+        $coa = Coa::where('AccNo','LIKE','4-%')->where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
+        $data = collect();
+        foreach ($coa as $key) {
+            $item = collect();
+            $debet = Jurnal::where('AccNo',$key->AccNo)->whereBetween('date',[$start,$end])->where('AccPos','Debet')->sum('Amount');
+            $credit = Jurnal::where('AccNo',$key->AccNo)->whereBetween('date',[$start,$end])->where('AccPos','Credit')->sum('Amount');
+
+            $total_amount=$debet-$credit;
+
+            $item->put('AccNo',$key->AccNo);
+            $item->put('AccName',$key->AccName);
+            $item->put('total',$total_amount);
+
+            $data->push($item);
+        }
+        return $data;
+    }
+
+    // COGS
+    public static function dataCogs($start,$end){
+        $coa = Coa::where('AccNo','LIKE','5-%')->where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
+        $data = collect();
+        foreach ($coa as $key) {
+            $item = collect();
+            $debet = Jurnal::where('AccNo',$key->AccNo)->whereBetween('date',[$start,$end])->where('AccPos','Debet')->sum('Amount');
+            $credit = Jurnal::where('AccNo',$key->AccNo)->whereBetween('date',[$start,$end])->where('AccPos','Credit')->sum('Amount');
+
+            $total_amount=$debet-$credit;
+
+            $item->put('AccNo',$key->AccNo);
+            $item->put('AccName',$key->AccName);
+            $item->put('total',$total_amount);
+
+            $data->push($item);
+        }
+        return $data;
+    }
+
+    // EXPENSES
+    public static function dataExpenses($start,$end){
+        $coa = Coa::where('AccNo','LIKE','6-%')->where('StatusAccount','Detail')->where('AccName','NOT LIKE','%pribadi%')->orderBy('AccNo','asc')->get();
+        $data = collect();
+        foreach ($coa as $key) {
+            $item = collect();
+            $debet = Jurnal::where('AccNo',$key->AccNo)->whereBetween('date',[$start,$end])->where('AccPos','Debet')->sum('Amount');
+            $credit = Jurnal::where('AccNo',$key->AccNo)->whereBetween('date',[$start,$end])->where('AccPos','Credit')->sum('Amount');
+
+            $total_amount=$debet-$credit;
+
+            $item->put('AccNo',$key->AccNo);
+            $item->put('AccName',$key->AccName);
+            $item->put('total',$total_amount);
+
+            $data->push($item);
+        }
+        return $data;
+    }
+
+    // PENDAPATAN DAN BEBAN LAINNYA
+    public static function dataPendapatandll($start,$end){
+        $coa = Coa::where('AccNo','LIKE','8-%')->where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
+        $data = collect();
+        foreach ($coa as $key) {
+            $item = collect();
+            $debet = Jurnal::where('AccNo',$key->AccNo)->whereBetween('date',[$start,$end])->where('AccPos','Debet')->sum('Amount');
+            $credit = Jurnal::where('AccNo',$key->AccNo)->whereBetween('date',[$start,$end])->where('AccPos','Credit')->sum('Amount');
+
+            $total_amount=$debet-$credit;
+
+            $item->put('AccNo',$key->AccNo);
+            $item->put('AccName',$key->AccName);
+            $item->put('total',$total_amount);
+
+            $data->push($item);
+        }
+        return $data;
+    }
+
+    // LABA RUGI
+    public static function dataLabaRugi($start){
+        $products = Product::orderBy('prod_id','asc')->get();
+        $total_bonus = 0;
+
+        $year = date("Y", strtotime($start));
+        $month = date("n", strtotime($start));
+        foreach ($products as $product) {
+            $m_product = ManageHarga::where('prod_id',$product->id)->where('month',$month)->where('year',$year)->select('harga_modal','harga_distributor')->first();
+            $qty = Purchase::join('tblpotrxdet','tblpotrx.id','=','tblpotrxdet.trx_id')->where('tblpotrx.month',$month)->where('tblpotrx.year',$year)->where('tblpotrxdet.prod_id',$product->id)->sum('tblpotrxdet.qty');
+
+            if($m_product){
+                $selisih = $m_product->harga_distributor - $m_product->harga_modal;
+            }else{
+                $selisih = 0;
+            }
+            $bonus = $qty*$selisih;
+            $total_bonus+=$bonus;
+        }
+
+        // 
+        $total_realisasi_all=0;
+        $members = Member::orderBy('nama','asc')->select('ktp')->get();
+
+        foreach ($members as $member) {
+            $total_realisasi=0;
+            $banks = BankMember::where('ktp',$member->ktp)->select('norek')->get();
+
+            foreach ($banks as $bank) {
+                $bonus = BonusBayar::where('bulan',$month)->where('tahun',$year)->where('no_rek',$bank->norek)->select('bonus')->first();
+                if($bonus == NULL){
+                    $total_realisasi+=0;
+                }else{
+                    $total_realisasi+=$bonus->bonus;                    
+                }
+                
+            }
+            $total_realisasi_all+=$total_realisasi;
+        }
+
+        $result = $total_realisasi_all - $total_bonus;
+        return $result;
     }
 }

@@ -171,6 +171,10 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('generalledger','LaporanController@index_gl')->name('indexGL');
         Route::get('viewgl','LaporanController@view_gl')->name('viewGL');
         Route::get('viewgljurnal','LaporanController@view_glJurnal')->name('viewGlJurnal');
+        // Perubahan Modal
+        Route::get('perubahanmodal','LaporanController@perubahanModal')->name('perubahanModal');
+        // Profit Loss
+        Route::get('profitloss','LaporanController@profitLoss')->name('profitLoss');
     });
 
     Route::get('logout','HomeController@logout')->name('Logout');
