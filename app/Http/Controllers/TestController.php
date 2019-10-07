@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Collection;
 
 use App\User;
 use App\BankMember;
@@ -14,6 +15,19 @@ use App\PriceDet;
 class TestController extends Controller
 {
     public function index(){
+        $collection = collect([
+            ['id' => 1, 'value' => 10],
+            ['id' => 2, 'value' => 20],
+            ['id' => 3, 'value' => 100],
+            ['id' => 4, 'value' => 250],
+            ['id' => 5, 'value' => 150],
+        ]);
+        $sorted = $collection->sortByDesc('value');
+        // 5.1
+        dd($sorted->values()->first());
+    }
+
+    public function indexs(){
         echo $test = Hash::make("canik123");
         // foreach(PriceDet::groupBy('prod_id')->distinct()->get() as $key){
         //     $product = Product::where('prod_id',$key->prod_id)->first();

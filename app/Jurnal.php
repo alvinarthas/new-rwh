@@ -239,7 +239,6 @@ class Jurnal extends Model
         $products = Product::orderBy('prod_id','asc')->get();
         $total_bonus = 0;
 
-        $year = date("Y", strtotime($start));
         $month = date("n", strtotime($start));
         foreach ($products as $product) {
             $m_product = ManageHarga::where('prod_id',$product->id)->where('month',$month)->where('year',$year)->select('harga_modal','harga_distributor')->first();

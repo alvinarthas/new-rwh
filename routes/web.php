@@ -179,6 +179,22 @@ Route::middleware(['checkUser'])->group(function () {
 
     Route::get('logout','HomeController@logout')->name('Logout');
 
+    // Salary
+    Route::prefix('salary')->group(function () {
+        // Gaji Pokok
+        Route::get('gajipokok','SalaryController@indexGajiEmp')->name('indexGajiEmp');
+        Route::get('gajipokok/{jenis}/{id?}','SalaryController@formGajiEmp')->name('formGajiEmp');
+        Route::post('gajipokok/{jenis}/{id?}','SalaryController@storeGajiEmp')->name('storeGajiEmp');
+        Route::delete('gajipokok/delete','SalaryController@delGajiEmp')->name('delGajiEmp');
+
+        // Record Poin
+        Route::get('poin','SalaryController@indexPoin')->name('indexPoin');
+        Route::get('poin/detail','SalaryController@detailPoin')->name('detailPoin');
+        Route::get('poin/form','SalaryController@formPoin')->name('formPoin');
+        Route::post('poin/store','SalaryController@storePoin')->name('storePoin');
+        Route::delete('poin/delete','SalaryController@delPoin')->name('delPoin');
+    });
+
     // ------------------------ HELPER -------------------------------------------------
     Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
 
