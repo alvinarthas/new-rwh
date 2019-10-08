@@ -52,7 +52,7 @@ Route::middleware(['checkUser'])->group(function () {
     Route::post('receiveproduct/store','ReceiveProductController@store')->name('receiveProdStr');
     Route::get('receiveproduct/delete','ReceiveProductController@delete')->name('receiveProdDel');
 
-    // Resources
+    // Bonus
     Route::get('/showBonus', 'BonusController@showBonusPerhitungan')->name('showBonusPerhitungan');
     Route::get('/createBonus', 'BonusController@createBonusPerhitungan')->name('createBonusPerhitungan');
     Route::post('/uploadBonus', 'BonusController@uploadBonusPerhitungan')->name('uploadBonusPerhitungan');
@@ -113,6 +113,8 @@ Route::middleware(['checkUser'])->group(function () {
         'coa' => 'CoaController',
         // Jurnal
         'jurnal' => 'JurnalController',
+        // Retur
+        'retur' => 'ReturController',
     ]);
 
     // Member
@@ -139,6 +141,18 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('invoice','InvoiceController@index')->name('indexInvoice');
         Route::get('invoice/view','InvoiceController@view')->name('invoiceView');
         Route::get('invoice/print','InvoiceController@print')->name('invoicePrint');
+
+    //Retur
+        Route::get('/showpembelian', 'ReturController@showReturPembelian')->name('showReturPembelian');
+        Route::get('/retur/penjualan/index', 'ReturController@indexpj')->name('retur.indexpj');
+        Route::get('/retur/penjualan/create', 'ReturController@createpj')->name('retur.createpj');
+        Route::get('/retur/penjualan/edit/{id}', 'ReturController@editpj')->name('retur.editpj');
+        Route::put('/retur/penjualan/edit/{id}', 'ReturController@updatepj')->name('retur.updatepj');
+        Route::get('/showpenjualan', 'ReturController@showReturPenjualan')->name('showReturPenjualan');
+
+    //Security
+        Route::get('/security', 'SecurityController@index')->name('security.index');
+        Route::get('/security/getATM', 'SecurityController@getATM')->name('security.getatm');
 
     // PAYMENT
         // Sales

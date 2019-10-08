@@ -227,7 +227,6 @@
             }
 
             var optimage = $(opt.element).attr('data-image');
-            console.log(optimage)
             if(!optimage){
             return opt.text.toUpperCase();
             } else {
@@ -255,7 +254,6 @@
                 dataType    :   "html",
                 success		:	function(data){
                     $("#tblBonus").html(data);
-                    console.log(data)
                 },
                 error       :   function(data){
                     document.getElementById('tahun').value = '2018';
@@ -266,7 +264,6 @@
     function createBonusPerhitungan(){
             var bln = $("#bulan").val()
             var thn = $("#tahun").val()
-            console.log(bln)
             var perusahaan = $("#perusahaan").val()
             $.ajax({
                 url         :   "{{route('createBonusPerhitungan')}}",
@@ -279,7 +276,6 @@
                 dataType    :   "html",
                 success		:	function(data){
                     $("#tblBonus").html(data);
-                    console.log(data)
                 },
                 error       :   function(data){
                     document.getElementById('tahun').value = '2016';
@@ -304,7 +300,6 @@
             dataType    :   "html",
             success		:	function(data){
                 $("#tblBonus").html(data);
-                console.log(data)
             },
             error       :   function(data){
                 document.getElementById('tgl_transaksi').value = '1945-08-17';
@@ -317,7 +312,6 @@
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
         var rekening = $("#rekening").val()
-        console.log(tgl,bln,thn,rekening)
         $.ajax({
             url         :   "{{route('createBonusPembayaran')}}",
             data        :   {
@@ -330,7 +324,6 @@
             dataType    :   "html",
             success		:	function(data){
                 $("#tblBonus").html(data);
-                console.log(data)
             },
             error       :   function(data){
                 document.getElementById('tgl_transaksi').value = '1945-08-17';
@@ -351,7 +344,6 @@
             dataType    :   "html",
             success		:	function(data){
                 $("#tblBonus").html(data);
-                console.log(data)
             },
             error       :   function(data){
                 document.getElementById('tgl_transaksi').value = '1945-08-17';
@@ -362,7 +354,6 @@
     function createBonusTopup(){
         var tgl = $("#tgl_transaksi").val()
         var rekening = $("#rekening").val()
-        console.log(tgl,rekening)
         $.ajax({
             url         :   "{{route('createBonusTopup')}}",
             data        :   {
@@ -373,7 +364,6 @@
             dataType    :   "html",
             success		:	function(data){
                 $("#tblBonus").html(data);
-                console.log(data)
             },
             error       :   function(data){
                 document.getElementById('tgl_transaksi').value = '1945-08-17';
@@ -394,7 +384,6 @@
             dataType    :   "html",
             success		:	function(data){
                 $("#tblBonus").html(data);
-                console.log(data)
             },
             error       :   function(data){
                 document.getElementById('tahun').value = '2018';
@@ -417,7 +406,6 @@
             dataType    :   "html",
             success		:	function(data){
                 $("#tblBonus").html(data);
-                console.log(data)
             },
             error       :   function(data){
                 document.getElementById('tahun').value = '2018';

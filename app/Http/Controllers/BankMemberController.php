@@ -15,7 +15,7 @@ class BankMemberController extends Controller
         $ktp = $request->get('ktp');
         $jenis = "create";
         $banks = Bank::all();
-        
+
         if ($request->ajax()) {
             return response()->json(view('member.bankmember.form',compact('ktp','jenis','banks'))->render());
         }
@@ -69,7 +69,7 @@ class BankMemberController extends Controller
                 'scanatm' => $scanatm,
                 'scantabungan' => $scantabungan,
             ));
-            
+
             // success
             try{
                 $bank->save();
@@ -89,7 +89,7 @@ class BankMemberController extends Controller
         if ($request->ajax()) {
             return response()->json(view('member.bankmember.form',compact('ktp','jenis','banks','banm'))->render());
         }
-    }   
+    }
 
     public function update(Request $request){
         // Validate
@@ -134,7 +134,7 @@ class BankMemberController extends Controller
             }else{
                 $scantabungan = $bank->scantabungan;
             }
-            
+
             $bank->bank_id = $request->bank;
             $bank->cabbank = $request->cabang;
             $bank->norek = $request->rekening;

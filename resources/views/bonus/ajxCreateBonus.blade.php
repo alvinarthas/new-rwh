@@ -21,6 +21,7 @@
                     @if($bonusapa=="perhitungan")
                         <input type="hidden" name="perusahaan" value="{{ $perusahaan }}">
                     @elseif($bonusapa=="pembayaran")
+                        <input type="hidden" name="AccNo" id="AccNo" value="{{ $AccNo }}">
                         <input type="hidden" name="bank_id" id="bank_id" value="{{ $bank }}">
                         <input type="hidden" name="tgl" id="tgl" value="{{ $tgl }}">
                     @endif
@@ -55,7 +56,7 @@
                         $total_bonus = 0;
                     @endphp
                     @if($bonusapa=="perhitungan")
-                    <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                    <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                         <thead>
                             <th>Tandai</th>
                             <th>No</th>
@@ -66,7 +67,7 @@
                         </thead>
                         <tbody>
                             @foreach($perusahaanmember as $prm)
-                                <tr>
+                                <tr class="trow">
                                     <td><input type='checkbox' name="count[]" id="count{{ $i }}" value="{{ $i }}" parsley-trigger="change" onchange="check(this.value)"></td>
                                     <td>{{$i}}</td>
                                     <td>{{$prm->ktp}}</td>
@@ -88,7 +89,7 @@
                         </tbody>
                     </table>
                     @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
-                    <table id="table" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                    <table id="table" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Tambah Daftar Member</label>
                             <div class="col-10">
@@ -198,7 +199,6 @@
         var thn = $("#tahun").val();
         var bln = $("#bulan").val();
         var cnt = $("#ctr").val();
-        console.log(cnt)
         $.ajax({
             url : "{{route('ajxAddRowPembayaran')}}",
             type : "post",
@@ -214,7 +214,6 @@
             $('#table-body').append(data.append);
             var cnt = parseInt($('#ctr').val()) + 1;
             $('#ctr').val(cnt);
-            console.log(cnt);
             resetall();
             // changeTotalHarga(data.sub_ttl);
         }).fail(function (msg) {
@@ -226,7 +225,6 @@
         var token = $("meta[name='csrf-token']").attr("content");
         var tanggal = $("#tgl").val();
         var cnt = $("#ctr").val();
-        console.log(cnt)
         $.ajax({
             url : "{{route('ajxAddRowTopup')}}",
             type : "post",
@@ -241,7 +239,6 @@
             $('#table-body').append(data.append);
             var cnt = parseInt($('#ctr').val()) + 1;
             $('#ctr').val(cnt);
-            console.log(cnt);
             resetall();
             changeTotalHarga(data.sub_ttl);
         }).fail(function (msg) {
@@ -258,7 +255,6 @@
     function minusTotalHarga(sub_ttl){
         temp_bonus = parseInt($('#total_bonus').val());
         new_total = parseInt(temp_bonus) - parseInt(sub_ttl);
-        console.log(new_total)
         $('#total_bonus').val(new_total);
     }
 
@@ -283,11 +279,36 @@
         var check_count = document.getElementById(count)
         var bonus = "#bonus"+id
         var amount = parseInt($(bonus).val())
-        console.log(amount)
         if(check_count.checked==true){
             changeTotalHarga(amount)
         }else{
             minusTotalHarga(amount)
         }
+    }
+
+    function checkBonus(id){
+        bonus = $('#bonus'+id).val();
+
+        if(bonus == NaN || bonus == null || bonus == ""){
+            bonus=0;
+        }else{
+            bonus = bonus;
+            // console.log(subharga);
+            $('#bonus'+id).val(bonus);
+        }
+        checkTotal();
+    }
+
+    function checkTotal(){
+        var rows= $('#table tbody tr.trow').length;
+        var totalharga = 0;
+        var bonus = $("input[name='bonus[]']").map(function(){return $(this).val();}).get();
+        // console.log(rows)
+        for(i=0;i<rows;i++){
+            b = bonus[i];
+            totalharga = totalharga + parseInt(b);
+        }
+        // console.log(totalharga)
+        $('#total_bonus').val(totalharga);
     }
 </script>

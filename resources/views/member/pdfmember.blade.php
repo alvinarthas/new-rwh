@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Membuat Laporan PDF Dengan DOMPDF Laravel</title>
+    <title>Member Royal Warehouse</title>
 </head>
 <body>
     @php

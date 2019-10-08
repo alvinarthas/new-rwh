@@ -12,7 +12,7 @@
                 <div class="card-box table-responsive">
                     <h4 class="m-t-0 header-title">Detail Bonus Member</h4>
                     @if($bonusapa=="perhitungan")
-                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                             <thead>
                                 <th>No</th>
                                 <th>KTP</th>
@@ -48,7 +48,7 @@
                             </tbody>
                         </table>
                     @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
-                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                             <thead>
                                 <th>No</th>
                                 <th>Nama Bank</th>
@@ -66,13 +66,7 @@
                                     <td>{{$i}}</td>
                                     <td>{{$namabank}}</td>
                                     <td>{{$bm->norek}}</td>
-                                    <td>
-                                        @php
-                                            $ktp = BankMember::where('norek',$bm->norek)->first()->ktp;
-                                            $nama = Member::where('ktp',$ktp)->first()->nama;
-                                        @endphp
-                                        {{$nama}}
-                                    </td>
+                                    <td>{{ $bm->nama }}</td>
                                     @php
                                         $data_bonus = $bonus->where('no_rek', $bm->norek)->first();
                                     @endphp
@@ -88,7 +82,7 @@
                             </tbody>
                         </table>
                     @elseif($bonusapa=="laporan")
-                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                             <thead>
                                 <th>No</th>
                                 <th>KTP</th>
@@ -179,7 +173,7 @@
                             </tbody>
                         </table>
                     @elseif($bonusapa=="bonusgagal")
-                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                             <thead>
                                 <th>No</th>
                                 <th>KTP</th>
