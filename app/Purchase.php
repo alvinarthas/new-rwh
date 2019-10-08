@@ -17,6 +17,14 @@ class Purchase extends Model
 
     public function supplier(){
         return $this->belongsTo('App\Perusahaan','supplier');
+    }   
+
+    public static function getTop3($month,$year){
+        return Purchase::where('month',$month)->where('year',$year)->orderBy('total_harga_dist','desc')->groupBy('supplier')->sum('total_harga_dist')->select('creator')->limit(3)->get();
+    }
+
+    public static function sharePost($month,$year,$creator){
+        return Purchase::where('month',$month)->where('year',$year)->where('creator',$creator)->groupBy('supplier')->count('supplier');
     }
 
     public static function getOrderPayment($bulan,$tahun){

@@ -173,8 +173,41 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('do','DeliveryController@index')->name('indexDo');
         Route::get('do/view','DeliveryController@view')->name('doView');
         Route::get('do/print','DeliveryController@print')->name('doPrint');
+    
+    // Laporan
+    Route::prefix('laporan')->group(function () {
+        // Balance Sheet Neraca Saldo Awal
+        Route::get('neracaawal','LaporanController@neraca_awal')->name('neracaAwal');
+        // Balance Sheet (Laporan Neraca)
+        Route::get('laporannerace','LaporanController@laporan_neraca')->name('neracaLaporan');
+        Route::get('viewlapnerace','LaporanController@laporan_neraca_view')->name('neracaLaporanView');
+        // General Ledger
+        Route::get('generalledger','LaporanController@index_gl')->name('indexGL');
+        Route::get('viewgl','LaporanController@view_gl')->name('viewGL');
+        Route::get('viewgljurnal','LaporanController@view_glJurnal')->name('viewGlJurnal');
+        // Perubahan Modal
+        Route::get('perubahanmodal','LaporanController@perubahanModal')->name('perubahanModal');
+        // Profit Loss
+        Route::get('profitloss','LaporanController@profitLoss')->name('profitLoss');
+    });
 
     Route::get('logout','HomeController@logout')->name('Logout');
+
+    // Salary
+    Route::prefix('salary')->group(function () {
+        // Gaji Pokok
+        Route::get('gajipokok','SalaryController@indexGajiEmp')->name('indexGajiEmp');
+        Route::get('gajipokok/{jenis}/{id?}','SalaryController@formGajiEmp')->name('formGajiEmp');
+        Route::post('gajipokok/{jenis}/{id?}','SalaryController@storeGajiEmp')->name('storeGajiEmp');
+        Route::delete('gajipokok/delete','SalaryController@delGajiEmp')->name('delGajiEmp');
+
+        // Record Poin
+        Route::get('poin','SalaryController@indexPoin')->name('indexPoin');
+        Route::get('poin/detail','SalaryController@detailPoin')->name('detailPoin');
+        Route::get('poin/form','SalaryController@formPoin')->name('formPoin');
+        Route::post('poin/store','SalaryController@storePoin')->name('storePoin');
+        Route::delete('poin/delete','SalaryController@delPoin')->name('delPoin');
+    });
 
     // ------------------------ HELPER -------------------------------------------------
     Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
