@@ -115,50 +115,42 @@ class BonusController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            foreach($request->count as $i){
-                $idm = "id_member$i";
-                $id_member = $request->$idm;
-                $bn = "bonus$i";
-                $bonus = $request->$bn;
-                $bulan = $request->bulan2;
-                $tahun = $request->tahun2;
-                $num = Bonus::where('member_id', $id_member)->where('tahun', $tahun)->where('bulan', $bulan)->count();
-
-                // echo "<pre>";
-                // print_r($request->all());
-                // die();
-                if(empty($num)){
-                    $data = new Bonus(array(
-                        'member_id' => $id_member,
-                        'bulan'     => $bulan,
-                        'tahun'     => $tahun,
-                        'bonus'     => $bonus,
-                        'creator'   => session('user_id'),
-                    ));
-
-                    $if = "save";
-                }else{
-                    $data = Bonus::where('member_id', $id_member)->where('tahun', $tahun)->where('bulan', $bulan)->get();
-                    $data->bonus = $bonus;
-                    $data->creator = session('user_id');
-
-                    $if = "update";
-                }
-                try{
-                    if($if=="save"){
-                        $data->save();
-                    }elseif($if=="update"){
-                        $data->update();
-                    }
-                }catch(\Exception $e){
-                    return redirect()->back()->withErrors($e->errorInfo);
-                }
-            }
             // success
             try{
+                foreach($request->count as $i){
+                    $idm = "id_member$i";
+                    $id_member = $request->$idm;
+                    $bn = "bonus$i";
+                    $bonus = $request->$bn;
+                    $bulan = $request->bulan2;
+                    $tahun = $request->tahun2;
+                    $num = Bonus::where('member_id', $id_member)->where('tahun', $tahun)->where('bulan', $bulan)->count();
+
+                    // echo "<pre>";
+                    // print_r($request->all());
+                    // die();
+                    if(empty($num)){
+                        $data = new Bonus(array(
+                            'member_id' => $id_member,
+                            'bulan'     => $bulan,
+                            'tahun'     => $tahun,
+                            'bonus'     => $bonus,
+                            'creator'   => session('user_id'),
+                        ));
+
+                        $data->save();
+                    }else{
+                        $data = Bonus::where('member_id', $id_member)->where('tahun', $tahun)->where('bulan', $bulan)->get();
+                        $data->bonus = $bonus;
+                        $data->creator = session('user_id');
+
+                        $data->update();
+                    }
+                }
+
                 return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $e) {
-                return redirect()->back()->withErrors($e->errorInfo);
+                return redirect()->back()->withErrors($e->getMessage());
             }
         }
     }

@@ -9,7 +9,7 @@
 <script src="{{ asset('assets/js/jquery.nicescroll.js') }}"></script>
 <script src="{{ asset('assets/js/jquery.slimscroll.js') }}"></script>
 <script src="{{ asset('assets/js/jquery.scrollTo.min.js') }}"></script>
- 
+
 <!-- Toastr js -->
 <script src="{{ asset('assets/plugins/toastr/toastr.min.js') }}"></script>
 
@@ -24,6 +24,12 @@
         var status = "{{session('status')}}";
         // Display a success toast, with a title
         toastr.success(status, 'Success')
+    </script>
+@elseif(session('warning'))
+    <script>
+        var status = "{{session('warning')}}";
+        // Display a success toast, with a title
+        toastr.warning(status, 'Warning!')
     </script>
 @endif
 @if ($errors->any())

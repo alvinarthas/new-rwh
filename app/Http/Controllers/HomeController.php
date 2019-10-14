@@ -13,7 +13,7 @@ class HomeController extends Controller
 {
     public function index(Request $request){
         if ($request->session()->has('isLoggedIn')) {
-            return view('home.home');
+            return view('welcome.welcome');
         }else{
             return view('login.login');
         }
@@ -33,7 +33,7 @@ class HomeController extends Controller
             'username' => 'required',
             'password' => 'required',
         ]);
-        
+
         // IF Validation fail
         if ($validator->fails()) {
 
@@ -45,19 +45,20 @@ class HomeController extends Controller
             // FOUND
             if($user && Hash::check($request->password, $user->password)){
                 $request->session()->put('username', $request->username);
+                $request->session()->put('name', $user->name);
                 $request->session()->put('user_id', $user->id);
                 $request->session()->put('nip', $user->nip);
                 $request->session()->put('foto', $user->scanfoto);
                 $request->session()->put('isLoggedIn', 'Ya');
 
                 return redirect()->route('getHome');
-            
-            // NOT FOUND 
+
+            // NOT FOUND
             }else{
                 return redirect()->back();
             }
         }
-        
+
     }
 
     public function logout(Request $request){

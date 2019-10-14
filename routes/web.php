@@ -115,6 +115,8 @@ Route::middleware(['checkUser'])->group(function () {
         'jurnal' => 'JurnalController',
         // Retur
         'retur' => 'ReturController',
+        // Customer
+        'customer' => 'CustomerController',
     ]);
 
     // Member
@@ -154,6 +156,9 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('/security', 'SecurityController@index')->name('security.index');
         Route::get('/security/getATM', 'SecurityController@getATM')->name('security.getatm');
 
+    // Customer
+        Route::get('/deletecustomer/{id}','CustomerController@destroy');
+
     // PAYMENT
         // Sales
         Route::get('salespayment','PaymentController@salesIndex')->name('salesIndex');
@@ -173,7 +178,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('do','DeliveryController@index')->name('indexDo');
         Route::get('do/view','DeliveryController@view')->name('doView');
         Route::get('do/print','DeliveryController@print')->name('doPrint');
-    
+
     // Laporan
     Route::prefix('laporan')->group(function () {
         // Balance Sheet Neraca Saldo Awal

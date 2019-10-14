@@ -55,7 +55,7 @@
                                 <form class="" action="{{ route('perusahaan.destroy', ['id' => $prs->id]) }}" method="post">
                                     {{ csrf_field() }}
                                     {{ method_field('delete') }}
-                                    <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button></a>
+                                    <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
                                 </form>
                             </td>
                         </tr>
