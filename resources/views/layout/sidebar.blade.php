@@ -57,7 +57,7 @@
                         </li>
                     @endforeach
                 @else
-                    @foreach (MenuMapping::getModul(session('user_id')) as $modul)
+                    @foreach (MenuMapping::getHeadModul(session('user_id')) as $modul)
                         <li class="has_sub">
                             <a href="javascript:void(0);" class="waves-effect"><i class="{{$modul->modul_icon}}"></i><span>{{$modul->modul_desc}}</span> <span class="menu-arrow"></span></a>
                                 <ul class="list-unstyled">

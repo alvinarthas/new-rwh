@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+
 use App\Subkoordinator;
+use App\MenuMapping;
 
 class SubkoordinatorController extends Controller
 {
@@ -15,8 +17,9 @@ class SubkoordinatorController extends Controller
     public function index()
     {
         $subkoordinator = Subkoordinator::all();
+        $page = MenuMapping::getMap(session('user_id'),"MBSM");
 
-        return view('subkoordinator.index', compact('subkoordinator'));
+        return view('subkoordinator.index', compact('subkoordinator','page'));
     }
 
     /**

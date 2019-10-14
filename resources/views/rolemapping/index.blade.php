@@ -36,7 +36,9 @@
                                 <td>Belum Mempunyai Role</td>
                             @endif
                             <td>
+                                @if (array_search("MRRME",$page))
                                 <a href="{{route('editRoleMapping',['id'=>$user->username])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Atur</a>
+                                @endif
                             </td>
                         </tr>
                         @php($i++)

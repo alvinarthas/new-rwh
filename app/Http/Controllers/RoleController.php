@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Handler;
 
 use App\Role;
+use App\MenuMapping;
 
 class RoleController extends Controller
 {
@@ -18,8 +19,8 @@ class RoleController extends Controller
     public function index()
     {
         $roles = Role::all();
-
-        return view('role.index',compact('roles'));
+        $page = MenuMapping::getMap(session('user_id'),"MRRO");
+        return view('role.index',compact('roles','page'));
     }
 
     /**

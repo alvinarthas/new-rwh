@@ -21,13 +21,19 @@
                             <td>{{$sale->customer->apname}}</td>
                             <td>{{$sale->ttl_harga+$sale->ongkir}}</td>
                             <td>
+                                @if (array_search("PSSLU",$page))
                                 <a href="{{route('sales.edit',['id'=>$sale->id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
+                                @endif
+                                @if (array_search("PSSLD",$page))
                                 <a href="javascrip:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$sale->id}})">Delete</a>
+                                @endif
                                 @if ($sale->approve == 0)
                                 <?php
                                     $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sale->id]));
                                 ?>
+                                    @if (array_search("PSSLA",$page))
                                     <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales</a>
+                                    @endif
                                 @else
                                     <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5" disabled>Sales sudah di approve</a>
                                 @endif

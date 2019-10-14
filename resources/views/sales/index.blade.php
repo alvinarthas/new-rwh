@@ -55,7 +55,9 @@ Index Sales Order
                         </div>
                     </div>
                     <div class="form-group text-left m-b-0">
+                        @if (array_search("PSSLC",$page))
                         <a href="{{route('sales.create')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add Sales</a>
+                        @endif
                         <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="chooseSales()">Show Data</a>
                     </div>
                 </div>

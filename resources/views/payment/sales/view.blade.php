@@ -23,7 +23,9 @@
                     <td>Rp. {{number_format($sale->ttl_harga+$sale->ongkir)}}</td>
                     <td>{{$sale->status}}</td>
                     <td>
+                        @if (array_search("PSSPC",$page))
                         <a href="{{route('salesCreate',['id'=>$sale->id])}}" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" >Detail Payment</a>
+                        @endif
                     </td>
                 </tr>
             @php($i++)

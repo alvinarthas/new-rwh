@@ -8,12 +8,14 @@ use Illuminate\Support\Facades\Validator;
 use App\RoleMapping;
 use App\Role;
 use App\Employee;
+use App\MenuMapping;
 
 class RoleMappingController extends Controller
 {
     public function index(){
         $users = Employee::all();
-        return view('rolemapping.index',compact('users'));
+        $page = MenuMapping::getMap(session('user_id'),"MRRM");
+        return view('rolemapping.index',compact('users','page'));
     }
 
     public function edit($id){

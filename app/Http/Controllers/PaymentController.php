@@ -18,6 +18,7 @@ use App\PurchaseDetail;
 use App\Saldo;
 use App\SaldoHistory;
 use App\Jurnal;
+use App\MenuMapping;
 
 class PaymentController extends Controller
 {
@@ -33,10 +34,10 @@ class PaymentController extends Controller
         $start_pay = $request->start_pay;
         $end_pay = $request->end_pay;
         $customer = $request->customer;
-
+        $page = MenuMapping::getMap(session('user_id'),"PSSP");
         $sales = Sales::getOrderPayment($start_trx,$end_trx,$start_pay,$end_pay,$customer);
         if ($request->ajax()) {
-            return response()->json(view('payment.sales.view',compact('sales'))->render());
+            return response()->json(view('payment.sales.view',compact('sales','page'))->render());
         }
 
     }
@@ -47,8 +48,8 @@ class PaymentController extends Controller
         $payment = SalesPayment::where('trx_id',$id)->get();
         $ttl_pay = SalesPayment::where('trx_id',$id)->sum('payment_amount');
         $coas = Coa::where('grup_id',5)->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
-
-        return view('payment.sales.form',compact('sales','payment','coas','details','ttl_pay'));
+        $page = MenuMapping::getMap(session('user_id'),"PSSP");
+        return view('payment.sales.form',compact('sales','payment','coas','details','ttl_pay','page'));
     }
 
     public function salesStore(Request $request){
@@ -154,9 +155,9 @@ class PaymentController extends Controller
 
     public function purchaseView(Request $request){
         $purchase = Purchase::getOrderPayment($request->bulan,$request->tahun);
-
+        $page = MenuMapping::getMap(session('user_id'),"PUPP");
         if ($request->ajax()) {
-            return response()->json(view('payment.purchase.view',compact('purchase'))->render());
+            return response()->json(view('payment.purchase.view',compact('purchase','page'))->render());
         }
     }
 
@@ -167,8 +168,9 @@ class PaymentController extends Controller
         $ttl_pay = PurchasePayment::where('trx_id',$id)->sum('payment_amount');
         $ttl_order = PurchaseDetail::where('trx_id',$id)->sum(DB::raw('qty * price'));
         $coas = Coa::where('grup',5)->orWhere('grup',2)->orWhere(DB::raw("AccNo like '2%' and AccName like '%CC%'"))->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
+        $page = MenuMapping::getMap(session('user_id'),"PUPP");
 
-        return view('payment.purchase.form',compact('purchase','payment','coas','details','ttl_pay','ttl_order'));
+        return view('payment.purchase.form',compact('purchase','payment','coas','details','ttl_pay','ttl_order','page'));
     }
 
     public function purchaseStore(Request $request){

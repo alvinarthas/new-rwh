@@ -14,8 +14,9 @@ class MenuController extends Controller
 {
     public function index(){
         $users = Employee::all();
+        $page = MenuMapping::getMap(session('user_id'),"MRMM");
 
-        return view('menumapping.index',compact('users'));
+        return view('menumapping.index',compact('users','page'));
     }
 
     public function show($id){

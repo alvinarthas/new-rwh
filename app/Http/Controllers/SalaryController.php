@@ -9,6 +9,7 @@ use App\Exceptions\Handler;
 use App\Employee;
 use App\GajiPokok;
 use App\RecordPoin;
+use App\MenuMapping;
 
 class SalaryController extends Controller
 {
@@ -91,7 +92,8 @@ class SalaryController extends Controller
             }
             return response()->json(view('salary.poin.view',compact('datas','start','end'))->render());
         }else{
-            return view('salary.poin.index');
+            $page = MenuMapping::getMap(session('user_id'),"EMEP");
+            return view('salary.poin.index',compact('page'));
         }
         
     }
@@ -114,7 +116,8 @@ class SalaryController extends Controller
             $datas->push($poin);
         }
 
-        return response()->json(view('salary.poin.detail',compact('datas','start','end','nama'))->render());
+        $page = MenuMapping::getMap(session('user_id'),"EMEP");
+        return response()->json(view('salary.poin.detail',compact('datas','start','end','nama','page'))->render());
     }
 
     public function formPoin(Request $request){

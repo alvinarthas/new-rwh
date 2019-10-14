@@ -32,7 +32,9 @@
             <div class="card-box table-responsive">
                 <h4 class="m-t-0 header-title">Index Employee</h4>
                 <p class="text-muted font-14 m-b-30">
-                    <a href="{{ route('employee.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Pegawai</a>
+                    @if (array_search("EMEMC",$page))
+                        <a href="{{ route('employee.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Pegawai</a>
+                    @endif
                 </p>
 
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
@@ -78,8 +80,12 @@
                             ?>
                             <code style="display: none;" id="user_finger_{{$emp->id}}">{{$finger}}</code>
                             <td>
-                                <a href="{{route('employee.edit',['id'=>$emp->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
-                                <a href="" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus</a>
+                                @if (array_search("EMEMU",$page))
+                                    <a href="{{route('employee.edit',['id'=>$emp->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
+                                @endif
+                                @if (array_search("EMEMD",$page))
+                                    <a href="" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus</a>
+                                @endif
                                 <div id="fingerprint{{$emp->id}}">
                                 @if ($finger == 0)
                                     <a href="finspot:FingerspotReg;<?=$url_register?>" class="btn btn-purple btn-rounded waves-effect waves-light w-md m-b-5" onclick="user_register({{$emp->id}},'{{$emp->username}}')">Daftar Fingerprint</a>

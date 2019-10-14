@@ -21,13 +21,19 @@
                             <td>{{$purchase->supplier()->first()->nama}}</td>
                             <td>{{$purchase->tgl}}</td>
                             <td>
+                                @if (array_search("PUPUU",$page))
                                 <a href="{{route('purchase.edit',['id'=>$purchase->id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
+                                @endif
+                                @if (array_search("PUPUD",$page))
                                 <a href="javascrip:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$purchase->id}})">Delete</a>
+                                @endif
                                 @if ($purchase->approve == 0)
                                 <?php
                                     $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id]));
                                 ?>
+                                    @if (array_search("PUPUA",$page))
                                     <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase</a>
+                                    @endif
                                 @else
                                     <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Purchase sudah di approve</a>
                                 @endif

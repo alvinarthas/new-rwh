@@ -11,6 +11,7 @@ use App\PurchaseDetail;
 use App\Perusahaan;
 use App\ManageHarga;
 use App\Jurnal;
+use App\MenuMapping;
 
 class PurchaseController extends Controller
 {
@@ -21,7 +22,8 @@ class PurchaseController extends Controller
      */
     public function index()
     {
-        return view('purchase.index');
+        $page = MenuMapping::getMap(session('user_id'),"PUPU");
+        return view('purchase.index',compact('page'));
     }
 
     // HELPER
@@ -46,8 +48,9 @@ class PurchaseController extends Controller
 
     public function showIndexPurchase(Request $request){
         $purchases = Purchase::where('month',$request->bulan)->where('year',$request->tahun)->orderBy('created_at','desc')->get();
+        $page = MenuMapping::getMap(session('user_id'),"PUPU");
         if ($request->ajax()) {
-            return response()->json(view('purchase.indexpurchase',compact('purchases'))->render());
+            return response()->json(view('purchase.indexpurchase',compact('purchases','page'))->render());
         }
     }
 

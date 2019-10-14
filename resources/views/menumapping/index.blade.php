@@ -32,7 +32,9 @@
                             <td>{{$user->name}}</td>
                             <td>{{$user->username}}</td>
                             <td>
-                                <a href="{{route('showMapping',['id'=>$user->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Atur</a>
+                                @if (array_search("MRMME",$page))
+                                    <a href="{{route('showMapping',['id'=>$user->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Atur</a>
+                                @endif
                             </td>
                         </tr>
                         @php($i++)
