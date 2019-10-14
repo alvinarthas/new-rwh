@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Validator;
-
 use Illuminate\Http\Request;
+
 use App\Perusahaan;
+use App\MenuMapping;
 
 class PerusahaanController extends Controller
 {
@@ -16,8 +17,9 @@ class PerusahaanController extends Controller
     public function index()
     {
         $perusahaan = Perusahaan::all();
+        $page = MenuMapping::getMap(session('user_id'),"MDPR");
 
-        return view('perusahaan.index', compact('perusahaan'));
+        return view('perusahaan.index', compact('perusahaan','page'));
     }
 
     /**

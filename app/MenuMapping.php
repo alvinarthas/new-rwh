@@ -68,6 +68,14 @@ class MenuMapping extends Model
         WHERE mm.user_id =$user AND m.modul_id like '$modul%'");
     }
 
+    public static function getHeadModul($user){
+        return DB::select("SELECT DISTINCT m.modul_desc,m.modul_icon,m.modul_id FROM menumapping mm
+        INNER JOIN sub_mapping sm ON sm.id = mm.submapping_id 
+        INNER JOIN tblsubmodul s ON s.submodul_id = sm.submodul_id
+        INNER JOIN tblmodul m ON m.modul_id = s.modul_id
+        WHERE mm.user_id =$user");
+    }
+
     public static function getMap($user,$submodul){
         $data = collect();
         

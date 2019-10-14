@@ -23,7 +23,9 @@
                     <td>Rp. {{number_format($item['paid'])}}</td>
                     <td>{{$item['status']}}</td>
                     <td>
+                        @if (array_search("PUPPC",$page))
                         <a href="{{route('purchaseCreate',['id'=>$item['trx_id']])}}" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" >Detail Payment</a>
+                        @endif
                     </td>
                 </tr>
             @php($i++)

@@ -13,13 +13,15 @@ use App\Sales;
 use App\SalesDet;
 use App\PurchaseDetail;
 use App\Jurnal;
+use App\MenuMapping;
 
 class SalesController extends Controller
 {
 
     public function index()
     {
-        return view('sales.index');
+        $page = MenuMapping::getMap(session('user_id'),"PSSL");
+        return view('sales.index',compact('page'));
     }
 
     public function showSales(Request $request){

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+
 use App\ReturPembelian;
 use App\ReturPembelianDet;
 use App\ReturPenjualan;
@@ -15,7 +16,7 @@ use App\PurchaseDetail;
 use App\Perusahaan;
 use App\Customer;
 use Carbon\Carbon;
-
+use App\MenuMapping;
 
 class ReturController extends Controller
 {
@@ -30,7 +31,8 @@ class ReturController extends Controller
         $retur = ReturPembelianDet::all();
         $jenis = "report";
         $jenisretur = "pembelian";
-        return view('retur.index', compact('purchase', 'retur', 'jenis', 'jenisretur'));
+        $page = MenuMapping::getMap(session('user_id'),"REPB");
+        return view('retur.index', compact('purchase', 'retur', 'jenis', 'jenisretur','page'));
     }
 
     public function indexpj()
@@ -39,8 +41,8 @@ class ReturController extends Controller
         $retur = ReturPenjualanDet::all();
         $jenis = "report";
         $jenisretur = "penjualan";
-
-        return view('retur.index', compact('sales', 'retur', 'jenis', 'jenisretur'));
+        $page = MenuMapping::getMap(session('user_id'),"REPJ");
+        return view('retur.index', compact('sales', 'retur', 'jenis', 'jenisretur','page'));
     }
 
     /**

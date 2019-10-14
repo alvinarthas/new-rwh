@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+
 use App\Product;
 use App\Perusahaan;
 use App\Company;
-
+use App\MenuMapping;
 
 class ProductController extends Controller
 {
@@ -19,7 +20,8 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::all();
-        return view('product.index', compact('products'));
+        $page = MenuMapping::getMap(session('user_id'),"MDPD");
+        return view('product.index', compact('products','page'));
     }
 
     /**

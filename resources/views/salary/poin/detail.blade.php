@@ -22,7 +22,9 @@
                 <td>{{$data['poin']}}</td>
                 <td>{{$data['creator']}}</td>
                 <td>
-                    <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" onclick="deletePoin({{$data['id']}})"><i class="fa fa-file-pdf-o"></i>Delete Poin</a>
+                    @if (array_search("EMEPD",$page))
+                        <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" onclick="deletePoin({{$data['id']}})"><i class="fa fa-file-pdf-o"></i>Delete Poin</a>
+                    @endif
                 </td>
             </tr>
             @php($i++)

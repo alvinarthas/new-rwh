@@ -180,7 +180,7 @@ Informasi Data Member
     </form>
 
     {{-- Data Bank Member --}}
-    @if (array_search("MBMBBV",$page))
+    @if (array_search("MBMMBV",$page))
     <div class="row">
         <div class="col-12">
             <div class="card-box">
@@ -188,7 +188,7 @@ Informasi Data Member
                 {{-- List Data Bank Member --}}
                 <div class="card-box table-responsive">
                     <h4 class="m-t-0 header-title">Data Bank Member</h4>
-                    @if (array_search("MBMBBC",$page))
+                    @if (array_search("MBMMBC",$page))
                     <p class="text-muted font-14 m-b-30">
                         <a href="javascript:;" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5" onclick="funcBank('create')">Tambah Bank</a>
                     </p>
@@ -220,10 +220,10 @@ Informasi Data Member
                                     <td>{{$bm->status}}</td>
                                     <td>{{$bm->p_status}}</td>
                                     <td>
-                                        @if (array_search("MBMBBU",$page))
+                                        @if (array_search("MBMMBU",$page))
                                         <a href="javascript:;" class="btn btn-info btn-rounded waves-effect w-md waves-info m-b-5" onclick="funcBank('edit',{{$bm->id}})">Update</a>
                                         @endif
-                                        @if (array_search("MBMBBD",$page))
+                                        @if (array_search("MBMMBD",$page))
                                         <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" onclick="funcBank('delete',{{$bm->id}})">Delete</a>
                                         @endif
                                     </td>
@@ -242,7 +242,7 @@ Informasi Data Member
     @endif
     
     {{-- Data Perusahaan Member --}}
-    @if (array_search("MBMBPV",$page))
+    @if (array_search("MBMMPV",$page))
     <div class="row">
         <div class="col-12">
             <div class="card-box">
@@ -250,7 +250,7 @@ Informasi Data Member
                 {{-- List Data --}}
                 <div class="card-box table-responsive" id="tblperusahaan">
                     <h4 class="m-t-0 header-title">Data Perusahaan</h4>
-                    @if (array_search("MBMBPC",$page))
+                    @if (array_search("MBMMPC",$page))
                     <p class="text-muted font-14 m-b-30">
                         <a href="javascript:;" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5" onclick="funcPerusahaan('create')">Tambah Perusahaan</a>
                     </p>
@@ -274,10 +274,10 @@ Informasi Data Member
                                     <td>{{$pm->noid}}</td>
                                     <td>{{$pm->passid}}</td>
                                     <td>
-                                        @if (array_search("MBMBPU",$page))
+                                        @if (array_search("MBMMPU",$page))
                                             <a href="javascript:;" class="btn btn-info btn-rounded waves-effect w-md waves-info m-b-5" onclick="funcPerusahaan('edit',{{$pm->id}})">Update</a>
                                         @endif
-                                        @if (array_search("MBMBPD",$page))
+                                        @if (array_search("MBMMPD",$page))
                                             <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" onclick="funcPerusahaan('delete',{{$pm->id}})">Delete</a>
                                         @endif
                                         

@@ -227,7 +227,11 @@ Form Sales Payment
                                     <td>{{$pay->deduct_category}}</td>
                                     <td>{{$pay->due_date}}</td>
                                     <td>{{$pay->jurnal_id}}</td>
-                                    <td><a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5" onclick="deletePayment({{$pay->id}})">Delete</a></td>
+                                    <td>
+                                            @if (array_search("PSSPD",$page))
+                                            <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5" onclick="deletePayment({{$pay->id}})">Delete</a>
+                                            @endif
+                                        </td>
                                 </tr>
                             @php($i++)
                             @endforeach

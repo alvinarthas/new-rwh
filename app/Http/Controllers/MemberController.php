@@ -32,7 +32,9 @@ class MemberController extends Controller
         $keyword = $request->get('search');
         $perusahaan = Perusahaan::orderBy('nama')->get();
         $bank = Bank::bankMember();
-        return view('member.index',compact('keyword','perusahaan','bank'));
+        $page = MenuMapping::getMap(session('user_id'),"MBMM");
+
+        return view('member.index',compact('keyword','perusahaan','bank','page'));
     }
 
     public function ajxmember(Request $request){
@@ -180,7 +182,8 @@ class MemberController extends Controller
         $subkoor = SubKoordinator::all();
         $bankmember = BankMember::where('ktp',$id)->get();
         $perusahaanmember = PerusahaanMember::where('ktp',$id)->get();
-        $page = MenuMapping::getMap(session('user_id'),"MBMB");
+        $page = MenuMapping::getMap(session('user_id'),"MBMM");
+
         return view('member.show',compact('provinsi','koordinator','subkoor','member','bankmember','perusahaanmember','page'));
     }
 

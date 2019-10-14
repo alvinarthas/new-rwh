@@ -50,7 +50,9 @@ Index Purchasing
                         </div>
                     </div>
                     <div class="form-group text-left m-b-0">
+                        @if (array_search("PUPUC",$page))
                         <a href="{{route('purchase.create')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add Purchase</a>
+                        @endif
                         <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase()">Show Data</a>
                     </div>
                 </div>

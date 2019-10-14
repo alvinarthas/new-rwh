@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+
 use App\Koordinator;
+use App\MenuMapping;
 
 class KoordinatorController extends Controller
 {
@@ -15,8 +17,8 @@ class KoordinatorController extends Controller
     public function index()
     {
         $koordinator = Koordinator::all();
-
-        return view('koordinator.index', compact('koordinator'));
+        $page = MenuMapping::getMap(session('user_id'),"MBKM");
+        return view('koordinator.index', compact('koordinator','page'));
     }
 
     /**

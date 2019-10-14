@@ -31,7 +31,9 @@
             <div class="card-box table-responsive">
                 <h4 class="m-t-0 header-title">Index Product</h4>
                 <p class="text-muted font-14 m-b-30">
+                    @if (array_search("MDPDC",$page))
                     <a href="{{ route('product.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Product</a>
+                    @endif
                     <a href="{{ route('manageproduct') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Manage Harga</a>
                 </p>
 
@@ -73,12 +75,17 @@
                                 @php($sisa=$stock_in - $stock_out + $prd->stock)
                                 {{ $sisa }}
                             </td>
-                            <td><a href="{{ route('product.edit', ['id' => $prd->id]) }}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
+                            <td>
+                                @if (array_search("MDPDU",$page))
+                                <a href="{{ route('product.edit', ['id' => $prd->id]) }}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
+                                @endif
+                                @if (array_search("MDPDD",$page))
                                 <form class="" action="{{ route('product.destroy', ['id' => $prd->id]) }}" method="post">
                                     {{ csrf_field() }}
                                     {{ method_field('delete') }}
                                     <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button></a>
                                 </form>
+                                @endif
                             </td>
                         </tr>
                         @php($i++)

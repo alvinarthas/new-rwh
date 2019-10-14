@@ -64,7 +64,9 @@ Daftar Poin Pegawai
 
                     <div class="form-group text-left m-b-0">
                         <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData()">Show Data</a>
-                        <a href="{{ route('formPoin') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Poin</a>
+                        @if (array_search("EMEPC",$page))
+                            <a href="{{ route('formPoin') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Poin</a>
+                        @endif
                     </div>
                 </div>
 

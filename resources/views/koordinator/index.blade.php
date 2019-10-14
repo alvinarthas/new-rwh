@@ -31,7 +31,9 @@
             <div class="card-box table-responsive">
                 <h4 class="m-t-0 header-title">Index Koordinator Member</h4>
                 <p class="text-muted font-14 m-b-30">
-                    <a href="{{ route('koordinator.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Koordinator Member</a>
+                    @if (array_search("MBKMC",$page))
+                        <a href="{{ route('koordinator.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Koordinator Member</a>
+                    @endif
                 </p>
 
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
@@ -55,12 +57,17 @@
                             <td>{{$kor->telp}}</td>
                             <td>{{$kor->ktp}}</td>
                             <td>{{$kor->memberid}}</td>
-                            <td><a href="{{ route('koordinator.edit', ['id' => $kor->id]) }}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
+                            <td>
+                                @if (array_search("MBKMU",$page))
+                                <a href="{{ route('koordinator.edit', ['id' => $kor->id]) }}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
+                                @endif
+                                @if (array_search("MBKMD",$page))
                                 <form class="" action="{{ route('koordinator.destroy', ['id' => $kor->id]) }}" method="post">
                                     {{ csrf_field() }}
                                     {{ method_field('delete') }}
                                     <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
                                 </form>
+                                @endif
                             </td>
                         </tr>
                         @php($i++)

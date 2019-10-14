@@ -12,13 +12,14 @@ use App\Employee;
 use App\Bank;
 use App\DemoUser;
 use Carbon\Carbon;
+use App\MenuMapping;
 
 class EmployeeController extends Controller
 {
     public function index(){
         $employee = Employee::all();
-
-        return view('employee.index',compact('employee'));
+        $page = MenuMapping::getMap(session('user_id'),"EMEM");
+        return view('employee.index',compact('employee','page'));
     }
 
     public function create(){

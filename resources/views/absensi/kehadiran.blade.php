@@ -27,8 +27,12 @@
             <p class="text-muted m-b-30 font-14">
             </p>
             <div class="form-group text-left m-b-0">
-                <a href="{{route('absensiRegister')}}" class="btn btn-primary btn-rounded waves-effect waves-light w-md m-b-5">Registrasi</a>
-                <a href="{{route('absensiLog')}}" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Full Log</a>
+                @if (array_search("ABKER",$page))
+                    <a href="{{route('absensiRegister')}}" class="btn btn-primary btn-rounded waves-effect waves-light w-md m-b-5">Registrasi</a>
+                @endif
+                @if (array_search("ABLOV",$page2))
+                    <a href="{{route('absensiLog')}}" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Full Log</a>
+                @endif
             </div>
             <div class="row">
                 <div class="col-12">
