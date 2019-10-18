@@ -65,7 +65,7 @@
                         </tbody>
                     </table>
                 @elseif($jenis == "pricebycustomer")
-                    <h4 class="m-t-0 header-title">Update Price by Customer</h4>
+                    <h4 class="m-t-0 header-title">Update Price & BV by Customer</h4>
                     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                         <thead>
                             <th>No</th>
