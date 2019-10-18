@@ -3,7 +3,7 @@
 
     <!-- LOGO -->
     <div class="topbar-left">
-        <a href="index.html" class="logo"><span>Royal<span>Warehouse</span></span><i class="mdi mdi-layers"></i></a>
+        <a href="{{ route('getHome') }}" class="logo"><span>Royal<span>Warehouse</span></span><i class="mdi mdi-layers"></i></a>
     </div>
 
     <!-- Button mobile view to collapse sidebar menu -->
@@ -51,7 +51,7 @@
                             <button type="submit"><i class="fa fa-search"></i></button>
                         </form>
                     </li> --}}
-                    
+
                 </ul>
             </nav>
         </div><!-- end container -->
