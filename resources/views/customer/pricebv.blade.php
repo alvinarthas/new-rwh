@@ -185,12 +185,19 @@
                         </tbody>
                     </table>
                     <input type="hidden" name="id_cust" id="id_cust" value="{{$customer->id}}">
+                    <input type="hidden" name="opsi" id="opsi">
                 </div>
             </div>
         </div>
         <div class="form-group text-right m-b-0">
-            <button class="btn btn-primary waves-effect waves-light" type="submit">
+            <button class="btn btn-primary waves-effect waves-light" type="submit" onclick="updatePriceBV()">
                 Update Data
+            </button>
+            {{-- <a href="javascript:;" type="button" class="btn btn-success waves-effect waves-light" onclick="Cetak()">
+                Cetak file Excel
+            </a> --}}
+            <button class="btn btn-success waves-effect waves-light" type="submit" onclick="exportXls()">
+                Cetak file Excel
             </button>
         </div>
     </form>
@@ -245,12 +252,16 @@
                     </table>
                     <input type="hidden" name="id" id="id" value="{{$product->id}}">
                     <input type="hidden" name="prod_id" id="prod_id" value="{{$product['prod_id']}}">
+                    <input type="hidden" name="opsi" id="opsi">
                 </div>
             </div>
         </div>
         <div class="form-group text-right m-b-0">
-            <button class="btn btn-primary waves-effect waves-light" type="submit">
+            <button class="btn btn-primary waves-effect waves-light" type="submit" onclick="updatePriceBV()">
                 Update Data
+            </button>
+            <button class="btn btn-success waves-effect waves-light" type="submit" onclick="exportXls()">
+                Cetak file Excel
             </button>
         </div>
     </form>
@@ -387,6 +398,14 @@
         var cnt = parseInt($('#ctr').val())+1;
         $('#ctr').val(cnt);
         checkTotal();
+    }
+
+    function updatePriceBV(){
+        $('#opsi').val("0");
+    }
+
+    function exportXls(){
+        $('#opsi').val("1");
     }
 </script>
 @endsection
