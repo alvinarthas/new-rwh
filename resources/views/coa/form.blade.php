@@ -84,19 +84,10 @@ Tambah Data Coa
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Account Parent</label>
                                 <div class="col-10">
-                                    <select class="form-control select2" parsley-trigger="change" name="account_parent">
-                                        <option value="#" disabled selected>Pilih Account Parent</option>
-                                        @foreach ($parents as $parent)
-                                            @if($coa->StatusAccount == "Detail")
-                                                @if ($coa->AccParent == $parent->AccNo)
-                                                    <option value="{{$parent->AccNo}}" selected>{{$parent->AccName}} - {{$parent->AccNo}}</option>
-                                                @else
-                                                    <option value="{{$parent->AccNo}}" >{{$parent->AccName}} - {{$parent->AccNo}}</option>
-                                                @endif
-                                            @else
-                                                <option value="{{$parent->AccNo}}" >{{$parent->AccName}} - {{$parent->AccNo}}</option>
-                                            @endif
-                                        @endforeach
+                                    <select class="form-control select2" parsley-trigger="change" name="account_parent" onchange="getCoa(this.value)">
+                                        @isset($order->pbf_id)
+                                            <option value="{{$coa->AccParent}}" selected>{{$coa->AccParent}}</option>
+                                        @endisset
                                     </select>
                                 </div>
                             </div>
@@ -143,6 +134,7 @@ Tambah Data Coa
     <script type="text/javascript">
         $(document).ready(function() {
             $('form').parsley();
+            getCoa();
         });
     </script>
 
@@ -156,6 +148,33 @@ Tambah Data Coa
             templateResult: formatState,
             templateSelection: formatState
         });
+
+        function getCoa(){
+            $("#account_parent").select2({
+                placeholder:"Pilih Coa Parent",
+                ajax:{
+                    url: "{{route('ajxCoa')}}",
+                    dataType:'json',    
+                    delay:250,
+                    data:function(params){
+                        return{
+                            params:params.term,
+                        };
+                    },
+                    processResults:function(data){
+                        var item = $.map(data, (value)=>{ //map buat ngemap object data kyk foreach
+                            return { id: value.id, text: value.text };
+                        });
+
+                        return {
+                            results: item
+                        }
+                    },
+                    cache: true
+                },
+                minimumInputLength: 1,
+            });
+        }
 
         function formatState (opt) {
             if (!opt.id) {
