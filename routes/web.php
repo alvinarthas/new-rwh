@@ -216,6 +216,7 @@ Route::middleware(['checkUser'])->group(function () {
 
     // ------------------------ HELPER -------------------------------------------------
     Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
+    Route::get('/datacoa','HelperController@ajxCoa')->name('ajxCoa');
 
     // purchase helper
     Route::get('/showpurchase','PurchaseController@showPurchase')->name('showPurchase');

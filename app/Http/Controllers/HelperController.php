@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\DataKota;
 use App\Saldo;
+use App\Coa;
 
 class HelperController extends Controller
 {
@@ -28,5 +29,18 @@ class HelperController extends Controller
         $saldo = Saldo::where('customer_id',$customer)->first()->saldo_skrng;
 
         return $saldo;
+    }
+
+    public function ajxCoa(Request $request){
+        $params = $request->params;
+        $obat = Coa::where('AccName','LIKE',$params.'%')->orWhere('AccNo','LIKE',$params.'%')->limit(5)->get();
+        $data = collect();
+
+        foreach ($obat as $key) {
+          $arrayName = array('id' =>$key->kode,'text' =>$key->nama);
+          $data->push($arrayName);
+        }
+
+        return response()->json($data);
     }
 }

@@ -168,14 +168,12 @@ class EmployeeController extends Controller
     public function update(Request $request, $id){
         // Validate
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string',
-            'password' => 'required',
             'nama' => 'required|string',
             'nip' => 'required|string',
             'alamat' => 'required|string',
             'telepon' => 'required',
             'ktp' => 'required|string',
-            'email' => 'required|email|unique:tblemployee',
+            'email' => 'required|email',
             'tempat_lahir' => 'required',
             'tanggal_lahir' => 'required',
             'mulai_kerja' => 'required',
@@ -319,16 +317,31 @@ class EmployeeController extends Controller
 
     public function destroy($id){
         $employee = Employee::where('id',$id)->first();
-            unlink(public_path('assets/images/employee/foto').$employee->scanfoto);
-            unlink(public_path('assets/images/employee/ktp').$employee->scanktp);
-            unlink(public_path('assets/images/employee/sima').$employee->scansima);
-            unlink(public_path('assets/images/employee/simb').$employee->scansimb);
-            unlink(public_path('assets/images/employee/simc').$employee->scansimc);
-            unlink(public_path('assets/images/employee/npwp').$employee->scannpwp);
-            unlink(public_path('assets/images/employee/bpjs').$employee->scanbpjs);
+        if($employee->scanfoto != "noimage.jpg"){
+            unlink(public_path('assets/images/employee/foto/').$employee->scanfoto);
+        }
+        if($employee->scanktp != "noimage.jpg"){
+            unlink(public_path('assets/images/employee/ktp/').$employee->scanktp);
+        }
+        if($employee->scansima != "noimage.jpg"){
+            unlink(public_path('assets/images/employee/sima/').$employee->scansima);
+        }
+        if($employee->scansimb != "noimage.jpg"){
+            unlink(public_path('assets/images/employee/simb/').$employee->scansimb);
+        }
+        if($employee->scansimc != "noimage.jpg"){
+            unlink(public_path('assets/images/employee/simc/').$employee->scansimc);
+        }
+        if($employee->scannpwp != "noimage.jpg"){
+            unlink(public_path('assets/images/employee/npwp/').$employee->scannpwp);
+        }
+        if($employee->scanbpjs != "noimage.jpg"){
+            unlink(public_path('assets/images/employee/bpjs/').$employee->scanbpjs);
+        }
+
         $employee->delete();
 
-        return redirect()->back()->with('status', 'Data berhasil dihapus');
+        return "true";
     }
 
 }
