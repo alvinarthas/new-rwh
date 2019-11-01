@@ -117,6 +117,8 @@ Route::middleware(['checkUser'])->group(function () {
         'retur' => 'ReturController',
         // Customer
         'customer' => 'CustomerController',
+        // Saldo
+        'saldo' => 'SaldoController',
     ]);
 
     // Member
@@ -124,6 +126,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('ajxMemberOrder', 'MemberController@ajxMemberOrder')->name('ajxMemberOrder');
         Route::get('/ajxaddrowcetak', 'MemberController@ajxAddRowCetak')->name('ajxAddRowCetak');
         Route::post('/exportmember', 'MemberController@exportMember')->name('exportMember');
+        Route::get('/synchmember', 'MemberController@makeSynch')->name('createsynchmember');
 
     // Bank Member
         Route::get('/bankmember','BankMemberController@create')->name('createBankMember');
@@ -168,6 +171,9 @@ Route::middleware(['checkUser'])->group(function () {
         Route::post('/pricebycustomer/manage/{id}', 'CustomerController@updateManagePriceBV')->name('updatebycustomer');
         Route::get('/cetakXlsProduct/{id}', 'CustomerController@exportProduct')->name('exportXlsProduct');
         Route::get('/cetakXlsCustomer/{id}', 'CustomerController@exportCustomer')->name('exportXlsCustomer');
+
+    // Saldo
+        Route::get('ajxCoaOrder', 'SaldoController@ajxCoaOrder')->name('ajxCoaOrder');
 
     // PAYMENT
         // Sales

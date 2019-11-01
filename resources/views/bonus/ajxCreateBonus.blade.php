@@ -127,9 +127,15 @@
                 </div>
                 @if($bonusapa=="perhitungan")
                     <div class="form-group row">
-                        <label class="col-2 col-form-label">Total Bonus Tertahan</label>
+                        <label class="col-2 col-form-label">Estimasi Bonus</label>
                         <div class="col-10">
-                            <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="total_bonus2" id="total_bonus" value="" readonly="readonly">
+                            <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="estimasi_bonus" id="estimasi_bonus" value="{{ $estimasi_bonus }}" readonly="readonly">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-2 col-form-label">Selisih (Laba/Rugi)</label>
+                        <div class="col-10">
+                            <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="selisih_bonus" id="selisih_bonus" value="{{ $selisih_bonus }}" readonly="readonly">
                         </div>
                     </div>
                 @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")

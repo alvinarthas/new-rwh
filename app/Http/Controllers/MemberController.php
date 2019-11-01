@@ -492,4 +492,11 @@ class MemberController extends Controller
             }
         }
     }
+
+    public function makeSynch()
+    {
+        $member = Member::select('nama', 'tgl_lahir', 'member_id', 'koordinator', 'subkoor')->where('status', 'RWH')->orderBy('nama', 'asc')->get();
+
+        return view('member.synch',compact('member'));
+    }
 }

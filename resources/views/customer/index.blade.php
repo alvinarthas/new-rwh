@@ -1,6 +1,8 @@
 @extends('layout.main')
 @php
     use App\Customer;
+    use App\CoaNew;
+    use App\Employee;
 @endphp
 
 @section('css')
@@ -46,7 +48,9 @@
                             <th width="200px">Action</th>
                         </thead>
                         <tbody>
-                            @php($i = 1)
+                            @php
+                                $i = 1;
+                            @endphp
                             @foreach($customers as $cus)
                             <tr>
                                 <td>{{$i}}</td>
@@ -60,7 +64,9 @@
                                     <a href="{{route('customer.pricebv',['id'=>$cus->id])}}" class="btn btn-warning btn-rounded waves-effect waves-light w-75 m-b-5">Update Price & BV</a>
                                 </td>
                             </tr>
-                            @php($i++)
+                            @php
+                                $i++;
+                            @endphp
                             @endforeach
                         </tbody>
                     </table>
@@ -76,7 +82,9 @@
                             <th width="200px">Manage Customer Price</th>
                         </thead>
                         <tbody>
-                            @php($i = 1)
+                            @php
+                                $i = 1;
+                            @endphp
                             @foreach($products as $p)
                             <tr>
                                 <td>{{$i}}</td>
@@ -88,7 +96,55 @@
                                     <a href="{{route('managepricebycustomer',['id'=>$p->pid])}}" class="btn btn-warning btn-rounded waves-effect waves-light w-75 m-b-5">Update Price & BV</a>
                                 </td>
                             </tr>
-                            @php($i++)
+                            @php
+                                $i++;
+                            @endphp
+                            @endforeach
+                        </tbody>
+                    </table>
+                @elseif($jenis=="topup")
+                    <h4 class="m-t-0 header-title">Saldo Customer</h4>
+                    <p class="text-muted font-14 m-b-30">
+                        <a href="{{ route('saldo.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Customer</a>
+                    </p>
+                    <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
+                        <thead>
+                            <th>No</th>
+                            <th>Customer</th>
+                            <th>Tanggal</th>
+                            <th>Rekening Penerima</th>
+                            <th>Nominal</th>
+                            <th>Keterangan</th>
+                            <th>Creator</th>
+                            <th>Action</th>
+                        </thead>
+                        <tbody>
+                            @php
+                                $i = 1;
+                            @endphp
+                            @foreach($saldo as $s)
+                            <tr>
+                                <td>{{$i}}</td>
+                                <td>{{$s->apname}}</td>
+                                <td>{{$s->tanggal}}</td>
+                                @php
+                                    $coa = CoaNew::where('AccNo', $s->accNo)->select('AccName')->first();
+                                    $creator = Employee::where('id', $s->creator)->select('name')->first();
+                                    $i++;
+                                @endphp
+                                <td>{{$coa['AccName']}}</td>
+                                <td>Rp. <span class="divide">{{$s->amount}}</span></td>
+                                <td>{{$s->keterangan}}</td>
+                                <td>{{$creator['name']}}</td>
+                                <td>
+                                    <a href="{{route('saldo.edit',['id'=>$s->sid])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
+                                    <form class="" action="{{ route('saldo.destroy', ['id' => $s->sid]) }}" method="post">
+                                        {{ csrf_field() }}
+                                        {{ method_field('delete') }}
+                                        <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
+                                    </form>
+                                </td>
+                            </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -117,10 +173,12 @@
     {{-- Fingerprint --}}
     <script src="{{ asset('assets/fingerprint/jquery.timer.js') }}"></script>
     <script src="{{ asset('assets/fingerprint/ajaxmask.js') }}"></script>
+
+    <!-- number-divider -->
+    <script src="{{ asset('assets/plugins/number-divider/number-divider.min.js') }}"></script>
 @endsection
 
 @section('script-js')
-
 <script type="text/javascript">
 
     $(document).ready(function () {
@@ -131,6 +189,7 @@
             type: 'image',
         });
 
+        $(".divide").divide();
     });
 </script>
 @endsection

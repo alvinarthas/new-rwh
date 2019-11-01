@@ -1,10 +1,15 @@
 @extends('layout.main')
+@php
+    use App\CoaNew;
+@endphp
 
 @section('css')
     <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
     <!-- form Uploads -->
     <link href="{{ asset('assets/plugins/fileuploads/css/dropify.min.css') }}" rel="stylesheet" type="text/css" />
+    <!--datepicker-->
+    <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
 @endsection
 
 @section('judul')
@@ -13,6 +18,8 @@
         $judul = "Tambah Data Customer";
     }elseif($jenis == "edit"){
         $judul = "Update Data Customer";
+    }elseif($jenis == "topup" || $jenis=="edittopup"){
+        $judul = "Top Up Saldo Customer";
     }
 @endphp
 {{ $judul }}
@@ -24,6 +31,11 @@
     @elseif($jenis == "edit")
         <form class="form-horizontal" role="form" action="{{ route('customer.update',['id' => $customer->id]) }}" enctype="multipart/form-data" method="POST">
             {{ method_field('PUT') }}
+    @elseif($jenis == "topup")
+        <form class="form-horizontal" role="form" action="{{ route('saldo.store') }}" enctype="multipart/form-data" method="POST">
+    @elseif($jenis == "edittopup")
+        <form class="form-horizontal" role="form" action="{{ route('saldo.update',['id' => $saldo->id]) }}" enctype="multipart/form-data" method="POST">
+        {{ method_field('PUT') }}
     @endif
 
     @csrf
@@ -37,7 +49,7 @@
                     <h4 class="m-t-0 header-title">Update Data Customer</h4>
                 @endif
                 {{-- <p class="text-muted m-b-30 font-14">Customer Information</p> --}}
-
+                @if($jenis == "create" || $jenis == "edit")
                 <div class="row">
                     <div class="col-12">
                         <div class="p-20">
@@ -81,9 +93,90 @@
                         </div>
                     </div>
                 </div>
+                @elseif($jenis=="topup" || $jenis=="edittopup")
+                <div class="row">
+                    <div class="col-12">
+                        <div class="p-20">
+                            <p class="text-muted font-13">Top Up Saldo Customer</p>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Customer</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="customer_id">
+                                        @if($jenis=="edittopup")
+                                            @foreach($customers as $cs)
+                                                @if($cs->id == $saldo->customer_id)
+                                                    <option value="{{ $cs->id }}" selected>{{ $cs->apname }}</option>
+                                                @else
+                                                    <option value="{{ $cs->id }}">{{ $cs->apname }}</option>
+                                                @endif
+                                            @endforeach
+                                        @else
+                                            <option value="#" disabled selected>Pilih Customer</option>
+                                            @foreach ($customers as $cs)
+                                                <option value="{{$cs->id}}">{{$cs->apname}}</option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Rekening</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" id="search" name="search" parsley-trigger="change">
+                                        @isset($saldo->accNo)
+                                            <option value="{{ $saldo->accNo }}" selected>{{ CoaNew::where('AccNo', $saldo->accNo)->first()->AccName}}</option>
+                                        @endisset
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Nominal Top Up</label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control divide" parsley-trigger="change" name="nominal" id="nominal" placeholder="Nominal top up" autocomplete="off" value="@isset($saldo->amount){{ $saldo->amount }}@endisset" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Tanggal Transaksi</label>
+                                <div class="col-10">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control tanggal" parsley-trigger="change" required autocomplete="off" placeholder="yyyy/mm/dd" name="tanggal" id="tanggal"  value="@isset($saldo->tanggal){{$saldo->tanggal}}@endisset"  data-date-format='yyyy-mm-dd'>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                        </div>
+                                    </div><!-- input-group -->
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label">Upload bukti</label>
+                                        <div class="col-10">
+                                            @php
+                                                if(!empty($saldo->buktitf)){
+                                                    $source = $saldo->buktitf;
+                                                }else{
+                                                    $source = "noimage.jpg";
+                                                }
+                                            @endphp
+                                            <input type="file" class="dropify" data-height="100" name="buktitf" id="buktitf" data-default-file="{{ asset('assets/images/saldo/topup/'.$source) }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Keterangan</label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control" parsley-trigger="change" name="keterangan" id="keterangan" value="@isset($saldo->keterangan){{ $saldo->keterangan }}@endisset">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
     </div>
+    @if($jenis == "create" || $jenis == "edit")
     <div class="row">
         <div class="col-12">
             <div class="card-box">
@@ -152,6 +245,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <div class="form-group text-right m-b-0">
         @if($jenis=="edit")
@@ -172,19 +266,34 @@
 <script src="{{ asset('assets/plugins/fileuploads/js/dropify.min.js') }}"></script>
 <!-- Validation js (Parsleyjs) -->
 <script type="text/javascript" src="{{ asset('assets/plugins/parsleyjs/dist/parsley.min.js') }}"></script>
+<!-- number-divider -->
+<script src="{{ asset('assets/plugins/number-divider/number-divider.min.js') }}"></script>
+<!-- Datepicker -->
+<script src="{{ asset('assets/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
 @endsection
 
 @section('script-js')
     <script type="text/javascript">
         $(document).ready(function() {
             $('form').parsley();
+            ajx_coa();
+            $(".divide").divide();
         });
-    </script>
 
-    <script>
+        $('.dropify').dropify({
+            messages: {
+                'default': 'Drag and drop a file here or click',
+                'replace': 'Drag and drop or click to replace',
+                'remove': 'Remove',
+                'error': 'Ooops, something wrong appended.'
+            },
+            error: {
+                'fileSize': 'The file size is too big (1M max).'
+            }
+        });
+
         // Date Picker
-        jQuery('#tanggal_lahir').datepicker();
-        jQuery('#mulai_kerja').datepicker();
+        jQuery('.tanggal').datepicker();
 
         // Select2
         $(".select2").select2({
@@ -212,6 +321,34 @@
     </script>
 
     <script type="text/javascript">
+        function ajx_coa(){
+            $("#search").select2({
+                placeholder:'Masukan Kata Kunci',
+                ajax:{
+                    url: "{{route('ajxCoaOrder')}}",
+                    dataType:'json',
+                    delay:250,
+                    data:function(params){
+                        return{
+                            keyword:params.term,
+                        };
+                    },
+                    processResults:function(data){
+                        var item = $.map(data, (value)=>{ //map buat ngemap object data kyk foreach
+                            return { id: value.id, text: value.AccName};
+                        });
+                        return {
+                            results: item
+                        }
+                    },
+                    cache: false,
+                },
+                minimumInputLength: 3,
+                // templateResult: formatRepo,
+                // templateSelection: formatRepoSelection
+            });
+        }
+
         function deleteCustomer(id){
             var token = $("meta[name='csrf-token']").attr("content");
             // console.log(id);
