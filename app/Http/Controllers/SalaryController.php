@@ -10,6 +10,11 @@ use App\Employee;
 use App\GajiPokok;
 use App\RecordPoin;
 use App\MenuMapping;
+use App\Salary;
+use App\SalaryDet;
+use App\Purchase;
+use App\BonusPegawai;
+use App\BonusPegawaiDet;
 
 class SalaryController extends Controller
 {
@@ -166,10 +171,22 @@ class SalaryController extends Controller
 
 
     // Perhitungan Gaji
-    public function perhitunganGaji(Request $request){
+    public function indexPerhitunganGaji(){
+
+    }
+
+    public function detGajiPegawai(Request $request){
+
+    }
+
+    public function createPerhitunganGaji(Request $request){
+        return view('salary.perhitungan.form');
+    }
+
+    public function storePerhitunganGaji(Request $request){
         // Detail Information
-        $month = $request->month;
-        $year = $request->year;
+        $month = $request->bulan;
+        $year = $request->tahun;
         $bv = $request->bv;
         $hari_kerja = $request->hari_kerja;
         $collectionEom = collect();
@@ -186,8 +203,8 @@ class SalaryController extends Controller
         $salary->save();
 
         // Total Poin
-        $ttl_poin_internal = totalPoin($month,$year,1);
-        $ttl_poin_logistik = totalPoin($month,$year,0);
+        $ttl_poin_internal = RecordPoin::totalPoin($month,$year,1);
+        $ttl_poin_logistik = RecordPoin::totalPoin($month,$year,0);
         $ttl_poin_kendali_perusahaan = 0;
         $ttl_poin_top3 = 3;
 
@@ -201,44 +218,86 @@ class SalaryController extends Controller
         $arr_top3 = Purchase::getTop3($month,$year);
 
         // Value per poin
-        $value_share_internal = $anggaran_internal/$ttl_poin_internal;
-        $value_share_logistik = $anggaran_logistik/$ttl_poin_logistik;
-        $value_share_kendali_perusahaan = $anggaran_kendali_perusahaan/$ttl_poin_kendali_perusahaan;
-        $value_share_top3 = $anggaran_top3/$ttl_poin_top3;
+        if($ttl_poin_internal == 0){
+            $value_share_internal = 0;
+        }else{
+            $value_share_internal = $anggaran_internal/$ttl_poin_internal;
+        }
+
+        if($ttl_poin_logistik == 0){
+            $value_share_logistik = 0;
+        }else{
+            $value_share_logistik = $anggaran_logistik/$ttl_poin_logistik;
+        }
+
+        if($ttl_poin_kendali_perusahaan == 0){
+            $value_share_kendali_perusahaan = 0;
+        }else{
+            $value_share_kendali_perusahaan = $anggaran_kendali_perusahaan/$ttl_poin_kendali_perusahaan;
+        }
+
+        if($ttl_poin_top3 == 0){
+            $value_share_top3 = 0;
+        }else{
+            $value_share_top3 = $anggaran_top3/$ttl_poin_top3;
+        }
 
         // Hitung Bonus tiap pegawai
         foreach (GajiPokok::all() as $peg) {
             $eomcollect = collect();
             // Share Internal
-            $poin_internal = sumPoin2($peg->employee_id,$month,$year,1);
-            $persen_internal = ($poin_internal/$ttl_poin_internal)*100;
+            $poin_internal = RecordPoin::sumPoin2($peg->employee_id,$month,$year,1);
+            if($ttl_poin_internal == 0){
+                $persen_internal = 0;
+            }else{
+                $persen_internal = ($poin_internal/$ttl_poin_internal)*100;
+            }
+            
             $value_internal = $poin_internal*$value_share_internal;
 
             // Share Logistik
-            $poin_logistik = sumPoin2($peg->employee_id,$month,$year,0);
-            $persen_logistik = ($poin_logistik/$ttl_poin_logistik)*100;
+            $poin_logistik = RecordPoin::sumPoin2($peg->employee_id,$month,$year,0);
+            if($ttl_poin_logistik == 0){
+                $persen_logistik = 0;
+            }else{
+                $persen_logistik = ($poin_logistik/$ttl_poin_logistik)*100;
+            }
             $value_logistik = $poin_logistik*$value_share_logistik;
 
             // Share Kendali Perusahaan
             $poin_kendali_perusahaan = Purchase::sharePost($month,$year,$peg->employee_id);
-            $persen_kendali_perusahaan = (($poin_kendali_perusahaan/$ttl_poin_kendali_perusahaan)*100)/2;
+            if($ttl_poin_kendali_perusahaan == 0){
+                $persen_kendali_perusahaan = 0;
+            }else{
+                $persen_kendali_perusahaan = (($poin_kendali_perusahaan/$ttl_poin_kendali_perusahaan)*100)/2;
+            }
             $value_kendali_perusahaan = $poin_kendali_perusahaan*$value_share_kendali_perusahaan;
             
             // Share Top 3
-            if (in_array($peg->employee_id, $arr_top3)){
+
+            if (in_array($peg->employee_id, (array) $arr_top3)){
                 $poin_top3 = 1;
             }else{
                 $poin_top3 = 0;
             }
             
-            $persen_top3 = (($poin_top3/$ttl_poin_top3)*100)/2;
+            if($ttl_poin_top3 == 0){
+                $persen_top3 = 0;
+            }else{
+                $persen_top3 = (($poin_top3/$ttl_poin_top3)*100)/2;
+            }
+            
             $value_top3 = $poin_top3*$value_share_top3;
 
             // Employee of The Month Sementara
             $eom = 0;
 
             // Tunjangan Persentase
-            $tunjangan_persentase = ((($peg->tunjangan_jabatan/$value_share_internal)/$ttl_poin_internal)*100)/2;
+            if($value_share_internal == 0 || $ttl_poin_internal == 0){
+                $tunjangan_persentase = 0;
+            }else{
+                $tunjangan_persentase = ((($peg->tunjangan_jabatan/$value_share_internal)/$ttl_poin_internal)*100)/2;
+            }
 
             // Bonus Jabatan Sementara
             $bonus_jabatan = 0;
@@ -246,6 +305,9 @@ class SalaryController extends Controller
             // Total Bonus dan Persen
             $total_persen_all = $persen_internal+$persen_logistik+$persen_kendali_perusahaan+$persen_top3+$tunjangan_persentase;
             $total_bonus = $value_internal+$value_logistik+$value_kendali_perusahaan+$value_top3+$eom;
+
+            // Take Home Pay
+            $take_home_pay = $peg->gaji_pokok+$bonus_jabatan+$total_bonus;
 
             // Store to Collection EOM
             $eomcollect->put('id',$peg->employee_id);
@@ -259,12 +321,14 @@ class SalaryController extends Controller
                 'gaji_pokok' => $peg->gaji_pokok,
                 'bonus_jabatan' => $bonus_jabatan,
                 'take_home_pay' => $take_home_pay,
+                'employee_id' => $peg->employee_id,
+                'tunjangan_jabatan' => $peg->tunjangan_jabatan,
             ));
             $salarydet->save();
 
             // Store into Bonus Pegawai
             $bonus_pegawai = new BonusPegawai(array(
-                'salarydet_id' => $salarydet->id,
+                'salary_det_id' => $salarydet->id,
                 'employee_id' => $peg->employee_id,
                 'month' => $month,
                 'year' => $year,
@@ -296,28 +360,34 @@ class SalaryController extends Controller
 
         // Tentukan EOM
         $sorted = $collectionEom->sortByDesc('value');
+        
         if($bv >= 15000000){
             // get pegawai yg dapat eom
             $choseneom = $sorted->values()->all();
+            for ($i=0; $i < 2 ; $i++) {
+                if($i == 0){
+                    $value_eom = $bv*0.07;
+                }else{
+                    $value_eom = $bv*0.03;
+                }
+                
+                if(isset($choseneom[$i]['id'])){
+                    // Insert to DB Bonus Pegawai
+                    $bonpeg = BonusPegawai::where('employee_id',$choseneom[$i]['id'])->where('month',$month)->where('year',$year)->latest()->first();
+                    $totbon = $bonpeg->total_bonus + $value_eom;
 
-            for ($i=0; $i < 2 ; $i++) { 
-                $value_eom = $bv*0.07;
+                    $bonpeg->eom = $value_eom;
+                    $bonpeg->total_bonus = $totbon;
+                    $bonpeg->save();
 
-                // Insert to DB Bonus Pegawai
-                $bonpeg = BonusPegawai::where('employee_id',$choseneom[$i]->id)->where('month',$month)->where('year',$year)->first();
-                $totbon = $bonpeg->total_bonus + $choseneom[$i]->value;
+                    // Insert to Salary Det
+                    $saldet = SalaryDet::where('id',$bonpeg->salary_det_id)->first();
 
-                $bonpeg->eom = $eom;
-                $bonpeg->total_bonus = $totbon;
-                $bonpeg->save();
-
-                // Insert to Salary Det
-                $saldet = SalaryDet::where('id',$bonpeg->salarydet_id)->first();
-                $tot_takehome = $totbon+$saldet->take_home_pay;
-
-                $saldet->bonus = $totbon;
-                $saldet->take_home_pay = $tot_takehome;
-                $saldet->save();
+                    $tot_takehome = $totbon+$saldet->take_home_pay;
+                    $saldet->bonus = $totbon;
+                    $saldet->take_home_pay = $tot_takehome;
+                }
+                
             }
         }else{
             // get pegawai yg dapat eom
@@ -325,27 +395,28 @@ class SalaryController extends Controller
             // 5.1
             $choseneom = $sorted->values()->first();
 
-            $value_eom = $bv*0.07;
+            $value_eom = $bv*0.1;
 
             // Insert to DB Bonus Pegawai
-            $bonpeg = BonusPegawai::where('employee_id',$choseneom->id)->where('month',$month)->where('year',$year)->first();
-            $totbon = $bonpeg->total_bonus + $choseneom->value;
+            $bonpeg = BonusPegawai::where('employee_id',$choseneom['id'])->where('month',$month)->where('year',$year)->first();
+            $totbon = $bonpeg->total_bonus + $value_eom;
 
-            $bonpeg->eom = $eom;
+            $bonpeg->eom = $value_eom;
             $bonpeg->total_bonus = $totbon;
             $bonpeg->save();
 
             // Insert to Salary Det
-            $saldet = SalaryDet::where('id',$bonpeg->salarydet_id)->first();
+            $saldet = SalaryDet::where('id',$bonpeg->salary_det_id)->first();
+            
             $tot_takehome = $totbon+$saldet->take_home_pay;
 
             $saldet->bonus = $totbon;
             $saldet->take_home_pay = $tot_takehome;
             $saldet->save();
         }
-
-        // Check Bonus Manager
+            // Check Bonus Manager
             // count gaji yg > 5.6jt
             // if diatas 3 orang, semua manager dapet 10% bv
+        // return redirect()->route('indexPerhitungan')->with('status', 'Data Gaji berhasil dibuat');
     }
 }

@@ -98,7 +98,7 @@ class JurnalController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $id_jurnal = Jurnal::getJurnalID();
+            $id_jurnal = Jurnal::getJurnalID('JN');
             try{
                 for ($i=0; $i < $request->count ; $i++) {
                     $jurnal = new Jurnal(array(

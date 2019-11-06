@@ -12,7 +12,7 @@ class Purchase extends Model
 {
     protected $table ='tblpotrx';
     protected $fillable = [
-        'month','year','creator','supplier','notes','jurnal_id','tgl','approve','approve_by'
+        'month','year','creator','supplier','notes','jurnal_id','tgl','approve','approve_by','total_harga_modal','total_harga_dist'
     ];
 
     public function supplier(){
@@ -20,7 +20,7 @@ class Purchase extends Model
     }   
 
     public static function getTop3($month,$year){
-        return Purchase::where('month',$month)->where('year',$year)->orderBy('total_harga_dist','desc')->groupBy('supplier')->sum('total_harga_dist')->select('creator')->limit(3)->get();
+        return Purchase::where('month',$month)->where('year',$year)->groupBy('supplier')->orderBy(DB::raw('SUM(total_harga_dist)'),'desc')->select('creator')->get();
     }
 
     public static function sharePost($month,$year,$creator){

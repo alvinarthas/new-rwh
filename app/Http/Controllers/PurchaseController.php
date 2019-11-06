@@ -131,7 +131,7 @@ class PurchaseController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $id_jurnal = Jurnal::getJurnalID();
+            $id_jurnal = Jurnal::getJurnalID('PO');
             $purchase = new Purchase(array(
                 // Informasi Pribadi
                 'month' => $request->bulanpost,
@@ -171,11 +171,11 @@ class PurchaseController extends Controller
                 }
 
                 //insert debet Persediaan Barang Indent ( harga modal x qty )
-                Jurnal::addJurnal($id_jurnal,$total_modal,$date,$jurnal_desc,'1-105002','Debet');
-                //insert debet Piutang BOnus TErtahan
-                Jurnal::addJurnal($id_jurnal,$total_tertahan,$date,$jurnal_desc,'1-103005','Debet');
-                //insert credit hutang supplier
-                Jurnal::addJurnal($id_jurnal,$total_distributor,$date,$jurnal_desc,'2-102002','Credit');
+                Jurnal::addJurnal($id_jurnal,$total_modal,$date,$jurnal_desc,'1.1.4.1.1','Debet');
+                //insert debet Estimasi Bonus
+                Jurnal::addJurnal($id_jurnal,$total_tertahan,$date,$jurnal_desc,'1.1.3.4','Debet');
+                //insert credit hutang Dagang
+                Jurnal::addJurnal($id_jurnal,$total_distributor,$date,$jurnal_desc,'2.1.1','Credit');
 
                 return redirect()->route('purchase.index')->with('status', 'Data berhasil dibuat');
 

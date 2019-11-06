@@ -99,8 +99,7 @@ class SalesController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $id_jurnal = Jurnal::getJurnalID();
-            $id_jurnal2 = $id_jurnal+1;
+            $id_jurnal = Jurnal::getJurnalID('SO');
 
             $sales = new Sales(array(
                 'customer_id' => $request->customer,
@@ -110,7 +109,6 @@ class SalesController extends Controller
                 'ongkir' => $request->ongkir,
                 'approve' => 0,
                 'jurnal_id' => $id_jurnal,
-                'hpp_jurnal_id' => $id_jurnal2,
             ));
             // success
             try {
@@ -135,15 +133,15 @@ class SalesController extends Controller
                 }
 
                 // Jurnal 1
-                    //insert debet Piutang Usaha Konsumen Masukkan harga total - diskon
-                    Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'1-103001','Debet');
-                    //insert credit pendapatan retail
-                    Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'4-102000','Credit');
+                    //insert debet Piutang Konsumen Masukkan harga total - diskon
+                    Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'1.1.3.1','Debet');
+                    //insert credit pendapatan retail (SALES)
+                    Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'4.1.1','Credit');
                 // Jurnal 2
-                    //insert debet Piutang Usaha Konsumen
-                    Jurnal::addJurnal($id_jurnal2,$modal,$request->trx_date,$jurnal_desc,'5-100001','Debet');
-                    //insert Credit Pendapatan Retail
-                    Jurnal::addJurnal($id_jurnal2,$modal,$request->trx_date,$jurnal_desc,'1-105001','Credit');
+                    //insert debet COGS
+                    Jurnal::addJurnal($id_jurnal2,$modal,$request->trx_date,$jurnal_desc,'5.1','Debet');
+                    //insert Credit Persediaan Barang milik customer
+                    Jurnal::addJurnal($id_jurnal2,$modal,$request->trx_date,$jurnal_desc,'1.1.4.1.2','Credit');
 
                 return redirect()->route('sales.index')->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {

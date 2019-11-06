@@ -52,6 +52,8 @@ class ReceiveProductController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
+            $id_jurnal = Jurnal::getJurnalID('SO');
+
             $receive = new ReceiveDet(array(
                 'trx_id' => $request->trx_id,
                 'prod_id' => $request->product,
@@ -59,11 +61,16 @@ class ReceiveProductController extends Controller
                 'expired_date' => $request->expired_date,
                 'creator' => session('user_id'),
                 'receive_date' => $request->receive_date,
+                'id_jurnal' => $id_jurnal,
             ));
 
             try{
                 $receive->save();
                 // JURNAL
+                //insert debet Piutang Konsumen Masukkan harga total - diskon
+                Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'1.1.3.1','Debet');
+                //insert credit pendapatan retail (SALES)
+                Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'4.1.1','Credit');
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);

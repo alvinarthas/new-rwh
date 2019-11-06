@@ -11,7 +11,7 @@ class ReceiveDet extends Model
 {
     protected $table ='tblreceivedet';
     protected $fillable = [
-        'trx_id','prod_id','qty','expired_date', 'creator', 'receive_date', 'jurnal_id',
+        'trx_id','prod_id','qty','expired_date', 'creator', 'receive_date', 'id_jurnal',
     ];
 
     public function prod(){
