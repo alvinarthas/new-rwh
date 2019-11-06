@@ -11,10 +11,15 @@ use App\User;
 use App\BankMember;
 use App\Product;
 use App\PriceDet;
+use App\Jurnal;
 
 class TestController extends Controller
 {
     public function index(){
+        $jenis = "JU";
+        print_r(Jurnal::getJurnalID($jenis));
+    }
+    public function indexxxxx(){
         $collection = collect([
             ['id' => 1, 'value' => 10],
             ['id' => 2, 'value' => 20],

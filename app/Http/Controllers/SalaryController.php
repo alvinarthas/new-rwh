@@ -171,8 +171,13 @@ class SalaryController extends Controller
 
 
     // Perhitungan Gaji
-    public function indexPerhitunganGaji(){
-
+    public function indexPerhitunganGaji(Request $request){
+        if($request->ajax()){
+            $bulan = $request->bulan;
+            $tahun = $request->tahun;
+        }else{
+            return view('salary.perhitungan.index');
+        }
     }
 
     public function detGajiPegawai(Request $request){

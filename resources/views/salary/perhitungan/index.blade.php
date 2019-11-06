@@ -23,40 +23,37 @@ Index Sales Order
                         <div class="col-12">
                             <div class="p-20">
                                 <div class="form-group row">
-                                    <label class="col-2 col-form-label">Start Date</label>
-                                    <div class="col-10">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="trx_start" id="trx_start"  data-date-format='yyyy-mm-dd' autocomplete="off">
-                                            <div class="input-group-append">
-                                                <span class="input-group-text"><i class="ti-calendar"></i></span>
-                                            </div>
-                                        </div><!-- input-group -->
+                                    <label class="col-2 col-form-label">Periode Gaji</label>
+                                    <div class="col-5">
+                                        <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" required>
+                                            <option value="#" selected disabled>Pilih Bulan</option>
+                                            @for ($i = 1; $i <= 12; $i++)
+                                                <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
+                                            @endfor
+                                        </select>
                                     </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-2 col-form-label">End Date</label>
-                                    <div class="col-10">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="trx_end" id="trx_end"  data-date-format='yyyy-mm-dd' autocomplete="off">
-                                            <div class="input-group-append">
-                                                <span class="input-group-text"><i class="ti-calendar"></i></span>
-                                            </div>
-                                        </div><!-- input-group -->
+                                    <div class="col-5">
+                                        <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" required>
+                                            <option value="#" selected disabled>Pilih Tahun</option>
+                                            @for ($i = 2018; $i <= date('Y'); $i++)
+                                                <option value="{{$i}}">{{$i}}</option>
+                                            @endfor
+                                        </select>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="form-group text-left m-b-0">
-                        @if (array_search("PSSLC",$page))
-                        <a href="{{route('sales.create')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add Sales</a>
+                        @if (array_search("EMESC",$page))
+                        <a href="{{route('createPerhitunganGaji')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add New</a>
                         @endif
                         <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="chooseSales()">Show Data</a>
                     </div>
                 </div>
 
-                <div id="sales-list" style="display:none">
-                    <section id="showsales">
+                <div id="salary-list" style="display:none">
+                    <section id="showsalary">
                     </section>
                 </div>
             </div>
@@ -80,25 +77,21 @@ Index Sales Order
 
 @section('script-js')
 <script>
-    // Date Picker
-    jQuery('#trx_start').datepicker();
-    jQuery('#trx_end').datepicker();
-
     function chooseSales(){
-        start = $('#trx_start').val();
-        end = $('#trx_end').val();
+        bulan = $('#bulan').val();
+        tahun = $('#tahun').val();
 
         $.ajax({
-            url : "{{route('showIndexSales')}}",
+            url : "{{route('indexPerhitunganGaji')}}",
             type : "get",
             dataType: 'json',
             data:{
-                start: start,
-                end: end,
+                bulan: bulan,
+                tahun: tahun,
             },
         }).done(function (data) {
-            document.getElementById("sales-list").style.display = 'block';
-            $('#showsales').html(data);
+            document.getElementById("salary-list").style.display = 'block';
+            $('#showsalary').html(data);
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });
