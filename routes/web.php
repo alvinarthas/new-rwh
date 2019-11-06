@@ -222,6 +222,12 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('poin/form','SalaryController@formPoin')->name('formPoin');
         Route::post('poin/store','SalaryController@storePoin')->name('storePoin');
         Route::delete('poin/delete','SalaryController@delPoin')->name('delPoin');
+
+        // Perhitungan Gaji
+        Route::get('perhitungan','SalaryController@indexPerhitunganGaji')->name('indexPerhitunganGaji');
+        Route::get('perhitungan/detail','SalaryController@detGajiPegawai')->name('detGajiPegawai');
+        Route::get('perhitungan/create','SalaryController@createPerhitunganGaji')->name('createPerhitunganGaji');
+        Route::post('perhitungan/store','SalaryController@storePerhitunganGaji')->name('storePerhitunganGaji');
     });
 
     // ------------------------ HELPER -------------------------------------------------

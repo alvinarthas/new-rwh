@@ -68,7 +68,7 @@ class PaymentController extends Controller
             $rest = $request->paid - $request->payment_amount;
             // Jurnal 
             $jurnal_desc = "SO.".$request->trx_id;
-            $id_jurnal = Jurnal::getJurnalID();
+            $id_jurnal = Jurnal::getJurnalID('SP');
 
             $payment = new SalesPayment(array(
                 'trx_id' => $request->trx_id,
@@ -116,14 +116,8 @@ class PaymentController extends Controller
 
                 // Jurnal Debet kas/bank
                     Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Debet');
-                    if($request->payment_deduction == "Biaya_Transfer_Bank"){
-                        $pay_method = "4-201001";
-
-                        //insert debet potongan bank
-                        Jurnal::addJurnal($id_jurnal,$request->deduct_amount,$request->payment_date,$jurnal_desc,$pay_method,'Debet');
-                    }
                 // Jurnal Credit piutang konsumen
-                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'1-103001','Credit');
+                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'1.1.3.1','Credit');
 
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
@@ -189,7 +183,7 @@ class PaymentController extends Controller
             $rest = $request->paid - $request->payment_amount;
             // Jurnal 
             $jurnal_desc = "PO.".$request->trx_id;
-            $id_jurnal = Jurnal::getJurnalID();
+            $id_jurnal = Jurnal::getJurnalID('PP');
 
             $payment = new PurchasePayment(array(
                 'trx_id' => $request->trx_id,
