@@ -9,8 +9,10 @@ use App\Imports\BonusBayarImport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Excel;
+use Carbon\Carbon;
 use App\Bonus;
 use App\BonusGagal;
+use App\PurchaseDetail;
 use App\Perusahaan;
 use App\CoaBayarBonus;
 use App\Coa;
@@ -39,7 +41,7 @@ class BonusController extends Controller
 
     public function indexBayar(Request $request)
     {
-        $rekening = CoaBayarBonus::orderBy('id','asc')->get();
+        $rekening = Coa::where('StatusAccount', "Detail")->select('AccNo', 'AccName')->orderBy('id','asc')->get();
         $bonusapa = "pembayaran";
         $jenis = "index";
         return view('bonus.index', compact('rekening', 'bonusapa','jenis'));
@@ -117,90 +119,77 @@ class BonusController extends Controller
         }else{
             // success
             try{
-                P
-                foreach($request->count as $i){
-                    $idm = "id_member$i";
-                    $id_member = $request->$idm;
-                    $bn = "bonus$i";
-                    $bonus = $request->$bn;
+                Carbon::setLocale('id');
+                $tgl = date('Y-m-d', strtotime(Carbon::today()));
+                $ctr = count($request->ktp);
+                $total_bonus = $request->total_bonus;
+                $estimasi_bonus = $request->estimasi_bonus;
+                $id_jurnal = Jurnal::getJurnalID();
+
+                for($i=0;$i<$ctr;$i++){
+                    $noid = $request->noid[$i];
+                    $bonus = $request->bonus[$i];
                     $bulan = $request->bulan2;
                     $tahun = $request->tahun2;
-                    $ket = 'perhitungan bonus bulan '.$bulan.' '.$tahun;
-                    $bonus = Bonus::where('member_id', $id_member)->where('tahun', $tahun)->where('bulan', $bulan)->select('id_jurnal')->get();
-                    $num = $bonus->count();
-                    // echo "<pre>";
-                    // print_r($request->all());
-                    // die();
-                    if(empty($num)){
-                        $id_jurnal = Jurnal::getJurnalID();
+                    $perusahaan_id = $request->perusahaan_id;
+                    $perusahaan = Perusahaan::where('id',$perusahaan_id)->select('nama')->first();
+                    $ket = 'perhitungan bonus '.$perusahaan['nama'].' - bulan '.$bulan.' '.$tahun;
 
-                        // debet piutang bonus
-                        $data1 = new Jurnal(array(
-                            'id_jurnal'     => $id_jurnal,
-                            'AccNo'         => "4.2",
-                            'AccPos'        => "Debet",
-                            'Amount'        => $bonus,
-                            'company_id'    => 1,
-                            'description'   => $ket,
-                            'creator'       => session('user_id')
-                        ));
-                        // credit estimasi bonus
-                        $data2 = new Jurnal(array(
-                            'id_jurnal'     => $id_jurnal,
-                            'AccNo'         => "1.1.3.3",
-                            'AccPos'        => "Credit",
-                            'Amount'        => $bonus,
-                            'company_id'    => 1,
-                            'description'   => $ket,
-                            'creator'       => session('user_id')
-                        ));
+                    $bonusperhitungan = Bonus::where('member_id', $noid)->where('tahun', $tahun)->where('bulan', $bulan)->select('id_bonus','id_jurnal')->get();
+                    $num = $bonusperhitungan->count();
 
-                        $data3 = new Bonus(array(
-                            'member_id' => $id_member,
-                            'bulan'     => $bulan,
-                            'tahun'     => $tahun,
-                            'bonus'     => $bonus,
-                            'creator'   => session('user_id'),
-                        ));
-
-                        $data1->save();
-                        $data2->save();
-                        $data3->save();
+                    if($num==0){
+                        if($bonus != 0){
+                            // bonus
+                            $data = new Bonus(array(
+                                'member_id'    => $noid,
+                                'bulan'     => $bulan,
+                                'tahun'     => $tahun,
+                                'bonus'     => $bonus,
+                                'creator'   => session('user_id'),
+                                'id_jurnal' => $id_jurnal,
+                            ));
+                            $data->save();
+                        }
                     }else{
-                        $id_jurnal = Jurnal::getJurnalID();
-                        $data4 = Jurnal::where('id_jurnal', $bonus['id_jurnal'])->first();
+                        $jurnal = Jurnal::where('id_jurnal', $bonusperhitungan['id_jurnal'])->first();
 
-                        // debet piutang bonus
-                        $data5 = new Jurnal(array(
-                            'id_jurnal'     => $id_jurnal,
-                            'AccNo'         => "4.2",
-                            'AccPos'        => "Debet",
-                            'Amount'        => $bonus,
-                            'company_id'    => 1,
-                            'description'   => $ket,
-                            'creator'       => session('user_id')
-                        ));
-                        // credit estimasi bonus
-                        $data6 = new Jurnal(array(
-                            'id_jurnal'     => $id_jurnal,
-                            'AccNo'         => "1.1.3.3",
-                            'AccPos'        => "Credit",
-                            'Amount'        => $bonus,
-                            'company_id'    => 1,
-                            'description'   => $ket,
-                            'creator'       => session('user_id')
-                        ));
+                        // bonus bayar
+                        $data = Bonus::where('member_id',$noid)->where('tahun',$tahun)->where('bulan',$bulan)->first();
+                        $data->bonus = $bonus;
+                        $data->id_jurnal = $id_jurnal;
+                        $data->creator = session('user_id');
 
-                        $data7 = Bonus::where('member_id', $id_member)->where('tahun', $tahun)->where('bulan', $bulan)->get();
-                        $data7->bonus = $bonus;
-                        $data7->creator = session('user_id');
-
-                        $data4->delete();
-                        $data5->save();
-                        $data6->save();
-                        $data7->update();
+                        $jurnal->delete();
+                        $data->update();
                     }
                 }
+
+                // debet Piutang Bonus
+                $debet = new Jurnal(array(
+                    'id_jurnal'     => $id_jurnal,
+                    'AccNo'         => "1.1.3.5",
+                    'AccPos'        => "Debet",
+                    'Amount'        => $total_bonus,
+                    'company_id'    => 1,
+                    'date'          => $tgl,
+                    'description'   => $ket,
+                    'creator'       => session('user_id')
+                ));
+                // credit Estimasi Bonus
+                $credit = new Jurnal(array(
+                    'id_jurnal'     => $id_jurnal,
+                    'AccNo'         => "1.1.3.4",
+                    'AccPos'        => "Credit",
+                    'Amount'        => $estimasi_bonus,
+                    'company_id'    => 1,
+                    'date'          => $tgl,
+                    'description'   => $ket,
+                    'creator'       => session('user_id')
+                ));
+
+                $debet->save();
+                $credit->save();
 
                 return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $e) {
@@ -239,86 +228,65 @@ class BonusController extends Controller
                     $AccNo = $request->AccNo;
                     $ket = 'pembayaran bonus '.$norek.' - bulan '.$bulan.' '.$tahun;
 
-                    $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun)->where('bulan', $bulan)->where('tgl',$tgl)->where('bank_id',$bank)->select('id_bonus','id_jurnal')->get();
+                    $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun)->where('bulan', $bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
                     $num = $bonusbayar->count();
+
+                    $id_jurnal = Jurnal::getJurnalID();
 
                     if($num==0){
                         if($bonus != 0){
-                            $id_jurnal = Jurnal::getJurnalID();
-
-                            // debet kas/bank
-                            $data1 = new Jurnal(array(
-                                'id_jurnal'     => $id_jurnal,
-                                'AccNo'         => $AccNo,
-                                'AccPos'        => "Debet",
-                                'Amount'        => $bonus,
-                                'company_id'    => 1,
-                                'date'          => $tgl,
-                                'description'   => $ket,
-                                'creator'       => session('user_id')
-                            ));
-                            // credit piutang bonus tertahan
-                            $data2 = new Jurnal(array(
-                                'id_jurnal'     => $id_jurnal,
-                                'AccNo'         => "4.2",
-                                'AccPos'        => "Credit",
-                                'Amount'        => $bonus,
-                                'company_id'    => 1,
-                                'date'          => $tgl,
-                                'description'   => $ket,
-                                'creator'       => session('user_id')
-                            ));
                             // bonus bayar
-                            $data3 = new BonusBayar(array(
+                            $data = new BonusBayar(array(
                                 'no_rek'    => $norek,
                                 'tgl'       => $tgl,
                                 'bulan'     => $bulan,
                                 'tahun'     => $tahun,
                                 'bonus'     => $bonus,
                                 'creator'   => session('user_id'),
-                                'bank_id'   => $bank,
+                                'AccNo'   => $AccNo,
                                 'id_jurnal' => $id_jurnal,
                             ));
-                            $data1->save();
-                            $data2->save();
-                            $data3->save();
+
+                            $data->save();
                         }
                     }else{
-                        $id_jurnal = Jurnal::getJurnalID();
-                        $data4 = Jurnal::where('id_jurnal', $bonusbayar['id_jurnal'])->first();
+                        $jurnal_lama = Jurnal::where('id_jurnal', $bonusbayar['id_jurnal'])->first();
 
-                        $data5 = new Jurnal(array(
-                            'id_jurnal'     => $id_jurnal,
-                            'AccNo'         => $AccNo,
-                            'AccPos'        => "Debet",
-                            'Amount'        => $bonus,
-                            'company_id'    => 1,
-                            'date'          => $tgl,
-                            'description'   => $ket,
-                            'creator'       => session('user_id')
-                        ));
-                        // credit piutang bonus tertahan
-                        $data6 = new Jurnal(array(
-                            'id_jurnal'     => $id_jurnal,
-                            'AccNo'         => "4.2",
-                            'AccPos'        => "Credit",
-                            'Amount'        => $bonus,
-                            'company_id'    => 1,
-                            'date'          => $tgl,
-                            'description'   => $ket,
-                            'creator'       => session('user_id')
-                        ));
                         // bonus bayar
-                        $data7 = BonusBayar::where('no_rek',$norek)->where('tahun',$tahun)->where('bulan',$bulan)->where('tgl',$tgl)->where('bank_id',$bank)->first();
-                        $data7->bonus = $bonus;
-                        $data7->id_jurnal = $id_jurnal;
-                        $data7->creator = session('user_id');
+                        $data = BonusBayar::where('no_rek',$norek)->where('tahun',$tahun)->where('bulan',$bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->first();
+                        $data->bonus = $bonus;
+                        $data->id_jurnal = $id_jurnal;
+                        $data->creator = session('user_id');
 
-                        $data4->delete();
-                        $data5->save();
-                        $data6->save();
-                        $data7->update();
+                        $jurnal_lama->delete();
+                        $data->update();
                     }
+
+                    // debet kas/bank
+                    $debet = new Jurnal(array(
+                        'id_jurnal'     => $id_jurnal,
+                        'AccNo'         => $AccNo,
+                        'AccPos'        => "Debet",
+                        'Amount'        => $bonus,
+                        'company_id'    => 1,
+                        'date'          => $tgl,
+                        'description'   => $ket,
+                        'creator'       => session('user_id')
+                    ));
+                    // credit piutang bonus tertahan
+                    $credit = new Jurnal(array(
+                        'id_jurnal'     => $id_jurnal,
+                        'AccNo'         => "1.1.3.5",
+                        'AccPos'        => "Credit",
+                        'Amount'        => $bonus,
+                        'company_id'    => 1,
+                        'date'          => $tgl,
+                        'description'   => $ket,
+                        'creator'       => session('user_id')
+                    ));
+
+                    $debet->save();
+                    $credit->save();
                 }
                 return redirect()->route('bonus.bayar')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $e) {
@@ -506,8 +474,48 @@ class BonusController extends Controller
         $bulan = $request->bulan;
         $bonusapa = "perhitungan";
         $bonus = Bonus::where('tahun',$tahun)->where('bulan',$bulan)->get();
-        $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.bulan',$bulan)->where('tblpotrx.tahun',$tahun)->where('tblpotrx.supplier',$perusahaan)->select('prod_id', 'qty')->get();
-        return view('bonus.ajxCreateBonus', compact('perusahaanmember', 'bonus','tahun','bulan','perusahaan','bonusapa'));
+        $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$bulan)->where('tblpotrx.year',$tahun)->where('tblpotrx.supplier',$perusahaan)->select('qty', 'price', 'price_dist')->get();
+        $estimasi_bonus = 0;
+        foreach($purchase as $p){
+            $estimasi_bonus = $estimasi_bonus + (($p['price_dist'] - $p['price']) * $p['qty']);
+        }
+        return view('bonus.ajxCreateBonus', compact('perusahaanmember', 'bonus','tahun','bulan','perusahaan','bonusapa', 'estimasi_bonus'));
+    }
+
+    public function ajxAddRowPerhitungan(Request $request){
+        $id = $request->id;
+        $perusahaan = $request->perusahaan;
+        $tahun = $request->tahun;
+        $bulan = $request->bulan;
+        $count = $request->count;
+
+        $perusahaanmember = PerusahaanMember::where('id',$id)->select('ktp', 'noid')->first();
+        $member = Member::where('ktp', $perusahaanmember['ktp'])->select('nama','member_id')->first();
+        $bonus = Bonus::where('member_id',$member['member_id'])->where('tahun', $tahun)->where('bulan',$bulan)->select('bonus')->first();
+        if (!$bonus){
+            $bonus = 0;
+        }else{
+            $bonus = $bonus['bonus'];
+        }
+
+        $sub_ttl = $bonus;
+
+        $append = '<tr style="width:100%" id="trow'.$count.'" class="trow">
+        <td>'.$count.'</td>
+        <td><input type="hidden" name="ktp[]" id="ktp'.$count.'" value="'.$perusahaanmember->ktp.'">'.$perusahaanmember->ktp.'</td>
+        <td><input type="hidden" name="noid[]" id="noid'.$count.'" value="'.$perusahaanmember->noid.'">'.$perusahaanmember->noid.'</td>
+        <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$member['member_id'].'">'.$member['nama'].'</td>
+        <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$count.'" value="'.$bonus.'"></td>
+        <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
+        </tr>';
+
+        $data = array(
+            'append' => $append,
+            'count' => $count,
+            'sub_ttl' => $sub_ttl,
+        );
+
+        return response()->json($data);
     }
 
     public function uploadBonusPerhitungan(Request $request)
@@ -566,23 +574,23 @@ class BonusController extends Controller
         $tahun = $request->tahun;
         $bulan = $request->bulan;
         $AccNo = $request->rkng;
-        $AccParent = Coa::where('AccNo', $AccNo)->first()->AccParent;
-        $namabank = Coa::where('AccParent', $AccParent)->first()->AccName;
-        $bank = Bank::where('nama','LIKE', $namabank)->first()->id;
-        $bankmember = Bankmember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->where('bank_id',$bank)->select('nama', 'norek')->orderBy('tblmember.nama', 'asc')->get();
+        $AccParent = Coa::where('AccNo', $AccNo)->select('AccParent')->first();
+        $namabank = Coa::where('AccNo', $AccParent['AccParent'])->select('AccName')->first();
+        $bank = Bank::where('nama','LIKE', $namabank['AccName'])->select('id')->first();
+        $bankmember = Bankmember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->where('bank_id','LIKE', $bank['id'])->select('nama', 'norek')->orderBy('tblmember.nama', 'asc')->get();
         $bonusapa = "pembayaran";
-        $bonus = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('tgl', $tgl)->get();
+        $bonus = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('tgl', $tgl)->where('AccNo', $AccNo)->select('bonus')->get();
         return view('bonus.ajxShowBonus', compact('bankmember','bonus','tahun','bulan','bonusapa','namabank','AccNo', 'tgl'));
     }
 
     public function createBonusPembayaran(Request $request)
     {
         $AccNo = $request->rkng;
-        $AccParent = Coa::where('AccNo', $AccNo)->first()->AccParent;
-        $namabank = Coa::where('AccParent', $AccParent)->first()->AccName;
-        $bank = Bank::where('nama','LIKE', $namabank)->first()->id;
+        $AccParent = Coa::where('AccNo', $AccNo)->select('AccParent')->first();
+        $namabank = Coa::where('AccNo', $AccParent['AccParent'])->select('AccName')->first();
+        $bank = Bank::where('nama','LIKE', $namabank['AccName'])->select('id')->first();
+
         $tgl = $request->tgl;
-        // $bankmember = Bankmember::where('bank_id',$bank)->get();
 
         $tahun = $request->tahun;
         $bulan = $request->bulan;
@@ -823,13 +831,32 @@ class BonusController extends Controller
     public function ajxBonusOrder(Request $request){
         $keyword = strip_tags(trim($request->keyword));
         $key = $keyword.'%';
-        $bankmember = BankMember::where('bank_id',$request->bankid);
-        $search = $bankmember->join('tblmember','bankmember.ktp','=','tblmember.ktp')->where('norek','LIKE', $key)->orWhere('tblmember.nama','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
-        // $s = BankMember::where('norek','LIKE', $norek.'%')->select('norek', 'id')->limit(5)->get();
+        // $bankmember = BankMember::where('bank_id',$request->bankid);
+        // $search = $bankmember->join('tblmember','bankmember.ktp','=','tblmember.ktp')->orWhere('norek','LIKE', $key)->orWhere('tblmember.nama','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
+
+        // $bankmember = BankMember::where('bank_id',$request->bankid);
+        $search = BankMember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->where('bank_id', $request->bankid)->where('norek','LIKE', $key)->orWhere('tblmember.nama','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
+
         $data = array();
         $array = json_decode( json_encode($search), true);
         foreach ($array as $key) {
             $arrayName = array('id' =>$key['id'],'norek' => $key['norek'], 'nama' => $key['nama'], 'ktp' => $key['ktp']);
+            // $arrayName = array('id' => $key['id'],'text' => $key['norek']);
+            array_push($data,$arrayName);
+        }
+        echo json_encode($data, JSON_FORCE_OBJECT);
+    }
+
+    public function ajxBonusOrderPerhitungan(Request $request){
+        $keyword = strip_tags(trim($request->keyword));
+        $key = $keyword.'%';
+        $prsmember = PerusahaanMember::where('perusahaan_id',$request->perusahaanid);
+        $search = $prsmember->join('tblmember','perusahaanmember.ktp','=','tblmember.ktp')->where('tblmember.nama','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'perusahaanmember.noid', 'perusahaanmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
+
+        $data = array();
+        $array = json_decode( json_encode($search), true);
+        foreach ($array as $key) {
+            $arrayName = array('id' =>$key['id'],'noid' => $key['noid'], 'nama' => $key['nama'], 'ktp' => $key['ktp']);
             // $arrayName = array('id' => $key['id'],'text' => $key['norek']);
             array_push($data,$arrayName);
         }

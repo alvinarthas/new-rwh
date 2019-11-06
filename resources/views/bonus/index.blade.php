@@ -105,11 +105,7 @@
                     <div class="form-group row">
                         <label class="col-2 col-form-label">Rekening Bank Tujuan</label>
                         <div class="col-10">
-                            <select class="form-control select2" parsley-trigger="change" id="rekening" name="rekening">
-                                <option value="#" disabled selected>Pilih Rekening</option>
-                                @foreach ($rekening as $rek)
-                                    <option value="{{ Coa::where('id',$rek->id_coa)->first()->AccNo }}">{{ Coa::where('id',$rek->id_coa)->first()->AccName }}</option>
-                                @endforeach
+                            <select class="form-control" parsley-trigger="change" id="rekening" name="rekening">
                             </select>
                         </div>
                     </div>
@@ -207,6 +203,7 @@
 <script type="text/javascript">
 
     $(document).ready(function () {
+        ajx_coa();
         jQuery('#tgl_transaksi').datepicker();
         // Responsive Datatable
         $('#responsive-datatable').DataTable();
@@ -216,7 +213,15 @@
         });
 
         // Select2
-        $(".select2").select2({
+        $("#bulan").select2({
+            templateResult: formatState,
+            templateSelection: formatState
+        });
+        $("#tahun").select2({
+            templateResult: formatState,
+            templateSelection: formatState
+        });
+        $("#perusahaan").select2({
             templateResult: formatState,
             templateSelection: formatState
         });
@@ -238,6 +243,34 @@
         };
 
     });
+
+    function ajx_coa(){
+        $("#rekening").select2({
+            placeholder:'Masukan Kata Kunci',
+            ajax:{
+                url: "{{route('ajxCoaOrder')}}",
+                dataType:'json',
+                delay:250,
+                data:function(params){
+                    return{
+                        keyword:params.term,
+                    };
+                },
+                processResults:function(data){
+                    var item = $.map(data, (value)=>{ //map buat ngemap object data kyk foreach
+                        return { id: value.id, text: value.AccName};
+                    });
+                    return {
+                        results: item
+                    }
+                },
+                cache: false,
+            },
+            minimumInputLength: 3,
+            // templateResult: formatRepo,
+            // templateSelection: formatRepoSelection
+        });
+    }
 
     function showBonusPerhitungan(){
             var bln = $("#bulan").val()

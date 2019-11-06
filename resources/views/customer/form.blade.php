@@ -1,6 +1,6 @@
 @extends('layout.main')
 @php
-    use App\CoaNew;
+    use App\Coa;
 @endphp
 
 @section('css')
@@ -124,7 +124,7 @@
                                 <div class="col-10">
                                     <select class="form-control select2" id="search" name="search" parsley-trigger="change">
                                         @isset($saldo->accNo)
-                                            <option value="{{ $saldo->accNo }}" selected>{{ CoaNew::where('AccNo', $saldo->accNo)->first()->AccName}}</option>
+                                            <option value="{{ $saldo->accNo }}" selected>{{ Coa::where('AccNo', $saldo->accNo)->first()->AccName}}</option>
                                         @endisset
                                     </select>
                                 </div>

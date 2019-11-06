@@ -8,9 +8,7 @@ class BonusBayar extends Model
 {
     protected $table ='tblbonusbayar';
     protected $fillable = [
-        'no_rek','tgl','bulan','tahun','bonus', 'creator', 'id_jurnal', 'bank_id'
+        'no_rek','tgl','bulan','tahun','bonus', 'creator', 'id_jurnal', 'AccNo'
     ];
-
-    public $timestamps = false;
 
 }

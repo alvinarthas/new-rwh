@@ -22,7 +22,7 @@
                         <input type="hidden" name="perusahaan" value="{{ $perusahaan }}">
                     @elseif($bonusapa=="pembayaran")
                         <input type="hidden" name="AccNo" id="AccNo" value="{{ $AccNo }}">
-                        <input type="hidden" name="bank_id" id="bank_id" value="{{ $bank }}">
+                        <input type="hidden" name="bank_id" id="bank_id" value="{{ $bank['id'] }}">
                         <input type="hidden" name="tgl" id="tgl" value="{{ $tgl }}">
                     @endif
                 </div>
@@ -56,7 +56,7 @@
                         $total_bonus = 0;
                     @endphp
                     @if($bonusapa=="perhitungan")
-                    <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
+                    {{-- <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                         <thead>
                             <th>Tandai</th>
                             <th>No</th>
@@ -86,6 +86,32 @@
                                     $total_bonus = $total_bonus + $data_bonus['bonus'];
                                 @endphp
                             @endforeach
+                            @php
+                                $selisih_bonus = $total_bonus - $estimasi_bonus;
+                            @endphp
+                        </tbody>
+                    </table> --}}
+                    <table id="table" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">Tambah Daftar Member</label>
+                            <div class="col-10">
+                                <select class="form-control select2" id="search2" name="search2" parsley-trigger="change" onchange="addRowPerhitungan(this.value)">
+                                </select>
+                            </div>
+                        </div>
+                        <thead>
+                            <tr>
+                            <th width="7%">No</th>
+                            <th width="13%">KTP</th>
+                            <th width="13%">No ID</th>
+                            <th width="17%">Nama</th>
+                            <th width="27%">Bonus</th>
+                            <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <input type="hidden" name="counts" id="counts" value="0">
+
                         </tbody>
                     </table>
                     @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
@@ -135,9 +161,10 @@
                     <div class="form-group row">
                         <label class="col-2 col-form-label">Selisih (Laba/Rugi)</label>
                         <div class="col-10">
-                            <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="selisih_bonus" id="selisih_bonus" value="{{ $selisih_bonus }}" readonly="readonly">
+                            <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="selisih_bonus" id="selisih_bonus" value="0" readonly="readonly">
                         </div>
                     </div>
+                    <input type="hidden" name="perusahaan_id" id="perusahaan_id" value="{{ $perusahaan }}">
                 @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
                     <input type="hidden" name="AccNo" id="AccNo" value="{{ $AccNo }}">
                     <input type="hidden" name="tgl" id="tgl" value="{{ $tgl }}">
@@ -149,6 +176,7 @@
                     <input type="hidden" name="tahun2" value="{{ $tahun }}">
                 @endif
                 <input type="hidden" name="ctr" id="ctr" value="{{ $i }}">
+                <input type="hidden" name="bonusapa" id="bonusapa" value="{{ $bonusapa }}">
             </div>
         </div>
     </div>
@@ -160,9 +188,16 @@
 </form>
 
 <script>
-
     $(document).ready(function () {
-        ajx_member()
+        var bonusapa = $("#bonusapa").val();
+        if(bonusapa=="pembayaran" || bonusapa=="topup"){
+            ajx_member()
+            console.log("else");
+        }else if(bonusapa=="perhitungan"){
+            ajx_member2()
+            console.log("perhitungan")
+        }
+
         // Responsive Datatable
         $('#responsive-datatable').DataTable();
 
@@ -171,6 +206,7 @@
 
     function ajx_member(){
         var bid = $("#bank_id").val()
+        console.log("bank id = "+bid)
         $("#search").select2({
             placeholder:'Masukan Kata Kunci',
             ajax:{
@@ -198,6 +234,64 @@
             // templateSelection: formatRepoSelection
         });
 
+    }
+
+    function ajx_member2(){
+        var pid = $("#perusahaan_id").val()
+        $("#search2").select2({
+            placeholder:'Masukan Kata Kunci',
+            ajax:{
+                url: "{{route('ajxBonusOrderPerhitungan')}}",
+                dataType:'json',
+                delay:250,
+                data:function(params){
+                    return{
+                        keyword:params.term,
+                        perusahaanid:pid,
+                    };
+                },
+                processResults:function(data){
+                    var item = $.map(data, (value)=>{ //map buat ngemap object data kyk foreach
+                        return { id: value.id, text: value.noid+" - "+value.nama+" (KTP : "+value.ktp+")"};
+                    });
+                    return {
+                        results: item
+                    }
+                },
+                cache: false,
+            },
+            minimumInputLength: 3,
+        });
+
+    }
+
+    function addRowPerhitungan(id){
+        var token = $("meta[name='csrf-token']").attr("content");
+        var prs = $("#perusahaan_id").val();
+        var thn = $("#tahun").val();
+        var bln = $("#bulan").val();
+        var cnt = $("#ctr").val();
+        $.ajax({
+            url : "{{route('ajxAddRowPerhitungan')}}",
+            type : "post",
+            dataType: 'json',
+            data:{
+                id : id,
+                tahun : thn,
+                bulan : bln,
+                count : cnt,
+                _token : token,
+            },
+        }).done(function (data) {
+            $('#table-body').append(data.append);
+            var cnt = parseInt($('#ctr').val()) + 1;
+            $('#ctr').val(cnt);
+            resetall();
+            checkTotal();
+            // changeTotalHarga(data.sub_ttl);
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
     }
 
     function addRowPembayaran(id){
@@ -270,7 +364,12 @@
     }
 
     function resetall(){
-        $('#search').empty().trigger('click')
+        var bonusapa = $("#bonusapa").val();
+        if(bonusapa=="perhitungan"){
+            $('#search2').empty().trigger('click')
+        }else{
+            $('#search').empty().trigger('click')
+        }
     }
 
     function deleteItem(id){
@@ -278,6 +377,7 @@
         decreaseTotalHarga(id);
         $('#trow'+id).remove();
         $('#ctr').val(count);
+        checkTotal();
     }
 
     function check(id){
@@ -312,9 +412,17 @@
         // console.log(rows)
         for(i=0;i<rows;i++){
             b = bonus[i];
+
+            if(b == NaN || b == ""){
+                b = 0;
+            }
+
             totalharga = totalharga + parseInt(b);
         }
+        var selisih = totalharga - parseInt($('#estimasi_bonus').val());
+
         // console.log(totalharga)
         $('#total_bonus').val(totalharga);
+        $('#selisih_bonus').val(selisih);
     }
 </script>

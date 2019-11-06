@@ -1,7 +1,7 @@
 @extends('layout.main')
 @php
     use App\Customer;
-    use App\CoaNew;
+    use App\Coa;
     use App\Employee;
 @endphp
 
@@ -128,7 +128,7 @@
                                 <td>{{$s->apname}}</td>
                                 <td>{{$s->tanggal}}</td>
                                 @php
-                                    $coa = CoaNew::where('AccNo', $s->accNo)->select('AccName')->first();
+                                    $coa = Coa::where('AccNo', $s->accNo)->select('AccName')->first();
                                     $creator = Employee::where('id', $s->creator)->select('name')->first();
                                     $i++;
                                 @endphp

@@ -8,7 +8,6 @@ class ReturPenjualan extends Model
 {
     protected $table ='tblreturpj';
     protected $fillable = [
-        'trx_id','tgl','customer','username'
+        'trx_id','tgl','customer','creator'
     ];
-    public $timestamps = false;
 }

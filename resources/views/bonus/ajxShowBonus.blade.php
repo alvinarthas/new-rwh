@@ -33,8 +33,7 @@
                                     <td>{{$prm->noid}}</td>
                                     <td>{{$prm->nama}}</td>
                                     @php
-                                        $id_member = Member::where('ktp',$prm->ktp)->first()->member_id;
-                                        $data_bonus = $bonus->where('member_id', $id_member)->first();
+                                        $data_bonus = $bonus->where('member_id', $prm->noid)->first();
                                     @endphp
                                     <td>
                                         <input class="form-control number" value="{{ number_format($data_bonus['bonus'],0) }}" type="text" name="bonus{{ $i }}">
@@ -64,7 +63,7 @@
                                 @foreach($bankmember as $bm)
                                 <tr>
                                     <td>{{$i}}</td>
-                                    <td>{{$namabank}}</td>
+                                    <td>{{$namabank['AccName']}}</td>
                                     <td>{{$bm->norek}}</td>
                                     <td>{{ $bm->nama }}</td>
                                     @php

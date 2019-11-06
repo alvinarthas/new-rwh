@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Saldo;
 use App\Customer;
-use App\CoaNew;
+use App\Coa;
 
 class SaldoController extends Controller
 {
@@ -18,7 +18,7 @@ class SaldoController extends Controller
     public function index()
     {
         $jenis = "topup";
-        $saldo = Saldo::join('tblcustomer', 'tblsaldo.customer_id', 'tblcustomer.id')->select('tblcustomer.apname', 'accNo', 'accPos', 'amount', 'keterangan', 'tblsaldo.creator AS creator', 'tanggal','tblsaldo.id AS sid')->orderBy('tblsaldo.tanggal', 'desc')->get();
+        $saldo = Saldo::join('tblcustomer', 'tblsaldo.customer_id', 'tblcustomer.id')->select('tblcustomer.apname', 'accNo', 'amount', 'keterangan', 'tblsaldo.creator AS creator', 'tanggal','tblsaldo.id AS sid')->orderBy('tblsaldo.tanggal', 'desc')->get();
         return view('customer.index', compact('saldo', 'jenis'));
     }
 
@@ -60,10 +60,10 @@ class SaldoController extends Controller
                 $saldo->customer_id = $request->customer_id;
                 $saldo->amount = $request->nominal;
                 $saldo->accNo = $request->search;
-                $saldo->accPos = 1;
+                $saldo->status = 1;
                 $saldo->tanggal = $request->tanggal;
                 $namacust = Customer::where('id', $request->customer_id)->select('apname')->first();
-                $namarek = CoaNew::where('AccNo', $request->search)->select('AccName')->first();
+                $namarek = Coa::where('AccNo', $request->search)->select('AccName')->first();
                 if($request->buktitf <> NULL|| $request->buktitf <> ''){
                     $buktitf = $namacust['apname'].'.'.$request->tanggal.'.'.$namarek['AccName'].'.'.$request->buktitf->getClientOriginalExtension();
                     $request->buktitf->move(public_path('assets/images/saldo/topup/'),$buktitf);
@@ -132,10 +132,10 @@ class SaldoController extends Controller
                 $saldo->customer_id = $request->customer_id;
                 $saldo->amount = $request->nominal;
                 $saldo->accNo = $request->search;
-                $saldo->accPos = 1;
+                $saldo->status = 1;
                 $saldo->tanggal = $request->tanggal;
                 $namacust = Customer::where('id', $request->customer_id)->select('apname')->first();
-                $namarek = CoaNew::where('AccNo', $request->search)->select('AccName')->first();
+                $namarek = Coa::where('AccNo', $request->search)->select('AccName')->first();
 
                 if($request->buktitf <> NULL|| $request->buktitf <> ''){
                     if ((file_exists(public_path('assets/images/saldo/topup/').$saldo->buktitf)) AND ($saldo->buktitf <> NULL)) {
@@ -186,7 +186,7 @@ class SaldoController extends Controller
     {
         $keyword = strip_tags(trim($request->keyword));
         $key = $keyword.'%';
-        $datas = CoaNew::where('StatusAccount', "Detail")->where('tblcoa_copy1.AccName','LIKE',$key.'%')->orderBy('tblcoa_copy1.AccName')->limit(10)->get();
+        $datas = Coa::where('StatusAccount', "Detail")->where('tblcoa.AccName','LIKE',$key.'%')->orderBy('tblcoa.AccName')->limit(10)->get();
         $data = array();
         $array = json_decode( json_encode($datas), true);
         foreach ($array as $a) {

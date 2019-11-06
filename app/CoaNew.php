@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CoaNew extends Model
 {
-    protected $table ='tblcoa_copy1';
+    protected $table ='tblcoa';
     protected $fillable = [
         'AccNo', 'AccName', 'SaldoNormal', 'StatusAccount', 'SaldoAwal', 'company_id', 'grup_id', 'StatusAcc', 'AccParent'
     ];

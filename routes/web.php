@@ -56,6 +56,7 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/showBonus', 'BonusController@showBonusPerhitungan')->name('showBonusPerhitungan');
     Route::get('/createBonus', 'BonusController@createBonusPerhitungan')->name('createBonusPerhitungan');
     Route::post('/uploadBonus', 'BonusController@uploadBonusPerhitungan')->name('uploadBonusPerhitungan');
+    Route::post('/ajxaddrowperhitungan', 'BonusController@ajxAddRowPerhitungan')->name('ajxAddRowPerhitungan');
 
     Route::get('/bonus/bayar','BonusController@indexBayar')->name('bonus.bayar');
     Route::get('/bonus/bayar/create','BonusController@createBayar')->name('bonus.createbayar');
@@ -79,7 +80,7 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/showBonusLaporanGagal', 'BonusController@showLaporanBonusGagal')->name('showLaporanBonusGagal');
 
     Route::get('/ajxbonusorder', 'BonusController@ajxBonusOrder')->name('ajxBonusOrder');
-
+    Route::get('/ajxbonusorderPerhitungan', 'BonusController@ajxBonusOrderPerhitungan')->name('ajxBonusOrderPerhitungan');
 
     // Resources
     Route::resources([

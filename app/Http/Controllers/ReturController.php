@@ -140,7 +140,7 @@ class ReturController extends Controller
                 $retur->trx_id = $id;
                 $retur->tgl = $tgl;
                 $retur->supplier = $request->supplier;
-                $retur->username = session('user_id');
+                $retur->creator = session('user_id');
                 $ctr = count($request->qtyretur);
 
                 for($i=0;$i<$ctr;$i++){
@@ -154,7 +154,7 @@ class ReturController extends Controller
                         $returdet->prod_id = $prod_id;
                         $returdet->qty = $qty;
                         $returdet->reason = $reason;
-                        $returdet->username = session('user_id');
+                        $returdet->creator = session('user_id');
                         $returdet->tgl = $tgl;
 
                         // success
@@ -197,7 +197,7 @@ class ReturController extends Controller
                 $retur->trx_id = $id;
                 $retur->tgl = $tgl;
                 $retur->customer = $request->customer;
-                $retur->username = session('user_id');
+                $retur->creator = session('user_id');
                 $ctr = count($request->qtyretur);
                 for($i=0;$i<$ctr;$i++){
                     $qty = $request->qtyretur[$i];
@@ -210,7 +210,7 @@ class ReturController extends Controller
                         $returdet->prod_id = $prod_id;
                         $returdet->qty = $qty;
                         $returdet->reason = $reason;
-                        $returdet->username = session('user_id');
+                        $returdet->creator = session('user_id');
                         $returdet->tgl = $tgl;
 
                         // success

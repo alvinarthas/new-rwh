@@ -10,5 +10,5 @@ class ReturPembelian extends Model
     protected $fillable = [
         'trx_id','tgl','supplier','username'
     ];
-    public $timestamps = false;
+
 }

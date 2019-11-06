@@ -8,7 +8,6 @@ class ReturPenjualanDet extends Model
 {
     protected $table ='tblreturpjdet';
     protected $fillable = [
-        'trx_id','tgl','prod_id','username', 'qty', 'reason'
+        'trx_id','tgl','prod_id','creator', 'qty', 'reason', 'unit'
     ];
-    public $timestamps = false;
 }
