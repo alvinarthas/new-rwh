@@ -8,6 +8,8 @@
     <link href="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Sweet Alert css -->
     <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
+    {{-- Date Picker --}}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('judul')
@@ -48,7 +50,7 @@ Index Sales Order
                         @if (array_search("EMESC",$page))
                         <a href="{{route('createPerhitunganGaji')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add New</a>
                         @endif
-                        <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="chooseSales()">Show Data</a>
+                        <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="detGajiPegawai()">Show Data</a>
                     </div>
                 </div>
 
@@ -77,7 +79,7 @@ Index Sales Order
 
 @section('script-js')
 <script>
-    function chooseSales(){
+    function detGajiPegawai(){
         bulan = $('#bulan').val();
         tahun = $('#tahun').val();
 

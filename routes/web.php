@@ -235,6 +235,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('perhitungan/detail','SalaryController@detGajiPegawai')->name('detGajiPegawai');
         Route::get('perhitungan/create','SalaryController@createPerhitunganGaji')->name('createPerhitunganGaji');
         Route::post('perhitungan/store','SalaryController@storePerhitunganGaji')->name('storePerhitunganGaji');
+        Route::delete('perhitungan/delete','SalaryController@deletePerhitunganGaji')->name('deletePerhitunganGaji');
     });
 
     // ------------------------ HELPER -------------------------------------------------

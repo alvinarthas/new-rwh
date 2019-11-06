@@ -12,12 +12,14 @@ use App\BankMember;
 use App\Product;
 use App\PriceDet;
 use App\Jurnal;
+use App\Salary;
 
 class TestController extends Controller
 {
     public function index(){
         $jenis = "JU";
-        print_r(Jurnal::getJurnalID($jenis));
+        echo "<pre>";
+        print_r(Salary::join('tbl_salary_detail as sd','tbl_salary.id','=','sd.salary_id')->where('tbl_salary.month',1)->where('tbl_salary.year',2018)->select('sd.*')->get());
     }
     public function indexxxxx(){
         $collection = collect([
