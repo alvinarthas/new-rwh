@@ -73,7 +73,7 @@
                             <td>{{$emp->name}}</td>
                             <td>{{$emp->username}}</td>
                             <td>{{$emp->nip}}</td>
-                            <td>{{$emp->start_work}}</td>
+                            <td>{{$emp->mulai_kerja}}</td>
                             <td>{{$emp->address}}</td>
                             <td>{{$emp->phone}}</td>
                             <?php

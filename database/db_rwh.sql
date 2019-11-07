@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 07 Nov 2019 pada 00.48
+-- Waktu pembuatan: 07 Nov 2019 pada 11.10
 -- Versi server: 10.1.31-MariaDB
 -- Versi PHP: 7.2.4
 
@@ -2924,8 +2924,8 @@ INSERT INTO `demo_log` (`log_time`, `user_name`, `data`, `keterangan`, `created_
 ('2019-05-16 05:10:46', 'superadmin', '2019-05-16 12:10:46 (PC Time) | J620E26081 (SN)', 'masuk', '2019-05-15 22:10:46', '2019-05-15 22:10:46'),
 ('2019-05-16 06:15:38', 'superadmin', '2019-05-16 13:15:38 (PC Time) | J620E26081 (SN)', 'masuk', '2019-05-15 23:15:38', '2019-05-15 23:15:38'),
 ('2019-05-16 06:17:58', 'superadmin', '2019-05-16 13:17:58 (PC Time) | J620E26081 (SN)', 'pulang', '2019-05-15 23:17:58', '2019-05-15 23:17:58'),
-('2019-05-16 07:07:05', 'ddd', '2019-05-16 14:07:04 (PC Time) | J620E26081 (SN)', 'masuk', '2019-05-16 00:07:05', '2019-05-16 00:07:05'),
-('2019-05-16 07:07:22', 'ddd', '2019-05-16 14:07:22 (PC Time) | J620E26081 (SN)', 'masuk', '2019-05-16 00:07:22', '2019-05-16 00:07:22');
+('2019-05-16 07:07:05', 'alvin', '2019-05-16 14:07:04 (PC Time) | J620E26081 (SN)', 'masuk', '2019-05-16 00:07:05', '2019-05-16 00:07:05'),
+('2019-05-16 07:07:22', 'alvin', '2019-05-16 14:07:22 (PC Time) | J620E26081 (SN)', 'masuk', '2019-05-16 00:07:22', '2019-05-16 00:07:22');
 
 -- --------------------------------------------------------
 
@@ -2946,7 +2946,8 @@ CREATE TABLE `demo_user` (
 
 INSERT INTO `demo_user` (`user_id`, `user_name`, `created_at`, `updated_at`) VALUES
 (1, 'superadmin', '2019-07-15 01:16:27', '2019-07-15 01:16:27'),
-(16, 'ddd', '2019-05-14 10:17:31', '2019-05-14 10:17:31');
+(16, 'alvin', '2019-05-14 10:17:31', '2019-05-14 10:17:31'),
+(17, 'adit', '2019-11-07 03:04:35', '2019-11-07 03:04:35');
 
 -- --------------------------------------------------------
 
@@ -6921,7 +6922,6 @@ CREATE TABLE `sub_mapping` (
 --
 
 INSERT INTO `sub_mapping` (`id`, `submodul_id`, `jenis_id`) VALUES
-('', NULL, NULL),
 ('ABKER', 'ABKE', 'Register'),
 ('ABKEV', 'ABKE', 'View'),
 ('ABLOV', 'ABLO', 'View'),
@@ -6935,8 +6935,12 @@ INSERT INTO `sub_mapping` (`id`, `submodul_id`, `jenis_id`) VALUES
 ('BMTUV', 'BMTU', 'View'),
 ('CRCSC', 'CRCS', 'Create'),
 ('CRCSD', 'CRCS', 'Update'),
+('CRCSG', 'CRCS', 'Price Detail Update'),
+('CRCSP', 'CRCS', 'Price By Customer View'),
+('CRCSR', 'CRCS', 'Price By Customer Update'),
 ('CRCSU', 'CRCS', 'Update'),
 ('CRCSV', 'CRCS', 'View'),
+('CRTPC', 'CRTP', 'Create'),
 ('CRTPD', 'CRTP', 'Delete'),
 ('CRTPU', 'CRTP', 'Update'),
 ('CRTPV', 'CRTP', 'View'),
@@ -6949,8 +6953,12 @@ INSERT INTO `sub_mapping` (`id`, `submodul_id`, `jenis_id`) VALUES
 ('EMEPV', 'EMEP', 'View'),
 ('EMESC', 'EMES', 'Create'),
 ('EMESD', 'EMES', 'Delete'),
-('EMESE', 'EMES', 'Detail Bonus'),
+('EMESU', 'EMES', 'Update'),
 ('EMESV', 'EMES', 'View'),
+('EMPGC', 'EMPG', 'Create'),
+('EMPGD', 'EMPG', 'Delete'),
+('EMPGT', 'EMPG', 'Detail Bonus Pegawai'),
+('EMPGV', 'EMPG', 'View'),
 ('FIGLV', 'FIGL', 'View'),
 ('FIJUV', 'FIJU', 'View'),
 ('FILNV', 'FILN', 'View'),
@@ -8190,7 +8198,8 @@ CREATE TABLE `tblemployee` (
 
 INSERT INTO `tblemployee` (`id`, `username`, `bck_pass`, `password`, `last_login`, `login_status`, `name`, `nip`, `address`, `phone`, `ktp`, `email`, `company_id`, `creator`, `tmpt_lhr`, `tgl_lhr`, `mulai_kerja`, `start_work2`, `bank`, `norek`, `sima`, `simb`, `simc`, `npwp`, `bpjs`, `scanktp`, `scansima`, `scansimb`, `scansimc`, `scannpwp`, `scanbpjs`, `scanfoto`, `work_start`, `created_at`, `updated_at`) VALUES
 (1, 'superadmin', 'superadmin', '$2y$12$d0J8GKTp5FQOt9E79BBO1uDJgeb9of8QThNdf/RdQ1SY300VcPfVC', '2015-09-07 00:00:00', 1, 'Superadmin', 'SA', 'SA', 'SA', 'SA', 'dodo@pradanatechnology.com', 0, 'SA', '', '', '0000-00-00', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'SA.jpg', NULL, '2019-06-30 15:08:52', '2019-06-30 15:08:52'),
-(16, 'ddd', 'ddd', '$2y$10$IDkBDGd6ywFWxppk3sADiOklU2OpyENgDl1bnSg9AUlX0aKJhU2HW', NULL, 1, 'Alvin Khair', 'Alvin Khair', 'fasas', '082216418599', '321312312', 'khairalvin@gmail.com', NULL, NULL, 'Palembang', '2019-04-11', '2019-04-19', NULL, 'mandiri', '3123', NULL, NULL, NULL, NULL, NULL, 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'Alvin Khair.PNG', NULL, '2019-04-30 01:23:23', '2019-04-30 01:23:23');
+(16, 'alvin', 'ddd', '$2y$10$IDkBDGd6ywFWxppk3sADiOklU2OpyENgDl1bnSg9AUlX0aKJhU2HW', NULL, 1, 'Alvin Khair', 'ROYAL0112201801', 'Jalan Gagak', '08112048599', '1671060201960008', 'khairalvin@gmail.com', NULL, NULL, 'Palembang', '1996-01-02', '2019-04-19', NULL, NULL, '3123', NULL, NULL, NULL, NULL, NULL, 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'ROYAL0112201801.jpg', NULL, '2019-11-07 10:07:10', '2019-11-07 03:07:10'),
+(17, 'adit', 'royal123', '$2y$10$FqeRXbX1dyKyMR0eQEH3je7d5aQfL.6mnB1p.4oh4eHRuJ7qic.Mu', NULL, 1, 'Aditya Rio Fansdana', 'ROYAL1504201901', 'Jalan Gagak', '081221881737', '3504021810940001', 'rioyeri@gmail.com', NULL, NULL, 'Tulung Agung', '1994-10-14', '2019-04-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'noimage.jpg', 'ROYAL1504201901.jpg', NULL, '2019-11-07 03:04:35', '2019-11-07 03:04:35');
 
 -- --------------------------------------------------------
 
@@ -14488,7 +14497,8 @@ INSERT INTO `tblsubmodul` (`submodul_id`, `submodul_desc`, `modul_id`, `submodul
 ('CRTP', 'Top Up Saldo Customer', 'CR', 'saldo.index'),
 ('EMEM', 'Atur Pegawai', 'EM', 'employee.index'),
 ('EMEP', 'Poin Pegawai', 'EM', 'indexPoin'),
-('EMES', 'Gaji Pegawai', 'EM', 'indexGajiEmp'),
+('EMES', 'Atur Gaji Pokok Pegawai', 'EM', 'indexGajiEmp'),
+('EMPG', 'Perhitungan Gaji keseluruhan', 'EM', 'indexPerhitunganGaji'),
 ('FIGL', 'General Ledger', 'FI', 'indexGL'),
 ('FIJU', 'Jurnal', 'FI', 'jurnal.index'),
 ('FILN', 'Balance Sheet(Laporan Neraca)', 'FI', 'neracaLaporan'),
@@ -14524,12 +14534,10 @@ CREATE TABLE `tbltopupbonus` (
   `id_bonus` int(11) NOT NULL,
   `no_rek` varchar(100) NOT NULL,
   `tgl` varchar(100) NOT NULL,
-  `bulan` int(11) NOT NULL,
-  `tahun` int(11) NOT NULL,
   `bonus` double NOT NULL,
   `creator` varchar(100) NOT NULL,
   `id_jurnal` varchar(20) DEFAULT '0',
-  `bank_id` varchar(100) DEFAULT NULL
+  `AccNo` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -15054,7 +15062,7 @@ ALTER TABLE `bankmember`
 -- AUTO_INCREMENT untuk tabel `demo_user`
 --
 ALTER TABLE `demo_user`
-  MODIFY `user_id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `user_id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT untuk tabel `map_purchase`
@@ -15162,19 +15170,19 @@ ALTER TABLE `tbldatakota`
 -- AUTO_INCREMENT untuk tabel `tblemployee`
 --
 ALTER TABLE `tblemployee`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT untuk tabel `tblemployeerole`
 --
 ALTER TABLE `tblemployeerole`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT untuk tabel `tbljurnal`
 --
 ALTER TABLE `tbljurnal`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT untuk tabel `tblkoordinator`
