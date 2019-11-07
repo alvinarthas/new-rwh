@@ -14,7 +14,9 @@
             <div class="card-box table-responsive">
                 <h4 class="m-t-0 header-title">Index Gaji Pokok</h4>
                 <p class="text-muted font-14 m-b-30">
-                    <a href="{{ route('formGajiEmp',['jenis'=>'create']) }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Gaji Pokok</a>
+                    @if (array_search("EMESC",$page))
+                        <a href="{{ route('formGajiEmp',['jenis'=>'create']) }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Gaji Pokok</a>
+                    @endif
                 </p>
 
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
@@ -35,8 +37,12 @@
                             <td>{{$employee->gaji_pokok}}</td>
                             <td>{{$employee->tunjangan_jabatan}}</td>
                             <td>
-                                <a href="{{route('formGajiEmp',['jenis'=>'edit','id'=>$employee->employee_id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
-                                <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus</a>
+                                @if (array_search("EMESU",$page))
+                                    <a href="{{route('formGajiEmp',['jenis'=>'edit','id'=>$employee->employee_id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
+                                @endif
+                                @if (array_search("EMESD",$page))
+                                    <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus</a>
+                                @endif
                             </td>
                         </tr>
                         @php($i++)

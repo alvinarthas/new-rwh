@@ -3,7 +3,7 @@
         <div class="card-box table-responsive">
             <h4 class="m-t-0 header-title">Gaji Karyawan Periode {{date("F", mktime(0, 0, 0, $bulan, 10))}} {{$tahun}}</h4>
             <hr>
-            @if (array_search("EMESD",$page) && $salary)
+            @if (array_search("EMPGD",$page) && $salary)
                 <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5" onclick="deleteGaji({{$salary->id}})">Delete Data Gaji</a>
             @endif
             <hr><br>
@@ -31,7 +31,7 @@
                         <td>Rp. {{number_format($salary->bonus)}}</td>
                         <td>Rp. {{number_format($salary->take_home_pay)}}</td>
                         <td>
-                            @if (array_search("EMESE",$page))
+                            @if (array_search("EMPGT",$page))
                                 <a href="javascript:;" onclick="getDetail({{$salary->employee_id}},{{$bulan}},{{$tahun}})" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5"><i class="fa fa-file-pdf-o"></i>View Detail Bonus</a>
                             @endif
                         </td>

@@ -47,7 +47,7 @@ Index Sales Order
                         </div>
                     </div>
                     <div class="form-group text-left m-b-0">
-                        @if (array_search("EMESC",$page))
+                        @if (array_search("EMPGC",$page))
                         <a href="{{route('createPerhitunganGaji')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add New</a>
                         @endif
                         <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="detGajiPegawai()">Show Data</a>
