@@ -10,4 +10,8 @@ class SalaryDet extends Model
     protected $fillable = [
         'salary_id', 'employee_id','bonus','gaji_pokok','tunjangan_jabatan','bonus_jabatan','take_home_pay'
     ];
+
+    public function employee(){
+        return $this->belongsTo('App\Employee');
+    }
 }

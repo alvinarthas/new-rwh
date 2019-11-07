@@ -24,13 +24,14 @@ class Jurnal extends Model
     }
 
     public static function getJurnalID($jenis){
-        $jurnal = Jurnal::where('id_jurnal','LIKE',$jenis.'%')->distinct('id_jurnal')->orderBy('id_jurnal','desc')->select('id_jurnal')->first();
+        $jurnal = Jurnal::where('id_jurnal','LIKE',$jenis.'%')->distinct('id_jurnal')->orderBy('id_jurnal','desc');
         $count_jurnal = $jurnal->count();
         if($count_jurnal == 0){
-            $id_jurnal = $jenis."1";
+            $id_jurnal = $jenis.".1";
         }else{
-            $num_jurnal = intval(substr($jurnal->id_jurnal,3,10))+1;
-            $id_jurnal = $jenis.$num_jurnal;
+            $getJurnal = $jurnal->select('id_jurnal')->first();
+            $num_jurnal = intval(substr($getJurnal->id_jurnal,3,10))+1;
+            $id_jurnal = $jenis.".".$num_jurnal;
         }
         return $id_jurnal;
     }

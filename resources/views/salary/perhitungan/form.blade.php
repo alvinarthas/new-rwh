@@ -46,7 +46,7 @@ Tambah Data Gaji Pokok Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Keterangan</label>
                                 <div class="col-10">
-                                    <input type="number" class="form-control" parsley-trigger="change" name="keterangan" id="keterangan">
+                                    <input type="text" class="form-control" parsley-trigger="change" name="keterangan" id="keterangan">
                                 </div>
                             </div>
                             <div class="form-group row">
