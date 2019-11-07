@@ -34,8 +34,12 @@
                 @if($jenis == "customer")
                     <h4 class="m-t-0 header-title">Daftar Customer</h4>
                     <p class="text-muted font-14 m-b-30">
-                        <a href="{{ route('customer.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Customer</a>
-                        <a href="{{ route('pricebycustomer') }}" class="btn btn-purple btn-rounded w-md waves-effect waves-light m-b-5">Manage Price & BV by Customer</a>
+                        @if (array_search("CRCSC",$page))
+                            <a href="{{ route('customer.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Customer</a>
+                        @endif
+                        @if(array_search("CRCSP",$page))
+                            <a href="{{ route('pricebycustomer') }}" class="btn btn-purple btn-rounded w-md waves-effect waves-light m-b-5">Manage Price & BV by Customer</a>
+                        @endif
                     </p>
                     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                         <thead>
@@ -60,8 +64,12 @@
                                 <td>{{$cus->cicn}}</td>
                                 <td>{{$cus->ciphone}}</td>
                                 <td>
-                                    <a href="{{route('customer.edit',['id'=>$cus->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-75 m-b-5">Update Data</a>
-                                    <a href="{{route('customer.pricebv',['id'=>$cus->id])}}" class="btn btn-warning btn-rounded waves-effect waves-light w-75 m-b-5">Update Price & BV</a>
+                                    @if (array_search("CRCSU",$page))
+                                        <a href="{{route('customer.edit',['id'=>$cus->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-75 m-b-5">Update Data</a>
+                                    @endif
+                                    @if (array_search("CRCSG",$page))
+                                        <a href="{{route('customer.pricebv',['id'=>$cus->id])}}" class="btn btn-warning btn-rounded waves-effect waves-light w-75 m-b-5">Update Price & BV</a>
+                                    @endif
                                 </td>
                             </tr>
                             @php
@@ -93,7 +101,9 @@
                                 <td>{{$p->name}}</td>
                                 <td>{{$p->category}}</td>
                                 <td>
-                                    <a href="{{route('managepricebycustomer',['id'=>$p->pid])}}" class="btn btn-warning btn-rounded waves-effect waves-light w-75 m-b-5">Update Price & BV</a>
+                                    @if (array_search("CRCSR",$page))
+                                        <a href="{{route('managepricebycustomer',['id'=>$p->pid])}}" class="btn btn-warning btn-rounded waves-effect waves-light w-75 m-b-5">Update Price & BV</a>
+                                    @endif
                                 </td>
                             </tr>
                             @php
@@ -105,7 +115,9 @@
                 @elseif($jenis=="topup")
                     <h4 class="m-t-0 header-title">Saldo Customer</h4>
                     <p class="text-muted font-14 m-b-30">
-                        <a href="{{ route('saldo.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Customer</a>
+                        @if (array_search("CRTPC",$page))
+                            <a href="{{ route('saldo.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Customer</a>
+                        @endif
                     </p>
                     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                         <thead>
@@ -137,12 +149,16 @@
                                 <td>{{$s->keterangan}}</td>
                                 <td>{{$creator['name']}}</td>
                                 <td>
-                                    <a href="{{route('saldo.edit',['id'=>$s->sid])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
-                                    <form class="" action="{{ route('saldo.destroy', ['id' => $s->sid]) }}" method="post">
-                                        {{ csrf_field() }}
-                                        {{ method_field('delete') }}
-                                        <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
-                                    </form>
+                                    @if (array_search("CRTPU",$page))
+                                        <a href="{{route('saldo.edit',['id'=>$s->sid])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
+                                    @endif
+                                    @if (array_search("CRTPD",$page))
+                                        <form class="" action="{{ route('saldo.destroy', ['id' => $s->sid]) }}" method="post">
+                                            {{ csrf_field() }}
+                                            {{ method_field('delete') }}
+                                            <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach

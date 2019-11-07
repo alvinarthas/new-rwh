@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Saldo;
 use App\Customer;
 use App\Coa;
+use App\Jurnal;
+use App\MenuMapping;
 
 class SaldoController extends Controller
 {
@@ -17,9 +19,10 @@ class SaldoController extends Controller
      */
     public function index()
     {
+        $page = MenuMapping::getMap(session('user_id'),"CRTP");
         $jenis = "topup";
         $saldo = Saldo::join('tblcustomer', 'tblsaldo.customer_id', 'tblcustomer.id')->select('tblcustomer.apname', 'accNo', 'amount', 'keterangan', 'tblsaldo.creator AS creator', 'tanggal','tblsaldo.id AS sid')->orderBy('tblsaldo.tanggal', 'desc')->get();
-        return view('customer.index', compact('saldo', 'jenis'));
+        return view('customer.index', compact('saldo', 'jenis', 'page'));
     }
 
     /**
@@ -56,6 +59,7 @@ class SaldoController extends Controller
         // Validation success
         }else{
             try{
+                $id_jurnal = Jurnal::getJurnalID('SD');
                 $saldo = new Saldo;
                 $saldo->customer_id = $request->customer_id;
                 $saldo->amount = $request->nominal;
@@ -71,8 +75,38 @@ class SaldoController extends Controller
                 }
 
                 $saldo->keterangan = $request->keterangan;
+                $saldo->id_jurnal = $id_jurnal;
                 $saldo->creator = session('user_id');
+
+                // Pembuatan Jurnal
+                $ket = 'Deposit dari '.$namacust['apname'].'('.$request->tanggal.')';
+
+                // debet Cash/Bank
+                $debet = new Jurnal(array(
+                    'id_jurnal'     => $id_jurnal,
+                    'AccNo'         => $request->search,
+                    'AccPos'        => "Debet",
+                    'Amount'        => $request->nominal,
+                    'company_id'    => 1,
+                    'date'          => $request->tanggal,
+                    'description'   => $ket,
+                    'creator'       => session('user_id')
+                ));
+                // credit Deposit dari Customer
+                $credit = new Jurnal(array(
+                    'id_jurnal'     => $id_jurnal,
+                    'AccNo'         => "2.1.2",
+                    'AccPos'        => "Credit",
+                    'Amount'        => $request->nominal,
+                    'company_id'    => 1,
+                    'date'          => $request->tanggal,
+                    'description'   => $ket,
+                    'creator'       => session('user_id')
+                ));
+
                 $saldo->save();
+                $debet->save();
+                $credit->save();
                 return redirect()->route('saldo.index')->with('status','Data berhasil disimpan');
             }catch(\Exception $e) {
                 return redirect()->back()->withErrors($e->getMessage());
@@ -128,6 +162,8 @@ class SaldoController extends Controller
         // Validation success
         }else{
             try{
+                $id_jurnal = Jurnal::getJurnalID('SD');
+
                 $saldo = Saldo::where('id', $id)->first();
                 $saldo->customer_id = $request->customer_id;
                 $saldo->amount = $request->nominal;
@@ -150,8 +186,41 @@ class SaldoController extends Controller
 
                 $saldo->buktitf = $buktitf;
                 $saldo->keterangan = $request->keterangan;
+                $saldo->id_jurnal = $id_jurnal;
                 $saldo->creator = session('user_id');
+
+                // Pembuatan Jurnal
+                $jurnal = Jurnal::where('id_jurnal', $saldo['id_jurnal'])->first();
+                $ket = 'Deposit dari '.$namacust['apname'].'('.$request->tanggal.')';
+
+                // debet Cash/Bank
+                $debet = new Jurnal(array(
+                    'id_jurnal'     => $id_jurnal,
+                    'AccNo'         => $request->search,
+                    'AccPos'        => "Debet",
+                    'Amount'        => $request->nominal,
+                    'company_id'    => 1,
+                    'date'          => $request->tanggal,
+                    'description'   => $ket,
+                    'creator'       => session('user_id')
+                ));
+                // credit Deposit dari Customer
+                $credit = new Jurnal(array(
+                    'id_jurnal'     => $id_jurnal,
+                    'AccNo'         => "2.1.2",
+                    'AccPos'        => "Credit",
+                    'Amount'        => $request->nominal,
+                    'company_id'    => 1,
+                    'date'          => $request->tanggal,
+                    'description'   => $ket,
+                    'creator'       => session('user_id')
+                ));
+
                 $saldo->save();
+                $jurnal->delete();
+                $debet->save();
+                $credit->save();
+
                 return redirect()->route('saldo.index')->with('status','Data berhasil diupdate');
             }catch(\Exception $e) {
                 return redirect()->back()->withErrors($e->getMessage());
@@ -175,6 +244,8 @@ class SaldoController extends Controller
             if ((file_exists(public_path('assets/images/saldo/topup/').$saldo->buktitf)) AND ($saldo->buktitf <> NULL)) {
                 unlink(public_path('assets/images/saldo/topup/').$saldo->buktitf);
             }
+            $jurnal = Jurnal::where('id_jurnal', $saldo['id_jurnal'])->first();
+            $jurnal->delete();
             $saldo->delete();
             return redirect()->back()->with('status','Data berhasil dihapus');
         }catch(\Exception $e){
