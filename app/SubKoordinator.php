@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Subkoordinator extends Model
+class SubKoordinator extends Model
 {
     protected $table ='tblsubkoordinator';
     protected $fillable = [

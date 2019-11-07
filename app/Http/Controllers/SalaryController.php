@@ -21,14 +21,15 @@ class SalaryController extends Controller
     // Gaji Pokok
     public function indexGajiEmp(Request $request){
         $employees = GajiPokok::all();
-        return view('salary.gajipokok.index',compact('employees'));
+        $page = MenuMapping::getMap(session('user_id'),"EMES");
+        return view('salary.gajipokok.index',compact('employees','page'));
     }
 
     public function formGajiEmp($jenis, $id=null, Request $request){
         if($jenis == "create"){
             $employees = Employee::select('id','username')->get();
             return view('salary.gajipokok.form',compact('jenis','employees'));
-        }else{
+        }else{  
             $employees = Employee::select('id','username')->get();
             $employee = GajiPokok::where('employee_id',$id)->first();
             return view('salary.gajipokok.form',compact('jenis','employee','employees'));
@@ -177,11 +178,11 @@ class SalaryController extends Controller
             $tahun = $request->tahun;
             $salary = Salary::where('month',$bulan)->where('year',$tahun)->first();
             $salaries = SalaryDet::join('tbl_salary as sd','sd.id','=','tbl_salary_detail.salary_id')->where('sd.month',$bulan)->where('sd.year',$tahun)->select('tbl_salary_detail.*')->get();
-            $page = MenuMapping::getMap(session('user_id'),"EMES");
+            $page = MenuMapping::getMap(session('user_id'),"EMPG");
 
             return response()->json(view('salary.perhitungan.show',compact('salaries','bulan','tahun','salary','page'))->render());
         }else{
-            $page = MenuMapping::getMap(session('user_id'),"EMES");
+            $page = MenuMapping::getMap(session('user_id'),"EMPG");
             return view('salary.perhitungan.index',compact('page'));
         }
     }

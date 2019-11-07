@@ -45,6 +45,9 @@
         <!--- Sidemenu -->
         <div id="sidebar-menu">
             <ul>
+                <li>
+                    <a href="{{route('getHome')}}" class="waves-effect"><i class="mdi mdi-view-dashboard"></i> <span> Dashboard </span> </a>
+                </li>
                 @if (session('nip') == "SA")
                     @foreach (Modul::getAllModul() as $modul)
                         <li class="has_sub">

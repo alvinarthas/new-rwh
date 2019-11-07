@@ -48,7 +48,7 @@
                             </div>
                         </div>
 
-                        <div class="form-group ">
+                        {{-- <div class="form-group ">
                             <div class="col-xs-12">
                                 <div class="checkbox checkbox-custom">
                                     <input id="checkbox-signup" type="checkbox">
@@ -58,7 +58,7 @@
                                 </div>
 
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="form-group text-center m-t-30">
                             <div class="col-xs-12">
@@ -66,22 +66,22 @@
                             </div>
                         </div>
 
-                        <div class="form-group m-t-30 mb-0">
+                        {{-- <div class="form-group m-t-30 mb-0">
                             <div class="col-sm-12">
                                 <a href="page-recoverpw.html" class="text-muted"><i class="fa fa-lock m-r-5"></i> Forgot your password?</a>
                             </div>
-                        </div>
+                        </div> --}}
                     </form>
 
                 </div>
             </div>
             <!-- end card-box-->
 
-            <div class="row">
+            {{-- <div class="row">
                 <div class="col-sm-12 text-center">
                     <p class="text-muted">Don't have an account? <a href="page-register.html" class="text-primary m-l-5"><b>Sign Up</b></a></p>
                 </div>
-            </div>
+            </div> --}}
             
         </div>
         <!-- end wrapper page -->
