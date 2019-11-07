@@ -20,6 +20,7 @@
                     <input type="hidden" name="tahun" value="{{ $tahun }}">
                     @if($bonusapa=="perhitungan")
                         <input type="hidden" name="perusahaan" value="{{ $perusahaan }}">
+                        <input type="hidden" name="estimasi_bonus" id="estimasi_bonus" value="{{ $estimasi_bonus }}">
                     @elseif($bonusapa=="pembayaran")
                         <input type="hidden" name="AccNo" id="AccNo" value="{{ $AccNo }}">
                         <input type="hidden" name="bank_id" id="bank_id" value="{{ $bank['id'] }}">
@@ -168,7 +169,7 @@
                 @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
                     <input type="hidden" name="AccNo" id="AccNo" value="{{ $AccNo }}">
                     <input type="hidden" name="tgl" id="tgl" value="{{ $tgl }}">
-                    <input type="hidden" name="bank_id" id="bank_id" value="{{ $bank }}">
+                    <input type="hidden" name="bank_id" id="bank_id" value="{{ $bank['id'] }}">
                 @endif
 
                 @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")

@@ -6,6 +6,7 @@
         use App\PerusahaanMember;
         use App\Perusahaan;
         use App\BonusBayar;
+        use App\TopUpBonus;
     @endphp
         <div class="row">
             <div class="col-12">
@@ -67,7 +68,12 @@
                                     <td>{{$bm->norek}}</td>
                                     <td>{{ $bm->nama }}</td>
                                     @php
-                                        $data_bonus = $bonus->where('no_rek', $bm->norek)->first();
+                                        if($bonusapa=="pembayaran"){
+                                            $data_bonus = BonusBayar::where('no_rek', $bm->norek)->where('bulan', $bulan)->where('tahun', $tahun)->where('tgl', $tgl)->where('AccNo', $AccNo)->select('bonus')->first();
+                                        }elseif($bonusapa=="topup"){
+                                            $data_bonus = TopUpBonus::where('no_rek', $bm->norek)->where('tgl', $tgl)->where('AccNo', $AccNo)->select('bonus')->first();
+                                        }
+
                                     @endphp
                                     <td>
                                         <input class="form-control number" value="{{ number_format($data_bonus['bonus'],0) }}" type="text" name="bonus{{ $i }}">
