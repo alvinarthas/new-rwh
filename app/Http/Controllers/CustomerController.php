@@ -10,6 +10,7 @@ use App\Exports\PriceDetExport2;
 use App\Customer;
 use App\Product;
 use App\PriceDet;
+use App\MenuMapping;
 use Carbon\Carbon;
 
 class CustomerController extends Controller
@@ -21,9 +22,10 @@ class CustomerController extends Controller
      */
     public function index()
     {
+        $page = MenuMapping::getMap(session('user_id'),"CRCS");
         $jenis = "customer";
         $customers = Customer::select('id', 'apname', 'cid' ,'apphone', 'cicn' , 'ciphone')->get();
-        return view('customer.index', compact('customers', 'jenis'));
+        return view('customer.index', compact('customers', 'jenis', 'page'));
     }
 
     /**
@@ -275,9 +277,10 @@ class CustomerController extends Controller
 
     public function priceByCustomer()
     {
+        $page = MenuMapping::getMap(session('user_id'),"CRCS");
         $products = Product::join('tblperusahaan','tblproduct.supplier', 'tblperusahaan.id')->select('tblproduct.id AS pid', 'tblproduct.name','tblperusahaan.nama AS namasupplier', 'prod_id', 'category')->get();
         $jenis = "pricebycustomer";
-        return view('customer.index', compact('jenis', 'products'));
+        return view('customer.index', compact('jenis', 'products', 'page'));
     }
 
     public function managePriceByCustomer($id)

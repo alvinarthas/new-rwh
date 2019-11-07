@@ -23,6 +23,7 @@ use App\Member;
 use App\TopUpBonus;
 use App\PerusahaanMember;
 use App\Jurnal;
+use App\MenuMapping;
 
 class BonusController extends Controller
 {
@@ -33,41 +34,46 @@ class BonusController extends Controller
      */
     public function index(Request $request)
     {
+        $page = MenuMapping::getMap(session('user_id'),"BMPB");
         $perusahaans = Perusahaan::all();
         $bonusapa = "perhitungan";
         $jenis = "index";
-        return view('bonus.index', compact('perusahaans', 'bonusapa', 'jenis'));
+        return view('bonus.index', compact('perusahaans', 'bonusapa', 'jenis', 'page'));
     }
 
     public function indexBayar(Request $request)
     {
+        $page = MenuMapping::getMap(session('user_id'),"BMBB");
         $rekening = Coa::where('StatusAccount', "Detail")->select('AccNo', 'AccName')->orderBy('AccNo','asc')->get();
         $bonusapa = "pembayaran";
         $jenis = "index";
-        return view('bonus.index', compact('rekening', 'bonusapa','jenis'));
+        return view('bonus.index', compact('rekening', 'bonusapa','jenis', 'page'));
     }
 
     public function indexTopup(Request $request)
     {
+        $page = MenuMapping::getMap(session('user_id'),"BMTU");
         $rekening = CoaBayarBonus::orderBy('id','asc')->get();
         $bonusapa = "topup";
         $jenis = "index";
-        return view('bonus.index', compact('rekening', 'bonusapa','jenis'));
+        return view('bonus.index', compact('rekening', 'bonusapa','jenis', 'page'));
     }
 
     public function indexLaporan(Request $request)
     {
+        $page = MenuMapping::getMap(session('user_id'),"BMRU");
         $bonusapa = "laporan";
         $jenis = "index";
-        return view('bonus.index', compact('bonusapa','jenis'));
+        return view('bonus.index', compact('bonusapa','jenis', 'page'));
     }
 
     public function indexBonusGagal(Request $request)
     {
+        $page = MenuMapping::getMap(session('user_id'),"BMGU");
         $perusahaans = Perusahaan::all();
         $bonusapa = "bonusgagal";
         $jenis = "index";
-        return view('bonus.index', compact('bonusapa','jenis','perusahaans'));
+        return view('bonus.index', compact('bonusapa','jenis','perusahaans', 'page'));
     }
 
     /**
@@ -129,7 +135,7 @@ class BonusController extends Controller
                 $ket = 'perhitungan bonus '.$perusahaan['nama'].' - bulan '.$bulan.' '.$tahun;
                 $total_bonus = $request->total_bonus;
                 $estimasi_bonus = $request->estimasi_bonus;
-                $id_jurnal = Jurnal::getJurnalID('BN');
+                $id_jurnal = Jurnal::getJurnalID('BP');
 
                 for($i=0;$i<$ctr;$i++){
                     $noid = $request->noid[$i];
@@ -152,7 +158,7 @@ class BonusController extends Controller
                             $data->save();
                         }
                     }else{
-                        $jurnal = Jurnal::where('id_jurnal', $bonusperhitungan['id_jurnal'])->first();
+                        $jurnal = Jurnal::where('id_jurnal', $bonusperhitungan['id_jurnal']);
 
                         // bonus bayar
                         $data = Bonus::where('member_id',$noid)->where('tahun',$tahun)->where('bulan',$bulan)->first();
@@ -231,7 +237,7 @@ class BonusController extends Controller
                     $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun)->where('bulan', $bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
                     $num = $bonusbayar->count();
 
-                    $id_jurnal = Jurnal::getJurnalID('BN');
+                    $id_jurnal = Jurnal::getJurnalID('BB');
 
                     if($num==0){
                         if($bonus != 0){
@@ -250,7 +256,7 @@ class BonusController extends Controller
                             $data->save();
                         }
                     }else{
-                        $jurnal_lama = Jurnal::where('id_jurnal', $bonusbayar['id_jurnal'])->first();
+                        $jurnal_lama = Jurnal::where('id_jurnal', $bonusbayar['id_jurnal']);
 
                         // bonus bayar
                         $data = BonusBayar::where('no_rek',$norek)->where('tahun',$tahun)->where('bulan',$bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->first();
@@ -325,7 +331,7 @@ class BonusController extends Controller
                     $topup = TopUpBonus::where('no_rek', $norek)->where('tgl',$tgl)->where('bank_id',$AccNo)->select('id_bonus','id_jurnal')->get();
                     $num = $topup->count();
 
-                    $id_jurnal = Jurnal::getJurnalID('BN');
+                    $id_jurnal = Jurnal::getJurnalID('BT');
 
                     if($num==0){
                         if($bonus != 0){
@@ -342,7 +348,7 @@ class BonusController extends Controller
                             $data->save();
                         }
                     }else{
-                        $jurnal = Jurnal::where('id_jurnal', $topup['id_jurnal'])->first();
+                        $jurnal = Jurnal::where('id_jurnal', $topup['id_jurnal']);
 
                         // topup
                         $data = TopUpBonus::where('no_rek',$norek)->where('tgl',$tgl)->where('bank_id',$bank)->first();
@@ -511,7 +517,7 @@ class BonusController extends Controller
         $ket = 'perhitungan bonus via upload excel'.$perusahaan['nama'].' - bulan '.$request->bulan.' '.$request->tahun;
         $total_bonus = 0;
         $estimasi_bonus = $request->estimasi_bonus;
-        $id_jurnal = Jurnal::getJurnalID('BN');
+        $id_jurnal = Jurnal::getJurnalID('BP');
 
         $count = count($array[0]);
         $xls = array_chunk($array[0],$count);
@@ -546,7 +552,7 @@ class BonusController extends Controller
                         $bonus->save();
                     }else{
                         $bonus = Bonus::where('member_id', $pm['noid'])->where('tahun',$request->tahun)->where('bulan',$request->bulan)->select('bonus','id_jurnal','creator')->first();
-                        $jurnal = Jurnal::where('id_jurnal', $bonus['id_jurnal'])->first();
+                        $jurnal = Jurnal::where('id_jurnal', $bonus['id_jurnal']);
                         $bonus->bonus = $xls[0][$i][4];
                         $bonus->id_jurnal = $id_jurnal;
                         $bonus->creator = session('user_id');
@@ -673,7 +679,7 @@ class BonusController extends Controller
             $ket='pembayaran bonus via upload excel '.$xls[0][$i][1].' - bulan'.$bulan.' '.$tahun;
             $bonusbayar = BonusBayar::where('no_rek',$xls[0][$i][1])->where('tahun', $request->tahun)->where('bulan',$request->bulan)->where('tgl',$request->tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
             $num = $bonusbayar->count();
-            $id_jurnal = Jurnal::getJurnalID('BN');
+            $id_jurnal = Jurnal::getJurnalID('BB');
             if($xls[0][$i][2] <> ''){
                 if($num==0){
                     if($xls[0][$i][3] != 0){
@@ -692,7 +698,7 @@ class BonusController extends Controller
                         $data->save();
                     }
                 }else{
-                    $jurnal_lama = Jurnal::where('id_jurnal', $bonusbayar['id_jurnal'])->first();
+                    $jurnal_lama = Jurnal::where('id_jurnal', $bonusbayar['id_jurnal']);
 
                     $data = BonusBayar::where('no_rek',$xls[0][$i][1])->where('tahun', $request->tahun)->where('bulan',$request->bulan)->where('tgl',$request->tgl)->where('AccNo',$AccNo)->first();
                     $data->bonus = $xls[0][$i][3];

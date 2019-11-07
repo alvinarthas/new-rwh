@@ -29,10 +29,12 @@
                 @if($bonusapa=="perhitungan" OR $bonusapa=="bonusgagal")
                     @if($bonusapa=="perhitungan")
                         <h3 class="m-t-0 header-title">Perhitungan Bonus Member</h3>
-                        @if($jenis == "index")
-                            <p class="text-muted font-14 m-b-30">
-                                <a href="{{ route('bonus.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Perhitungan Bonus</a>
-                            </p>
+                        @if (array_search("BMPBC",$page))
+                            @if($jenis == "index")
+                                <p class="text-muted font-14 m-b-30">
+                                    <a href="{{ route('bonus.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Perhitungan Bonus</a>
+                                </p>
+                            @endif
                         @endif
                     @elseif($bonusapa=="bonusgagal")
                         <h3 class="m-t-0 header-title">Laporan Upload Gagal Perhitungan Bonus Member</h3>
@@ -56,13 +58,17 @@
                     @endif
                     @if($jenis == "index")
                         @if($bonusapa=="pembayaran")
-                            <p class="text-muted font-14 m-b-30">
-                                <a href="{{ route('bonus.createbayar') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Pembayaran Bonus</a>
-                            </p>
+                            @if (array_search("BMBBC",$page))
+                                <p class="text-muted font-14 m-b-30">
+                                    <a href="{{ route('bonus.createbayar') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Pembayaran Bonus</a>
+                                </p>
+                            @endif
                         @elseif($bonusapa=="topup")
-                            <p class="text-muted font-14 m-b-30">
-                                <a href="{{ route('bonus.createtopup') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Top Up Bonus Member</a>
-                            </p>
+                            @if (array_search("BMTUC",$page))
+                                <p class="text-muted font-14 m-b-30">
+                                    <a href="{{ route('bonus.createtopup') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Top Up Bonus Member</a>
+                                </p>
+                            @endif
                         @endif
                     @endif
                     <div class="form-group row">
