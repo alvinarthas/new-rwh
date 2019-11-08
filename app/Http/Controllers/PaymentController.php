@@ -66,7 +66,7 @@ class PaymentController extends Controller
         // Validation success
         }else{
             $rest = $request->paid - $request->payment_amount;
-            // Jurnal 
+            // Jurnal
             $jurnal_desc = "SO.".$request->trx_id;
             $id_jurnal = Jurnal::getJurnalID('SP');
 
@@ -81,17 +81,17 @@ class PaymentController extends Controller
                 'deduct_amount' =>$request->deduct_amount,
                 'jurnal_id' => $id_jurnal,
             ));
-            
+
             try {
 
                 // Payment
                     $payment->save();
-                
+
                 // Status Sales
                 if($rest == 0){
                     $sales = Sales::where('id',$request->trx_id)->first();
                     $sales->status = 1;
-    
+
                     $sales->save();
                 }
 
@@ -108,7 +108,7 @@ class PaymentController extends Controller
                             'input_date' => $request->payment_date
                         ));
                         $saldodet->save();
-        
+
                         $saldo_skrng = $saldo->saldo_skrng - $request->payment_amount;
                         $saldo->saldo_skrng = $saldo_skrng;
                         $saldo->save();
@@ -161,7 +161,7 @@ class PaymentController extends Controller
         $payment = PurchasePayment::where('trx_id',$id)->get();
         $ttl_pay = PurchasePayment::where('trx_id',$id)->sum('payment_amount');
         $ttl_order = PurchaseDetail::where('trx_id',$id)->sum(DB::raw('qty * price'));
-        $coas = Coa::where('grup',5)->orWhere('grup',2)->orWhere(DB::raw("AccNo like '2%' and AccName like '%CC%'"))->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
+        $coas = Coa::where('grup_id',5)->orWhere('grup_id',2)->orWhere(DB::raw("AccNo like '2%' and AccName like '%CC%'"))->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
         $page = MenuMapping::getMap(session('user_id'),"PUPP");
 
         return view('payment.purchase.form',compact('purchase','payment','coas','details','ttl_pay','ttl_order','page'));
@@ -181,7 +181,7 @@ class PaymentController extends Controller
         // Validation success
         }else{
             $rest = $request->paid - $request->payment_amount;
-            // Jurnal 
+            // Jurnal
             $jurnal_desc = "PO.".$request->trx_id;
             $id_jurnal = Jurnal::getJurnalID('PP');
 
@@ -196,14 +196,14 @@ class PaymentController extends Controller
                 'deduct_amount' =>$request->deduct_amount,
                 'jurnal_id' => $id_jurnal,
             ));
-            
+
             try {
                 // Payment
                     $payment->save();
                 if($rest == 0){
                     $purchase = Purchase::where('id',$request->trx_id)->first();
                     $purchase->status = 1;
-    
+
                     $purchase->save();
                 }
                 // Jurnal Debet kas/bank
@@ -216,7 +216,7 @@ class PaymentController extends Controller
                     }
                 // Jurnal Credit piutang konsumen
                     Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Credit');
-                    
+
 
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
@@ -224,7 +224,7 @@ class PaymentController extends Controller
             }
         }
     }
-    
+
     public function purchasePayDestroy(Request $request){
         $payment = PurchasePayment::where('id',$request->id)->first();
         $jurnal = Jurnal::where('id_jurnal',$payment->jurnal_id)->first();

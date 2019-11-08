@@ -10,11 +10,11 @@
             <div class="card-box table-responsive">
                 <h4 class="m-t-0 header-title">Index Product</h4>
 
-                <table id="responsive-datatable" class="table table-bordered dt-responsive" cellspacing="0">
+                <table id="responsive-datatable" class="table table-bordered dt-responsive nowrap" cellspacing="0">
                     <thead>
                         <th style="width:10%">No</th>
                         <th style="width:5%">Product ID</th>
-                        <th width="col-md-3">Prod ID Baru</th>
+                        {{-- <th width="col-md-3">Prod ID Baru</th> --}}
                         <th width="5%">Product Name</th>
                         <th style="width:10%">Product Brand</th>
                         <th style="width:10%">Posting Bulan Ini</th>
@@ -33,13 +33,13 @@
                             <td>{{$i}}</td>
                             <input type="hidden" name="i" id="i" value="{{ $i }}"/>
                             <td>{{$prd->prod_id}}</td>
-                            <input type="hidden" name="pid{{ $i }}" id="pid{{ $i }}" value="{{ $prd->prod_id }}"/>
-                            <td>{{$prd->prod_id_new}}</td>
+                            <input type="hidden" name="pid[]" id="pid{{ $i }}" value="{{ $prd->prod_id }}"/>
+                            {{-- <td>{{$prd->prod_id_new}}</td> --}}
                             <td>{{$prd->name}}</td>
                             <td>{{$prd->category}}</td>
                             <td>
                                 @php
-                                    $postingan = DB::table('tblpotrxdet')->where('prod_id', $prd->prod_id)->join('tblpotrx','tblpotrxdet.trx_id','=','tblpotrx.trx_id')->where('tblpotrx.month',$month)->where('tblpotrx.year',$year)->sum('tblpotrxdet.qty');
+                                    $postingan = DB::table('tblpotrxdet')->where('prod_id', $prd->prod_id)->join('tblpotrx','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrx.month',$month)->where('tblpotrx.year',$year)->sum('tblpotrxdet.qty');
                                 @endphp
                                 {{ $postingan }}
                             </td>
@@ -55,12 +55,10 @@
                                     }
                                 @endphp
                             <td>
-                                <label for="textfield"></label>
-                                <input name="price_dis{{ $i }}" type="text" id="price_dis{{ $i }}" value="{{ $data1['harga_distributor'] }}" size="15" maxlength="15"/>
+                                <input name="price_dis[]" type="text" id="price_dis{{ $i }}" value="{{ $data1['harga_distributor'] }}" size="15" maxlength="15"/>
                             </td>
                             <td>
-                                <label for="textfield"></label>
-                                <input name="price_mod{{ $i }}" type="text" id="price_mod{{ $i }}" value="{{ $data1['harga_modal'] }}" size="15" maxlength="15"/>
+                                <input name="price_mod[]" type="text" id="price_mod{{ $i }}" value="{{ $data1['harga_modal'] }}" size="15" maxlength="15"/>
                             </td>
                             <td>
                                 @php($selisih=$data1['harga_distributor']-$data1['harga_modal'])
@@ -87,7 +85,8 @@
         $(document).ready(function () {
             // Responsive Datatable
             $('#responsive-datatable').DataTable({
-                paging : false
+                paging : false,
+                scrollY: 400
             });
         });
         function btnSave(){
