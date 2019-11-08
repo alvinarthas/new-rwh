@@ -10,7 +10,7 @@
             <div class="card-box table-responsive">
                 <h4 class="m-t-0 header-title">Index Product</h4>
 
-                <table id="responsive-datatable" class="table table-bordered dt-responsive nowrap" cellspacing="0">
+                <table id="responsive-datatable" class="table table-bordered dt-responsive wrap" cellspacing="0">
                     <thead>
                         <th style="width:10%">No</th>
                         <th style="width:5%">Product ID</th>
@@ -51,17 +51,26 @@
                                         }
                                         else{
                                             $data1 = ManageHarga::where('prod_id', $prd->prod_id)->where('year', $year)->where('month', $month-1)->select('harga_distributor','harga_modal')->first();
-                                            }
+                                        }
                                     }
+
+                                    if(($data1['harga_distributor'] AND $data1['harga_modal']) == ""){
+                                        $harga_dist = 0;
+                                        $harga_mod = 0;
+                                    }else{
+                                        $harga_dist = $data1['harga_distributor'];
+                                        $harga_mod = $data1['harga_modal'];
+                                    }
+
                                 @endphp
                             <td>
-                                <input name="price_dis[]" type="text" id="price_dis{{ $i }}" value="{{ $data1['harga_distributor'] }}" size="15" maxlength="15"/>
+                                <input name="price_dis[]" type="text" id="price_dis{{ $i }}" value="{{ $harga_dist }}" size="15" maxlength="15"/>
                             </td>
                             <td>
-                                <input name="price_mod[]" type="text" id="price_mod{{ $i }}" value="{{ $data1['harga_modal'] }}" size="15" maxlength="15"/>
+                                <input name="price_mod[]" type="text" id="price_mod{{ $i }}" value="{{ $harga_mod }}" size="15" maxlength="15"/>
                             </td>
                             <td>
-                                @php($selisih=$data1['harga_distributor']-$data1['harga_modal'])
+                                @php($selisih = $harga_dist - $harga_mod)
                                 {{ $selisih }}
                             </td>
                             <td>

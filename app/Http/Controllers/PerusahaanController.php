@@ -41,6 +41,9 @@ class PerusahaanController extends Controller
      */
     public function store(Request $request)
     {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
         // Validate
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string',
@@ -57,6 +60,9 @@ class PerusahaanController extends Controller
                 'nama' => $request->nama,
                 'alamat' => $request->alamat,
                 'telp' => $request->telepon,
+                'cp1' => $request->cp1,
+                'cp2' => $request->cp2,
+                'cp3' => $request->cp3,
                 'creator' => session('user_id'),
             ));
             // success
@@ -113,10 +119,13 @@ class PerusahaanController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $perusahaan = Perusahaan::find($id);
+            $perusahaan = Perusahaan::where('id', $id)->first();
             $perusahaan->nama = $request->nama;
             $perusahaan->alamat = $request->alamat;
             $perusahaan->telp = $request->telepon;
+            $perusahaan->cp1 = $request->cp1;
+            $perusahaan->cp2 = $request->cp2;
+            $perusahaan->cp3 = $request->cp3;
             $perusahaan->creator = "creator";
             // success
             if($perusahaan->update()){
@@ -136,7 +145,7 @@ class PerusahaanController extends Controller
      */
     public function destroy($id)
     {
-        $perusahaan = Perusahaan::find($id);
+        $perusahaan = Perusahaan::where('id', $id)->first();
         if($perusahaan->delete()){
             return redirect()->route('perusahaan.index')->with('status', 'Data berhasil dihapus');
         // fail

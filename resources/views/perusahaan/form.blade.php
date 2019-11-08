@@ -53,6 +53,33 @@ Tambah Data Perusahaan
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="p-20">
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Contact Person 1</label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control" parsley-trigger="change"  name="cp1" id="cp1" value="@isset($perusahaan->cp1){{$perusahaan->cp1}}@endisset">
+                                    <span class="help-block">format : 08xxxxxxxxx (NAMA CONTACT PERSON)</span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Contact Person 2</label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control" parsley-trigger="change"  name="cp2" id="cp2" value="@isset($perusahaan->cp2){{$perusahaan->cp2}}@endisset">
+                                    <span class="help-block">format : 08xxxxxxxxx (NAMA CONTACT PERSON)</span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Contact Person 3</label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control" parsley-trigger="change"  name="cp3" id="cp3" value="@isset($perusahaan->cp3){{$perusahaan->cp3}}@endisset">
+                                    <span class="help-block">format : 08xxxxxxxxx (NAMA CONTACT PERSON)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

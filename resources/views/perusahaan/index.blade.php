@@ -36,12 +36,15 @@
                     @endif
                 </p>
 
-                <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                     <thead>
                         <th>No</th>
                         <th>Nama Perusahaan</th>
                         <th>Alamat</th>
                         <th>No Telp</th>
+                        <th>CP 1</th>
+                        <th>CP 2</th>
+                        <th>CP 3</th>
                         <th>Actions</th>
                     </thead>
 
@@ -53,6 +56,9 @@
                             <td>{{$prs->nama}}</td>
                             <td>{{$prs->alamat}}</td>
                             <td>{{$prs->telp}}</td>
+                            <td>{{$prs->cp1}}</td>
+                            <td>{{$prs->cp2}}</td>
+                            <td>{{$prs->cp3}}</td>
                             <td>
                                 @if (array_search("MDPRU",$page))
                                 <a href="{{ route('perusahaan.edit', ['id' => $prs->id]) }}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
