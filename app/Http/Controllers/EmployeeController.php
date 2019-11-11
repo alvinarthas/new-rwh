@@ -49,7 +49,7 @@ class EmployeeController extends Controller
         }else{
             if($request->nip == ''){
                 $rowmember = Employee::where('mulai_kerja',$request->mulai_kerja)->count();
-                $tgl = Carbon::createFromFormat('Y-m-d',$request->mulai_kerja)->format('dmy');
+                $tgl = Carbon::createFromFormat('Y-m-d',$request->mulai_kerja)->format('Ymd');
                 $nip = "Royal".$tgl.$rowmember+1;
             }else{
                 $nip = $request->nip;
@@ -310,9 +310,9 @@ class EmployeeController extends Controller
             // Informasi BPJS
             $employee->bpjs = $request->bpjs;
             $employee->scanbpjs = $scanbpjs;
-            
+
             $employee->save();
-            
+
             return redirect()->route('employee.index')->with('status', 'Data berhasil dirubah');;
         } catch (\Exception $e) {
             return redirect()->back()->withErrors($e->errorInfo);
