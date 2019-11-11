@@ -113,10 +113,10 @@ class RoleController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $role = Modul::where('id',$id)->first();
+            $role = Role::where('id',$id)->first();
 
             $role->role_name = $request->role_name;
-            $modul->creator = session('user_id');
+            $role->creator = session('user_id');
 
             $role->save();
 

@@ -34,6 +34,7 @@ class InvoiceController extends Controller
         $jenis = $request->jenis;
         $transaksi = Sales::where('id',$trx_id)->first();
         $transaksidet = SalesDet::where('trx_id',$trx_id)->get();
+
         if ($request->ajax()) {
             return response()->json(view('sales.invoice.pdf',compact('transaksi','jenis','transaksidet'))->render());
         }else{

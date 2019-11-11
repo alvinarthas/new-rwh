@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 
-use App\Subkoordinator;
+use App\SubKoordinator;
 use App\MenuMapping;
 
 class SubkoordinatorController extends Controller

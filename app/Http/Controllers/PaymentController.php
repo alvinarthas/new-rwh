@@ -161,7 +161,7 @@ class PaymentController extends Controller
         $payment = PurchasePayment::where('trx_id',$id)->get();
         $ttl_pay = PurchasePayment::where('trx_id',$id)->sum('payment_amount');
         $ttl_order = PurchaseDetail::where('trx_id',$id)->sum(DB::raw('qty * price'));
-        $coas = Coa::where('grup',5)->orWhere('grup',2)->orWhere(DB::raw("AccNo like '2%' and AccName like '%CC%'"))->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
+        $coas = Coa::where('grup_id',5)->orWhere('grup_id',2)->orWhere(DB::raw("AccNo like '2%' and AccName like '%CC%'"))->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
         $page = MenuMapping::getMap(session('user_id'),"PUPP");
 
         return view('payment.purchase.form',compact('purchase','payment','coas','details','ttl_pay','ttl_order','page'));

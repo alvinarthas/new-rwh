@@ -8,9 +8,9 @@ class Perusahaan extends Model
 {
     protected $table ='tblperusahaan';
     protected $fillable = [
-        'nama','alamat','telp','creator'
+        'nama','alamat','telp','creator','cp1', 'cp2', 'cp3'
     ];
 
-    public $timestamps = false;
+    public $timestamps = true;
 
 }

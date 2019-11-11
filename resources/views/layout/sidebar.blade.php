@@ -48,7 +48,7 @@
                 <li>
                     <a href="{{route('getHome')}}" class="waves-effect"><i class="mdi mdi-view-dashboard"></i> <span> Dashboard </span> </a>
                 </li>
-                @if (session('nip') == "SA")
+                @if (session('nip') == "ROYALSUPERADMIN")
                     @foreach (Modul::getAllModul() as $modul)
                         <li class="has_sub">
                             <a href="javascript:void(0);" class="waves-effect"><i class="{{$modul->modul_icon}}"></i><span>{{$modul->modul_desc}}</span> <span class="menu-arrow"></span></a>

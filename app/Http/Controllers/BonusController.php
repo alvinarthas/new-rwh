@@ -86,7 +86,8 @@ class BonusController extends Controller
         $perusahaans = Perusahaan::all();
         $bonusapa = "perhitungan";
         $jenis = "create";
-        return view('bonus.index', compact('perusahaans', 'jenis', 'bonusapa'));
+        $page = MenuMapping::getMap(session('user_id'),"BMPB");
+        return view('bonus.index', compact('perusahaans', 'jenis', 'bonusapa','page'));
     }
 
     public function createBayar()

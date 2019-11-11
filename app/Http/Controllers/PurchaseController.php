@@ -106,7 +106,7 @@ class PurchaseController extends Controller
     public function create()
     {
         $jenis = "create";
-        $suppliers = Perusahaan::all(); 
+        $suppliers = Perusahaan::all();
         return view('purchase.form', compact('jenis','suppliers'));
     }
 
@@ -171,11 +171,11 @@ class PurchaseController extends Controller
                 }
 
                 //insert debet Persediaan Barang Indent ( harga modal x qty )
-                Jurnal::addJurnal($id_jurnal,$total_modal,$date,$jurnal_desc,'1.1.4.1.1','Debet');
+                Jurnal::addJurnal($id_jurnal,$total_modal,$request->po_date,$jurnal_desc,'1.1.4.1.1','Debet');
                 //insert debet Estimasi Bonus
-                Jurnal::addJurnal($id_jurnal,$total_tertahan,$date,$jurnal_desc,'1.1.3.4','Debet');
+                Jurnal::addJurnal($id_jurnal,$total_tertahan,$request->po_date,$jurnal_desc,'1.1.3.4','Debet');
                 //insert credit hutang Dagang
-                Jurnal::addJurnal($id_jurnal,$total_distributor,$date,$jurnal_desc,'2.1.1','Credit');
+                Jurnal::addJurnal($id_jurnal,$total_distributor,$request->po_date,$jurnal_desc,'2.1.1','Credit');
 
                 return redirect()->route('purchase.index')->with('status', 'Data berhasil dibuat');
 
@@ -253,17 +253,9 @@ class PurchaseController extends Controller
 
                 $purchase->update();
                 // insert Detail
-                $total_modal=0;
-                $total_tertahan=0;
-                $total_distributor=0;
                 for ($i=0; $i < $request->count ; $i++) {
                     
                     if(isset($request->prod_id[$i])){
-                        $selisih = $request->harga_mod[$i] - $request->harga_dist[$i];
-                        $total_modal += ($request->harga_mod[$i] * $request->qty[$i]);
-                        $total_tertahan+=($selisih*$request->qty[$i]);
-                        $total_distributor+=($request->harga_dist[$i]*$request->qty[$i]);
-
                         $purchasedet = new PurchaseDetail(array(
                             'trx_id' => $purchase->id,
                             'prod_id' => $request->prod_id[$i],
@@ -274,21 +266,36 @@ class PurchaseController extends Controller
                             'price_dist' => $request->harga_dist[$i],
                         ));
                         $purchasedet->save();
-
-                        $jurnal1 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1-105002')->first();
-                        $jurnal1->Amount = $jurnal1->Amount+$total_modal;
-                        $jurnal1->update();
-
-                        $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1-103005')->first();
-                        $jurnal2->Amount = $jurnal2->Amount+$total_tertahan;
-                        $jurnal2->update();
-
-                        $jurnal3 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','2-102002')->first();
-                        $jurnal3->Amount = $jurnal2->Amount+$total_distributor;
-                        $jurnal3->update();
-
                     }
                 }
+
+                // Penjurnalan
+                $total_modal=0;
+                $total_tertahan=0;
+                $total_distributor=0;
+                foreach (PurchaseDetail::where('trx_id',$id)->get() as $key) {
+                    $selisih = $key->price - $key->price_dist;
+                    $total_modal += ($key->price * $key->qty);
+                    $total_tertahan+=($selisih*$key->qty);
+                    $total_distributor+=($key->price_dist*$key->qty);
+                }
+                //Update debet Persediaan Barang Indent ( harga modal x qty )
+                    $jurnal1 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.4.1.1')->first();
+                    $jurnal1->Amount = $jurnal1->Amount+$total_modal;
+                    $jurnal1->date = $request->po_date;
+                    $jurnal1->update();
+                //Update debet Estimasi Bonus
+                    $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
+                    $jurnal2->Amount = $jurnal2->Amount+$total_tertahan;
+                    $jurnal2->date = $request->po_date;
+                    $jurnal2->update();
+                //Update credit hutang Dagang
+                    $jurnal3 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','2.1.1')->first();
+                    $jurnal3->Amount = $jurnal2->Amount+$total_distributor;
+                    $jurnal3->date = $request->po_date;
+                    $jurnal3->update();
+                
+                
                 return redirect()->route('purchase.index')->with('status', 'Data berhasil dibuat');
 
             } catch (\Exception $e) {

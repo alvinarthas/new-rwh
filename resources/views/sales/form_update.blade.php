@@ -123,10 +123,10 @@ Form Update Sales Order
                                                 <td>Rp. {{number_format($detail->price)}}</td>
                                                 <td>{{$detail->qty}}</td>
                                                 <td>{{$detail->unit}}</td>
-                                                <td><input type="hidden" value="{{$detail->sub_ttl}}" id="sub_ttl{{$i}}">Rp. {{number_format($detail->sub_ttl)}}</td>
+                                                <td><input type="hidden" value="{{$detail->sub_ttl}}" id="sub_ttl_price{{$i}}">Rp. {{number_format($detail->sub_ttl)}}</td>
                                                 <td>Rp. {{number_format($detail->pv)}}</td>
                                                 <td>Rp. {{number_format($detail->sub_ttl_bv)}}</td>
-                                                <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem({{$i}},{{$detail->id}})">Delete</a></td>
+                                                <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItemOld({{$i}},{{$detail->id}})">Delete</a></td>
                                             </tr>
                                         @php($i++)
                                         @endforeach
@@ -246,9 +246,11 @@ function changeTotalHarga(sub_ttl_price){
 }
 
 function decreaseTotalHarga(id){
+    console.log(id);
     raw_ttl_trx = parseInt($('#raw_ttl_trx').val());
     input = parseInt($('#ongkir').val(),10);
     sub_ttl_price = $('#sub_ttl_price'+id).val();
+    console.log(sub_ttl_price);
 
     $('#raw_ttl_trx').val(raw_ttl_trx-sub_ttl_price)
     new_ttl_trx = (raw_ttl_trx-sub_ttl_price)+input;
@@ -302,7 +304,7 @@ function ongkosKirim() {
     $('#ttl_trx').val(result);
 }
 
-function deleteItem(id,purdet){
+function deleteItemOld(id,purdet){
     swal({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",

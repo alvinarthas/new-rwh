@@ -134,7 +134,7 @@ Form Update Purchasing
                                                 <td>Rp. {{number_format($detail->price)}}</td>
                                                 <td><input type="hidden" value="{{$detail->price_dist*$detail->qty}}" id="sub_ttl_dist{{$i}}">Rp. {{number_format($detail->price_dist*$detail->qty)}}</td>
                                                 <td><input type="hidden" value="{{$detail->price*$detail->qty}}" id="sub_ttl_mod{{$i}}">Rp. {{number_format($detail->price*$detail->qty)}}</td>
-                                                <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem({{$i}},{{$detail->id}})">Delete</a></td>
+                                                <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItemOld({{$i}},{{$detail->id}})">Delete</a></td>
                                             </tr>
                                         @php($i++)
                                         @endforeach
@@ -174,7 +174,7 @@ Form Update Purchasing
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Notes</label>
                                     <div class="col-10">
-                                        <input type="text" class="form-control" name="notes" id="notes" parsley-trigger="change">
+                                        <input type="text" class="form-control" name="notes" id="notes" parsley-trigger="change" value="{{$purchase->notes}}">
                                     </div>
                                 </div>
                             </div>
@@ -251,6 +251,13 @@ function addItem(){
     });
 }
 
+function deleteItem(id){
+    count = parseInt($('#count').val()) - 1;
+    decreaseTotalHarga(id);
+    $('#trow'+id).remove();
+    $('#count').val(count);
+}
+
 function changeTotalHarga(sub_ttl_mod,sub_ttl_dist){
     ttl_harga_distributor = parseInt($('#ttl_harga_distributor').val());
     ttl_harga_modal = parseInt($('#ttl_harga_modal').val());
@@ -277,7 +284,7 @@ function resetall(){
     $('#unit').val("");
 }
 
-function deleteItem(id,purdet){
+function deleteItemOld(id,purdet){
     swal({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",

@@ -52,7 +52,7 @@ Tambah Data Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Telepon</label>
                                 <div class="col-10">
-                                    <input type="number" class="form-control" parsley-trigger="change" required name="telepon" id="telepon" value="@isset($employee->phone){{$employee->phone}}@endisset">
+                                    <input type="text" class="form-control"  name="telepon" id="telepon" value="@isset($employee->phone){{$employee->phone}}@endisset">
                                 </div>
                             </div>
                             <div class="form-group row">

@@ -185,12 +185,13 @@ class EmployeeController extends Controller
         // Validation success
         }else{
 
+        try {
             $employee = Employee::where('id',$id)->first();
 
             // Upload Foto
             if($request->scanfoto <> NULL|| $request->scanfoto <> ''){
 
-                if (file_exists(public_path('assets/images/employee/foto/').$employee->scanfoto)) {
+                if (file_exists(public_path('assets/images/employee/foto/').$employee->scanfoto) && $employee->scanfoto != "noimage.jpg") {
                     unlink(public_path('assets/images/employee/foto/').$employee->scanfoto);
                 }
 
@@ -203,7 +204,7 @@ class EmployeeController extends Controller
             // Upload KTP
             if($request->scanktp <> NULL|| $request->scanktp <> ''){
 
-                if (file_exists(public_path('assets/images/employee/ktp/').$employee->scanktp)) {
+                if (file_exists(public_path('assets/images/employee/ktp/').$employee->scanktp)  && $employee->scanktp != "noimage.jpg") {
                     unlink(public_path('assets/images/employee/ktp/').$employee->scanktp);
                 }
 
@@ -216,7 +217,7 @@ class EmployeeController extends Controller
             // Upload SIM A
             if($request->scansima <> NULL|| $request->scansima <> ''){
 
-                if (file_exists(public_path('assets/images/employee/sima/').$employee->scansima)) {
+                if (file_exists(public_path('assets/images/employee/sima/').$employee->scansima) && $employee->scansima != "noimage.jpg") {
                     unlink(public_path('assets/images/employee/sima/').$employee->scansima);
                 }
 
@@ -229,7 +230,7 @@ class EmployeeController extends Controller
             // Upload SIM B
             if($request->scansimb <> NULL|| $request->scansimb <> ''){
 
-                if (file_exists(public_path('assets/images/employee/simb/').$employee->scansimb)) {
+                if (file_exists(public_path('assets/images/employee/simb/').$employee->scansimb) && $employee->scansimb != "noimage.jpg") {
                     unlink(public_path('assets/images/employee/simb/').$employee->scansimb);
                 }
 
@@ -242,7 +243,7 @@ class EmployeeController extends Controller
             // Upload SIM C
             if($request->scansimc <> NULL|| $request->scansimc <> ''){
 
-                if (file_exists(public_path('assets/images/employee/simc/').$employee->scansimc)) {
+                if (file_exists(public_path('assets/images/employee/simc/').$employee->scansimc) && $employee->scansimc != "noimage.jpg") {
                     unlink(public_path('assets/images/employee/simc/').$employee->scansimc);
                 }
 
@@ -255,7 +256,7 @@ class EmployeeController extends Controller
             // Upload NPWP
             if($request->scannpwp <> NULL|| $request->scannpwp <> ''){
 
-                if (file_exists(public_path('assets/images/employee/npwp/').$employee->scannpwp)) {
+                if (file_exists(public_path('assets/images/employee/npwp/').$employee->scannpwp) && $employee->scannpwp != "noimage.jpg") {
                     unlink(public_path('assets/images/employee/npwp/').$employee->scannpwp);
                 }
 
@@ -268,7 +269,7 @@ class EmployeeController extends Controller
             // Upload BPJS
             if($request->scanbpjs <> NULL|| $request->scanbpjs <> ''){
 
-                if (file_exists(public_path('assets/images/employee/bpjs/').$employee->scanbpjs)) {
+                if (file_exists(public_path('assets/images/employee/bpjs/').$employee->scanbpjs) && $employee->scanbpjs != "noimage.jpg") {
                     unlink(public_path('assets/images/employee/bpjs/').$employee->scanbpjs);
                 }
 
@@ -286,6 +287,7 @@ class EmployeeController extends Controller
             $employee->email = $request->email;
             $employee->tmpt_lhr = $request->tempat_lahir;
             $employee->tgl_lhr = $request->tanggal_lahir;
+            $employee->mulai_kerja = $request->mulai_kerja;
             $employee->scanfoto = $scanfoto;
             // Informasi Tabungan
             $employee->bank = $request->bank;
@@ -312,6 +314,10 @@ class EmployeeController extends Controller
             $employee->save();
             
             return redirect()->route('employee.index')->with('status', 'Data berhasil dirubah');;
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors($e->errorInfo);
+        }
+            
         }
     }
 

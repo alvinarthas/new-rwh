@@ -68,8 +68,9 @@ class SalesController extends Controller
 
     public function showIndexSales(Request $request){
         $sales = Sales::whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
+        $page = MenuMapping::getMap(session('user_id'),"PSSL");
         if ($request->ajax()) {
-            return response()->json(view('sales.indexsales',compact('sales'))->render());
+            return response()->json(view('sales.indexsales',compact('sales','page'))->render());
         }
     }
 
@@ -100,7 +101,6 @@ class SalesController extends Controller
         // Validation success
         }else{
             $id_jurnal = Jurnal::getJurnalID('SO');
-
             $sales = new Sales(array(
                 'customer_id' => $request->customer,
                 'trx_date' => $request->trx_date,
@@ -113,10 +113,11 @@ class SalesController extends Controller
             // success
             try {
                 $sales->save();
+                $total_transaksi = $request->raw_ttl_trx+$request->ongkir;
                 $jurnal_desc = "SO.".$sales->id;
                 $modal = 0;
                 for ($i=0; $i < $request->count ; $i++) {
-                    $avcharga = PurchaseDetail::where('prod_id',$key->id)->avg('price');
+                    $avcharga = PurchaseDetail::where('prod_id',$request->prod_id[$i])->avg('price');
                     $modal += ($request->qty[$i] * $avcharga);
                     $salesdet = new SalesDet(array(
                         'trx_id' => $sales->id,
@@ -134,14 +135,14 @@ class SalesController extends Controller
 
                 // Jurnal 1
                     //insert debet Piutang Konsumen Masukkan harga total - diskon
-                    Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'1.1.3.1','Debet');
+                    Jurnal::addJurnal($id_jurnal,$total_transaksi,$request->trx_date,$jurnal_desc,'1.1.3.1','Debet');
                     //insert credit pendapatan retail (SALES)
-                    Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'4.1.1','Credit');
+                    Jurnal::addJurnal($id_jurnal,$total_transaksi,$request->trx_date,$jurnal_desc,'4.1.1','Credit');
                 // Jurnal 2
                     //insert debet COGS
-                    Jurnal::addJurnal($id_jurnal2,$modal,$request->trx_date,$jurnal_desc,'5.1','Debet');
+                    Jurnal::addJurnal($id_jurnal,$modal,$request->trx_date,$jurnal_desc,'5.1','Debet');
                     //insert Credit Persediaan Barang milik customer
-                    Jurnal::addJurnal($id_jurnal2,$modal,$request->trx_date,$jurnal_desc,'1.1.4.1.2','Credit');
+                    Jurnal::addJurnal($id_jurnal,$modal,$request->trx_date,$jurnal_desc,'1.1.4.1.2','Credit');
 
                 return redirect()->route('sales.index')->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
@@ -187,16 +188,22 @@ class SalesController extends Controller
             // success
             try {
                 $sales->update();
+                $total_transaksi = $request->raw_ttl_trx+$request->ongkir;
+                // Update Jurnal Piutang Customer dan Sales Update
 
-                $jurnal = Jurnal::where('id_jurnal',$sales->jurnal_id)->first();
-                $jurnal->Amount = $request->raw_ttl_trx;
-                $jurnal->date = $request->trx_date;
-                $jurnal->update();
+                $jurnal_a = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','1.1.3.1')->first();
+                $jurnal_a->Amount = $total_transaksi;
+                $jurnal_a->date = $request->trx_date;
+                $jurnal_a->update();
+
+                $jurnal_b = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','4.1.1')->first();
+                $jurnal_b->Amount = $total_transaksi;
+                $jurnal_b->date = $request->trx_date;
+                $jurnal_b->update();
 
                 $modal = 0;
                 for ($i=0; $i < $request->count ; $i++) {
                     if(isset($request->prod_id[$i])){
-                        $modal += ($request->qty[$i] * $avcharga);
                         $salesdet = new SalesDet(array(
                             'trx_id' => $sales->id,
                             'prod_id' => $request->prod_id[$i],
@@ -212,10 +219,23 @@ class SalesController extends Controller
                     }
                 }
 
-                $hpp_jurnal = Jurnal::where('id_jurnal',$sales->hpp_jurnal_id)->first();
-                $hpp_jurnal->Amount = $hpp_jurnal->Amount+$modal;
-                $hpp_jurnal->date = $request->trx_date;
-                $hpp_jurnal->update();
+                // Get Modal COGS
+                $modal = 0;
+                foreach (SalesDet::where('trx_id',$id)->get() as $key) {
+                    $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->avg('price');
+                    $modal += ($key->qty * $avcharga);
+                }
+                
+                // Update Jurnal COGS 
+                $jurnal_c = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','5.1')->first();
+                $jurnal_c->Amount = $modal;
+                $jurnal_c->date = $request->trx_date;
+                $jurnal_c->update();
+
+                $jurnal_d = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
+                $jurnal_d->Amount = $modal;
+                $jurnal_d->date = $request->trx_date;
+                $jurnal_d->update();
                 return redirect()->route('sales.index')->with('status', 'Data berhasil diubah');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);

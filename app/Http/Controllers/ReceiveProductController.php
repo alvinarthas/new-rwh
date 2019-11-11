@@ -10,6 +10,7 @@ use App\Perusahaan;
 use App\ReceiveDet;
 use App\Purchase;
 use App\PurchaseDetail;
+use App\Jurnal;
 
 class ReceiveProductController extends Controller
 {
