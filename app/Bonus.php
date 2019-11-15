@@ -8,8 +8,10 @@ class Bonus extends Model
 {
     protected $table ='tblbonus';
     protected $fillable = [
-        'member_id','bulan','tahun','bonus', 'creator', 'id_jurnal'
+        'noid','bulan','tahun','bonus', 'creator', 'id_jurnal'
     ];
+
+    public $timestamps = true;
 
     public function rolemapping(){
         return $this->belongsTo('App\RoleMapping','username','username');

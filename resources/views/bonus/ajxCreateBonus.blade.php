@@ -1,10 +1,10 @@
 @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
-    @if($bonusapa=="perhitungan")
-        <form method="post" action="{{ route('uploadBonusPerhitungan') }}" enctype="multipart/form-data">
-    @elseif($bonusapa=="pembayaran")
+    {{-- @if($bonusapa=="perhitungan")
+        <form method="post" action="{{ route('uploadBonusPerhitungan') }}" enctype="multipart/form-data"> --}}
+    @if($bonusapa=="pembayaran")
         <form method="post" action="{{ route('uploadBonusPembayaran') }}" enctype="multipart/form-data">
+        {{ csrf_field() }}
     @endif
-    {{ csrf_field() }}
     <div class="row">
         <div class="col-12">
             <div class="card-box table-responsive">
@@ -15,28 +15,34 @@
                 @endif
                 <div class="form-row">
                     <label for="file" class="col-form-label">Import File (.xlsx)</label>
-                    <input type="file" class="form-control-file" name="file">
-                    <input type="hidden" name="bulan" value="{{ $bulan }}">
-                    <input type="hidden" name="tahun" value="{{ $tahun }}">
+                    <input type="file" class="form-control-file" name="file" id="file">
+                    <input type="hidden" name="bulan2" id="bulan2" value="{{ $bulan }}">
+                    <input type="hidden" name="tahun2" id="tahun2" value="{{ $tahun }}">
                     @if($bonusapa=="perhitungan")
-                        <input type="hidden" name="perusahaan" value="{{ $perusahaan }}">
-                        <input type="hidden" name="estimasi_bonus" id="estimasi_bonus" value="{{ $estimasi_bonus }}">
+                        <input type="hidden" name="perusahaan_id2" id="perusahaan_id2" value="{{ $perusahaan }}">
+                        <input type="hidden" name="estimasi_bonus2" id="estimasi_bonus2" value="{{ $estimasi_bonus }}">
                     @elseif($bonusapa=="pembayaran")
-                        <input type="hidden" name="AccNo" id="AccNo" value="{{ $AccNo }}">
-                        <input type="hidden" name="bank_id" id="bank_id" value="{{ $bank['id'] }}">
-                        <input type="hidden" name="tgl" id="tgl" value="{{ $tgl }}">
+                        <input type="hidden" name="AccNo2" id="AccNo2" value="{{ $AccNo }}">
+                        <input type="hidden" name="bank_id2" id="bank_id2" value="{{ $bank['id'] }}">
+                        <input type="hidden" name="tgl2" id="tgl2" value="{{ $tgl }}">
                     @endif
                 </div>
                 <div class="form-row pull-right m-b-0">
                     <div class="form-group">
-                        <button type="submit" class="btn btn-danger">Upload Excel Bonus</button>
+                        @if($bonusapa=="perhitungan")
+                            <button type="submit" class="btn btn-danger" onclick="uploadPerhitungan2()">Upload Excel Bonus</button>
+                        @elseif($bonusapa=="pembayaran")
+                            <button type="submit" class="btn btn-danger">Upload Excel Bonus</button>
+                        @endif
                     </div>
                 </div>
                 <br>
             </div>
         </div>
     </div>
-</form>
+@if($bonusapa=="pembayaran")
+    </form>
+@endif
 @endif
 
 @if($bonusapa=="perhitungan")
@@ -173,8 +179,8 @@
                 @endif
 
                 @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
-                    <input type="hidden" name="bulan2" value="{{ $bulan }}">
-                    <input type="hidden" name="tahun2" value="{{ $tahun }}">
+                    <input type="hidden" name="bulan" value="{{ $bulan }}">
+                    <input type="hidden" name="tahun" value="{{ $tahun }}">
                 @endif
                 <input type="hidden" name="ctr" id="ctr" value="{{ $i }}">
                 <input type="hidden" name="bonusapa" id="bonusapa" value="{{ $bonusapa }}">
@@ -264,6 +270,73 @@
             minimumInputLength: 3,
         });
 
+    }
+
+    function uploadPerhitungan(){
+        var token = $("meta[name='csrf-token']").attr("content");
+        // var fil = document.getElementById("file");
+        var fil = document.getElementById("file").files[0];
+        // var fil = $("#file").val();
+        var prs = $("#perusahaan_id2").val();
+        var etb = $("#estimasi_bonus2").val();
+        var thn = $("#tahun2").val();
+        var bln = $("#bulan2").val();
+        $.ajax({
+            url : "{{route('uploadBonusPerhitungan')}}",
+            type : "post",
+            dataType: 'json',
+            data:{
+                file : fil,
+                tahun : thn,
+                bulan : bln,
+                perusahaan : prs,
+                estimasi_bonus : etb,
+                _token : token,
+            },
+        }).done(function (data) {
+            $('#table-body').append(data.append);
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+
+    function uploadPerhitungan2(){
+        // var fil = $('#file').prop('files')[0];
+        var fileInput = document.getElementById('file');
+        var fil = fileInput.files[0];
+        var form_data = new FormData();
+        // alert(form_data)
+        var prs = $("#perusahaan_id2").val();
+        var etb = $("#estimasi_bonus2").val();
+        var thn = $("#tahun2").val();
+        var bln = $("#bulan2").val();
+        form_data.append('file', fil);
+        form_data.append('perusahaan', prs);
+        form_data.append('estimasi_bonus', etb);
+        form_data.append('tahun', thn);
+        form_data.append('bulan', bln);
+        console.log(fil)
+        $.ajax({
+            url : "{{route('uploadBonusPerhitungan')}}",
+            type : "post",
+            dataType: 'json',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: form_data,
+            cache: false,
+            contentType: false,
+            processData: false,
+        }).done(function (data) {
+            var row = data.length;
+            for(i=0; i<row; i++){
+                $('#table-body').append(data[i].append);
+                $('#ctr').val(data[i].count);
+            }
+            checkTotal();
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
     }
 
     function addRowPerhitungan(id){

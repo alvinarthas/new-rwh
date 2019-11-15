@@ -16,7 +16,6 @@ class BonusImport implements ToModel
     {
         return new Bonus([
             'ktp'       => $row[1],
-            'member_id' => $row[2],
             'bonus'     => $row[4],
         ]);
     }

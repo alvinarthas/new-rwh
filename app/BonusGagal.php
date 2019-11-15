@@ -11,6 +11,6 @@ class BonusGagal extends Model
         'ktp','member_id','nama','bulan','tahun','bonus','creator','perusahaan'
     ];
 
-    public $timestamps = false;
+    public $timestamps = true;
 
 }

@@ -61,7 +61,7 @@ Route::middleware(['checkUser'])->group(function () {
     // Bonus
     Route::get('/showBonus', 'BonusController@showBonusPerhitungan')->name('showBonusPerhitungan');
     Route::get('/createBonus', 'BonusController@createBonusPerhitungan')->name('createBonusPerhitungan');
-    Route::post('/uploadBonus', 'BonusController@uploadBonusPerhitungan')->name('uploadBonusPerhitungan');
+    Route::post('/uploadBonus', 'BonusController@uploadBonusPerhitungan2')->name('uploadBonusPerhitungan');
     Route::post('/ajxaddrowperhitungan', 'BonusController@ajxAddRowPerhitungan')->name('ajxAddRowPerhitungan');
 
     Route::get('/bonus/bayar','BonusController@indexBayar')->name('bonus.bayar');
