@@ -116,8 +116,8 @@ class BonusController extends Controller
     {
         // Validate
         $validator = Validator::make($request->all(), [
-            'tahun2' => 'required',
-            'bulan2' => 'required',
+            'tahun' => 'required',
+            'bulan' => 'required',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -129,8 +129,8 @@ class BonusController extends Controller
                 Carbon::setLocale('id');
                 $tgl = date('Y-m-d', strtotime(Carbon::today()));
                 $ctr = count($request->ktp);
-                $bulan = $request->bulan2;
-                $tahun = $request->tahun2;
+                $bulan = $request->bulan;
+                $tahun = $request->tahun;
                 $perusahaan_id = $request->perusahaan_id;
                 $perusahaan = Perusahaan::where('id',$perusahaan_id)->select('nama')->first();
                 $ket = 'perhitungan bonus '.$perusahaan['nama'].' - bulan '.$bulan.' '.$tahun;
@@ -142,14 +142,14 @@ class BonusController extends Controller
                     $noid = $request->noid[$i];
                     $bonus = $request->bonus[$i];
 
-                    $bonusperhitungan = Bonus::where('member_id', $noid)->where('tahun', $tahun)->where('bulan', $bulan)->select('id_bonus','id_jurnal')->get();
+                    $bonusperhitungan = Bonus::where('noid', $noid)->where('tahun', $tahun)->where('bulan', $bulan)->select('id_bonus','id_jurnal')->get();
                     $num = $bonusperhitungan->count();
 
                     if($num==0){
                         if($bonus != 0){
                             // bonus
                             $data = new Bonus(array(
-                                'member_id'    => $noid,
+                                'noid'    => $noid,
                                 'bulan'     => $bulan,
                                 'tahun'     => $tahun,
                                 'bonus'     => $bonus,
@@ -162,7 +162,7 @@ class BonusController extends Controller
                         $jurnal = Jurnal::where('id_jurnal', $bonusperhitungan['id_jurnal']);
 
                         // bonus bayar
-                        $data = Bonus::where('member_id',$noid)->where('tahun',$tahun)->where('bulan',$bulan)->first();
+                        $data = Bonus::where('noid',$noid)->where('tahun',$tahun)->where('bulan',$bulan)->first();
                         $data->bonus = $bonus;
                         $data->id_jurnal = $id_jurnal;
                         $data->creator = session('user_id');
@@ -209,8 +209,8 @@ class BonusController extends Controller
     {
         // Validate
         $validator = Validator::make($request->all(), [
-            'tahun2' => 'required',
-            'bulan2' => 'required',
+            'tahun' => 'required',
+            'bulan' => 'required',
             'tgl' => 'required',
         ]);
 
@@ -228,8 +228,8 @@ class BonusController extends Controller
                 for($i=0;$i<$ctr;$i++){
                     $norek = $request->norekening[$i];
                     $bonus = $request->bonus[$i];
-                    $bulan = $request->bulan2;
-                    $tahun = $request->tahun2;
+                    $bulan = $request->bulan;
+                    $tahun = $request->tahun;
                     $tgl = $request->tgl;
                     $bank = $request->namabank[$i];
                     $AccNo = $request->AccNo;
@@ -502,12 +502,110 @@ class BonusController extends Controller
         return response()->json($data);
     }
 
+    public function PreviewUploadPerhitungan($count, $ktp, $noid, $nama, $member_id, $bonus){
+
+        $append = '<tr style="width:100%" id="trow'.$count.'" class="trow">
+        <td>'.$count.'</td>
+        <td><input type="hidden" name="ktp[]" id="ktp'.$count.'" value="'.$ktp.'">'.$ktp.'</td>
+        <td><input type="hidden" name="noid[]" id="noid'.$count.'" value="'.$noid.'">'.$noid.'</td>
+        <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$member_id.'">'.$nama.'</td>
+        <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$count.'" value="'.$bonus.'"></td>
+        <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
+        </tr>';
+
+        $data = array(
+            'append' => $append,
+            'count' => $count,
+        );
+
+        return $data;
+    }
+
+    public function uploadBonusPerhitungan2(Request $request)
+    {
+        // echo "<pre>";
+        // print_r($request->estimasi_bonus);
+        // die();
+
+        $perusahaan_id = $request->perusahaan;
+        $this->validate($request, ['file'  => 'required|mimes:xls,xlsx']);
+        $path = $request->file('file')->getRealPath();
+        $path = $request->file('file');
+        // $path = $request->file('file');
+        // $data = Excel::load($path)->get();
+        $array = Excel::toArray(new BonusImport, $path);
+        $result = array();
+        // echo '<pre>';
+        // print_r($array);
+        Carbon::setLocale('id');
+        $tgl = date('Y-m-d', strtotime(Carbon::today()));
+        $perusahaan = Perusahaan::where('id',$perusahaan_id)->select('nama')->first();
+        $ket = 'perhitungan bonus via upload excel'.$perusahaan['nama'].' - bulan '.$request->bulan.' '.$request->tahun;
+        $total_bonus = 0;
+        $estimasi_bonus = $request->estimasi_bonus;
+        $id_jurnal = Jurnal::getJurnalID('BP');
+        $count = count($array[0]);
+        $xls = array_chunk($array[0],$count);
+        $row = 1;
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+
+        for ($i=1; $i < $count ; $i++) {
+            // echo $xls[0][$i][2];
+            $ktp = $xls[0][$i][1];
+            $norek = $xls[0][$i][2];
+            $nama = $xls[0][$i][3];
+            $bonus = $xls[0][$i][4];
+
+            if($norek <> ''){
+                $num_member = PerusahaanMember::select('perusahaanmember.noid')->join('tblmember','perusahaanmember.ktp','=','tblmember.ktp')->where('tblmember.ktp',$ktp)->where('tblmember.nama',"LIKE", $nama)->where('perusahaanmember.perusahaan_id',$perusahaan_id)->count();
+                // $num_member= $perusahaan['perusahaanmember.noid']->count();
+                if($num_member==0){
+                    echo "bonusgagal";
+                    // $bonusgagal = new BonusGagal;
+                    // $bonusgagal->ktp = $xls[0][$i][1];
+                    // $bonusgagal->member_id = $xls[0][$i][2];
+                    // $bonusgagal->nama = $xls[0][$i][3];
+                    // $bonusgagal->tahun = $request->tahun;
+                    // $bonusgagal->bulan = $request->bulan;
+                    // $bonusgagal->bonus = $xls[0][$i][4];
+                    // $bonusgagal->creator = session('user_id');
+                    // $bonusgagal->perusahaan = $request->perusahaan;
+                    // $bonusgagal->save();
+                }else{
+                    // echo "berhasil";
+                    $pm = PerusahaanMember::join('bankmember', 'perusahaanmember.ktp', 'bankmember.ktp')->where('perusahaanmember.ktp', $ktp)->where('norek', $norek)->where('perusahaan_id', $perusahaan_id)->select('noid')->first();
+                    $num_bonus = Bonus::where('noid', $pm['noid'])->where('tahun', $request->tahun)->where('bulan', $request->bulan)->count();
+                    $total_bonus = $total_bonus + $bonus;
+                    $append = '<tr style="width:100%" id="trow'.$row.'" class="trow">
+                    <td>'.$row.'</td>
+                    <td><input type="hidden" name="ktp[]" id="ktp'.$row.'" value="'.$ktp.'">'.$ktp.'</td>
+                    <td><input type="hidden" name="noid[]" id="noid'.$row.'" value="'.$pm->noid.'">'.$pm->noid.'</td>
+                    <td><input type="hidden" name="nama[]" id="nama'.$row.'" value="'.$nama.'">'.$nama.'</td>
+                    <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$row.'" value="'.$bonus.'"></td>
+                    <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$row.')" >Delete</a></td>
+                    </tr>';
+
+                    $data = array(
+                        'append' => $append,
+                        'count' => $row,
+                    );
+                    // array_push($result, PreviewUploadPerhitungan(0, $xls[0][$i][1], $pm['noid'], $xls[0][$i][3], $xls[0][$i][2], $xls[0][$i][4]));
+                    array_push($result, $data);
+                    $row++;
+                }
+            }
+        }
+        return response()->json($result);
+    }
+
     public function uploadBonusPerhitungan(Request $request)
     {
         $perusahaan_id = $request->perusahaan;
         $this->validate($request, ['file'  => 'required|mimes:xls,xlsx']);
         $path = $request->file('file')->getRealPath();
-        $path = $request->file('file');
+        // $path = $request->file('file');
         // $data = Excel::load($path)->get();
         $array = Excel::toArray(new BonusImport, $path);
         // echo '<pre>';
@@ -663,13 +761,16 @@ class BonusController extends Controller
 
     public function uploadBonusPembayaran(Request $request)
     {
-        $tgl = $request->tgl;
+        $tgl = $request->tgl2;
         $tahun = $request->tahun;
         $bulan = $request->bulan;
-        $AccNo = $request->AccNo;
+        $AccNo = $request->AccNo2;
         $this->validate($request, ['file'  => 'required|mimes:xls,xlsx']);
         $path = $request->file('file')->getRealPath();
         $path = $request->file('file');
+        echo "<pre>";
+        print_r($path);
+        die();
         // $data = Excel::load($path)->get();
         $array = Excel::toArray(new BonusBayarImport, $path);
         // echo '<pre>';

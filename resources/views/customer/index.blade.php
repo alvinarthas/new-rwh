@@ -115,7 +115,7 @@
                 @elseif($jenis=="topup")
                     <h4 class="m-t-0 header-title">Saldo Customer</h4>
                     <p class="text-muted font-14 m-b-30">
-                        @if (array_search("CRTPC",$page))
+                        @if (array_search("PSDCC",$page))
                             <a href="{{ route('saldo.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Customer</a>
                         @endif
                     </p>
@@ -128,7 +128,9 @@
                             <th>Nominal</th>
                             <th>Keterangan</th>
                             <th>Creator</th>
-                            <th>Action</th>
+                            @if (array_search("PSDCU",$page) OR array_search("PSDCD",$page))
+                                <th>Action</th>
+                            @endif
                         </thead>
                         <tbody>
                             @php
@@ -149,10 +151,10 @@
                                 <td>{{$s->keterangan}}</td>
                                 <td>{{$creator['name']}}</td>
                                 <td>
-                                    @if (array_search("CRTPU",$page))
+                                    @if (array_search("PSDCU",$page))
                                         <a href="{{route('saldo.edit',['id'=>$s->sid])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
                                     @endif
-                                    @if (array_search("CRTPD",$page))
+                                    @if (array_search("PSDCD",$page))
                                         <form class="" action="{{ route('saldo.destroy', ['id' => $s->sid]) }}" method="post">
                                             {{ csrf_field() }}
                                             {{ method_field('delete') }}
