@@ -49,4 +49,8 @@ class SalesDet extends Model
         $data->put('data',$order->get());
         return $data;
     }
+
+    public static function getProducts($trx){
+        return SalesDet::join('tblproduct as p','tblproducttrxdet.prod_id','=','p.prod_id')->select('p.prod_id','p.name')->where('tblproducttrxdet.trx_id',$trx)->get();
+    }
 }

@@ -36,6 +36,12 @@ Route::middleware(['checkUser'])->group(function () {
     Route::post('/storemapping','MenuController@store')->name('storeMapping');
     Route::post('/deletemapping','MenuController@delete')->name('deleteMapping');
 
+    // Purchase Mapping
+    Route::get('purchasemapping','MenuController@PurMapIndex')->name('PurMapIndex');
+    Route::get('purchasemapping/{id}','MenuController@PurMapShow')->name('PurMapShow');
+    Route::post('purchasemapping/store','MenuController@PurMapStore')->name('PurMapStore');
+    Route::post('purchasemapping/delete','MenuController@PurMapDelete')->name('PurMapDelete');
+
     // Role Mapping
     Route::get('rolemapping','RoleMappingController@index')->name('getRoleMapping');
     Route::get('/rolemapping/{id}/edit','RoleMappingController@edit')->name('editRoleMapping');
@@ -190,11 +196,15 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('purchasepayment/{id}/create','PaymentController@purchaseCreate')->name('purchaseCreate');
         Route::post('purchasepayment/store','PaymentController@purchaseStore')->name('purchaseStore');
         Route::get('purchasepayment/destroy','PaymentController@purchasePayDestroy')->name('purchasePayDestroy');
-
+ 
     // Delivery Order
         Route::get('do','DeliveryController@index')->name('indexDo');
-        Route::get('do/view','DeliveryController@view')->name('doView');
-        Route::get('do/print','DeliveryController@print')->name('doPrint');
+        Route::get('do/add','DeliveryController@addBrgDo')->name('addBrgDo');
+        Route::get('do/view','DeliveryController@view')->name('viewDo');
+        Route::get('do/print','DeliveryController@print')->name('printDo');
+        Route::get('do/show/{id}','DeliveryController@show')->name('showDo');
+        Route::post('do/store','DeliveryController@store')->name('storeDo');
+        Route::delete('do/delete','DeliveryController@delete')->name('deleteDo');
 
     // Laporan
     Route::prefix('laporan')->group(function () {

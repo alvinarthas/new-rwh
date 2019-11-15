@@ -20,47 +20,45 @@ Index Purchasing
 @endsection
 
 @section('content')
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="card-box">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="p-20">
-                                <div class="form-group row">
-                                    <label class="col-2 col-form-label">Posting Period</label>
-                                    <div class="col-5">
-                                        <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" required>
-                                            <option value="#" selected disabled>Pilih Bulan</option>
-                                            @for ($i = 1; $i <= 12; $i++)
-                                                <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
-                                            @endfor
-                                        </select>
-                                    </div>
-                                    <div class="col-5">
-                                        <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" required>
-                                            <option value="#" selected disabled>Pilih Tahun</option>
-                                            @for ($i = 2018; $i <= date('Y'); $i++)
-                                                <option value="{{$i}}">{{$i}}</option>
-                                            @endfor
-                                        </select>
-                                    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card-box">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="p-20">
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Posting Period</label>
+                                <div class="col-5">
+                                    <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" required>
+                                        <option value="#" selected disabled>Pilih Bulan</option>
+                                        @for ($i = 1; $i <= 12; $i++)
+                                            <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="col-5">
+                                    <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" required>
+                                        <option value="#" selected disabled>Pilih Tahun</option>
+                                        @for ($i = 2018; $i <= date('Y'); $i++)
+                                            <option value="{{$i}}">{{$i}}</option>
+                                        @endfor
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group text-left m-b-0">
-                        @if (array_search("PUPUC",$page))
-                        <a href="{{route('purchase.create')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add Purchase</a>
-                        @endif
-                        <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase()">Show Data</a>
-                    </div>
                 </div>
+                <div class="form-group text-left m-b-0">
+                    @if (array_search("PUPUC",$page))
+                    <a href="{{route('purchase.create')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add Purchase</a>
+                    @endif
+                    <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase()">Show Data</a>
+                </div>
+            </div>
 
-                <div id="purchase-list" style="display:none">
-                    <section id="showpurchase">
-                    </section>
-                </div>
+            <div id="purchase-list" style="display:none">
+                <section id="showpurchase">
+                </section>
             </div>
         </div>
     </div>

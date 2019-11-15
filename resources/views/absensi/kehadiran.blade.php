@@ -40,7 +40,7 @@
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Daftar Anggota</label>
                             <div class="col-10">
-                                <select class="form-control select2" parsley-trigger="change" name="anggota" onchange="chooseUser(this.value)">
+                                <select class="form-control select2" parsley-trigger="change" name="anggota" id="anggota" onchange="chooseUser(this.value)">
                                     <option value="#" disabled selected>Pilih Anggota</option>
                                     @foreach ($users as $user)
                                         <option value="{{$user->user_id}}" data-image="{{asset('assets/images/employee/foto/'.$user->user->scanfoto)}}">{{$user->user_name}}</option>
@@ -52,7 +52,7 @@
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Keterangan</label>
                             <div class="col-10">
-                                <select class="form-control select2" parsley-trigger="change" name="keterangan" id="keterangan">
+                                <select class="form-control select2" parsley-trigger="change" name="keterangan" id="keterangan" onchange="chooseKeterangan(this.value)">
                                     <option value="masuk">Masuk Kerja</option>
                                     <option value="pulang">Pulang Kerja</option>
                                 </select>
@@ -116,6 +116,15 @@
 
         function chooseUser(id){
             var keterangan = $("#keterangan").val();
+            var base = "{!!route('fingerVerifikasi')!!}";
+            var url = btoa(base+'?user_id='+id+'&keterangan='+keterangan+'');
+            var button = '<a href="finspot:FingerspotVer;'+url+'" class="btn btn-purple btn-rounded waves-effect waves-light w-md m-b-5" onclick="verifikasiLog('+id+')">VERIFIKASI</a>';
+            $('#btnAbsen').html(button).show();
+            showLog(id);
+        }
+
+        function chooseKeterangan(keterangan){
+            var id = $("#anggota").val();
             var base = "{!!route('fingerVerifikasi')!!}";
             var url = btoa(base+'?user_id='+id+'&keterangan='+keterangan+'');
             var button = '<a href="finspot:FingerspotVer;'+url+'" class="btn btn-purple btn-rounded waves-effect waves-light w-md m-b-5" onclick="verifikasiLog('+id+')">VERIFIKASI</a>';

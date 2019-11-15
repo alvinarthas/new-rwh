@@ -35,9 +35,8 @@ class HelperController extends Controller
         $params = $request->params;
         $obat = Coa::where('AccName','LIKE',$params.'%')->orWhere('AccNo','LIKE',$params.'%')->limit(5)->get();
         $data = collect();
-
         foreach ($obat as $key) {
-          $arrayName = array('id' =>$key->kode,'text' =>$key->nama);
+          $arrayName = array('id' =>$key->AccNo,'text' =>$key->AccNo." - ".$key->AccName);
           $data->push($arrayName);
         }
 

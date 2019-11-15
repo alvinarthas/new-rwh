@@ -32,7 +32,7 @@ Tambah Poin Pegawai
                                         <select class="form-control select2" parsley-trigger="change" name="employee">
                                             <option value="#" disabled selected>Pilih Pegawai</option>
                                             @foreach ($employees as $employee)
-                                                <option value="{{$employee->id}}" >{{$employee->username}}</option>
+                                                <option value="{{$employee->id}}" data-image="{{asset('assets/images/employee/foto/'.$employee->scanfoto)}}">{{$employee->username}}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -96,12 +96,33 @@ Tambah Poin Pegawai
         $(document).ready(function() {
             $('form').parsley();
             // Select2
-            $(".select2").select2();
+            $(".select2").select2({
+                templateResult: formatState,
+                templateSelection: formatState
+            });
+
             // Date Picker
             jQuery('#date').datepicker({
                 todayHighlight: true,
                 autoclose: true
             });
         });
+
+        function formatState (opt) {
+            if (!opt.id) {
+                return opt.text.toUpperCase();
+            }
+
+            var optimage = $(opt.element).attr('data-image');
+            console.log(optimage)
+            if(!optimage){
+                return opt.text.toUpperCase();
+            } else {
+                var $opt = $(
+                '<span><img src="' + optimage + '" width="30px" /> ' + opt.text.toUpperCase() + '</span>'
+                );
+                return $opt;
+            }
+        }
     </script>
 @endsection

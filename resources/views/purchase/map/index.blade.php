@@ -14,39 +14,27 @@
     <div class="row">
         <div class="col-12">
             <div class="card-box table-responsive">
-                <h4 class="m-t-0 header-title">Index COA</h4>
-                <p class="text-muted font-14 m-b-30">
-                    <a href="{{ route('coa.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah COA</a>
-                </p>
+                <h4 class="m-t-0 header-title">Index Menu Mapping</h4>
 
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                     <thead>
                         <th>No</th>
-                        <th>Account Number</th>
-                        <th>Account Name</th>
-                        <th>Account Parent</th>
-                        <th>Posisi Saldo Normal</th>
-                        <th>Status Account</th>
+                        <th>Nama Lengkap</th>
+                        <th>Username</th>
                         <th>Action</th>
                     </thead>
 
                     <tbody>
                         @php($i = 1)
-                        @foreach($coa as $item)
+                        @foreach($users as $user)
                         <tr>
                             <td>{{$i}}</td>
-                            <td>{{$item->AccNo}}</td>
-                            <td>{{$item->AccName}}</td>
-                            <td>{{$item->AccParent}}</td>
-                            <td>{{$item->SaldoNormal}}</td>
-                            <td>{{$item->StatusAccount}}</td>
+                            <td>{{$user->name}}</td>
+                            <td>{{$user->username}}</td>
                             <td>
-                                <a href="{{route('coa.edit',['id'=>$item->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
-                                <form class="" action="{{ route('coa.destroy', ['id' => $item->id]) }}" method="post">
-                                    {{ csrf_field() }}
-                                    {{ method_field('delete') }}
-                                    <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button></a>
-                                </form>
+                                @if (array_search("MRMME",$page))
+                                    <a href="{{route('showMapping',['id'=>$user->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Atur</a>
+                                @endif
                             </td>
                         </tr>
                         @php($i++)

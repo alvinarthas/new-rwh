@@ -127,7 +127,7 @@ class SalaryController extends Controller
     }
 
     public function formPoin(Request $request){
-        $employees = Employee::select('id','username')->get();
+        $employees = Employee::select('id','username','scanfoto')->get();
         return view('salary.poin.form',compact('employees'));
     }
 

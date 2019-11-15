@@ -8,11 +8,11 @@ class SubModul extends Model
 {
     protected $table ='tblsubmodul';
     protected $fillable = [
-        'submodul_id', 'submodul_desc', 'submodul_page','modul_id'
+        'submodul_id', 'submodul_desc', 'submodul_page','modul_id','urutan'
     ];
 
     public static function getSub($modul_id){
-        return SubModul::where('modul_id',$modul_id)->orderBy('submodul_id','asc')->get();
+        return SubModul::where('modul_id',$modul_id)->orderBy('urutan','asc')->get();
     }
 
     public function modul(){

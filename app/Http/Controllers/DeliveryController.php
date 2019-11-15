@@ -12,19 +12,112 @@ use App\Product;
 use App\PriceDet;
 use App\Sales;
 use App\SalesDet;
+use App\MenuMapping;
+use App\DeliveryOrder;
+use App\DeliveryDetail;
 
 class DeliveryController extends Controller
 {
     public function index(Request $request){
-        $customers = Customer::select('id','apname')->get();
-        $products = Product::orderBy('prod_id','asc')->get();
-        return view('sales.do.index',compact('customers','products'));
+        if ($request->ajax()) {
+            $start = $request->start;
+            $end = $request->end;
+            $sales = Sales::checkDO($start,$end);
+            return response()->json(view('sales.do.view',compact('sales'))->render());
+        }else{
+            return view('sales.do.index');
+        }
     }
 
     public function view(Request $request){
-        $invoice = SalesDet::getOrder($request->start,$request->end,$request->customer,$request->product);
         if ($request->ajax()) {
-            return response()->json(view('sales.do.view',compact('invoice'))->render());
+            $do_id = $request->do_id;
+            $dodets = DeliveryDetail::where('do_id',$do_id)->get();
+            $do = DeliveryOrder::where('id',$do_id)->first();
+
+            return response()->json(view('sales.do.modal',compact('do','dodets'))->render());
+        }
+    }
+
+    public function show($id){
+        $sales = Sales::where('id',$id)->first();
+        $salesdets = SalesDet::where('trx_id',$id)->get();
+        $dos = DeliveryOrder::where('sales_id',$id)->get();
+        $page = MenuMapping::getMap(session('user_id'),"PSDO");
+        $products = SalesDet::getProducts($id);
+        return view('sales.do.form',compact('sales','salesdets','dos','page','products'));
+    }
+
+    public function addBrgDo(Request $request){
+        $qty = $request->qty;
+        $count = $request->count+1;
+        $product = $request->select_product;
+
+        $product = Product::where('prod_id',$product)->first();
+
+        $append = '<tr style="width:100%" id="trow'.$count.'">
+        <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$product->prod_id.'">'.$product->prod_id.'</td>
+        <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$product->name.'">'.$product->name.'</td>
+        <td><input type="hidden" name="qty[]" value="'.$qty.'" id="qty'.$count.'">'.$qty.'</td>
+        <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
+        </tr>';
+
+        $data = array(
+            'append' => $append,
+            'count' => $count,
+        );
+
+        return response()->json($data);
+    }
+    
+    public function store(Request $request){
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'sales_id' => 'required|integer',
+            'count' => 'required',
+            'prod_id' => 'required|array',
+            'qty' => 'required|array',
+            'do_date' => 'required|date',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            try {
+                $do = new DeliveryOrder(array(
+                    'sales_id' => $request->sales_id,
+                    'date' => $request->do_date,
+                    'petugas' => session('user_id')
+                ));
+    
+                $do->save();
+
+                for ($i=0; $i < $request->count ; $i++) {
+                    $dodet = new DeliveryDetail(array(
+                       'do_id' => $do->id,
+                       'sales_id' => $request->sales_id,
+                       'product_id' => $request->prod_id[$i],
+                       'qty' => $request->qty[$i] 
+                    ));
+
+                    $dodet->save();
+                }
+                return redirect()->back()->with('status', 'Data DO berhasil dibuat');
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors($e->errorInfo);
+            }
+        }
+    }
+
+    public function delete(Request $request){
+        $do_id = $request->id;
+        try {
+            $do = DeliveryOrder::where('id',$do_id)->delete();
+
+            return "true";
+        } catch (\Exception $e) {
+            return response()->json($e);
         }
     }
 

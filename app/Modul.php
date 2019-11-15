@@ -8,10 +8,10 @@ class Modul extends Model
 {
     protected $table ='tblmodul';
     protected $fillable = [
-        'modul_id', 'modul_desc','modul_icon'
+        'modul_id', 'modul_desc','modul_icon','urutan'
     ];
 
     public static function getAllModul(){
-        return Modul::orderBy('modul_id','asc')->get();
+        return Modul::orderBy('urutan','asc')->get();
     }
 }

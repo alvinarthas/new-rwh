@@ -36,8 +36,15 @@
                                 <td>Belum Mempunyai Role</td>
                             @endif
                             <td>
-                                @if (array_search("MRRME",$page))
+                                @if (array_search("EMRME",$page))
                                 <a href="{{route('editRoleMapping',['id'=>$user->username])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Atur</a>
+                                @endif
+                                @if (array_search("EMRMD",$page))
+                                <form class="" action="{{ route('destroyRoleMapping', ['id' => $user->username]) }}" method="post">
+                                    {{ csrf_field() }}
+                                    {{ method_field('delete') }}
+                                    <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button></a>
+                                </form>
                                 @endif
                             </td>
                         </tr>
