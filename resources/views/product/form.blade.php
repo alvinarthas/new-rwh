@@ -76,13 +76,13 @@ Tambah Data Product
                                         <option value="#" disabled selected>Pilih Supplier</option>
                                         @foreach ($perusahaans as $prs)
                                             @isset($product->supplier)
-                                                @if ($prs->nama == $product->supplier)
-                                                    <option value="{{$prs->nama}}" selected>{{$prs->nama}}</option>
+                                                @if ($prs->id == $product->supplier)
+                                                    <option value="{{$prs->id}}" selected>{{$prs->nama}}</option>
                                                 @else
-                                                    <option value="{{$prs->nama}}" >{{$prs->nama}}</option>
+                                                    <option value="{{$prs->id}}" >{{$prs->nama}}</option>
                                                 @endif
                                             @else
-                                                <option value="{{$prs->nama}}" >{{$prs->nama}}</option>
+                                                <option value="{{$prs->id}}" >{{$prs->nama}}</option>
                                             @endif
                                         @endforeach
                                     </select>
@@ -95,18 +95,10 @@ Tambah Data Product
                                         <input type="text" class="form-control" parsley-trigger="change" required name="stock" id="stock" value="@isset($product->stock){{$product->stock}}@endisset">
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="card-box">
-                                            <h4 class="m-t-0 header-title">Product ID Perusahaan</h4>
-                                            <p class="text-muted m-b-30 font-14"></p>
-                                            <div class="form-group row">
-                                                <label class="col-2 col-form-label">Product ID Perusahaan</label>
-                                                <div class="col-10">
-                                                    <input type="text" class="form-control" parsley-trigger="change" name="prod_id_new" id="prod_id_new" value="@isset($product->prod_id_new){{$product->prod_id_new}}@endisset">
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div class="form-group row">
+                                    <label class="col-2 col-form-label">Product ID Perusahaan</label>
+                                    <div class="col-10">
+                                        <input type="text" class="form-control" parsley-trigger="change" name="prod_id_new" id="prod_id_new" value="@isset($product->prod_id_new){{$product->prod_id_new}}@endisset">
                                     </div>
                                 </div>
                             @endif

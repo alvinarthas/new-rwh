@@ -57,7 +57,7 @@
                         @foreach($products as $prd)
                         <tr>
                             <td>{{$i}}</td>
-                            <td>{{$prd->supplier}}</td>
+                            <td>{{$prd->supplier()->first()->nama}}</td>
                             <td>{{$prd->prod_id}}</td>
                             <td>{{$prd->prod_id_new}}</td>
                             <td>{{$prd->name}}</td>

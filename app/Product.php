@@ -14,4 +14,8 @@ class Product extends Model
     public function rolemapping(){
         return $this->belongsTo('App\RoleMapping','username','username');
     }
+
+    public function supplier(){
+        return $this->belongsTo('App\Perusahaan','supplier','id');
+    }
 }

@@ -63,6 +63,7 @@ class ProductController extends Controller
                 'company_id' => $request->company_id,
                 'name' => $request->name,
                 'prod_id' => $request->prod_id,
+
                 'category' => $request->category,
                 'supplier' => $request->supplier,
                 'stock' => 0
