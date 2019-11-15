@@ -16,7 +16,7 @@
             <div class="card-box table-responsive">
                 <h4 class="m-t-0 header-title">Index Role</h4>
                 <p class="text-muted font-14 m-b-30">
-                    @if (array_search("MRROC",$page))
+                    @if (array_search("EMROC",$page))
                     <a href="{{ route('role.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Role</a>
                     @endif
                 </p>
@@ -35,11 +35,15 @@
                             <td>{{$i}}</td>
                             <td>{{$role->role_name}}</td>
                             <td>
-                                @if (array_search("MRROU",$page))
+                                @if (array_search("EMROU",$page))
                                 <a href="{{route('role.edit',['id'=>$role->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
                                 @endif
-                                @if (array_search("MRROD",$page))
-                                <a href="" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus</a>
+                                @if (array_search("EMROD",$page))
+                                <form class="" action="{{ route('role.destroy', ['id' => $role->id]) }}" method="post">
+                                    {{ csrf_field() }}
+                                    {{ method_field('delete') }}
+                                    <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button></a>
+                                </form>
                                 @endif
                             </td>
                         </tr>

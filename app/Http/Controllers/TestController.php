@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 use App\User;
 use App\BankMember;
@@ -13,13 +14,23 @@ use App\Product;
 use App\PriceDet;
 use App\Jurnal;
 use App\Salary;
+use App\Employee;
+use App\Sales;
 
 class TestController extends Controller
 {
     public function index(){
-        $jenis = "JU";
-        echo "<pre>";
-        print_r(Salary::join('tbl_salary_detail as sd','tbl_salary.id','=','sd.salary_id')->where('tbl_salary.month',1)->where('tbl_salary.year',2018)->select('sd.*')->get());
+        $sales = Sales::all();
+        $collect = collect();
+        foreach($sales as $sale){
+            $sale->put('status',1);
+            // $colect = collect();
+            // $colect->push($sale);
+            // $colect->put('status',1);
+            // $collect->push($colect);
+            dd($sale);
+        }
+        dd($collect);
     }
     public function indexxxxx(){
         $collection = collect([

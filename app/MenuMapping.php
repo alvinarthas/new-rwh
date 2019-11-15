@@ -65,7 +65,7 @@ class MenuMapping extends Model
         INNER JOIN sub_mapping sm ON sm.id = mm.submapping_id 
         INNER JOIN tblsubmodul s ON s.submodul_id = sm.submodul_id
         INNER JOIN tblmodul m ON m.modul_id = s.modul_id
-        WHERE mm.user_id =$user AND m.modul_id like '$modul%'");
+        WHERE mm.user_id =$user AND m.modul_id like '$modul%' ORDER BY s.urutan ASC");
     }
 
     public static function getHeadModul($user){
@@ -73,7 +73,7 @@ class MenuMapping extends Model
         INNER JOIN sub_mapping sm ON sm.id = mm.submapping_id 
         INNER JOIN tblsubmodul s ON s.submodul_id = sm.submodul_id
         INNER JOIN tblmodul m ON m.modul_id = s.modul_id
-        WHERE mm.user_id =$user");
+        WHERE mm.user_id =$user ORDER BY m.urutan ASC");
     }
 
     public static function getMap($user,$submodul){

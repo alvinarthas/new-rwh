@@ -11,6 +11,7 @@ use App\DemoFinger;
 use App\DemoLog;
 use App\DemoUser;
 use App\Purchase;
+use App\Employee;
 
 class FingerPrintController extends Controller
 {

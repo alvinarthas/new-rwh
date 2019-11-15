@@ -4,6 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\SalesDet;
+use App\DeliveryOrder;
+use App\DeliveryDetail;
+
 class Sales extends Model
 {
     protected $table ='tblproducttrx';
@@ -66,5 +70,38 @@ class Sales extends Model
         $data->put('data',$sales->orderBy('id','desc')->get());
 
         return $data;
+    }
+
+    public static function checkDO($start,$end){
+        $sales = Sales::whereBetween('trx_date',[$start,$end])->get();
+        $data = collect();
+        foreach ($sales as $sale) {
+            $collect = collect();
+            $salesdet = SalesDet::where('trx_id',$sale->id)->get();
+            $detcount = $salesdet->count();
+            $count = 0;
+            foreach($salesdet as $key){
+                $count_do_product = DeliveryDetail::where('sales_id',$sale->id)->where('product_id',$key->prod_id)->sum('qty');
+                if($key->qty == $count_do_product){
+                    $count++;
+                }
+            }
+
+            if($detcount == $count){
+                $status = 1;
+            }else{
+                $status = 0;
+            }
+            $collect->put('sales_id',$sale->id);
+            $collect->put('customer',$sale->customer->apname);
+            $collect->put('ttl',$sale->ttl_harga+$sale->ongkir);
+            $collect->put('status_do',$status);
+            $data->push($collect);
+        }
+        return $data;
+    }
+
+    public static function checkSent($product,$trx){
+        return DeliveryDetail::where('product_id',$product)->where('sales_id',$trx)->sum('qty');
     }
 }

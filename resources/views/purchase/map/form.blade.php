@@ -8,7 +8,7 @@
 
 @section('content')
     {{-- Current Menu Mapping --}}
-    <form action="{{route('deleteMapping')}}" method="post" enctype="multipart/form-data">
+    <form action="{{route('PurMapDelete')}}" method="post" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="user_id" value="{{$id}}">
         <div class="row">
@@ -19,9 +19,7 @@
                     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                         <thead>
                             <th>No</th>
-                            {{-- <th style="width:1%">Check All</th> --}}
-                            <th>Nama Modul</th>
-                            <th>Nama Submodul</th>
+                            <th>Nama Perusahaan</th>
                             <th>Action</th>
                         </thead>
 
@@ -30,22 +28,12 @@
                             @foreach($currents as $current)
                             <tr>
                                 <td>{{$i}}</td>
-                                {{-- <td>
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="currenta[]" name="current[]" value="#">
-                                    </div>
-                                </td> --}}
-                                <td>{{$current->modul_desc}}</td>
-                                <td>{{$current->submodul_desc}}</td>
+                                <td>{{$current->supplier->nama}}</td>
                                 <td>
-                                    @foreach ($current->submapping as $submap)
-                                        <div class="checkbox checkbox-primary">
-                                        <input id="checkboxcurrent{{$submap->submapping_id}}" name="current[]" type="checkbox" value="{{$submap->submapping_id}}">
-                                            <label for="checkboxcurrent{{$submap->submapping_id}}">
-                                                {{$submap->jenis_id}}
-                                            </label>
-                                        </div>
-                                    @endforeach
+                                    <div class="checkbox checkbox-primary">
+                                        <input id="checkboxcurrent{{$current->supplier_id}}" name="current[]" type="checkbox" value="{{$current->supplier_id}}">
+                                        <label for="checkboxcurrent{{$current->supplier_id}}"></label>
+                                    </div>
                                 </td>
                             </tr>
                             @php($i++)
@@ -64,19 +52,18 @@
     </form>
 
     {{-- Rest of Menu Mapping --}}
-    <form action="{{route('storeMapping')}}" method="post" enctype="multipart/form-data">
+    <form action="{{route('PurMapStore')}}" method="post" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="user_id" value="{{$id}}">
         <div class="row">
             <div class="col-12">
                 <div class="card-box table-responsive">
-                    <h4 class="m-t-0 header-title">List Modul</h4>
+                    <h4 class="m-t-0 header-title">List Supplier</h4>
 
                     <table id="responsive-datatable2" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                         <thead>
                             <th>No</th>
-                            <th>Nama Modul</th>
-                            <th>Nama Submodul</th>
+                            <th>Nama Supplier</th>
                             <th>Action</th>
                         </thead>
 
@@ -87,17 +74,13 @@
                                 <td>
                                     {{$i}}
                                 </td>
-                                <td>{{$rest->modul}}</td>
-                                <td>{{$rest->submodul}}</td>
+                                <td>{{$rest->nama}}</td>
                                 <td>
-                                    @foreach ($rest->submapping as $submap)
-                                        <div class="checkbox checkbox-primary">
-                                            <input id="checkboxrest{{$submap->id}}" name="rest[]" type="checkbox" value="{{$submap->id}}">
-                                            <label for="checkboxrest{{$submap->id}}">
-                                                {{$submap->jenis_id}}
-                                            </label>
-                                        </div>
-                                    @endforeach
+                                    <div class="checkbox checkbox-primary">
+                                        <input id="checkboxrest{{$rest->id}}" name="rest[]" type="checkbox" value="{{$rest->id}}">
+                                        <label for="checkboxrest{{$rest->id}}">
+                                        </label>
+                                    </div>
                                 </td>
                             </tr>
                             @php($i++)

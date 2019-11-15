@@ -14,7 +14,7 @@ class RoleMappingController extends Controller
 {
     public function index(){
         $users = Employee::all();
-        $page = MenuMapping::getMap(session('user_id'),"MRRM");
+        $page = MenuMapping::getMap(session('user_id'),"EMRM");
         return view('rolemapping.index',compact('users','page'));
     }
 

@@ -1,3 +1,6 @@
+@php
+    use App\Coa;
+@endphp
 @extends('layout.main')
 
 @section('css')
@@ -33,25 +36,6 @@ Tambah Data Coa
                     <div class="col-12">
                         <div class="p-20">
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Account Grup</label>
-                                <div class="col-10">
-                                    <select class="form-control select2" parsley-trigger="change" name="account_grup">
-                                        <option value="#" disabled selected>Pilih Acc Grup</option>
-                                        @foreach ($coagrup as $grup)
-                                            @isset($coa->grup_id)
-                                                @if ($coa->grup_id == $grup->id)
-                                                    <option value="{{$grup->id}}" selected>{{$grup->grup}}</option>
-                                                @else
-                                                    <option value="{{$grup->id}}" >{{$grup->grup}}</option>
-                                                @endif
-                                            @else
-                                                <option value="{{$grup->id}}" >{{$grup->grup}}</option>
-                                            @endif
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group row">
                                 <label class="col-2 col-form-label">Account Number</label>
                                 <div class="col-10">
                                     <input type="text" class="form-control" parsley-trigger="change" required name="account_number" id="account_number" value="@isset($coa->AccNo){{$coa->AccNo}}@endisset">
@@ -84,9 +68,9 @@ Tambah Data Coa
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Account Parent</label>
                                 <div class="col-10">
-                                    <select class="form-control select2" parsley-trigger="change" name="account_parent" onchange="getCoa(this.value)">
-                                        @isset($order->pbf_id)
-                                            <option value="{{$coa->AccParent}}" selected>{{$coa->AccParent}}</option>
+                                    <select class="form-control select2" parsley-trigger="change" name="account_parent" id="account_parent">
+                                        @isset($coa->AccParent)
+                                            <option value="{{$coa->AccParent}}" selected>{{$coa->AccParent}} -  {{Coa::where('AccNo',$coa->AccParent)->select('AccName')->first()->AccName}}</option>
                                         @endisset
                                     </select>
                                 </div>
@@ -95,15 +79,6 @@ Tambah Data Coa
                                 <label class="col-2 col-form-label">Nominal Saldo Awal</label>
                                 <div class="col-10">
                                     <input type="text" class="form-control" parsley-trigger="change" required name="saldo_awal" id="saldo_awal" value="@isset($coa->SaldoAwal){{$coa->SaldoAwal}}@endisset">
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label">Company Name</label>
-                                <div class="col-10">
-                                    <select class="form-control select2" parsley-trigger="change" name="company">
-                                        
-                                        <option value="{{$company->company_id}}">{{$company->company_name}}</option>
-                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -134,7 +109,6 @@ Tambah Data Coa
     <script type="text/javascript">
         $(document).ready(function() {
             $('form').parsley();
-            getCoa();
         });
     </script>
 
@@ -144,68 +118,32 @@ Tambah Data Coa
         jQuery('#mulai_kerja').datepicker();
 
         // Select2
-        $(".select2").select2({
-            templateResult: formatState,
-            templateSelection: formatState
-        });
+        $(".select2").select2();
 
-        function getCoa(){
-            $("#account_parent").select2({
-                placeholder:"Pilih Coa Parent",
-                ajax:{
-                    url: "{{route('ajxCoa')}}",
-                    dataType:'json',    
-                    delay:250,
-                    data:function(params){
-                        return{
-                            params:params.term,
-                        };
-                    },
-                    processResults:function(data){
-                        var item = $.map(data, (value)=>{ //map buat ngemap object data kyk foreach
-                            return { id: value.id, text: value.text };
-                        });
-
-                        return {
-                            results: item
-                        }
-                    },
-                    cache: true
+        $("#account_parent").select2({
+            placeholder:"Pilih Coa Parent",
+            ajax:{
+                url: "{{route('ajxCoa')}}",
+                dataType:'json',    
+                delay:250,
+                data:function(params){
+                    return{
+                        params:params.term,
+                    };
                 },
-                minimumInputLength: 1,
-            });
-        }
+                processResults:function(data){
+                    var item = $.map(data, (value)=>{ //map buat ngemap object data kyk foreach
+                        return { id: value.id, text: value.text };
+                    });
 
-        function formatState (opt) {
-            if (!opt.id) {
-                return opt.text.toUpperCase();
-            }
-
-            var optimage = $(opt.element).attr('data-image');
-            console.log(optimage)
-            if(!optimage){
-            return opt.text.toUpperCase();
-            } else {
-                var $opt = $(
-                '<span><img src="' + optimage + '" width="60px" /> ' + opt.text.toUpperCase() + '</span>'
-                );
-                return $opt;
-            }
-        };
-
-    </script>
-
-    <script type="text/javascript">
-        $('.dropify').dropify({
-            messages: {
-                'default': 'Drag and drop a file here or click',
-                'replace': 'Drag and drop or click to replace',
-                'remove': 'Remove',
-                'error': 'Ooops, something wrong appended.'
+                    return {
+                        results: item
+                    }
+                },
+                cache: true
             },
-            error: {
-                'fileSize': 'The file size is too big (1M max).'
-            }
+            minimumInputLength: 1,
         });
+
     </script>
 @endsection

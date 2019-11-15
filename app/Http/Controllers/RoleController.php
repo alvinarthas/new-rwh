@@ -19,7 +19,7 @@ class RoleController extends Controller
     public function index()
     {
         $roles = Role::all();
-        $page = MenuMapping::getMap(session('user_id'),"MRRO");
+        $page = MenuMapping::getMap(session('user_id'),"EMRO");
         return view('role.index',compact('roles','page'));
     }
 
