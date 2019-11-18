@@ -11,6 +11,7 @@ use App\DemoFinger;
 use App\DemoLog;
 use App\DemoUser;
 use App\Purchase;
+use App\Sales;
 use App\Employee;
 
 class FingerPrintController extends Controller
@@ -112,53 +113,6 @@ class FingerPrintController extends Controller
         
     }
 
-    public function purchaseApprove(Request $request){
-        if (isset($request->user_id) && !empty($request->user_id)) {
-            $time_limit_ver = 50;
-
-            $finger = DemoFinger::where('user_id',$request->user_id)->first();
-            
-            echo "$request->user_id;".$finger->finger_data.";SecurityKey;".$time_limit_ver.";".route('purchaseApproveProcess',['trx_id'=>$request->trx_id]).";".route('fingerGetAc').";extraParams";
-        }
-        
-    }
-
-    public function purchaseApproveProcess(Request $request){
-        if (isset($request->VerPas) && !empty($request->VerPas)) {
-            // initialize
-            $data 		= explode(";",$request->VerPas);
-            $user_id	= $data[0];
-            $vStamp 	= $data[1];   
-            $time 		= $data[2];          
-            $sn 		= $data[3];
-
-            // Get Finger Data
-            $finger = DemoFinger::where('user_id',$user_id)->first();
-
-            // Get Device
-            $device = DemoDevice::where('sn',$sn)->first();
-            // Verification
-            $username = DemoUser::where('user_id',$user_id)->first()->user_name;
-
-            $salt = md5($sn.$finger->finger_data.$device->vc.$time.$user_id.$device->vkey);
-            if (strtoupper($vStamp) == strtoupper($salt)) {
-                // Insert to Log
-               $purchase = Purchase::where('id',$request->trx_id)->first();
-               
-               $purchase->approve = 1;
-               $purchase->approve_by = session('user_id');
-               try{
-                    $purchase->update();
-                    echo route('purchase.index');
-                }catch(\Exception $e){
-                    echo redirect()->back()->withErrors($e);
-                }
-               
-            }
-        }
-        
-    }
-
     public function process_verification(Request $request){
         if (isset($request->VerPas) && !empty($request->VerPas)) {
             // initialize
@@ -204,5 +158,105 @@ class FingerPrintController extends Controller
         $logs = DemoLog::whereBetween(DB::raw('DATE(log_time)'), array($tanggal_awal, $tanggal_akhir))->latest()->get();
 
         return view('absensi.ajxFullLog',compact('logs','tanggal_awal','tanggal_akhir'));
+    }
+
+    // Purchase
+    public function purchaseApprove(Request $request){
+        if (isset($request->user_id) && !empty($request->user_id)) {
+            $time_limit_ver = 50;
+
+            $finger = DemoFinger::where('user_id',$request->user_id)->first();
+            echo "$request->user_id;".$finger->finger_data.";SecurityKey;".$time_limit_ver.";".route('purchaseApproveProcess',['trx_id'=>$request->trx_id,'role'=>$request->role]).";".route('fingerGetAc').";extraParams";
+        }
+    }
+
+    public function purchaseApproveProcess(Request $request){
+        if (isset($request->VerPas) && !empty($request->VerPas)) {
+            // initialize
+            $data 		= explode(";",$request->VerPas);
+            $user_id	= $data[0];
+            $vStamp 	= $data[1];   
+            $time 		= $data[2];          
+            $sn 		= $data[3];
+            $role = $request->role;
+            // Get Finger Data
+            $finger = DemoFinger::where('user_id',$user_id)->first();
+
+            // Get Device
+            $device = DemoDevice::where('sn',$sn)->first();
+            // Verification
+            $username = DemoUser::where('user_id',$user_id)->first()->user_name;
+
+            $salt = md5($sn.$finger->finger_data.$device->vc.$time.$user_id.$device->vkey);
+            if (strtoupper($vStamp) == strtoupper($salt)) {
+                if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Keuangan"){
+                    // Insert to Log
+                    $purchase = Purchase::where('id',$request->trx_id)->first();
+                    
+                    $purchase->approve = 1;
+                    $purchase->approve_by = $user_id;
+                    try{
+                        $purchase->update();
+                        echo route('purchase.index');
+                    }catch(\Exception $e){
+                        echo redirect()->back()->withErrors($e);
+                    }
+                }else{
+                    echo route('purchase.index')->with('warning', 'Akun anda tidak bisa menggaprove transaksi ini');
+                }
+            }
+        }
+        
+    }
+
+    // Sales
+    public function salesApprove(Request $request){
+        if (isset($request->user_id) && !empty($request->user_id)) {
+            $time_limit_ver = 50;
+            
+            $finger = DemoFinger::where('user_id',$request->user_id)->first();
+        
+            echo "$request->user_id;".$finger->finger_data.";SecurityKey;".$time_limit_ver.";".route('salesApproveProcess',['trx_id'=>$request->trx_id,'role'=>$request->role]).";".route('fingerGetAc').";extraParams";
+        }
+    }
+
+    public function salesApproveProcess(Request $request){
+        if (isset($request->VerPas) && !empty($request->VerPas)) {
+            // initialize
+            $data 		= explode(";",$request->VerPas);
+            $user_id	= $data[0];
+            $vStamp 	= $data[1];   
+            $time 		= $data[2];          
+            $sn 		= $data[3];
+            $role = $request->role;
+            // Get Finger Data
+            $finger = DemoFinger::where('user_id',$user_id)->first();
+
+            // Get Device
+            $device = DemoDevice::where('sn',$sn)->first();
+            // Verification
+            $username = DemoUser::where('user_id',$user_id)->first()->user_name;
+
+            $salt = md5($sn.$finger->finger_data.$device->vc.$time.$user_id.$device->vkey);
+            if (strtoupper($vStamp) == strtoupper($salt)) {
+                if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Keuangan"){
+                    // Insert to Log
+                    $sales = Sales::where('id',$request->trx_id)->first();
+                    
+                    $sales->approve = 1;
+                    $sales->approve_by = $user_id;
+                    try{
+                        $sales->update();
+                        echo route('sales.index');
+                    }catch(\Exception $e){
+                        echo redirect()->back()->withErrors($e);
+                    }
+                }else{
+                    echo route('sales.index')->with('warning', 'Akun anda tidak bisa menggaprove transaksi ini');
+                }
+               
+            }
+        }
+        
     }
 }

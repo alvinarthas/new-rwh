@@ -20,6 +20,7 @@ use App\Sales;
 class TestController extends Controller
 {
     public function index(){
+        dd(session('role'));
         $sales = Sales::all();
         $collect = collect();
         foreach($sales as $sale){

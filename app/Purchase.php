@@ -30,7 +30,7 @@ class Purchase extends Model
     public static function getOrderPayment($bulan,$tahun){
         $data = collect();
         $data1 = collect();
-        $purchase = Purchase::where('month',$bulan)->where('year',$tahun);
+        $purchase = Purchase::where('month',$bulan)->where('year',$tahun)->where('approve',1);
         $ttl_trx = $purchase->count('id');
         $ttl_order = 0;
         $ttl_pay = 0;

@@ -11,6 +11,7 @@ use App\ReceiveDet;
 use App\Purchase;
 use App\PurchaseDetail;
 use App\Jurnal;
+use App\MenuMapping;
 
 class ReceiveProductController extends Controller
 {
@@ -27,7 +28,8 @@ class ReceiveProductController extends Controller
         
         
         if ($request->ajax()) {
-            return response()->json(view('purchase.receive.indexreceive',compact('lists'))->render());
+            $page = MenuMapping::getMap(session('user_id'),"PURP");
+            return response()->json(view('purchase.receive.indexreceive',compact('lists','page'))->render());
         }
     }
 
@@ -35,9 +37,10 @@ class ReceiveProductController extends Controller
         $trx = Purchase::where('id',$request->trx_id)->first();
         $details = json_decode (json_encode (ReceiveDet::detailPurchase($request->trx_id)), FALSE);
         $producttrx = PurchaseDetail::where('trx_id',$request->trx_id)->select('prod_id')->get();
+        $page = MenuMapping::getMap(session('user_id'),"PURP");
         $receives = ReceiveDet::where('trx_id',$request->trx_id)->get();
 
-        return view('purchase.receive.form',compact('trx','details','producttrx','receives'));
+        return view('purchase.receive.form',compact('trx','details','producttrx','receives','page'));
     }
 
     public function store(Request $request){

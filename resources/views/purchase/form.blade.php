@@ -34,7 +34,12 @@ Form Purchasing
                                         <select class="form-control select2" parsley-trigger="change" name="supplier" id="supplier">
                                             <option value="#" selected disabled>Pilih Supplier</option>
                                             @foreach ($suppliers as $supplier)
+                                            @if (session('role') == "Superadmin" || session('role') == "Direktur Utama")
                                                 <option value="{{$supplier->id}}">{{$supplier->nama}}</option>
+                                            @else
+                                                <option value="{{$supplier->supplier->id}}">{{$supplier->supplier->nama}}</option>
+                                            @endif
+                                                
                                             @endforeach
                                         </select>
                                     </div>

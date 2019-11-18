@@ -25,9 +25,6 @@ Index Jurnal Report
             <div class="col-12">
                 <div class="card-box">
                     <h4 class="m-t-0 header-title">Choose Jurnal Date</h4>
-                    <p class="text-muted font-14 m-b-30">
-                        <a href="{{ route('jurnal.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Jurnal</a>
-                    </p>
                     <div class="col-12">
                         <div class="p-20">
                             <div class="form-group row">
@@ -84,6 +81,9 @@ Index Jurnal Report
                     </div>
 
                     <div class="form-group text-left m-b-0">
+                        @if(array_search("FIJUC",$page))
+                        <a href="{{ route('jurnal.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Jurnal</a>
+                        @endif
                         <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData()">Show Data</a>
                     </div>
                 </div>

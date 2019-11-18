@@ -183,7 +183,7 @@ Form Update Purchasing
                     <div class="form-group text-right m-b-0">
                         @if ($purchase->approve == 0)
                         <?php
-                            $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id]));
+                            $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id],'role'=>session('role')));
                         ?>
                             <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase</a>
                         @else

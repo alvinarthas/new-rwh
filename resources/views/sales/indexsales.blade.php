@@ -29,7 +29,7 @@
                                 @endif
                                 @if ($sale->approve == 0)
                                 <?php
-                                    $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sale->id]));
+                                    $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sale->id,'role'=>session('role')]));
                                 ?>
                                     @if (array_search("PSSLA",$page))
                                     <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales</a>

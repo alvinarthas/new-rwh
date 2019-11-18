@@ -12,5 +12,4 @@ class Perusahaan extends Model
     ];
 
     public $timestamps = true;
-
 }

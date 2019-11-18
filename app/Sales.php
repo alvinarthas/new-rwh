@@ -12,7 +12,7 @@ class Sales extends Model
 {
     protected $table ='tblproducttrx';
     protected $fillable = [
-        'trx_date','creator','payment','ttl_harga','customer_id','jurnal_id','hpp_jurnal_id','ongkir','approve'
+        'trx_date','creator','payment','ttl_harga','customer_id','jurnal_id','hpp_jurnal_id','ongkir','approve','approve_by'
     ];
 
     public function customer(){

@@ -87,7 +87,9 @@ Form Sales Payment
                                                     <td><input type="hidden" value="{{$item->AccPos}}" id="position{{$i}}">{{$item->AccPos}}</td>
                                                     <td><input type="hidden" value="{{$item->Amount}}" id="amount{{$i}}">Rp. {{number_format($item->Amount)}}</td>
                                                     <td>{{$item->notes_item}}</td>
-                                                    <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItemJurnal({{$i}},{{$item->id}})" >Delete</a></td>
+                                                    <td>
+                                                        <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItemJurnal({{$i}},{{$item->id}})" >Delete</a>
+                                                    </td>
                                                 </tr>
                                             @php($i++)
                                             @endforeach

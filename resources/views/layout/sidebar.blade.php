@@ -13,7 +13,7 @@
                 <img src="{{ asset('assets/images/employee/foto/'.session('foto')) }}" alt="user-img" title="Mat Helme" class="rounded-circle img-thumbnail img-responsive">
                 <div class="user-status online"><i class="mdi mdi-adjust"></i></div>
             </div>
-            <h5><a href="#">Superadmin</a> </h5>
+            <h5><a href="#">{{session('username')}}</a> </h5>
             <ul class="list-inline">
                 <li class="list-inline-item">
                     <a href="{{route('showProfile')}}" >
@@ -48,7 +48,7 @@
                 <li>
                     <a href="{{route('getHome')}}" class="waves-effect"><i class="mdi mdi-view-dashboard"></i> <span> Dashboard </span> </a>
                 </li>
-                @if (session('nip') == "ROYALSUPERADMIN")
+                @if (session('role') == "Superadmin" || session('role') == "Direktur Utama")
                     @foreach (Modul::getAllModul() as $modul)
                         <li class="has_sub">
                             <a href="javascript:void(0);" class="waves-effect"><i class="{{$modul->modul_icon}}"></i><span>{{$modul->modul_desc}}</span> <span class="menu-arrow"></span></a>

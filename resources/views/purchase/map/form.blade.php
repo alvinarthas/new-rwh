@@ -69,7 +69,10 @@
 
                         <tbody>
                             @php($i = 1)
+                            @if (empty($rests) || !isset($rest))
+                            @else
                             @foreach($rests as $rest)
+                            
                             <tr>
                                 <td>
                                     {{$i}}
@@ -83,8 +86,10 @@
                                     </div>
                                 </td>
                             </tr>
+                            
                             @php($i++)
                             @endforeach
+                            @endif
                         </tbody>
                     </table>
                 </div>

@@ -22,5 +22,6 @@ class VerifyCsrfToken extends Middleware
         '/finger/processregister',
         '/finger/processverifikasi',
         '/finger/purchaseapproveprocess',
+        '/finger/salesapproveprocess',
     ];
 }

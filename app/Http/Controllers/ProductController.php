@@ -63,7 +63,6 @@ class ProductController extends Controller
                 'company_id' => $request->company_id,
                 'name' => $request->name,
                 'prod_id' => $request->prod_id,
-
                 'category' => $request->category,
                 'supplier' => $request->supplier,
                 'stock' => 0
@@ -119,7 +118,7 @@ class ProductController extends Controller
             'prod_id' => 'required|string',
             'name' => 'required|string',
             'category' => 'required|string',
-            'supplier' => 'required|string',
+            'supplier' => 'required',
             'stock' => 'required',
         ]);
         // IF Validation fail

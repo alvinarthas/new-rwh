@@ -170,7 +170,7 @@ Form Update Sales Order
                     <div class="form-group text-right m-b-0">
                         @if ($sales->approve == 0)
                         <?php
-                            $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sales->id]));
+                            $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sales->id,'role'=>session('role')]));
                         ?>
                             <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales</a>
                         @else

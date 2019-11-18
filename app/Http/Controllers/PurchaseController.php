@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Handler;
 
 use App\Purchase;
+use App\PurchaseMap;
 use App\PurchaseDetail;
 use App\Perusahaan;
 use App\ManageHarga;
@@ -106,7 +107,12 @@ class PurchaseController extends Controller
     public function create()
     {
         $jenis = "create";
-        $suppliers = Perusahaan::all();
+        if(session('role') == "Superadmin" || session('role') == "Direktur Utama"){
+            $suppliers = Perusahaan::all();
+        }else{
+            $suppliers = PurchaseMap::where('employee_id',session('user_id'))->get();
+        }
+        
         return view('purchase.form', compact('jenis','suppliers'));
     }
 

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 use App\Jurnal;
 use App\Coa;
+use App\MenuMapping;
 
 class JurnalController extends Controller
 {
@@ -20,11 +21,12 @@ class JurnalController extends Controller
     {
         if ($request->ajax()) {
             $jurnals = Jurnal::viewJurnal($request->start_date,$request->end_date,$request->coa,$request->position);
-
-            return response()->json(view('jurnal.view',compact('jurnals'))->render());
+            $page = MenuMapping::getMap(session('user_id'),"FIJU");
+            return response()->json(view('jurnal.view',compact('jurnals','page'))->render());
         }else{
             $coas = Coa::where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
-            return view('jurnal.index',compact('coas'));
+            $page = MenuMapping::getMap(session('user_id'),"FIJU");
+            return view('jurnal.index',compact('coas','page'));
         }
     }
 
@@ -75,7 +77,8 @@ class JurnalController extends Controller
     {
         $coas = Coa::where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
         $jenis = "create";
-        return view('jurnal.form',compact('coas','jenis'));
+        $page = MenuMapping::getMap(session('user_id'),"FIJU");
+        return view('jurnal.form',compact('coas','jenis','page'));
     }
 
     /**

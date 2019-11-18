@@ -114,9 +114,11 @@ Form Receive Item
                         </div><!-- input-group -->
                     </div>
                 </div>
+                @if (array_search("PURPC",$page))
                 <div class="form-group text-right m-b-0">
                     <button class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Add Item</a>
                 </div>
+                @endif
                 </form>
             </div>
             <div class="card-box table-responsive">
@@ -141,7 +143,11 @@ Form Receive Item
                                 <td>{{$receive->qty}}</td>
                                 <td>{{$receive->expired_date}}</td>
                                 <td>{{$receive->receive_date}}</td>
-                                <td><a href="{{route('receiveProdDel',['id' => $receive->id])}}" class="btn btn-danger btn-trans waves-effect w-xs waves-danger m-b-5" onclick="confirm('Apakah Anda Yakin ingin menghapus ?')">Delete</a></td>
+                                <td>
+                                    @if (array_search("PURPC",$page))
+                                        <a href="{{route('receiveProdDel',['id' => $receive->id])}}" class="btn btn-danger btn-trans waves-effect w-xs waves-danger m-b-5" onclick="confirm('Apakah Anda Yakin ingin menghapus ?')">Delete</a>
+                                    @endif  
+                                </td>
                             </tr>
                         @php($i++)
                         @endforeach

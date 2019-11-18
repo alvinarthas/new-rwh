@@ -31,8 +31,12 @@
                     <td>{{$jurnal->notes_item}}</td>
                     <td>{{$jurnal->description}}</td>
                     <td>
+                        @if(array_search("FIJUE",$page))
                         <a href="{{route('jurnal.edit',['id'=>$jurnal->id_jurnal])}}" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" >Update</a>
+                        @endif
+                        @if(array_search("FIJUD",$page))
                         <a href="javascript:;" onclick="jurnalDelete({{$jurnal->id_jurnal}})" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" >Delete</a>
+                        @endif
                     </td>
                 </tr>
             @php($i++)
