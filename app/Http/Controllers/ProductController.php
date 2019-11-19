@@ -48,7 +48,7 @@ class ProductController extends Controller
         // Validate
         $validator = Validator::make($request->all(), [
             'company_id' => 'required',
-            'prod_id' => 'required|string',
+            'prod_id' => 'required|string|unique:tblproduct',
             'name' => 'required|string',
             'category' => 'required|string',
             'supplier' => 'required|string',

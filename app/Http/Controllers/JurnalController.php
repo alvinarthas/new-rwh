@@ -95,6 +95,7 @@ class JurnalController extends Controller
             'trx_date' => 'required|date',
             'count' => 'required|integer',
             'ttl_credit' => 'required|integer',
+            'accno' => 'required|array',
         ]);
         // IF Validation fail
         if ($validator->fails()) {

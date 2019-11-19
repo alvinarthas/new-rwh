@@ -116,6 +116,7 @@ Form Update Sales Order
                                     <tbody id="sales-list-body">
                                         @php($i=1)
                                         @foreach ($salesdet as $detail)
+                                            @isset($detail->product->name)
                                             <tr style="width:100%" id="trow{{$i}}">
                                                 <td>{{$i}}</td>
                                                 <td>{{$detail->prod_id}}</td>
@@ -128,6 +129,7 @@ Form Update Sales Order
                                                 <td>Rp. {{number_format($detail->sub_ttl_bv)}}</td>
                                                 <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItemOld({{$i}},{{$detail->id}})">Delete</a></td>
                                             </tr>
+                                            @endisset
                                         @php($i++)
                                         @endforeach
                                         <input type="hidden" name="count" id="count" value="{{$i-1}}">

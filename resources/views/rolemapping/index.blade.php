@@ -19,7 +19,7 @@
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                     <thead>
                         <th>No</th>
-                        <th>Username</th>
+                        <th>Nama</th>
                         <th>Role</th>
                         <th>Action</th>
                     </thead>
@@ -29,7 +29,7 @@
                         @foreach($users as $user)
                         <tr>
                             <td>{{$i}}</td>
-                            <td>{{$user->username}}</td>
+                            <td>{{$user->name}}</td>
                             @isset($user->rolemapping)
                                 <td>{{$user->rolemapping->role->role_name}}</td>
                             @else

@@ -18,9 +18,9 @@ Form Sales Payment
         <div class="row">
             <div class="col-12">
                 @if($jenis == "create")
-                <form class="form-horizontal" role="form" action="{{ route('jurnal.store') }}" enctype="multipart/form-data" method="POST">
+                <form class="form-horizontal" id="form" role="form" action="{{ route('jurnal.store') }}" enctype="multipart/form-data" method="POST">
                 @elseif($jenis == "edit")
-                <form class="form-horizontal" role="form" action="{{ route('jurnal.update',['id' => $id]) }}" enctype="multipart/form-data" method="POST">
+                <form class="form-horizontal" id="form" role="form" action="{{ route('jurnal.update',['id' => $id]) }}" enctype="multipart/form-data" method="POST">
                 {{ method_field('PUT') }}
                 @endif
                 @csrf
@@ -160,6 +160,18 @@ Form Sales Payment
 
 @section('script-js')
 <script>
+
+    $("#form").submit(function(e){
+        ttl_debet = parseInt($('#ttl_debet').val());
+        ttl_credit = parseInt($('#ttl_credit').val());
+
+        if(ttl_debet == ttl_credit){
+            $( "#form" ).submit();
+        }else{
+            toastr.warning("Total Debet dan Credit harus sama, silahkan coba lagi", 'Warning!')
+            e.preventDefault();
+        }
+    });
     // Date Picker
     jQuery('#trx_date').datepicker({
         todayHighlight: true,

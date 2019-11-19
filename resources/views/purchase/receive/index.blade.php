@@ -8,6 +8,8 @@
     <link href="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Multi Item Selection examples -->
     <link href="{{ asset('assets/plugins/datatables/select.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
+    {{-- Date Picker --}}
+    <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
@@ -24,22 +26,25 @@ List Receive Product
                         <div class="col-12">
                             <div class="p-20">
                                 <div class="form-group row">
-                                    <label class="col-2 col-form-label">Posting Period</label>
-                                    <div class="col-5">
-                                        <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" required>
-                                            <option value="#" selected disabled>Pilih Bulan</option>
-                                            @for ($i = 1; $i <= 12; $i++)
-                                                <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
-                                            @endfor
-                                        </select>
+                                    <label class="col-2 col-form-label">Start Date</label>
+                                    <div class="col-10">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start" id="start"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                            </div>
+                                        </div><!-- input-group -->
                                     </div>
-                                    <div class="col-5">
-                                        <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" required>
-                                            <option value="#" selected disabled>Pilih Tahun</option>
-                                            @for ($i = 2018; $i <= date('Y'); $i++)
-                                                <option value="{{$i}}">{{$i}}</option>
-                                            @endfor
-                                        </select>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-2 col-form-label">End Date</label>
+                                    <div class="col-10">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="end" id="end"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                            </div>
+                                        </div><!-- input-group -->
                                     </div>
                                 </div>
                             </div>
@@ -68,22 +73,28 @@ List Receive Product
 <!-- Responsive examples -->
 <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
+
+{{-- Date Picker --}}
+<script src="{{ asset('assets/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
 @endsection
 
 @section('script-js')
 <script>
+    // Date Picker
+    jQuery('#start').datepicker();
+    jQuery('#end').datepicker();
 
     function choosePurchase(id=null){
-        bulan = $('#bulan').val();
-        tahun = $('#tahun').val();
+        start = $('#start').val();
+        end = $('#end').val();
         
         $.ajax({
             url : "{{route('receiveProdAjx')}}",
             type : "get",
             dataType: 'json',
             data:{
-                bulan: bulan,
-                tahun: tahun,
+                start: start,
+                end: end,
                 jenis: id,
             },
         }).done(function (data) {

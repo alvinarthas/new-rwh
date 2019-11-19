@@ -136,6 +136,7 @@ Form Receive Item
                     <tbody>
                         @php($i=1)
                         @foreach ($receives as $receive)
+                        @isset($receive->prod->name)
                             <tr>
                                 <td>{{$i}}</td>
                                 <td>{{$receive->prod_id}}</td>
@@ -149,6 +150,7 @@ Form Receive Item
                                     @endif  
                                 </td>
                             </tr>
+                        @endisset
                         @php($i++)
                         @endforeach
                     </tbody>

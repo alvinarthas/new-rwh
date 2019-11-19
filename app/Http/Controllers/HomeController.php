@@ -41,11 +41,15 @@ class HomeController extends Controller
 
         }else{
             $user = Employee::where('username',$request->username)->first();
-
             // FOUND
             if($user && Hash::check($request->password, $user->password)){
                 $request->session()->put('username', $request->username);
-                $request->session()->put('role', $user->rolemapping()->first()->role()->first()->role_name);
+
+                if(empty($user->rolemapping()->first())){
+                    $request->session()->put('role',"null");
+                }else{
+                    $request->session()->put('role', $user->rolemapping()->first()->role()->first()->role_name);
+                }
                 $request->session()->put('name', $user->name);
                 $request->session()->put('user_id', $user->id);
                 $request->session()->put('nip', $user->nip);

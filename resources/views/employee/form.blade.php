@@ -151,7 +151,16 @@ Tambah Data Pegawai
                                     <select class="form-control select2" parsley-trigger="change" name="bank">
                                         <option value="#" disabled selected>Pilih Bank</option>
                                         @foreach ($banks as $bank)
-                                            <option value="{{$bank->kode}}" data-image="{{asset('assets/images/bank/'.$bank->icon)}}">{{$bank->nama}}</option>
+                                            @isset($employee->bank)
+                                                @if ($employee->bank == $bank->kode)
+                                                    <option value="{{$bank->kode}}" data-image="{{asset('assets/images/bank/'.$bank->icon)}}" selected>{{$bank->nama}}</option>
+                                                @else
+                                                    <option value="{{$bank->kode}}" data-image="{{asset('assets/images/bank/'.$bank->icon)}}">{{$bank->nama}}</option>
+                                                @endif
+                                                
+                                            @else
+                                                <option value="{{$bank->kode}}" data-image="{{asset('assets/images/bank/'.$bank->icon)}}">{{$bank->nama}}</option>
+                                            @endisset
                                         @endforeach
                                     </select>
                                 </div>
@@ -219,7 +228,7 @@ Tambah Data Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Upload SIM A</label>
                                 <div class="col-10">
-                                    <input type="file" class="dropify" data-height="100" name="scansima" id="scansima" data-default-file="@isset($employee->scansima){{ asset('assets/images/sima/'.$employee->scansima) }}@endisset"/>
+                                    <input type="file" class="dropify" data-height="100" name="scansima" id="scansima" data-default-file="@isset($employee->scansima){{ asset('assets/images/employee/sima/'.$employee->scansima) }}@endisset"/>
                                 </div>
                             </div>
                         </div>

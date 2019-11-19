@@ -16,13 +16,13 @@
                     @foreach ($sales as $sale)
                         <tr>
                             <td>{{$i}}</td>
-                            <td>SO.{{$sale->id}}</td>
+                            <td><a href="javascript:;" onclick="getDetail({{$sale->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">SO.{{$sale->id}}</a></td>
                             <td>{{$sale->trx_date}}</td>
                             <td>{{$sale->customer->apname}}</td>
                             <td>{{$sale->ttl_harga+$sale->ongkir}}</td>
                             <td>
                                 @if (array_search("PSSLU",$page))
-                                <a href="{{route('sales.edit',['id'=>$sale->id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
+                                <a href="{{route('sales.edit',['id'=>$sale->id])}}" class="btn btn-purple btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
                                 @endif
                                 @if (array_search("PSSLD",$page))
                                 <a href="javascrip:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$sale->id}})">Delete</a>
@@ -46,6 +46,20 @@
         </div>
     </div>
 </div>
+
+<!--  Modal content for the above example -->
+<div class="modal fade bs-example-modal-lg" id="modalLarge" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg" id="do-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myLargeModalLabel">Sales Order Detail</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
+            </div>
+            <div class="modal-body" id="modalView">
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
 <script>
 // Responsive Datatable
@@ -99,5 +113,21 @@ function deletePurchase(id){
             )
         }
     })
+}
+
+function getDetail(id){
+    $.ajax({
+        url : "{{route('sales.show',['id'=>1])}}",
+        type : "get",
+        dataType: 'json',
+        data:{
+            id:id,
+        },
+    }).done(function (data) {
+        $('#modalView').html(data);
+        $('#modalLarge').modal("show");
+    }).fail(function (msg) {
+        alert('Gagal menampilkan data, silahkan refresh halaman.');
+    });
 }
 </script>

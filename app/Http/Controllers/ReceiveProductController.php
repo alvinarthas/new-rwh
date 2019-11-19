@@ -23,7 +23,13 @@ class ReceiveProductController extends Controller
         if($request->jenis == "all"){
             $lists = json_decode (json_encode (ReceiveDet::listReceiveAll()), FALSE);
         }else{
-            $lists = json_decode (json_encode (ReceiveDet::listReceive($request->bulan,$request->tahun)), FALSE);
+            $bulan_start = date('m',strtotime($request->start));
+            $bulan_end = date('m',strtotime($request->end));
+
+            $tahun_start = date('Y',strtotime($request->start));
+            $tahun_end = date('Y',strtotime($request->end));
+
+            $lists = json_decode (json_encode (ReceiveDet::listReceive($bulan_start,$bulan_end,$tahun_start,$tahun_end)), FALSE);
         }
         
         

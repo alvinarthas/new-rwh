@@ -18,8 +18,8 @@ class ReceiveDet extends Model
         return $this->belongsTo('App\Product','prod_id','prod_id');
     }
 
-    public static function listReceive($month,$year){
-        $purchase = Purchase::join('tblpotrxdet','tblpotrx.id','=','tblpotrxdet.trx_id')->where('tblpotrx.month',$month)->where('tblpotrx.year',$year)->select('tblpotrx.id as trx_id','tblpotrx.supplier','tblpotrxdet.prod_id','tblpotrxdet.qty','tblpotrxdet.unit')->get();
+    public static function listReceive($bulan_start,$bulan_end,$tahun_start,$tahun_end){
+        $purchase = Purchase::join('tblpotrxdet','tblpotrx.id','=','tblpotrxdet.trx_id')->whereBetween('tblpotrx.month',[$bulan_start,$bulan_end])->whereBetween('tblpotrx.year',[$tahun_start,$tahun_end])->select('tblpotrx.id as trx_id','tblpotrx.supplier','tblpotrxdet.prod_id','tblpotrxdet.qty','tblpotrxdet.unit')->get();
 
         $data = collect();
         foreach($purchase as $key){

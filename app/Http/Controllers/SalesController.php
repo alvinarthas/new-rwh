@@ -151,9 +151,13 @@ class SalesController extends Controller
         }
     }
 
-    public function show($id)
+    public function show(Request $request,$id)
     {
-        //
+        if ($request->ajax()) {
+            $sales = Sales::where('id',$request->id)->first();
+            $salesdet = SalesDet::where('trx_id',$request->id)->get();
+            return response()->json(view('sales.modal',compact('sales','salesdet'))->render());
+        }
     }
 
     public function edit($id)
