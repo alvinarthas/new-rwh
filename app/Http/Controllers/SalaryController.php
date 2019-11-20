@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Handler;
 
 use App\Employee;
-use App\GajiPokok;
 use App\RecordPoin;
 use App\MenuMapping;
 use App\Salary;
@@ -15,70 +14,12 @@ use App\SalaryDet;
 use App\Purchase;
 use App\BonusPegawai;
 use App\BonusPegawaiDet;
+use App\Sales;
 
 use Carbon\Carbon;
 
 class SalaryController extends Controller
 {
-    // Gaji Pokok
-    public function indexGajiEmp(Request $request){
-        $employees = GajiPokok::all();
-        $page = MenuMapping::getMap(session('user_id'),"EMES");
-        return view('salary.gajipokok.index',compact('employees','page'));
-    }
-
-    public function formGajiEmp($jenis, $id=null, Request $request){
-        if($jenis == "create"){
-            $employees = Employee::select('id','username')->get();
-            return view('salary.gajipokok.form',compact('jenis','employees'));
-        }else{  
-            $employees = Employee::select('id','username')->get();
-            $employee = GajiPokok::where('employee_id',$id)->first();
-            return view('salary.gajipokok.form',compact('jenis','employee','employees'));
-        }
-    }
-    
-    public function storeGajiEmp($jenis, $id=null, Request $request){
-        // Validate
-        $validator = Validator::make($request->all(), [
-            'employee' => 'required',
-            'gaji_pokok' => 'required|integer',
-            'tunjangan_jabatan' => 'required|integer',
-        ]);
-        // IF Validation fail
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator->errors());
-        // Validation success
-        }else{
-            if($jenis == "store"){
-                $gaji = new GajiPokok(array(
-                    'employee_id' => $request->employee,
-                    'gaji_pokok' => $request->gaji_pokok,
-                    'tunjangan_jabatan' => $request->tunjangan_jabatan,
-                ));
-            }elseif ($jenis == "update") {
-                $gaji = GajiPokok::where('id',$id)->first();
-
-                $gaji->gaji_pokok = $request->gaji_pokok;
-                $gaji->tunjangan_jabatan = $request->tunjangan_jabatan;
-            }
-            $gaji->save();
-
-            return redirect()->route('indexGajiEmp')->with('status', 'Data Gaji berhasil dibuat');
-        }
-    }
-
-    public function delGajiEmp(Request $request){
-        $gaji = GajiPokok::where('id',$request->id)->first();
-        try{
-            $gaji->delete();
-            return "true";
-        // fail
-        }catch (\Exception $e) {
-            return redirect()->back()->withErrors($e->errorInfo);
-        }
-    }
-
     // Record Poin
     public function indexPoin(Request $request){
         if($request->ajax()){
@@ -129,7 +70,7 @@ class SalaryController extends Controller
     }
 
     public function formPoin(Request $request){
-        $employees = Employee::select('id','username')->join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.username','tblemployee.scanfoto')->get();
+        $employees = Employee::select('id','username')->join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','Supervisor')->orWhere('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.username','tblemployee.scanfoto')->get();
         return view('salary.poin.form',compact('employees'));
     }
 
@@ -166,7 +107,7 @@ class SalaryController extends Controller
                     $poin->save();
         
                     return redirect()->route('indexPoin')->with('status', 'Data Poin berhasil dibuat');
-                } catch (\Throwable $th) {
+                } catch (\Exception $e) {
                     return redirect()->back()->withErrors($e->getMessage());
                 }
             }
@@ -212,7 +153,13 @@ class SalaryController extends Controller
     }
 
     public function createPerhitunganGaji(Request $request){
-        return view('salary.perhitungan.form');
+        if($request->ajax()){
+            return Sales::getBV($request->bulan,$request->tahun);
+        }else{
+            $bv = Sales::getBV(date('m'),date('Y'));
+            return view('salary.perhitungan.form',compact('bv'));
+        }
+        
     }
 
     public function storePerhitunganGaji(Request $request){
@@ -277,11 +224,13 @@ class SalaryController extends Controller
                 $value_share_top3 = $anggaran_top3/$ttl_poin_top3;
             }
 
+            $pegawai = Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','NOT LIKE','Superadmin')->where('r.role_name','NOT LIKE','Direktur Utama')->select('tblemployee.id','tblemployee.username','r.gaji_pokok','r.tunjangan_jabatan')->get();
+
             // Hitung Bonus tiap pegawai
-            foreach (GajiPokok::all() as $peg) {
+            foreach ($pegawai as $peg) {
                 $eomcollect = collect();
                 // Share Internal
-                $poin_internal = RecordPoin::sumPoin2($peg->employee_id,$month,$year,1);
+                $poin_internal = RecordPoin::sumPoin2($peg->id,$month,$year,1);
                 if($ttl_poin_internal == 0){
                     $persen_internal = 0;
                 }else{
@@ -291,7 +240,7 @@ class SalaryController extends Controller
                 $value_internal = $poin_internal*$value_share_internal;
 
                 // Share Logistik
-                $poin_logistik = RecordPoin::sumPoin2($peg->employee_id,$month,$year,0);
+                $poin_logistik = RecordPoin::sumPoin2($peg->id,$month,$year,0);
                 if($ttl_poin_logistik == 0){
                     $persen_logistik = 0;
                 }else{
@@ -300,7 +249,7 @@ class SalaryController extends Controller
                 $value_logistik = $poin_logistik*$value_share_logistik;
 
                 // Share Kendali Perusahaan
-                $poin_kendali_perusahaan = Purchase::sharePost($month,$year,$peg->employee_id);
+                $poin_kendali_perusahaan = Purchase::sharePost($month,$year,$peg->id);
                 if($ttl_poin_kendali_perusahaan == 0){
                     $persen_kendali_perusahaan = 0;
                 }else{
@@ -310,7 +259,7 @@ class SalaryController extends Controller
                 
                 // Share Top 3
 
-                if (in_array($peg->employee_id, (array) $arr_top3)){
+                if (in_array($peg->id, (array) $arr_top3)){
                     $poin_top3 = 1;
                 }else{
                     $poin_top3 = 0;
@@ -342,10 +291,10 @@ class SalaryController extends Controller
                 $total_bonus = $value_internal+$value_logistik+$value_kendali_perusahaan+$value_top3+$eom;
 
                 // Take Home Pay
-                $take_home_pay = $peg->gaji_pokok+$bonus_jabatan+$total_bonus;
+                $take_home_pay = $peg->gaji_pokok+$peg->tunjangan_jabatan+$bonus_jabatan+$total_bonus;
 
                 // Store to Collection EOM
-                $eomcollect->put('id',$peg->employee_id);
+                $eomcollect->put('id',$peg->id);
                 $eomcollect->put('value',$total_persen_all);
                 $collectionEom->push($eomcollect);
 
@@ -356,7 +305,7 @@ class SalaryController extends Controller
                     'gaji_pokok' => $peg->gaji_pokok,
                     'bonus_jabatan' => $bonus_jabatan,
                     'take_home_pay' => $take_home_pay,
-                    'employee_id' => $peg->employee_id,
+                    'employee_id' => $peg->id,
                     'tunjangan_jabatan' => $peg->tunjangan_jabatan,
                 ));
                 $salarydet->save();
@@ -364,7 +313,7 @@ class SalaryController extends Controller
                 // Store into Bonus Pegawai
                 $bonus_pegawai = new BonusPegawai(array(
                     'salary_det_id' => $salarydet->id,
-                    'employee_id' => $peg->employee_id,
+                    'employee_id' => $peg->id,
                     'month' => $month,
                     'year' => $year,
                     'tugas_internal' => $value_internal,

@@ -34,6 +34,18 @@ Tambah Data Role
                                     <input type="text" class="form-control" parsley-trigger="change" required name="role_name" id="role_name" value="@isset($role->role_name){{$role->role_name}}@endisset">
                                 </div>
                             </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Gaji Pokok Pegawai</label>
+                                <div class="col-10">
+                                    <input type="number" class="form-control" parsley-trigger="change" required name="gaji_pokok" id="gaji_pokok" value="@isset($role->gaji_pokok){{$role->gaji_pokok}}@endisset">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Tunjangan Jabatan</label>
+                                <div class="col-10">
+                                    <input type="number" class="form-control" parsley-trigger="change" required name="tunjangan_jabatan" id="tunjangan_jabatan" value="@isset($role->tunjangan_jabatan){{$role->tunjangan_jabatan}}@endisset">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

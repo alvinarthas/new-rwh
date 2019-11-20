@@ -45,6 +45,8 @@ class RoleController extends Controller
         // Validate
         $validator = Validator::make($request->all(), [
             'role_name' => 'required',
+            'gaji_pokok' => 'required|integer',
+            'tunjangan_jabatan' => 'required|integer',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -54,18 +56,15 @@ class RoleController extends Controller
             $role = new Role(array(
                 // Informasi Pribadi
                 'role_name' => $request->role_name,
+                'gaji_pokok' => $request->gaji_pokok,
+                'tunjangan_jabatan' => $request->tunjangan_jabatan,
                 'company_id' => 1,
                 'creator' => session('user_id'),
-
             ));
-
-            $role->save();
-
-            // success
-            if($role->save()){
-                return redirect()->route('role.index');
-            // fail
-            }else{
+            try {
+                $role->save();
+                return redirect()->route('role.index')->with('status','Role berhasil ditambahkan');
+            } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
             }
         }
@@ -107,6 +106,8 @@ class RoleController extends Controller
         // Validate
         $validator = Validator::make($request->all(), [
             'role_name' => 'required',
+            'gaji_pokok' => 'required|integer',
+            'tunjangan_jabatan' => 'required|integer',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -116,17 +117,17 @@ class RoleController extends Controller
             $role = Role::where('id',$id)->first();
 
             $role->role_name = $request->role_name;
+            $role->gaji_pokok = $request->gaji_pokok;
+            $role->tunjangan_jabatan = $request->tunjangan_jabatan;
             $role->creator = session('user_id');
 
-            $role->save();
-
-            // success
-            if($role->save()){
-                return redirect()->route('role.index');
-            // fail
-            }else{
+            try {
+                $role->save();
+                return redirect()->route('role.index')->with('status','Role berhasil diubah');
+            } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
             }
+            $role->save();
         }
     }
 
@@ -138,10 +139,12 @@ class RoleController extends Controller
      */
     public function destroy($id)
     {
-        $role = Role::where('id',$id)->first();
-
-        $role->delete();
-
-        return redirect()->back();
+        try{
+            Role::where('id',$id)->delete();
+            return "true";
+        // fail
+        }catch (\Exception $e) {
+            return redirect()->back()->withErrors($e->errorInfo);
+        }
     }
 }

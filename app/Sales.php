@@ -104,4 +104,8 @@ class Sales extends Model
     public static function checkSent($product,$trx){
         return DeliveryDetail::where('product_id',$product)->where('sales_id',$trx)->sum('qty');
     }
+
+    public static function getBV($bulan,$tahun){
+        return Sales::join('tblproducttrxdet','tblproducttrx.id','=','tblproducttrxdet.trx_id')->whereMonth('trx_date',$bulan)->whereYear('trx_date',$tahun)->sum('tblproducttrxdet.sub_ttl_pv');
+    }
 }
