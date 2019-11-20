@@ -3,7 +3,7 @@
     <p class="text-muted font-14 m-b-30">
         {{$nama}}
     </p>
-
+    @csrf
     <table id="modal-table" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
         <thead>
             <th>No</th>
@@ -36,4 +36,53 @@
 <script>
 // Responsive Datatable
 $('#modal-table').DataTable();
+
+function deletePoin(id){
+    token = $("meta[name='csrf-token']").attr("content");
+    swal({
+        title: 'Apakah Anda yakin ?',
+        text: "Poin tidak bisa dikembalikan lagi",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'No, cancel!',
+        confirmButtonClass: 'btn btn-success',
+        cancelButtonClass: 'btn btn-danger m-l-10',
+        buttonsStyling: false
+    }).then(function () {
+        $.ajax({
+            url : "{{route('delPoin')}}",
+            type : "DELETE",
+            dataType: 'json',
+            data:{
+                id: id,
+                _token : token,
+            },
+        }).done(function (data) {
+            swal(
+                'Deleted!',
+                'Poin telah dihapus.',
+                'success'
+            )
+            location.reload();
+        }).fail(function (msg) {
+            swal(
+                'Failed',
+                'Poin tidak kehapus :)',
+                'error'
+            )
+        });
+        
+    }, function (dismiss) {
+        // dismiss can be 'cancel', 'overlay',
+        // 'close', and 'timer'
+        if (dismiss === 'cancel') {
+            swal(
+                'Cancelled',
+                'Poin tidak kehapus :)',
+                'error'
+            )
+        }
+    })
+}
 </script>

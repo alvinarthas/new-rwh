@@ -41,7 +41,7 @@ Tambah Poin Pegawai
                                     <label class="col-2 col-form-label">Tanggal</label>
                                     <div class="col-10">
                                         <div class="input-group">
-                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="date" id="date"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="date" id="date"  data-date-format='yyyy-mm-dd' autocomplete="off" data-date-end-date="0d">
                                             <div class="input-group-append">
                                                 <span class="input-group-text"><i class="ti-calendar"></i></span>
                                             </div>
@@ -104,7 +104,7 @@ Tambah Poin Pegawai
             // Date Picker
             jQuery('#date').datepicker({
                 todayHighlight: true,
-                autoclose: true
+                autoclose: true,
             });
         });
 

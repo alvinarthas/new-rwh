@@ -16,6 +16,8 @@ use App\Purchase;
 use App\BonusPegawai;
 use App\BonusPegawaiDet;
 
+use Carbon\Carbon;
+
 class SalaryController extends Controller
 {
     // Gaji Pokok
@@ -83,7 +85,7 @@ class SalaryController extends Controller
             $start = $request->start_date;
             $end = $request->end_date;
             $jenis = $request->jenis;
-            $employees = Employee::select('id','username')->get();
+            $employees = Employee::select('id','username')->join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.username')->get();
             $datas = collect();
 
             foreach ($employees as $employee) {
@@ -127,7 +129,7 @@ class SalaryController extends Controller
     }
 
     public function formPoin(Request $request){
-        $employees = Employee::select('id','username','scanfoto')->get();
+        $employees = Employee::select('id','username')->join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.username','tblemployee.scanfoto')->get();
         return view('salary.poin.form',compact('employees'));
     }
 
@@ -144,25 +146,37 @@ class SalaryController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-
-            $poin = new RecordPoin(array(
-                'employee_id' => $request->employee,
-                'poin' => $request->poin,
-                'date' => $request->date,
-                'jenis' => $request->jenis,
-                'creator' => session('user_id'),
-            ));
+            $date = Carbon::createFromFormat('Y-m-d H:i:s',$request->date.'00:00:00');
+            $today = Carbon::now();
             
-            $poin->save();
+            $interval = date_diff($today, $date);
 
-            return redirect()->route('indexPoin')->with('status', 'Data Poin berhasil dibuat');
+            if($interval->days > 2){
+                return redirect()->back()->with("warning","Maaf anda tidak bisa melakukan input poin, karena sudah melebihi 2 hari");
+            }else{
+                try {
+                    $poin = new RecordPoin(array(
+                        'employee_id' => $request->employee,
+                        'poin' => $request->poin,
+                        'date' => $request->date,
+                        'jenis' => $request->jenis,
+                        'creator' => session('user_id'),
+                    ));
+                    
+                    $poin->save();
+        
+                    return redirect()->route('indexPoin')->with('status', 'Data Poin berhasil dibuat');
+                } catch (\Throwable $th) {
+                    return redirect()->back()->withErrors($e->getMessage());
+                }
+            }
+            
         }
     }
 
     public function delPoin(Request $request){
-        $poin = RecordPoin::where('id',$request->id)->first();
         try{
-            $poin->delete();
+            RecordPoin::where('id',$request->id)->delete();
             return "true";
         // fail
         }catch (\Exception $e) {

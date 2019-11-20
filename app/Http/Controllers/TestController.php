@@ -17,9 +17,36 @@ use App\Salary;
 use App\Employee;
 use App\Sales;
 
+use Carbon\Carbon;
+
 class TestController extends Controller
 {
+
     public function index(){
+        dd(Employee::select('id','username')->join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.username')->get());
+    }
+
+    public function indextime(){
+        $date = '2019-11-17';
+        $date = Carbon::createFromFormat('Y-m-d H:i:s',$date.'00:00:00');
+        echo $date."<br>";
+        $today = Carbon::now();
+        echo $today."<br>";
+        
+        $interval = date_diff($today, $date);
+        $selisih = intval($interval->format('%R%a'));
+        echo $interval->format('%R%a days')."<br>";
+        echo $selisih."<br>";
+
+        if($interval->days > 2){
+            echo "lebih";
+        }else{
+            echo "masih bisa";
+        }
+        
+    }
+
+    public function indexwq(){
         dd(session('role'));
         $sales = Sales::all();
         $collect = collect();
