@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Bonus extends Model
 {
     protected $table ='tblbonus';
+    protected $primaryKey = 'id_bonus';
     protected $fillable = [
         'noid','bulan','tahun','bonus', 'creator', 'id_jurnal'
     ];

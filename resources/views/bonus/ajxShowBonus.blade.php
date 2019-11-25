@@ -33,11 +33,18 @@
                                     <td>{{$prm->ktp}}</td>
                                     <td>{{$prm->noid}}</td>
                                     <td>{{$prm->nama}}</td>
+
+                                    {{-- tampil semua data member perusahaan --}}
                                     @php
-                                        $data_bonus = $bonus->where('member_id', $prm->noid)->first();
+                                        $data_bonus = $bonus->where('noid', $prm->noid)->first();
                                     @endphp
+
                                     <td>
+                                        {{-- tampil semua data member perusahaan --}}
                                         <input class="form-control number" value="{{ number_format($data_bonus['bonus'],0) }}" type="text" name="bonus{{ $i }}">
+
+                                        {{-- hanya yang bonus !=0 --}}
+                                        {{-- <input class="form-control number" value="{{ number_format($prm['bonus'],0) }}" type="text" name="bonus{{ $i }}"> --}}
                                     </td>
                                 </tr>
                                 @php
@@ -216,9 +223,16 @@
                         </div>
                         @if($bonusapa=="perhitungan")
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Total Bonus Tertahan</label>
+                                <label class="col-2 col-form-label">Estimasi Bonus</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control number" parsley-trigger="change" required name="total_bonus2" id="total_bonus" value="" readonly="readonly">
+                                    <input type="text" class="form-control number" parsley-trigger="change" required name="estimasi_bonus" id="estimasi_bonus" value="@isset($estimasi_bonus){{ $estimasi_bonus }}@endisset" readonly="readonly">
+                                </div>
+                            </div>
+                        @elseif($bonusapa=="pembayaran")
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Piutang Bonus Tertahan</label>
+                                <div class="col-10">
+                                    <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="bonus_tertahan" id="bonus_tertahan" value="{{ $bonus_tertahan }}" readonly="readonly">
                                 </div>
                             </div>
                         @endif

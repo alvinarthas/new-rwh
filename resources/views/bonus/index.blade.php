@@ -52,7 +52,7 @@
                     </div>
                 @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
                     @if($bonusapa=="pembayaran")
-                        <h3 class="m-t-0 header-title">Pembayaran Bonus Member</h3>
+                        <h3 class="m-t-0 header-title">Penerimaan Bonus Member</h3>
                     @elseif($bonusapa=="topup")
                         <h3 class="m-t-0 header-title">Top Up Bonus Member</h3>
                     @endif
@@ -60,7 +60,7 @@
                         @if($bonusapa=="pembayaran")
                             @if (array_search("BMBBC",$page))
                                 <p class="text-muted font-14 m-b-30">
-                                    <a href="{{ route('bonus.createbayar') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Pembayaran Bonus</a>
+                                    <a href="{{ route('bonus.createPenerimaan') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Penerimaan Bonus</a>
                                 </p>
                             @endif
                         @elseif($bonusapa=="topup")
@@ -109,12 +109,28 @@
                 @endif
                 @if($bonusapa=="pembayaran" OR $bonusapa=="topup")
                     <div class="form-group row">
-                        <label class="col-2 col-form-label">Rekening Bank Tujuan</label>
+                        @if($bonusapa=="pembayaran")
+                            <label class="col-2 col-form-label">Rekening Bank Tujuan</label>
+                        @elseif($bonusapa=="topup")
+                            <label class="col-2 col-form-label">Sumber Rekening</label>
+                        @endif
                         <div class="col-10">
                             <select class="form-control" parsley-trigger="change" id="rekening" name="rekening">
                             </select>
                         </div>
                     </div>
+                    {{-- <div id="supplier_show" style="display:none">
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">Supplier</label>
+                            <div class="col-10">
+                                <select class="form-control" parsley-trigger="change" id="supplier" name="supplier">
+                                    @foreach($supplier as $s)
+                                        <option value="{{ $s->id }}">{{ $s->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div> --}}
                 @endif
             </div>
         </div>
@@ -135,14 +151,14 @@
             @endif
         @elseif($bonusapa=="pembayaran")
             @if($jenis=="index")
-                <button class="btn btn-primary waves-effect waves-light" onclick="showBonusPembayaran()" type="submit">
+                <button class="btn btn-primary waves-effect waves-light" onclick="showBonusPenerimaan()" type="submit">
                     Show Bonus
                 </button>
             @elseif($jenis=="create")
-                <a href="{{ route('bonus.bayar') }}"><button class="btn btn-warning waves-effect waves-light" type="submit">
+                <a href="{{ route('bonus.penerimaan') }}"><button class="btn btn-warning waves-effect waves-light" type="submit">
                     Back
                 </button></a>
-                <button class="btn btn-primary waves-effect waves-light" onclick="createBonusPembayaran()" type="submit">
+                <button class="btn btn-primary waves-effect waves-light" onclick="createBonusPenerimaan()" type="submit">
                     Create Bonus
                 </button>
             @endif
@@ -322,13 +338,13 @@
             });
     }
 
-    function showBonusPembayaran(){
+    function showBonusPenerimaan(){
         var tgl = $("#tgl_transaksi").val()
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
         var rekening = $("#rekening").val()
         $.ajax({
-            url         :   "{{route('showBonusPembayaran')}}",
+            url         :   "{{route('showBonusPenerimaan')}}",
             data        :   {
                 tgl : tgl,
                 tahun : thn,
@@ -346,13 +362,13 @@
         });
     }
 
-    function createBonusPembayaran(){
+    function createBonusPenerimaan(){
         var tgl = $("#tgl_transaksi").val()
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
         var rekening = $("#rekening").val()
         $.ajax({
-            url         :   "{{route('createBonusPembayaran')}}",
+            url         :   "{{route('createBonusPenerimaan')}}",
             data        :   {
                 tgl : tgl,
                 tahun : thn,

@@ -64,19 +64,20 @@ Route::middleware(['checkUser'])->group(function () {
     Route::post('/uploadBonus', 'BonusController@uploadBonusPerhitungan2')->name('uploadBonusPerhitungan');
     Route::post('/ajxaddrowperhitungan', 'BonusController@ajxAddRowPerhitungan')->name('ajxAddRowPerhitungan');
 
-    Route::get('/bonus/bayar','BonusController@indexBayar')->name('bonus.bayar');
-    Route::get('/bonus/bayar/create','BonusController@createBayar')->name('bonus.createbayar');
-    Route::post('/bonus/bayar/create','BonusController@storeBayar')->name('bonus.storeBayar');
-    Route::get('/showBonusPembayaran', 'BonusController@showBonusPembayaran')->name('showBonusPembayaran');
-    Route::get('/createBonusPembayaran', 'BonusController@createBonusPembayaran')->name('createBonusPembayaran');
-    Route::post('/uploadBonusPembayaran', 'BonusController@uploadBonusPembayaran')->name('uploadBonusPembayaran');
-    Route::post('/ajxaddrowpembayaran', 'BonusController@ajxAddRowPembayaran')->name('ajxAddRowPembayaran');
+    Route::get('/bonus/bayar','BonusController@indexBayar')->name('bonus.penerimaan');
+    Route::get('/bonus/bayar/create','BonusController@createBayar')->name('bonus.createPenerimaan');
+    Route::post('/bonus/bayar/create','BonusController@storeBayar')->name('bonus.storePenerimaan');
+    Route::get('/showBonusPembayaran', 'BonusController@showBonusPembayaran')->name('showBonusPenerimaan');
+    Route::get('/createBonusPembayaran', 'BonusController@createBonusPembayaran')->name('createBonusPenerimaan');
+    Route::post('/uploadBonusPenerimaan', 'BonusController@uploadBonusPenerimaan')->name('uploadBonusPenerimaan');
+    Route::post('/ajxaddrowpembayaran', 'BonusController@ajxAddRowPembayaran')->name('ajxAddRowPenerimaan');
 
     Route::get('/bonus/topup','BonusController@indexTopup')->name('bonus.topup');
     Route::get('/bonus/topup/create','BonusController@createTopup')->name('bonus.createtopup');
     Route::post('/bonus/topup/create','BonusController@storeTopup')->name('bonus.storetopup');
     Route::get('/showBonusTopup', 'BonusController@showBonusTopup')->name('showBonusTopup');
     Route::get('/createBonusTopup', 'BonusController@createBonusTopup')->name('createBonusTopup');
+    Route::post('/uploadBonusTopup', 'BonusController@uploadBonusTopup')->name('uploadBonusTopup');
     Route::post('/ajxaddrowtopup', 'BonusController@ajxAddRowTopup')->name('ajxAddRowTopup');
 
     Route::get('/bonus/laporan','BonusController@indexLaporan')->name('bonus.laporan');
@@ -196,7 +197,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('purchasepayment/{id}/create','PaymentController@purchaseCreate')->name('purchaseCreate');
         Route::post('purchasepayment/store','PaymentController@purchaseStore')->name('purchaseStore');
         Route::get('purchasepayment/destroy','PaymentController@purchasePayDestroy')->name('purchasePayDestroy');
- 
+
     // Delivery Order
         Route::get('do','DeliveryController@index')->name('indexDo');
         Route::get('do/add','DeliveryController@addBrgDo')->name('addBrgDo');

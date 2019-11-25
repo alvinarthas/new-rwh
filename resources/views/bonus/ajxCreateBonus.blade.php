@@ -1,38 +1,47 @@
-@if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
+{{-- @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran") --}}
     {{-- @if($bonusapa=="perhitungan")
         <form method="post" action="{{ route('uploadBonusPerhitungan') }}" enctype="multipart/form-data"> --}}
-    @if($bonusapa=="pembayaran")
+    {{-- @if($bonusapa=="pembayaran")
         <form method="post" action="{{ route('uploadBonusPembayaran') }}" enctype="multipart/form-data">
         {{ csrf_field() }}
-    @endif
+    @endif --}}
     <div class="row">
         <div class="col-12">
             <div class="card-box table-responsive">
                 @if($bonusapa=="perhitungan")
-                    <h4 class="m-t-0 header-title">Masukkan File Excel Untuk Perhitungan Bonus <a href="{{ asset('excel/UploadBonusMember.xls') }}" target="_blank">&lt; Download Template Excel Bonus&gt;</a></h4>
+                    <h4 class="m-t-0 header-title">Masukkan File Excel Untuk Perhitungan Bonus <a href="{{ asset('excel/UploadPerhitunganBonusMember.xlsx') }}" target="_blank">&lt; Download Template Excel Perhitungan Bonus&gt;</a></h4>
                 @elseif($bonusapa=="pembayaran")
-                    <h4 class="m-t-0 header-title">Masukkan File Excel Untuk Pembayaran Bonus <a href="{{ asset('excel/UploadPembayaranBonus.xls') }}" target="_blank">&lt; Download Template Excel Bonus&gt;</a></h4>
+                    <h4 class="m-t-0 header-title">Masukkan File Excel Untuk Penerimaan Bonus <a href="{{ asset('excel/UploadPenerimaanBonusMember.xlsx') }}" target="_blank">&lt; Download Template Excel Penerimaan Bonus&gt;</a></h4>
+                @elseif($bonusapa=="topup")
+                    <h4 class="m-t-0 header-title">Masukkan File Excel Untuk Top Up Bonus <a href="{{ asset('excel/UploadTopUpBonusMember.xlsx') }}" target="_blank">&lt; Download Template Excel Top Up Bonus&gt;</a></h4>
                 @endif
                 <div class="form-row">
                     <label for="file" class="col-form-label">Import File (.xlsx)</label>
                     <input type="file" class="form-control-file" name="file" id="file">
-                    <input type="hidden" name="bulan2" id="bulan2" value="{{ $bulan }}">
-                    <input type="hidden" name="tahun2" id="tahun2" value="{{ $tahun }}">
+                    @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
+                        <input type="hidden" name="bulan2" id="bulan2" value="{{ $bulan }}">
+                        <input type="hidden" name="tahun2" id="tahun2" value="{{ $tahun }}">
+                    @endif
                     @if($bonusapa=="perhitungan")
                         <input type="hidden" name="perusahaan_id2" id="perusahaan_id2" value="{{ $perusahaan }}">
                         <input type="hidden" name="estimasi_bonus2" id="estimasi_bonus2" value="{{ $estimasi_bonus }}">
-                    @elseif($bonusapa=="pembayaran")
+                    @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
                         <input type="hidden" name="AccNo2" id="AccNo2" value="{{ $AccNo }}">
                         <input type="hidden" name="bank_id2" id="bank_id2" value="{{ $bank['id'] }}">
                         <input type="hidden" name="tgl2" id="tgl2" value="{{ $tgl }}">
+                        @if($bonusapa=="pembayaran")
+                            <input type="hidden" name="bonus_tertahan2" id="bonus_tertahan2" value="{{ $bonus_tertahan }}">
+                        @endif
                     @endif
                 </div>
                 <div class="form-row pull-right m-b-0">
                     <div class="form-group">
                         @if($bonusapa=="perhitungan")
-                            <button type="submit" class="btn btn-danger" onclick="uploadPerhitungan2()">Upload Excel Bonus</button>
+                            <button type="submit" class="btn btn-danger" onclick="uploadPerhitungan2()">Ekstrak Excel ke Tabel</button>
                         @elseif($bonusapa=="pembayaran")
-                            <button type="submit" class="btn btn-danger">Upload Excel Bonus</button>
+                            <button type="submit" class="btn btn-danger" onclick="uploadPenerimaan()">Ekstrak Excel ke Tabel</button>
+                        @elseif($bonusapa=="topup")
+                            <button type="submit" class="btn btn-danger" onclick="uploadTopup()">Ekstrak Excel ke Tabel</button>
                         @endif
                     </div>
                 </div>
@@ -40,15 +49,15 @@
             </div>
         </div>
     </div>
-@if($bonusapa=="pembayaran")
+{{-- @if($bonusapa=="pembayaran")
     </form>
 @endif
-@endif
+@endif --}}
 
 @if($bonusapa=="perhitungan")
     <form class="form-horizontal" role="form" action="{{ route('bonus.store') }}" enctype="multipart/form-data" method="POST">
 @elseif($bonusapa=="pembayaran")
-    <form class="form-horizontal" role="form" action="{{ route('bonus.storeBayar') }}" enctype="multipart/form-data" method="POST">
+    <form class="form-horizontal" role="form" action="{{ route('bonus.storePenerimaan') }}" enctype="multipart/form-data" method="POST">
 @elseif($bonusapa=="topup")
     <form class="form-horizontal" role="form" action="{{ route('bonus.storetopup') }}" enctype="multipart/form-data" method="POST">
 @endif
@@ -127,7 +136,7 @@
                             <label class="col-2 col-form-label">Tambah Daftar Member</label>
                             <div class="col-10">
                                 @if($bonusapa=="pembayaran")
-                                    <select class="form-control select2" id="search" name="search" parsley-trigger="change" onchange="addRowPembayaran(this.value)">
+                                    <select class="form-control select2" id="search" name="search" parsley-trigger="change" onchange="addRowPenerimaan(this.value)">
                                     </select>
                                 @elseif($bonusapa=="topup")
                                     <select class="form-control select2" id="search" name="search" parsley-trigger="change" onchange="addRowTopUp(this.value)">
@@ -176,6 +185,20 @@
                     <input type="hidden" name="AccNo" id="AccNo" value="{{ $AccNo }}">
                     <input type="hidden" name="tgl" id="tgl" value="{{ $tgl }}">
                     <input type="hidden" name="bank_id" id="bank_id" value="{{ $bank['id'] }}">
+                    @if($bonusapa=="pembayaran")
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">Piutang Bonus Tertahan</label>
+                            <div class="col-10">
+                                <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="bonus_tertahan" id="bonus_tertahan" value="{{ $bonus_tertahan }}" readonly="readonly">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">Selisih (Laba/Rugi)</label>
+                            <div class="col-10">
+                                <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="selisih_bonus" id="selisih_bonus" value="0" readonly="readonly">
+                            </div>
+                        </div>
+                    @endif
                 @endif
 
                 @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
@@ -331,7 +354,7 @@
             var row = data.length;
             for(i=0; i<row; i++){
                 $('#table-body').append(data[i].append);
-                $('#ctr').val(data[i].count);
+                $('#ctr').val(data[i].count + 1);
             }
             checkTotal();
         }).fail(function (msg) {
@@ -368,13 +391,57 @@
         });
     }
 
-    function addRowPembayaran(id){
+    function uploadPenerimaan(){
+        // var fil = $('#file').prop('files')[0];
+        var fileInput = document.getElementById('file');
+        var fil = fileInput.files[0];
+        var form_data = new FormData();
+        // alert(form_data)
+        var tgl = $("#tgl2").val();
+        var bid = $("#bank_id2").val();
+        var btt = $("#bonus_tertahan2").val();
+        var acc = $("#AccNo2").val();
+        var thn = $("#tahun2").val();
+        var bln = $("#bulan2").val();
+        form_data.append('file', fil);
+        form_data.append('AccNo', acc);
+        form_data.append('bank_id', bid);
+        form_data.append('tgl', tgl);
+        form_data.append('bonus_tertahan', btt)
+        form_data.append('tahun', thn);
+        form_data.append('bulan', bln);
+        console.log(fil)
+        $.ajax({
+            url : "{{route('uploadBonusPenerimaan')}}",
+            type : "post",
+            dataType: 'json',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: form_data,
+            cache: false,
+            contentType: false,
+            processData: false,
+        }).done(function (data) {
+            console.log(data)
+            var row = data.length;
+            for(i=0; i<row; i++){
+                $('#table-body').append(data[i].append);
+                $('#ctr').val(data[i].count);
+            }
+            checkTotal();
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+
+    function addRowPenerimaan(id){
         var token = $("meta[name='csrf-token']").attr("content");
         var thn = $("#tahun").val();
         var bln = $("#bulan").val();
         var cnt = $("#ctr").val();
         $.ajax({
-            url : "{{route('ajxAddRowPembayaran')}}",
+            url : "{{route('ajxAddRowPenerimaan')}}",
             type : "post",
             dataType: 'json',
             data:{
@@ -390,6 +457,44 @@
             $('#ctr').val(cnt);
             resetall();
             // changeTotalHarga(data.sub_ttl);
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+
+    function uploadTopup(){
+        // var fil = $('#file').prop('files')[0];
+        var fileInput = document.getElementById('file');
+        var fil = fileInput.files[0];
+        var form_data = new FormData();
+        // alert(form_data)
+        var tgl = $("#tgl2").val();
+        var bid = $("#bank_id2").val();
+        var acc = $("#AccNo2").val();
+        form_data.append('file', fil);
+        form_data.append('AccNo', acc);
+        form_data.append('bank_id', bid);
+        form_data.append('tgl', tgl);
+        console.log(fil)
+        $.ajax({
+            url : "{{route('uploadBonusTopup')}}",
+            type : "post",
+            dataType: 'json',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: form_data,
+            cache: false,
+            contentType: false,
+            processData: false,
+        }).done(function (data) {
+            console.log(data)
+            var row = data.length;
+            for(i=0; i<row; i++){
+                $('#table-body').append(data[i].append);
+                $('#ctr').val(data[i].count);
+            }
+            checkTotal();
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });
@@ -480,6 +585,7 @@
     }
 
     function checkTotal(){
+        var bonusapa = $('#bonusapa').val();
         var rows= $('#table tbody tr.trow').length;
         var totalharga = 0;
         var bonus = $("input[name='bonus[]']").map(function(){return $(this).val();}).get();
@@ -493,7 +599,11 @@
 
             totalharga = totalharga + parseInt(b);
         }
-        var selisih = totalharga - parseInt($('#estimasi_bonus').val());
+        if(bonusapa=="perhitungan"){
+            var selisih = totalharga - parseInt($('#estimasi_bonus').val());
+        }else if(bonusapa=="pembayaran"){
+            var selisih = totalharga - parseInt($('#bonus_tertahan').val());
+        }
 
         // console.log(totalharga)
         $('#total_bonus').val(totalharga);

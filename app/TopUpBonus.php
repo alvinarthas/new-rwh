@@ -8,7 +8,7 @@ class TopUpBonus extends Model
 {
     protected $table ='tbltopupbonus';
     protected $fillable = [
-        'no_rek','tgl','bonus', 'creator', 'id_jurnal', 'bank_id'
+        'no_rek','tgl','bonus', 'creator', 'id_jurnal', 'AccNo'
     ];
 
     public $timestamps = false;
