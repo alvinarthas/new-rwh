@@ -157,28 +157,21 @@ function addItem(){
         $('#sales-list-body').append(data.append);
         $('#count').val(data.count);
         resetall();
-        changeTotalHarga(data.sub_ttl_price);
+        changeTotalHarga();
     }).fail(function (msg) {
         alert('Gagal menampilkan data, silahkan refresh halaman.');
     });
 }
 
-function changeTotalHarga(sub_ttl_price){
-    raw_ttl_trx = parseInt($('#raw_ttl_trx').val());
+function changeTotalHarga(){
+    raw_ttl_trx = 0;
+    $('input[name="sub_ttl_price[]"]').each(function() {
+        raw_ttl_trx+=parseInt(this.value);
+    });
     input = parseInt($('#ongkir').val(),10);
 
-    $('#raw_ttl_trx').val(raw_ttl_trx+sub_ttl_price)
-    new_ttl_trx = raw_ttl_trx+sub_ttl_price+input;
-    $('#ttl_trx').val(new_ttl_trx);
-}
-
-function decreaseTotalHarga(id){
-    raw_ttl_trx = parseInt($('#raw_ttl_trx').val());
-    input = parseInt($('#ongkir').val(),10);
-    sub_ttl_price = $('#sub_ttl_price'+id).val();
-
-    $('#raw_ttl_trx').val(raw_ttl_trx-sub_ttl_price)
-    new_ttl_trx = (raw_ttl_trx-sub_ttl_price)+input;
+    $('#raw_ttl_trx').val(raw_ttl_trx)
+    new_ttl_trx = raw_ttl_trx+input;
     $('#ttl_trx').val(new_ttl_trx);
 }
 
@@ -190,9 +183,45 @@ function resetall(){
 
 function deleteItem(id){
     count = parseInt($('#count').val()) - 1;
-    decreaseTotalHarga(id);
     $('#trow'+id).remove();
     $('#count').val(count);
+    changeTotalHarga();
+}
+
+function changeTotal(i){
+    price = $('#price'+i).val();
+    if(price == NaN || price == null || price == ""){
+        $('#price'+i).val(0);
+        price = parseInt($('#price'+i).val());
+    }else{
+        price = parseInt($('#price'+i).val(),10);
+    }
+    $('#price'+i).val(price);
+
+    qty = $('#qty'+i).val();
+    if(qty == NaN || qty == null || qty == ""){
+        $('#qty'+i).val(0);
+        qty = parseInt($('#qty'+i).val());
+    }else{
+        qty = parseInt($('#qty'+i).val(),10);
+    }
+    $('#qty'+i).val(qty);
+
+    bv = $('#bv_unit'+i).val();
+    if(bv == NaN || bv == null || bv == ""){
+        $('#bv_unit'+i).val(0);
+        bv = parseInt($('#bv_unit'+i).val());
+    }else{
+        bv = parseInt($('#bv_unit'+i).val(),10);
+    }
+    $('#bv_unit'+i).val(bv);
+
+    ttl_price = price*qty;
+    ttl_bv = bv*qty;
+    $('#sub_ttl_price'+i).val(ttl_price);
+    $('#sub_ttl_bv'+i).val(ttl_bv)
+    
+    changeTotalHarga();
 }
 
 //setup before functions

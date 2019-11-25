@@ -16,7 +16,7 @@
                     @foreach ($purchases as $purchase)
                         <tr>
                             <td>{{$i}}</td>
-                            <td>PO.{{$purchase->id}}</td>
+                            <td><a href="javascript:;" onclick="getDetail({{$purchase->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">PO.{{$purchase->id}}</a></td>
                             <td>{{date("F", mktime(0, 0, 0, $purchase->month, 10))}} {{$purchase->year}}</td>
                             <td>{{$purchase->supplier()->first()->nama}}</td>
                             <td>{{$purchase->tgl}}</td>
@@ -46,6 +46,20 @@
         </div>
     </div>
 </div>
+
+<!--  Modal content for the above example -->
+<div class="modal fade bs-example-modal-lg" id="modalLarge" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg" id="do-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myLargeModalLabel">Delivery Order Detail</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
+            </div>
+            <div class="modal-body" id="modalView">
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
 <script>
 // Responsive Datatable
@@ -99,5 +113,21 @@ function deletePurchase(id){
             )
         }
     })
+}
+
+function getDetail(id){
+    $.ajax({
+        url : "{{route('purchase.show',['id'=>1])}}",
+        type : "get",
+        dataType: 'json',
+        data:{
+            id:id,
+        },
+    }).done(function (data) {
+        $('#modalView').html(data);
+        $('#modalLarge').modal("show");
+    }).fail(function (msg) {
+        alert('Gagal menampilkan data, silahkan refresh halaman.');
+    });
 }
 </script>

@@ -172,30 +172,26 @@ function addItem(){
         $('#purchase-list-body').append(data.append);
         $('#count').val(data.count);
         resetall();
-        changeTotalHarga(data.sub_ttl_mod, data.sub_ttl_dist);
+        changeTotalHarga();
     }).fail(function (msg) {
         alert('Gagal menampilkan data, silahkan refresh halaman.');
     });
 }
 
-function changeTotalHarga(sub_ttl_mod,sub_ttl_dist){
-    ttl_harga_distributor = parseInt($('#ttl_harga_distributor').val());
-    ttl_harga_modal = parseInt($('#ttl_harga_modal').val());
-    new_total_dist = ttl_harga_distributor+sub_ttl_dist;
-    new_total_modal = ttl_harga_modal+sub_ttl_mod;
-    $('#ttl_harga_distributor').val(new_total_dist);
-    $('#ttl_harga_modal').val(new_total_modal);
-}
+function changeTotalHarga(){
+    // Harga Distributor
+    ttl_harga_distributor = 0;
+    $('input[name="sub_ttl_dist[]"]').each(function() {
+        ttl_harga_distributor+=parseInt(this.value);
+    });
+    $('#ttl_harga_distributor').val(ttl_harga_distributor);
 
-function decreaseTotalHarga(id){
-    ttl_harga_distributor = parseInt($('#ttl_harga_distributor').val());
-    ttl_harga_modal = parseInt($('#ttl_harga_modal').val());
-    sub_ttl_dist = $('#sub_ttl_dist'+id).val();
-    sub_ttl_mod = $('#sub_ttl_mod'+id).val();
-    new_total_dist = ttl_harga_distributor-sub_ttl_dist;
-    new_total_modal = ttl_harga_modal-sub_ttl_mod;
-    $('#ttl_harga_distributor').val(new_total_dist);
-    $('#ttl_harga_modal').val(new_total_modal);
+    // Harga Modal
+    ttl_harga_modal = 0;
+    $('input[name="sub_ttl_mod[]"]').each(function() {
+        ttl_harga_modal+=parseInt(this.value);
+    });
+    $('#ttl_harga_modal').val(ttl_harga_modal);
 }
 
 function resetall(){
@@ -206,9 +202,45 @@ function resetall(){
 
 function deleteItem(id){
     count = parseInt($('#count').val()) - 1;
-    decreaseTotalHarga(id);
     $('#trow'+id).remove();
     $('#count').val(count);
+    changeTotalHarga();
+}
+
+function changeTotal(i){
+    harga_dist = $('#harga_dist'+i).val();
+    if(harga_dist == NaN || harga_dist == null || harga_dist == ""){
+        $('#harga_dist'+i).val(0);
+        harga_dist = parseInt($('#harga_dist'+i).val());
+    }else{
+        harga_dist = parseInt($('#harga_dist'+i).val(),10);
+    }
+    $('#harga_dist'+i).val(harga_dist);
+
+    qty = $('#qty'+i).val();
+    if(qty == NaN || qty == null || qty == ""){
+        $('#qty'+i).val(0);
+        qty = parseInt($('#qty'+i).val());
+    }else{
+        qty = parseInt($('#qty'+i).val(),10);
+    }
+    $('#qty'+i).val(qty);
+
+    harga_mod = $('#harga_mod'+i).val();
+    if(harga_mod == NaN || harga_mod == null || harga_mod == ""){
+        $('#harga_mod'+i).val(0);
+        harga_mod = parseInt($('#harga_mod'+i).val());
+    }else{
+        harga_mod = parseInt($('#harga_mod'+i).val(),10);
+    }
+    $('#harga_mod'+i).val(harga_mod);
+
+    sub_ttl_dist = harga_dist*qty;
+    sub_ttl_mod = harga_mod*qty;
+    $('#sub_ttl_dist'+i).val(sub_ttl_dist);
+    $('#sub_ttl_mod'+i).val(sub_ttl_mod)
+    
+    changeTotalHarga();
 }
 </script>
         
