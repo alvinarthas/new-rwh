@@ -8,6 +8,9 @@
     <link href="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Multi Item Selection examples -->
     <link href="{{ asset('assets/plugins/datatables/select.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
+    <!-- Sweet Alert css -->
+    <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('content')
@@ -39,11 +42,7 @@
                                 <a href="{{route('role.edit',['id'=>$role->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
                                 @endif
                                 @if (array_search("EMROD",$page))
-                                <form class="" action="{{ route('role.destroy', ['id' => $role->id]) }}" method="post">
-                                    {{ csrf_field() }}
-                                    {{ method_field('delete') }}
-                                    <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button></a>
-                                </form>
+                                <a href="javascript:;" onclick="deleteRole({{$role->id}})" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Delete</a>
                                 @endif
                             </td>
                         </tr>
@@ -64,6 +63,10 @@
     <!-- Responsive examples -->
     <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
+
+    <!-- Sweet Alert Js  -->
+    <script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
+    <script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
 @endsection
 
 @section('script-js')
@@ -74,6 +77,55 @@
         // Responsive Datatable
         $('#responsive-datatable').DataTable();
     });
+
+    function deleteRole(id){
+        var token = $("meta[name='csrf-token']").attr("content");
+
+        swal({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!',
+            confirmButtonClass: 'btn btn-success',
+            cancelButtonClass: 'btn btn-danger m-l-10',
+            buttonsStyling: false
+        }).then(function () {
+            $.ajax({
+                url: "role/"+id,
+                type: 'DELETE',
+                data: {
+                    "id": id,
+                    "_token": token,
+                },
+            }).done(function (data) {
+                swal(
+                    'Deleted!',
+                    'Your file has been deleted.',
+                    'success'
+                )
+                location.reload();
+            }).fail(function (msg) {
+                swal(
+                    'Failed',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            });
+            
+        }, function (dismiss) {
+            // dismiss can be 'cancel', 'overlay',
+            // 'close', and 'timer'
+            if (dismiss === 'cancel') {
+                swal(
+                    'Cancelled',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            }
+        })
+    }
     
 </script>
 @endsection

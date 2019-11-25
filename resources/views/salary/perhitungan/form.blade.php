@@ -27,18 +27,26 @@ Tambah Data Gaji Pokok Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Periode Gaji</label>
                                 <div class="col-5">
-                                    <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" required>
+                                    <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" onchange="getBV()" required>
                                         <option value="#" selected disabled>Pilih Bulan</option>
                                         @for ($i = 1; $i <= 12; $i++)
-                                            <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
+                                            @if ($i == date('m'))
+                                                <option value="{{$i}}" selected>{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
+                                            @else
+                                                <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
+                                            @endif
                                         @endfor
                                     </select>
                                 </div>
                                 <div class="col-5">
-                                    <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" required>
+                                    <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" onchange="getBV()" required>
                                         <option value="#" selected disabled>Pilih Tahun</option>
                                         @for ($i = 2018; $i <= date('Y'); $i++)
-                                            <option value="{{$i}}">{{$i}}</option>
+                                            @if ($i == date('Y'))
+                                                <option value="{{$i}}" selected>{{$i}}</option>
+                                            @else
+                                                <option value="{{$i}}">{{$i}}</option>
+                                            @endif
                                         @endfor
                                     </select>
                                 </div>
@@ -52,7 +60,7 @@ Tambah Data Gaji Pokok Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Total BV</label>
                                 <div class="col-10">
-                                    <input type="number" class="form-control" parsley-trigger="change" required name="bv" id="bv" value="15000000">
+                                    <input type="number" class="form-control" parsley-trigger="change" required name="bv" id="bv" value="{{$bv}}">
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -90,5 +98,25 @@ Tambah Data Gaji Pokok Pegawai
             // Select2
             $(".select2").select2();
         });
+
+        function getBV() {
+            bulan = $('#bulan').val();
+            tahun = $('#tahun').val();
+
+            $.ajax({
+                url : "{{route('createPerhitunganGaji')}}",
+                type : "get",
+                dataType: 'json',
+                data:{
+                    bulan: bulan,
+                    tahun: tahun,
+                },
+            }).done(function (data) {
+                console.log(data);
+                $('#bv').val(data);
+            }).fail(function (msg) {
+                alert('Gagal menampilkan data, silahkan refresh halaman.');
+            });
+        }
     </script>
 @endsection

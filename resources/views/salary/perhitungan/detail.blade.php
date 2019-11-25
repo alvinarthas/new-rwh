@@ -3,7 +3,7 @@
         <div class="card-box">
             <div class="row">
                 <div class="form-group col-sm-2">
-                    <img src="{{ asset('assets/images/employee/foto/'.session('foto')) }}"  alt="user-img" title="{{ session('name') }}" class="rounded-circle img-thumbnail img-responsive photo">
+                    <img src="{{ asset('assets/images/employee/foto/'.$saldet->employee->scanfoto) }}"  alt="user-img" title="{{ $saldet->employee->name }}" class="rounded-circle img-thumbnail img-responsive photo">
                 </div>
                 <div class="form-group col-sm-8">
                     <h2 class="text-dark">{{$saldet->employee->name}}</h2>
@@ -50,7 +50,7 @@
                                 <img src="{{ asset('assets/images/flaticon/company.png') }}" alt="">
                             </div>
                             <div class="user-desc">
-                                <span class="name"><strong>Kendala Perusahaan</strong></span>
+                                <span class="name"><strong>Kendali Perusahaan</strong></span>
                                 <span class="desc">Rp. {{number_format($bonpeg->kendali_perusahaan)}}</span>
                             </div>
                         </div>
@@ -113,7 +113,7 @@
                                 <img src="{{ asset('assets/images/flaticon/company.png') }}" alt="">
                             </div>
                             <div class="user-desc">
-                                <span class="name"><strong>Poin Kendala Perusahaan</strong></span>
+                                <span class="name"><strong>Poin Kendali Perusahaan</strong></span>
                                 <span class="desc"><strong> {{$bonpegdet->poin_kendali}} </strong> ({{$bonpegdet->persen_kendali}}%)</span>
                             </div>
                         </div>

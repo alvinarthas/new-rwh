@@ -45,15 +45,16 @@ class SalesController extends Controller
         $sub_ttl_bv = $qty*$product->pv;
 
         $append = '<tr style="width:100%" id="trow'.$count.'">
+        <input type="hidden" name="detail[]" id="detail'.$count.'" value="baru">
         <td>'.$count.'</td>
         <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$product->prod_id.'">'.$product->prod_id.'</td>
         <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$product->prod->name.'">'.$product->prod->name.'</td>
-        <td><input type="hidden" name="price[]" value="'.$product->price.'" id="price'.$count.'">Rp. '.number_format($product->price).'</td>
-        <td><input type="hidden" name="qty[]" value="'.$qty.'" id="qty'.$count.'">'.$qty.'</td>
+        <td><input type="text" name="price[]" value="'.$product->price.'" id="price'.$count.'" onkeyup="changeTotal('.$count.')"></td>
+        <td><input type="text" name="qty[]" value="'.$qty.'" id="qty'.$count.'" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="hidden" name="unit[]" value="'.$unit.'" id="unit'.$count.'">'.$unit.'</td>
-        <td><input type="hidden" name="sub_ttl_price[]" value="'.$sub_ttl_price.'" id="sub_ttl_price'.$count.'">Rp. '.number_format($sub_ttl_price).'</td>
-        <td><input type="hidden" name="bv_unit[]" value="'.$product->pv.'" id="bv_unit'.$count.'">Rp. '.number_format($product->pv).'</td>
-        <td><input type="hidden" name="sub_ttl_bv[]" value="'.$sub_ttl_bv.'" id="sub_ttl_dist'.$count.'">Rp. '.number_format($sub_ttl_bv).'</td>
+        <td><input type="text" name="sub_ttl_price[]" value="'.$sub_ttl_price.'" id="sub_ttl_price'.$count.'" readonly></td>
+        <td><input type="text" name="bv_unit[]" value="'.$product->pv.'" id="bv_unit'.$count.'" onkeyup="changeTotal('.$count.')"></td>
+        <td><input type="text" name="sub_ttl_bv[]" value="'.$sub_ttl_bv.'" id="sub_ttl_bv'.$count.'" readonly></td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
         </tr>';
 
@@ -69,15 +70,24 @@ class SalesController extends Controller
     public function showIndexSales(Request $request){
         $sales = Sales::whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
+        $transaksi = Sales::getOrder($request->start,$request->end);
         if ($request->ajax()) {
-            return response()->json(view('sales.indexsales',compact('sales','page'))->render());
+            return response()->json(view('sales.indexsales',compact('sales','page','transaksi'))->render());
         }
     }
 
     public function destroySalesDetail(Request $request){
-        $detail = SalesDet::where('id',$request->detail)->first();
-        $detail->delete();
-        return "true";
+        try {
+            $detail = SalesDet::where('id',$request->detail)->first();
+            $sales = Sales::where('id',$detail->trx_id)->first();
+            $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
+            $sales->save();
+
+            $detail->delete();
+            return "true";
+        } catch (\Exception $e) {
+            return response()->json($e);
+        }
     }
 
     public function create()
@@ -207,7 +217,7 @@ class SalesController extends Controller
 
                 $modal = 0;
                 for ($i=0; $i < $request->count ; $i++) {
-                    if(isset($request->prod_id[$i])){
+                    if($request->detail[$i] == "baru"){
                         $salesdet = new SalesDet(array(
                             'trx_id' => $sales->id,
                             'prod_id' => $request->prod_id[$i],
@@ -220,6 +230,14 @@ class SalesController extends Controller
                             'sub_ttl_pv' => $request->sub_ttl_bv[$i],
                         ));
                         $salesdet->save();
+                    }else{
+                        $salesdet = SalesDet::where('id',$request->detail[$i])->first();
+                        $salesdet->qty = $request->qty[$i];
+                        $salesdet->price = $request->price[$i];
+                        $salesdet->sub_ttl = $request->sub_ttl_price[$i];
+                        $salesdet->pv = $request->bv_unit[$i];
+                        $salesdet->sub_ttl_pv = $request->sub_ttl_bv[$i];
+                        $salesdet->update();
                     }
                 }
 

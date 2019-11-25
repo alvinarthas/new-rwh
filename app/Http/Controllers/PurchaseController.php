@@ -70,14 +70,15 @@ class PurchaseController extends Controller
 
         $append = '<tr style="width:100%" id="trow'.$count.'">
         <td>'.$count.'</td>
+        <input type="hidden" name="detail[]" id="detail'.$count.'" value="baru">
         <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$manage->prod_id.'">'.$manage->prod_id.'</td>
         <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$manage->name.'">'.$manage->name.'</td>
-        <td><input type="hidden" name="qty[]" value="'.$qty.'" id="qty'.$count.'">'.$qty.'</td>
+        <td><input type="number" name="qty[]" value="'.$qty.'" id="qty'.$count.'" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="hidden" name="unit[]" value="'.$unit.'" id="unit'.$count.'">'.$unit.'</td>
-        <td><input type="hidden" name="harga_dist[]" value="'.$manage->harga_distributor.'" id="harga_dist'.$count.'">Rp. '.number_format($manage->harga_distributor).'</td>
-        <td><input type="hidden" name="harga_mod[]" value="'.$manage->harga_modal.'" id="harga_mod'.$count.'">Rp. '.number_format($manage->harga_modal).'</td>
-        <td><input type="hidden" name="sub_ttl_dist[]" value="'.$sub_ttl_dist.'" id="sub_ttl_dist'.$count.'">Rp. '.number_format($sub_ttl_dist).'</td>
-        <td><input type="hidden" name="sub_ttl_mod[]" value="'.$sub_ttl_mod.'" id="sub_ttl_mod'.$count.'">Rp. '.number_format($sub_ttl_mod).'</td>
+        <td><input type="number" name="harga_dist[]" value="'.$manage->harga_distributor.'" id="harga_dist'.$count.'" onkeyup="changeTotal('.$count.')"></td>
+        <td><input type="number" name="harga_mod[]" value="'.$manage->harga_modal.'" id="harga_mod'.$count.'" onkeyup="changeTotal('.$count.')"></td>
+        <td><input type="number" readonly name="sub_ttl_dist[]" value="'.$sub_ttl_dist.'" id="sub_ttl_dist'.$count.'"></td>
+        <td><input type="number" readonly name="sub_ttl_mod[]" value="'.$sub_ttl_mod.'" id="sub_ttl_mod'.$count.'"></td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
         </tr>';
 
@@ -93,6 +94,10 @@ class PurchaseController extends Controller
 
     public function destroyPurchaseDetail(Request $request){
         $detail = PurchaseDetail::where('id',$request->detail)->first();
+        $purchase = Purchase::where('id',$detail->trx_id)->first();
+        $purchase->total_harga_modal = $purchase->total_harga_modal - ($detail->price * $detail->qty);
+        $purchase->total_harga_dist = $purchase->total_harga_dist - ($detail->qty * $detail->price_dist);
+        $purchase->update();
         $detail->delete();
         return "true";
     }
@@ -148,6 +153,8 @@ class PurchaseController extends Controller
                 'tgl' => $request->po_date,
                 'approve' => 0,
                 'jurnal_id' => $id_jurnal,
+                'total_harga_dist' => $request->ttl_harga_distributor,
+                'total_harga_modal' => $request->ttl_harga_modal,
             ));
             // success
             try {
@@ -155,14 +162,12 @@ class PurchaseController extends Controller
                 $date = date_format($purchase->created_at,"Y-m-d");
                 $jurnal_desc = "PO.".$purchase->id;
                 // insert Detail
-                $total_modal=0;
+                $total_modal=$request->ttl_harga_modal;
                 $total_tertahan=0;
-                $total_distributor=0;
+                $total_distributor=$request->ttl_harga_distributor;
                 for ($i=0; $i < $request->count ; $i++) {
                     $selisih = $request->harga_mod[$i] - $request->harga_dist[$i];
-                    $total_modal += ($request->harga_mod[$i] * $request->qty[$i]);
                     $total_tertahan+=($selisih*$request->qty[$i]);
-                    $total_distributor+=($request->harga_dist[$i]*$request->qty[$i]);
 
                     $purchasedet = new PurchaseDetail(array(
                         'trx_id' => $purchase->id,
@@ -198,9 +203,13 @@ class PurchaseController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Request $request,$id)
     {
-        //
+        if ($request->ajax()) {
+            $purchase = Purchase::where('id',$request->id)->first();
+            $purchasedet = PurchaseDetail::where('trx_id',$request->id)->get();
+            return response()->json(view('purchase.modal',compact('purchase','purchasedet'))->render());
+        }
     }
 
     /**
@@ -252,6 +261,8 @@ class PurchaseController extends Controller
             $purchase->creator = session('user_id');
             $purchase->notes = $request->notes;
             $purchase->tgl = $request->po_date;
+            $purchase->total_harga_modal = $request->ttl_harga_modal;
+            $purchase->total_harga_dist = $request->ttl_harga_distributor;
             $purchase->approve = 0;
 
             // success
@@ -261,7 +272,7 @@ class PurchaseController extends Controller
                 // insert Detail
                 for ($i=0; $i < $request->count ; $i++) {
                     
-                    if(isset($request->prod_id[$i])){
+                    if($request->detail[$i] == "baru"){
                         $purchasedet = new PurchaseDetail(array(
                             'trx_id' => $purchase->id,
                             'prod_id' => $request->prod_id[$i],
@@ -272,6 +283,13 @@ class PurchaseController extends Controller
                             'price_dist' => $request->harga_dist[$i],
                         ));
                         $purchasedet->save();
+                    }else{
+                        $purchasedet = PurchaseDetail::where('id',$request->detail[$i])->first();
+                        $purchasedet->qty = $request->qty[$i];
+                        $purchasedet->creator = session('user_id');
+                        $purchasedet->price = $request->harga_mod[$i];
+                        $purchasedet->price_dist = $request->harga_dist[$i];
+                        $purchasedet->update();
                     }
                 }
 

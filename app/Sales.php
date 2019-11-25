@@ -19,25 +19,16 @@ class Sales extends Model
         return $this->belongsTo('App\Customer');
     }
 
-    public static function getOrder($start,$end,$customer,$product){
+    public static function getOrder($start,$end){
         $data = collect();
         $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id')
         ->whereBetween('trx_date',[$start,$end]);
-        if($customer <> "all"){
-            $order->where('tblproducttrx.customer_id',$customer);
-        }
-
-        if($product <> "all"){
-            $order->where('x.prod_id',$product);
-        }
         $ttl_count = $order->sum('x.qty');
         $order->orderBy('tblproducttrx.id')->select('tblproducttrx.*');
-
-        
         
         $ttl_pemasukan = $order->sum('x.sub_ttl');
         $ttl_total = $order->sum('x.sub_ttl_pv');
-        $ttl_trx = $order->distinct()->count('tblproducttrx.id');
+        $ttl_trx = Sales::whereBetween('trx_date',[$start,$end])->count('id');
 
         $data->put('ttl_count',$ttl_count);
         $data->put('ttl_pemasukan',$ttl_pemasukan);
@@ -103,5 +94,9 @@ class Sales extends Model
 
     public static function checkSent($product,$trx){
         return DeliveryDetail::where('product_id',$product)->where('sales_id',$trx)->sum('qty');
+    }
+
+    public static function getBV($bulan,$tahun){
+        return Sales::join('tblproducttrxdet','tblproducttrx.id','=','tblproducttrxdet.trx_id')->whereMonth('trx_date',$bulan)->whereYear('trx_date',$tahun)->sum('tblproducttrxdet.sub_ttl_pv');
     }
 }

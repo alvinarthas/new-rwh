@@ -95,7 +95,9 @@ Index Sales Order
 <script>
     // Date Picker
     jQuery('#trx_start').datepicker();
-    jQuery('#trx_end').datepicker();
+    jQuery('#trx_end').datepicker({
+        orientation: "top"
+    });
 
     function chooseSales(){
         start = $('#trx_start').val();

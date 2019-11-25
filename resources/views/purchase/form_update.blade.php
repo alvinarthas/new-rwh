@@ -16,6 +16,12 @@
     <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
     {{-- Fingerprint --}}
     <link href="{{ asset('assets/fingerprint/ajaxmask.css') }}" rel="stylesheet">
+    <style>
+        input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
 @endsection
 
 @section('judul')
@@ -124,19 +130,22 @@ Form Update Purchasing
                                     <tbody id="purchase-list-body">
                                         @php($i=1)
                                         @foreach ($details as $detail)
+                                            @isset($detail->product->name)
                                             <tr style="width:100%" id="trow{{$i}}">
                                                 <td>{{$i}}</td>
-                                                <td>{{$detail->prod_id}}</td>
-                                                <td>{{$detail->product->name}}</td>
-                                                <td>{{$detail->qty}}</td>
-                                                <td>{{$detail->unit}}</td>
-                                                <td>Rp. {{number_format($detail->price_dist)}}</td>
-                                                <td>Rp. {{number_format($detail->price)}}</td>
-                                                <td><input type="hidden" value="{{$detail->price_dist*$detail->qty}}" id="sub_ttl_dist{{$i}}">Rp. {{number_format($detail->price_dist*$detail->qty)}}</td>
-                                                <td><input type="hidden" value="{{$detail->price*$detail->qty}}" id="sub_ttl_mod{{$i}}">Rp. {{number_format($detail->price*$detail->qty)}}</td>
+                                                <input type="hidden" name="detail[]" id="detail{{$i}}" value="{{$detail->id}}">
+                                                <td><input type="hidden" name="prod_id[]" id="prod_id{{$i}}" value="{{$detail->prod_id}}">{{$detail->prod_id}}</td>
+                                                <td><input type="hidden" name="prod_name[]" id="prod_name{{$i}}" value="{{$detail->product->name}}">{{$detail->product->name}}</td>
+                                                <td><input type="number" name="qty[]" id="qty{{$i}}" value="{{$detail->qty}}" onkeyup="changeTotal({{$i}})"></td>
+                                                <td><input type="hidden" name="unit[]" id="unit{{$i}}" value="{{$detail->unit}}">{{$detail->unit}}</td>
+                                                <td><input type="number" name="harga_dist[]" id="harga_dist{{$i}}" value="{{$detail->price_dist}}" onkeyup="changeTotal({{$i}})"></td>
+                                                <td><input type="number" name="harga_mod[]" id="harga_mod{{$i}}" value="{{$detail->price}}" onkeyup="changeTotal({{$i}})"></td>
+                                                <td><input type="number" readonly value="{{$detail->price_dist*$detail->qty}}" name="sub_ttl_dist[]" id="sub_ttl_dist{{$i}}"></td>
+                                                <td><input type="number" name="sub_ttl_mod[]" readonly value="{{$detail->price*$detail->qty}}" id="sub_ttl_mod{{$i}}"></td>
                                                 <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItemOld({{$i}},{{$detail->id}})">Delete</a></td>
                                             </tr>
-                                        @php($i++)
+                                            @php($i++)
+                                            @endisset
                                         @endforeach
                                         <input type="hidden" name="count" id="count" value="{{$i-1}}">
                                     </tbody>
@@ -183,7 +192,7 @@ Form Update Purchasing
                     <div class="form-group text-right m-b-0">
                         @if ($purchase->approve == 0)
                         <?php
-                            $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id],'role'=>session('role')));
+                            $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id,'role'=>session('role')]));
                         ?>
                             <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase</a>
                         @else
@@ -245,7 +254,7 @@ function addItem(){
         $('#purchase-list-body').append(data.append);
         $('#count').val(data.count);
         resetall();
-        changeTotalHarga(data.sub_ttl_mod, data.sub_ttl_dist);
+        changeTotalHarga();
     }).fail(function (msg) {
         alert('Gagal menampilkan data, silahkan refresh halaman.');
     });
@@ -253,29 +262,61 @@ function addItem(){
 
 function deleteItem(id){
     count = parseInt($('#count').val()) - 1;
-    decreaseTotalHarga(id);
     $('#trow'+id).remove();
     $('#count').val(count);
+    changeTotalHarga();
 }
 
-function changeTotalHarga(sub_ttl_mod,sub_ttl_dist){
-    ttl_harga_distributor = parseInt($('#ttl_harga_distributor').val());
-    ttl_harga_modal = parseInt($('#ttl_harga_modal').val());
-    new_total_dist = ttl_harga_distributor+sub_ttl_dist;
-    new_total_modal = ttl_harga_modal+sub_ttl_mod;
-    $('#ttl_harga_distributor').val(new_total_dist);
-    $('#ttl_harga_modal').val(new_total_modal);
+function changeTotalHarga(){
+    // Harga Distributor
+    ttl_harga_distributor = 0;
+    $('input[name="sub_ttl_dist[]"]').each(function() {
+        ttl_harga_distributor+=parseInt(this.value);
+    });
+    $('#ttl_harga_distributor').val(ttl_harga_distributor);
+
+    // Harga Modal
+    ttl_harga_modal = 0;
+    $('input[name="sub_ttl_mod[]"]').each(function() {
+        ttl_harga_modal+=parseInt(this.value);
+    });
+    $('#ttl_harga_modal').val(ttl_harga_modal);
 }
 
-function decreaseTotalHarga(id){
-    ttl_harga_distributor = parseInt($('#ttl_harga_distributor').val());
-    ttl_harga_modal = parseInt($('#ttl_harga_modal').val());
-    sub_ttl_dist = $('#sub_ttl_dist'+id).val();
-    sub_ttl_mod = $('#sub_ttl_mod'+id).val();
-    new_total_dist = ttl_harga_distributor-sub_ttl_dist;
-    new_total_modal = ttl_harga_modal-sub_ttl_mod;
-    $('#ttl_harga_distributor').val(new_total_dist);
-    $('#ttl_harga_modal').val(new_total_modal);
+function changeTotal(i){
+    harga_dist = $('#harga_dist'+i).val();
+    if(harga_dist == NaN || harga_dist == null || harga_dist == ""){
+        $('#harga_dist'+i).val(0);
+        harga_dist = parseInt($('#harga_dist'+i).val());
+    }else{
+        harga_dist = parseInt($('#harga_dist'+i).val(),10);
+    }
+    $('#harga_dist'+i).val(harga_dist);
+
+    qty = $('#qty'+i).val();
+    if(qty == NaN || qty == null || qty == ""){
+        $('#qty'+i).val(0);
+        qty = parseInt($('#qty'+i).val());
+    }else{
+        qty = parseInt($('#qty'+i).val(),10);
+    }
+    $('#qty'+i).val(qty);
+
+    harga_mod = $('#harga_mod'+i).val();
+    if(harga_mod == NaN || harga_mod == null || harga_mod == ""){
+        $('#harga_mod'+i).val(0);
+        harga_mod = parseInt($('#harga_mod'+i).val());
+    }else{
+        harga_mod = parseInt($('#harga_mod'+i).val(),10);
+    }
+    $('#harga_mod'+i).val(harga_mod);
+
+    sub_ttl_dist = harga_dist*qty;
+    sub_ttl_mod = harga_mod*qty;
+    $('#sub_ttl_dist'+i).val(sub_ttl_dist);
+    $('#sub_ttl_mod'+i).val(sub_ttl_mod)
+    
+    changeTotalHarga();
 }
 
 function resetall(){
@@ -310,9 +351,9 @@ function deleteItemOld(id,purdet){
                 'success'
             )
             count = parseInt($('#count').val()) - 1;
-            decreaseTotalHarga(id);
             $('#trow'+id).remove();
             $('#count').val(count);
+            changeTotalHarga();
         }).fail(function (msg) {
             swal(
                 'Failed',

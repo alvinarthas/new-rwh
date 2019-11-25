@@ -57,15 +57,17 @@
                                 <tbody>
                                   @php($i=1)
                                   @foreach ($transaksidet as $item)
-                                    <tr>
-                                      <td>{{$i}}</td>
-                                      <td>{{$item->product->name}}</td>
-                                      <td>{{$item->qty}}</td>
-                                      <td>{{$item->unit}}</td>
-                                      <td>Rp. {{number_format($item->price)}}</td>
-                                      <td>Rp. {{number_format($item->sub_ttl)}}</td>
-                                    </tr>
-                                  @php($i++)
+                                    @isset($item->product->name)
+                                        <tr>
+                                            <td>{{$i}}</td>
+                                            <td>{{$item->product->name}}</td>
+                                            <td>{{$item->qty}}</td>
+                                            <td>{{$item->unit}}</td>
+                                            <td>Rp. {{number_format($item->price)}}</td>
+                                            <td>Rp. {{number_format($item->sub_ttl)}}</td>
+                                        </tr>
+                                        @php($i++)
+                                    @endisset
                                   @endforeach
                                 </tbody>
                             </table>
@@ -94,27 +96,9 @@
                     </div>
                 </div>
                 <hr>
-                <div class="d-print-none">
-                    <div class="pull-right">
-                        <a href="#" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" onclick="printPdf()"><i class="fa fa-print"></i>Print PDF</a>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
             </div>
         </div>
 
     </div>
 
 </div>
-
-<script>
-  function printPdf(){
-    url = "{{route('invoicePrint',['jenis' => 'Print','trx_id'=>22])}}";
-    windowUrl = url.replace("&amp", "");
-    windowName = "Invoice";
-    var printWindow = window.open(windowUrl, windowName, 'left=50000,top=50000,width=0,height=0');
-    printWindow.focus();
-    printWindow.print();
-  }
-    
-</script>
