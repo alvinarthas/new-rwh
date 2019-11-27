@@ -119,18 +119,20 @@
                             </select>
                         </div>
                     </div>
-                    {{-- <div id="supplier_show" style="display:none">
+                    <div id="supplier_show" style="display:none">
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Supplier</label>
                             <div class="col-10">
-                                <select class="form-control" parsley-trigger="change" id="supplier" name="supplier">
+                                <select class="form-control select2" parsley-trigger="change" id="supplier" name="supplier">
+                                    <option value="#" selected disabled>Pilih Supplier</option>
                                     @foreach($supplier as $s)
                                         <option value="{{ $s->id }}">{{ $s->nama }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
-                    </div> --}}
+                    </div>
+                    <input type="hidden" name="coa" id="coa">
                 @endif
             </div>
         </div>
@@ -247,6 +249,10 @@
             templateResult: formatState,
             templateSelection: formatState
         });
+        $("#supplier").select2({
+            templateResult: formatState,
+            templateSelection: formatState
+        });
 
         function formatState (opt) {
             if (!opt.id) {
@@ -263,6 +269,18 @@
                 return $opt;
             }
         };
+
+        $('#rekening').on('change', function () {
+            id = $('#rekening').val();
+            console.log(id)
+            if(id == '1.1.3.3'){
+                document.getElementById("supplier_show").style.display = 'block';
+            }else{
+                document.getElementById("supplier_show").style.display = 'none';
+                $('#supplier').val(0);
+            }
+            $('#coa').val(id);
+        });
 
     });
 
@@ -342,7 +360,13 @@
         var tgl = $("#tgl_transaksi").val()
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
-        var rekening = $("#rekening").val()
+        var rekening = $("#coa").val()
+        if(rekening == '1.1.3.3'){
+            var supplier = $("#supplier").val()
+        }else{
+            var supplier = 0
+        }
+        console.log(rekening, supplier);
         $.ajax({
             url         :   "{{route('showBonusPenerimaan')}}",
             data        :   {
@@ -350,6 +374,7 @@
                 tahun : thn,
                 bulan : bln,
                 rkng : rekening,
+                splr : supplier,
             },
             type		:	"GET",
             dataType    :   "html",
@@ -366,7 +391,12 @@
         var tgl = $("#tgl_transaksi").val()
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
-        var rekening = $("#rekening").val()
+        var rekening = $("#coa").val()
+        if(rekening == '1.1.3.3'){
+            var supplier = $("#supplier").val()
+        }else{
+            var supplier = 0
+        }
         $.ajax({
             url         :   "{{route('createBonusPenerimaan')}}",
             data        :   {
@@ -374,6 +404,7 @@
                 tahun : thn,
                 bulan : bln,
                 rkng : rekening,
+                splr : supplier,
             },
             type		:	"GET",
             dataType    :   "html",

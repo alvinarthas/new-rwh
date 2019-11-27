@@ -97,10 +97,11 @@ class BonusController extends Controller
     public function createBayar()
     {
         $rekening = Coa::where('StatusAccount', "Detail")->select('AccNo', 'AccName')->orderBy('AccNo','asc')->get();
+        $supplier = Perusahaan::all();
         $bonusapa = "pembayaran";
         $jenis = "create";
         $page = MenuMapping::getMap(session('user_id'), "BMBB");
-        return view('bonus.index', compact('rekening', 'jenis', 'bonusapa'));
+        return view('bonus.index', compact('rekening', 'jenis', 'bonusapa', 'supplier'));
     }
 
     public function createTopup()
@@ -253,6 +254,7 @@ class BonusController extends Controller
                 $tgl = $request->tgl;
                 $ctr = count($request->norekening);
                 $AccNo = $request->AccNo;
+                $supplier = $request->supplier;
                 $selisih = $request->selisih_bonus;
                 $bonus_tertahan = $request->bonus_tertahan;
 
@@ -278,6 +280,7 @@ class BonusController extends Controller
                                 'bonus'     => $bonus,
                                 'creator'   => session('user_id'),
                                 'AccNo'     => $AccNo,
+                                'supplier'  => $supplier,
                                 'id_jurnal' => $id_jurnal,
                             ));
 
@@ -727,12 +730,13 @@ class BonusController extends Controller
         $tahun = $request->tahun;
         $bulan = $request->bulan;
         $AccNo = $request->rkng;
+        $supplier = $request->splr;
         $AccParent = Coa::where('AccNo', $AccNo)->select('AccParent')->first();
         $namabank = Coa::where('AccNo', $AccParent['AccParent'])->select('AccName')->first();
         $bank = Bank::where('nama','LIKE', $namabank['AccName'])->select('id')->first();
         $bankmember = Bankmember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->where('bank_id','LIKE', $bank['id'])->select('nama', 'norek')->orderBy('tblmember.nama', 'asc')->get();
         $bonusapa = "pembayaran";
-        $bonus = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('tgl', $tgl)->where('AccNo', $AccNo)->select('bonus')->get();
+        $bonus = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('tgl', $tgl)->where('AccNo', $AccNo)->where('supplier', $supplier)->select('bonus')->get();
         $perhitunganbonus = Bonus::where('bulan', $bulan)->where('tahun',$tahun)->select('id_jurnal')->get();
         $bonus_tertahan = 0;
 
@@ -751,6 +755,7 @@ class BonusController extends Controller
     public function createBonusPembayaran(Request $request)
     {
         $AccNo = $request->rkng;
+        $supplier = $request->splr;
         $AccParent = Coa::where('AccNo', $AccNo)->select('AccParent')->first();
         $namabank = Coa::where('AccNo', $AccParent['AccParent'])->select('AccName')->first();
         $bank = Bank::where('nama','LIKE', $namabank['AccName'])->select('id')->first();
@@ -770,7 +775,7 @@ class BonusController extends Controller
             }
         }
 
-        return view('bonus.ajxCreateBonus', compact('tahun','bulan','bonusapa','bank','AccNo', 'tgl', 'bonus_tertahan'));
+        return view('bonus.ajxCreateBonus', compact('tahun','bulan','bonusapa','bank','AccNo', 'tgl', 'bonus_tertahan', 'supplier'));
     }
 
     public function ajxAddRowPembayaran(Request $request){
@@ -1131,12 +1136,14 @@ class BonusController extends Controller
         // $search = $bankmember->join('tblmember','bankmember.ktp','=','tblmember.ktp')->orWhere('norek','LIKE', $key)->orWhere('tblmember.nama','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
 
         // $bankmember = BankMember::where('bank_id',$request->bankid);
-        $search = BankMember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->where('bank_id', $request->bankid)->where('norek','LIKE', $key)->orWhere('tblmember.nama','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
-
+        $search = BankMember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->where('bank_id', $request->bankid)->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('tblmember.nama','LIKE', $key)->orWhere('norek','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp', 'tblbank.nama AS namabank')->limit(5)->get();
+        // $search = DB::raw("SELECT m.nama, b.norek, b.id AS id, m.ktp AS ktp FROM bankmember b INNER JOIN tblmember m ON b.ktp = m.ktp WHERE b.bank_id = $request->bankid AND b.norek LIKE $key OR m.nama LIKE $key OR m.ktp LIKE $key limit 5");
+        // $search = BankMember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->where('bank_id', $request->bankid)->where('tblmember.nama','LIKE', $key)->orWhere(function($q, $key){ $q->where('bankmember.norek','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key);})->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
+        // echo $search;
         $data = array();
         $array = json_decode( json_encode($search), true);
         foreach ($array as $key) {
-            $arrayName = array('id' =>$key['id'],'norek' => $key['norek'], 'nama' => $key['nama'], 'ktp' => $key['ktp']);
+            $arrayName = array('id' =>$key['id'],'norek' => $key['norek'], 'nama' => $key['nama'], 'ktp' => $key['ktp'], 'namabank' => $key['namabank']);
             // $arrayName = array('id' => $key['id'],'text' => $key['norek']);
             array_push($data,$arrayName);
         }

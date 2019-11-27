@@ -198,6 +198,7 @@
                                 <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="selisih_bonus" id="selisih_bonus" value="0" readonly="readonly">
                             </div>
                         </div>
+                        <input type="hidden" name="supplier" id="supplier" value="{{ $supplier }}">
                     @endif
                 @endif
 
@@ -251,7 +252,7 @@
                 },
                 processResults:function(data){
                     var item = $.map(data, (value)=>{ //map buat ngemap object data kyk foreach
-                        return { id: value.id, text: value.norek+" - "+value.nama+" (KTP : "+value.ktp+")"};
+                        return { id: value.id, text: value.namabank+" "+value.norek+" - "+value.nama+" (KTP : "+value.ktp+")"};
                     });
                     return {
                         results: item
