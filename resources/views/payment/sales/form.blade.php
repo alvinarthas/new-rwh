@@ -115,8 +115,8 @@ Form Sales Payment
                                     <label class="col-2 col-form-label">Total Transaction to Paid</label>
                                     <div class="col-10">
                                         <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format(($sales->ongkir+$sales->ttl_harga)-$ttl_pay)}}" readonly>
-                                        <input type="hidden" name="paid" value="{{($sales->ongkir+$sales->ttl_harga)-$ttl_pay}}">
-                                        <input type="hidden" id="customer_info" value="{{$sales->customer_id}}">
+                                        <input type="hidden" name="paid" id="paid" value="{{($sales->ongkir+$sales->ttl_harga)-$ttl_pay}}">
+                                        <input type="hidden" name="customer_info" id="customer_info" value="{{$sales->customer_id}}">
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -138,7 +138,7 @@ Form Sales Payment
                                             @foreach ($coas as $coa)
                                                 <option value="{{$coa->AccNo}}">{{$coa->AccName}}</option>
                                             @endforeach
-                                            <option value="saldo">Saldo</option>
+                                            <option value="2.1.2">Deposit Customer</option>
                                         </select>
                                     </div>
                                 </div>
@@ -226,7 +226,7 @@ Form Sales Payment
                                     <td>{{$pay->payment_desc}}</td>
                                     <td>{{$pay->deduct_category}}</td>
                                     <td>{{$pay->due_date}}</td>
-                                    <td>{{$pay->jurnal_id}}</td>
+                                    <td><a href="javascript:;" onclick="getDetail('{{$pay->jurnal_id}}')" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">{{$pay->jurnal_id}}</a></td>
                                     <td>
                                             @if (array_search("PSSPD",$page))
                                             <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5" onclick="deletePayment({{$pay->id}})">Delete</a>
@@ -241,6 +241,21 @@ Form Sales Payment
             </div>
         </div>
     </div>
+
+
+    <!--  Modal content for the above example -->
+    <div class="modal fade bs-example-modal-lg" id="modalLarge" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog modal-lg" id="do-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myLargeModalLabel">Jurnal Detail</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
+                </div>
+                <div class="modal-body" id="modalView">
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 @endsection
 
 @section('js')
@@ -275,9 +290,13 @@ Form Sales Payment
         autoclose: true
     });
 
+    // Select2
+    $(".select2").select2();
+
+
     function ifSaldo(id){
         customer = $('#customer_info').val();
-        if(id == "saldo"){
+        if(id == "2.1.2"){
             $.ajax({
                 url : "{{route('checkSaldo')}}",
                 type : "get",
@@ -354,27 +373,42 @@ Form Sales Payment
         })
     }
 
-    function checkPay(){
-        console.log("check");
-        input = $('#payment_amount').val();
-        method = $('#payment_method').val();
-        saldo = $('#current_saldoraw').val();
-
-        if(method == "saldo" && input>saldo){
-            toastr.error("Saldo anda tidak mencukupi", 'Error!!!')
-            event.preventDefault();
-        }else{
-            document.getElementById("form").submit();
-        }
+    function getDetail(id){
+        $.ajax({
+            url : "{{route('jurnal.show',['id'=>1])}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                id:id,
+            },
+        }).done(function (data) {
+            $('#modalView').html(data);
+            $('#modalLarge').modal("show");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
     }
 
     $("form").submit(function(){
-        input = parseInt($('#payment_amount').val());
+        payamount = parseInt($('#payment_amount').val());
+        topaid = parseInt($('#paid').val());
         method = $('#payment_method').val();
         saldo = parseInt($('#current_saldoraw').val());
-        if(method == "saldo" && input>saldo){
-            toastr.error("Saldo anda tidak mencukupi", 'Error!!!')
+
+        if(payamount > topaid){
+            toastr.error("Biaya yang akan dibayar melebihi jumlah yang seharusnya dibayar", 'Error!!!')
             event.preventDefault();
+        }else{
+            if(method == "2.1.2"){
+                if(payamount > saldo){
+                    toastr.error("Saldo anda tidak cukup untuk melakukan pembayaran", 'Error!!!')
+                    event.preventDefault();
+                }else{
+                    document.getElementById("form").submit();
+                }
+            }else{
+                document.getElementById("form").submit();
+            }
         }
     });
 
