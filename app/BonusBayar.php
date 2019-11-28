@@ -8,7 +8,7 @@ class BonusBayar extends Model
 {
     protected $table ='tblbonusbayar';
     protected $fillable = [
-        'no_rek','tgl','bulan','tahun','bonus', 'creator', 'id_jurnal', 'AccNo'
+        'no_rek','tgl','bulan','tahun','bonus', 'creator', 'id_jurnal', 'AccNo', 'supplier'
     ];
 
 }
