@@ -25,7 +25,7 @@
                                 <a href="{{route('sales.edit',['id'=>$sale->id])}}" class="btn btn-purple btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
                                 @endif
                                 @if (array_search("PSSLD",$page))
-                                <a href="javascrip:;" class="btn btn-pink btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$sale->id}})">Delete</a>
+                                <a href="javascript:;" class="btn btn-pink btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$sale->id}})">Delete</a>
                                 @endif
                                 @if ($sale->approve == 0)
                                 <?php
