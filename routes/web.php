@@ -71,6 +71,7 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/createBonusPembayaran', 'BonusController@createBonusPembayaran')->name('createBonusPenerimaan');
     Route::post('/uploadBonusPenerimaan', 'BonusController@uploadBonusPenerimaan')->name('uploadBonusPenerimaan');
     Route::post('/ajxaddrowpembayaran', 'BonusController@ajxAddRowPembayaran')->name('ajxAddRowPenerimaan');
+    Route::post('/exportGagalBonus', 'BonusController@exportGagalBonus')->name('exportGagalBonus');
 
     Route::get('/bonus/topup','BonusController@indexTopup')->name('bonus.topup');
     Route::get('/bonus/topup/create','BonusController@createTopup')->name('bonus.createtopup');

@@ -171,11 +171,15 @@ class ProductController extends Controller
 
     public function showProdAjx(Request $request)
     {
-        $month = date("m", strtotime($request->date));
-        $year = date('Y', strtotime($request->date));
-        $prods = Product::all();
+        $bulan = $request->bulan;
+        $tahun = $request->tahun;
+        if($bulan==1){
+            $bulan = 12;
+            $tahun = $tahun-1;
+        }
+        $prods = Product::select('name', 'prod_id', 'category')->get();
         $i = 0;
 
-        return view('product.showProdAjxLog', compact('prods','month','year','i'));
+        return view('product.showProdAjxLog', compact('prods','bulan','tahun','i'));
     }
 }

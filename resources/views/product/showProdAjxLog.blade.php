@@ -3,8 +3,8 @@
 @endphp
 <form action="{{ route('manageharga.store') }}" method="POST">
     @csrf
-    <input type="hidden" name="month" id="month" value="{{ $month }}"/>
-    <input type="hidden" name="year" id="year" value="{{ $year }}"/>
+    <input type="hidden" name="month" id="month" value="{{ $bulan }}"/>
+    <input type="hidden" name="year" id="year" value="{{ $tahun }}"/>
     <div class="row">
         <div class="col-12">
             <div class="card-box table-responsive">
@@ -12,14 +12,14 @@
 
                 <table id="responsive-datatable" class="table table-bordered dt-responsive wrap" cellspacing="0">
                     <thead>
-                        <th style="width:10%">No</th>
+                        <th style="width:5%">No</th>
                         <th style="width:5%">Product ID</th>
                         {{-- <th width="col-md-3">Prod ID Baru</th> --}}
-                        <th width="5%">Product Name</th>
+                        <th width="10%">Product Name</th>
                         <th style="width:10%">Product Brand</th>
+                        <th style="width:20%">Harga Distributor</th>
+                        <th style="width:20%">Harga Modal</th>
                         <th style="width:10%">Posting Bulan Ini</th>
-                        <th style="width:7%">Harga Distributor</th>
-                        <th style="width:7%">Harga Modal</th>
                         <th style="width:10%">Selisih</th>
                         <th style="width:10%">Bonus</th>
                     </thead>
@@ -37,24 +37,10 @@
                             {{-- <td>{{$prd->prod_id_new}}</td> --}}
                             <td>{{$prd->name}}</td>
                             <td>{{$prd->category}}</td>
-                            <td>
                                 @php
-                                    $postingan = DB::table('tblpotrxdet')->where('prod_id', $prd->prod_id)->join('tblpotrx','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrx.month',$month)->where('tblpotrx.year',$year)->sum('tblpotrxdet.qty');
-                                @endphp
-                                {{ $postingan }}
-                            </td>
-                                @php
-                                    $data1 = ManageHarga::where('prod_id', $prd->prod_id)->where('month', $month)->where('year', $year)->select('harga_distributor','harga_modal')->first();
-                                    if($data1['harga_distributor']==0){
-                                        if($month==1){
-                                            $data1 = ManageHarga::where('prod_id', $prd->prod_id)->where('year', $year-1)->where('month', 12)->select('harga_distributor', 'harga_modal')->first();
-                                        }
-                                        else{
-                                            $data1 = ManageHarga::where('prod_id', $prd->prod_id)->where('year', $year)->where('month', $month-1)->select('harga_distributor','harga_modal')->first();
-                                        }
-                                    }
+                                    $data1 = ManageHarga::where('prod_id', $prd->prod_id)->where('month', $bulan)->where('year', $tahun)->select('harga_distributor','harga_modal')->first();
 
-                                    if(($data1['harga_distributor'] AND $data1['harga_modal']) == ""){
+                                    if(($data1['harga_distributor'] == "") OR ($data1['harga_distributor'] == null) OR ($data1['harga_modal'] == "") OR ($data1['harga_modal'] == null)){
                                         $harga_dist = 0;
                                         $harga_mod = 0;
                                     }else{
@@ -64,19 +50,19 @@
 
                                 @endphp
                             <td>
-                                <input name="price_dis[]" type="text" id="price_dis{{ $i }}" value="{{ $harga_dist }}" size="15" maxlength="15"/>
+                                <input class="form-control" name="price_dis[]" type="text" value="{{ $harga_dist }}">
                             </td>
                             <td>
-                                <input name="price_mod[]" type="text" id="price_mod{{ $i }}" value="{{ $harga_mod }}" size="15" maxlength="15"/>
+                                <input class="form-control" name="price_mod[]" type="text" value="{{ $harga_mod }}">
                             </td>
-                            <td>
-                                @php($selisih = $harga_dist - $harga_mod)
-                                {{ $selisih }}
-                            </td>
-                            <td>
-                                @php($bonus=$postingan*$selisih)
-                                {{ $bonus }}
-                            </td>
+                            @php
+                                $postingan = DB::table('tblpotrxdet')->where('prod_id', $prd->prod_id)->join('tblpotrx','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrx.month',$bulan)->where('tblpotrx.year',$tahun)->sum('tblpotrxdet.qty');
+                                $selisih = $harga_dist - $harga_mod;
+                                $bonus = $postingan * $selisih;
+                            @endphp
+                            <td><span class="divide">{{ $postingan }}</span></td>
+                            <td><span class="divide">{{ $selisih }}</span></td>
+                            <td><span class="divide">{{ $bonus }}</span></td>
                         </tr>
                         @endforeach
                     </tbody>

@@ -41,46 +41,47 @@ class ManageHargaController extends Controller
         $validator = Validator::make($request->all(), [
             'month' => 'required',
             'year' => 'required',
-            'i' => 'required',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            // CODE LAMA
-            // $n = $request->i;
-            // for($i=1; $i<=$n; $i++){
-            //     $mh = new ManageHarga;
-            //     $price_dis = "price_dis".$i;
-            //     $mh->harga_distributor = $request->$price_dis;
-            //     $price_mod = "price_mod".$i;
-            //     $mh->harga_modal = $request->$price_mod;
-            //     $pid = "pid".$i;
-            //     $mh->prod_id = $request->$pid;
-            //     $mh->month = $request->month;
-            //     $mh->year = $request->year;
-            //     $mh->creator = session('user_id');
-            //     $mh->save();
-            // }
-
-            $count = count($request->pid);
-            for($i=0; $i<$count; $i++){
-                $price_dis = $request->price_dis[$i];
-                $price_mod = $request->price_mod[$i];
-                if(($price_dis!=0 AND $price_mod!=0) OR ($price_dis!="" AND $price_mod!="")){
-                    $data = new ManageHarga(array(
-                        'prod_id' => $request->pid[$i],
-                        'month' => $request->month,
-                        'year' => $request->year,
-                        'creator' => session('user_id'),
-                        'harga_distributor' => $price_dis,
-                        'harga_modal' => $price_mod,
-                    ));
-                    $data->save();
+            // echo "<pre>";
+            // print_r($request->all());
+            // die();
+            try{
+                $month = $request->month;
+                $year = $request->year;
+                $count = count($request->pid);
+                for($i=0; $i<$count; $i++){
+                    $prod_id = $request->pid[$i];
+                    $price_dis = $request->price_dis[$i];
+                    $price_mod = $request->price_mod[$i];
+                    if($price_dis!=0 AND $price_mod!=0){
+                        if(empty(ManageHarga::where('prod_id', $prod_id)->where('month', $month)->where('year', $year)->first()) == 1){
+                            $data = new ManageHarga(array(
+                                'prod_id' => $prod_id,
+                                'month' => $month,
+                                'year' => $year,
+                                'creator' => session('user_id'),
+                                'harga_distributor' => $price_dis,
+                                'harga_modal' => $price_mod,
+                            ));
+                            $data->save();
+                        }else{
+                            $data = ManageHarga::where('prod_id', $prod_id)->where('month', $month)->where('year', $year)->first();
+                            $data->harga_distributor = $price_dis;
+                            $data->harga_modal = $price_mod;
+                            $data->creator = session('user_id');
+                            $data->update();
+                        }
+                    }
                 }
+                return redirect()->back()->with('status', 'Berhasil diupdate');
+            }catch(\Exception $e){
+                return redirect()->back()->withErrors($e);
             }
-            return redirect()->back();
         }
     }
 

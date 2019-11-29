@@ -8,61 +8,61 @@
 
 <form class="form-horizontal" role="form" action="{{ route('exportMember') }}" enctype="multipart/form-data" method="POST">
     @csrf
-<div class="modal fade bs-example-modal-lg" role="dialog" aria-labelledby="myLargeModalLabel" style="display: none;" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="myLargeModalLabel">Menu Cetak</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group row">
-                    <label class="col-2 col-form-label">Pilih Cetak</label>
-                    <div class="col-10">
-                        <select class="form-control select2a" parsley-trigger="change" name="menu" id="menu" required>
-                            <option value="#" selected disabled>Pilih Jenis Cetak</option>
-                            <option value="0">Cetak Seluruh Isi Tabel</option>
-                            <option value="1">Cetak Data Tertentu</option>
-                        </select>
+    <div class="modal fade bs-example-modal-lg" role="dialog" aria-labelledby="myLargeModalLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myLargeModalLabel">Menu Cetak</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row">
+                        <label class="col-2 col-form-label">Pilih Cetak</label>
+                        <div class="col-10">
+                            <select class="form-control select2a" parsley-trigger="change" name="menu" id="menu" required>
+                                <option value="#" selected disabled>Pilih Jenis Cetak</option>
+                                <option value="0">Cetak Seluruh Isi Tabel</option>
+                                <option value="1">Cetak Data Tertentu</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div id="body2" class="modal-body" style="display:none">
-                <div id="search_member" class="form-group row">
-                    <label class="col-7 col-form-label">Tambahkan List Member yang akan dicetak</label>
-                    <div class="col-7">
-                        <select class="form-control" id="s_member" name="s_member" parsley-trigger="change" onchange="addRowCetak(this.value)">
-                        </select>
+                <div id="body2" class="modal-body" style="display:none">
+                    <div id="search_member" class="form-group row">
+                        <label class="col-7 col-form-label">Tambahkan List Member yang akan dicetak</label>
+                        <div class="col-7">
+                            <select class="form-control" id="s_member" name="s_member" parsley-trigger="change" onchange="addRowCetak(this.value)">
+                            </select>
+                        </div>
                     </div>
+                    <table id="table" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th width="13%">Nama</th>
+                                <th width="13%">ID Member</th>
+                                <th width="12%">No KTP</th>
+                                <th width="27%">Alamat</th>
+                                <th width="20%">Tempat Tanggal Lahir</th>
+                                <th width="5%">Hapus</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <input type="hidden" name="counts" id="counts" value="0">
+                        </tbody>
+                    </table>
+                    <input type="hidden" name="ctr" id="ctr" value="{{ $i }}">
+                    <input type="hidden" name="prs" id="prs">
+                    <input type="hidden" name="bnk" id="bnk">
+                    <input type="hidden" name="jns" id="jns">
+                    <input type="hidden" name="xto" id="xto">
                 </div>
-                <table id="table" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
-                    <thead>
-                        <tr>
-                            <th width="13%">Nama</th>
-                            <th width="13%">ID Member</th>
-                            <th width="12%">No KTP</th>
-                            <th width="27%">Alamat</th>
-                            <th width="20%">Tempat Tanggal Lahir</th>
-                            <th width="5%">Hapus</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        <input type="hidden" name="counts" id="counts" value="0">
-                    </tbody>
-                </table>
-                <input type="hidden" name="ctr" id="ctr" value="{{ $i }}">
-                <input type="hidden" name="prs" id="prs">
-                <input type="hidden" name="bnk" id="bnk">
-                <input type="hidden" name="jns" id="jns">
-                <input type="hidden" name="xto" id="xto">
-            </div>
-            <div id="btn_cetak" class="modal-body form-group text-right m-b-0" style="display:none">
-                <button class="btn btn-rounded btn-success w-md waves-effect waves-light m-b-5" onclick="clickXls()">Cetak file Excel</button>
-                <button class="btn btn-rounded btn-warning w-md waves-effect waves-light m-b-5" onclick="clickPdf()">Cetak file PDF</button>
-            </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div>
+                <div id="btn_cetak" class="modal-body form-group text-right m-b-0" style="display:none">
+                    <button class="btn btn-rounded btn-success w-md waves-effect waves-light m-b-5" onclick="clickXls()">Cetak file Excel</button>
+                    <button class="btn btn-rounded btn-warning w-md waves-effect waves-light m-b-5" onclick="clickPdf()">Cetak file PDF</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
 </form>
 
 <div id="load" class="table-responsive">

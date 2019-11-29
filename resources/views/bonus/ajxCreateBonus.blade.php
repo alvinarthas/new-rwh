@@ -1,3 +1,52 @@
+<form class="form-horizontal" role="form" action="{{ route('exportGagalBonus') }}" enctype="multipart/form-data" method="POST">
+    @csrf
+    <div class="modal fade bs-example-modal-lg" role="dialog" aria-labelledby="myLargeModalLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myLargeModalLabel">Laporan Gagal Upload</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                </div>
+
+                <table id="table" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="13%">Nama</th>
+                            <th width="12%">No KTP</th>
+                            @if($bonusapa=="perhitungan")
+                                <th width="23">No ID</th>
+                            @endif
+                            <th width="27%">No Rekening</th>
+                            <th width="20%">Bonus</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body2">
+                        <input type="hidden" name="counts" id="counts" value="0">
+                    </tbody>
+                </table>
+                @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
+                    <input type="hidden" name="bulan3" id="bulan3" value="{{ $bulan }}">
+                    <input type="hidden" name="tahun3" id="tahun3" value="{{ $tahun }}">
+                @endif
+                @if($bonusapa=="perhitungan")
+                    <input type="hidden" name="perusahaan_id3" id="perusahaan_id3" value="{{ $perusahaan }}">
+                @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
+                    <input type="hidden" name="AccNo3" id="AccNo3" value="{{ $AccNo }}">
+                    <input type="hidden" name="bank_id3" id="bank_id3" value="{{ $bank['id'] }}">
+                    <input type="hidden" name="tgl3" id="tgl3" value="{{ $tgl }}">
+                @endif
+                <input type="hidden" name="xto" id="xto">
+                <input type="hidden" name="bonusapa3" id="bonusapa3" value="{{ $bonusapa }}">
+
+                <div id="btn_cetak" class="modal-body form-group text-right m-b-0">
+                    <button class="btn btn-rounded btn-success w-md waves-effect waves-light m-b-5" onclick="cetakXls()">Cetak file Excel</button>
+                    <button class="btn btn-rounded btn-warning w-md waves-effect waves-light m-b-5" onclick="cetakPdf()">Cetak file PDF</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+</form>
 {{-- @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran") --}}
     {{-- @if($bonusapa=="perhitungan")
         <form method="post" action="{{ route('uploadBonusPerhitungan') }}" enctype="multipart/form-data"> --}}
@@ -66,6 +115,11 @@
         <div class="col-12">
             <div class="card-box table-responsive">
                 <h4 class="m-t-0 header-title">Detail Bonus Member</h4>
+                <div class="form-group text-left m-b-0">
+                    <a class="btn btn-warning waves-effect waves-light" data-toggle="modal" data-target=".bs-example-modal-lg">
+                        Gagal Upload
+                    </a>
+                </div>
 
                     @php
                         $i = 1;
@@ -354,8 +408,12 @@
         }).done(function (data) {
             var row = data.length;
             for(i=0; i<row; i++){
-                $('#table-body').append(data[i].append);
-                $('#ctr').val(data[i].count + 1);
+                if(data[i].jenis == "berhasil"){
+                    $('#table-body').append(data[i].append);
+                    $('#ctr').val(data[i].count);
+                }else if(data[i].jenis == "bonus_gagal"){
+                    $('#table-body2').append(data[i].append);
+                }
             }
             checkTotal();
         }).fail(function (msg) {
@@ -427,8 +485,12 @@
             console.log(data)
             var row = data.length;
             for(i=0; i<row; i++){
-                $('#table-body').append(data[i].append);
-                $('#ctr').val(data[i].count);
+                if(data[i].jenis == "berhasil"){
+                    $('#table-body').append(data[i].append);
+                    $('#ctr').val(data[i].count);
+                }else if(data[i].jenis == "bonus_gagal"){
+                    $('#table-body2').append(data[i].append);
+                }
             }
             checkTotal();
         }).fail(function (msg) {
@@ -492,8 +554,12 @@
             console.log(data)
             var row = data.length;
             for(i=0; i<row; i++){
-                $('#table-body').append(data[i].append);
-                $('#ctr').val(data[i].count);
+                if(data[i].jenis == "berhasil"){
+                    $('#table-body').append(data[i].append);
+                    $('#ctr').val(data[i].count);
+                }else if(data[i].jenis == "bonus_gagal"){
+                    $('#table-body2').append(data[i].append);
+                }
             }
             checkTotal();
         }).fail(function (msg) {
@@ -609,5 +675,13 @@
         // console.log(totalharga)
         $('#total_bonus').val(totalharga);
         $('#selisih_bonus').val(selisih);
+    }
+
+    function cetakXls(){
+        $('#xto').val("0");
+    }
+
+    function cetakPdf(){
+        $('#xto').val("1");
     }
 </script>

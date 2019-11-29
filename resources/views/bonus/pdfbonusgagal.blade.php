@@ -60,16 +60,13 @@
 			@foreach($member as $m)
 			<tr>
 				<td>{{ $i++ }}</td>
-                <td>{{$m['nama']}}</td>
-                @php
-                    $bm = BankMember::where('norek', $m['norek'])->select('ktp')->first();
-                @endphp
-                <td>{{$bm['ktp']}}</td>
+                <td>{{$m['Nama']}}</td>
+                <td>{{$m['No KTP']}}</td>
                 @if($jenis=="perhitungan")
-                    <td>{{$m['noid']}}</td>
+                    <td>{{$m['No ID']}}</td>
                 @endif
-                <td>{{$m['norek']}}</td>
-                <td>{{$m['bonus']}}</td>
+                <td>{{$m['No Rekening']}}</td>
+                <td>{{$m['Bonus']}}</td>
 			</tr>
 			@endforeach
 		</tbody>

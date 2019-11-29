@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Excel;
 use PDF;
+use App\Exports\BonusGagalUploadExport1;
+use App\Exports\BonusGagalUploadExport2;
 use Carbon\Carbon;
 use App\Bonus;
 use App\BonusGagal;
@@ -107,10 +109,11 @@ class BonusController extends Controller
     public function createTopup()
     {
         $rekening = Coa::where('StatusAccount', "Detail")->select('AccNo', 'AccName')->orderBy('AccNo','asc')->get();
+        $supplier = Perusahaan::all();
         $bonusapa = "topup";
         $jenis = "create";
         $page = MenuMapping::getMap(session('user_id'), "BMTU");
-        return view('bonus.index', compact('rekening', 'jenis', 'bonusapa'));
+        return view('bonus.index', compact('rekening', 'jenis', 'bonusapa', 'supplier'));
     }
 
     /**
@@ -578,6 +581,7 @@ class BonusController extends Controller
         $count = count($array[0]);
         $xls = array_chunk($array[0],$count);
         $row = 1;
+        $r = 1;
         $datas = array();
 
         for ($i=1; $i < $count ; $i++) {
@@ -591,21 +595,39 @@ class BonusController extends Controller
                 $num_member = PerusahaanMember::where('noid', $noid)->join('tblmember','perusahaanmember.ktp','=','tblmember.ktp')->join('bankmember', 'perusahaanmember.ktp', 'bankmember.ktp')->where('bankmember.norek', $norek)->where('tblmember.nama',"LIKE", $nama)->where('perusahaanmember.perusahaan_id',$perusahaan_id)->count();
                 // $num_member= $perusahaan['perusahaanmember.noid']->count();
                 if($num_member==0){
-                    $member = array(
-                        'noid'  => $noid,
-                        'norek' => $norek,
-                        'nama'  => $nama,
-                        'bonus' => $bonus
+                    // $member = array(
+                    //     'noid'  => $noid,
+                    //     'norek' => $norek,
+                    //     'nama'  => $nama,
+                    //     'bonus' => $bonus
+                    // );
+                    // array_push($datas, $member);
+                    $ktp = PerusahaanMember::where('perusahaanmember.noid', $noid)->select('perusahaanmember.ktp')->first();
+                    $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
+                    <td><input type="hidden" name="no[]" value="'.$r.'">'.$r.'</td>
+                    <td><input type="hidden" name="nama[]" id="nama'.$r.'" value="'.$nama.'">'.$nama.'</td>
+                    <td><input type="hidden" name="ktp[]" id="ktp'.$r.'" value="'.$ktp['ktp'].'">'.$ktp['ktp'].'</td>
+                    <td><input type="hidden" name="noid[]" id="noid'.$r.'" value="'.$noid.'">'.$noid.'</td>
+                    <td><input type="hidden" name="norekening[]" id="norekening'.$r.'" value="'.$norek.'">'.$norek.'</td>
+                    <td><input type="hidden" name="bonus[]" id="bonus'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    </tr>';
+
+                    $data = array(
+                        'append' => $append,
+                        'count' => $r,
+                        'jenis' => "bonus_gagal",
                     );
-                    array_push($datas, $member);
+
+                    array_push($result, $data);
+                    $r++;
                 }else{
                     // echo "berhasil";
-                    $pm = PerusahaanMember::join('bankmember', 'perusahaanmember.ktp', 'bankmember.ktp')->where('perusahaanmember.noid', $noid)->where('norek', $norek)->where('perusahaan_id', $perusahaan_id)->select('perusahaanmember.ktp')->first();
+                    $ktp = PerusahaanMember::join('bankmember', 'perusahaanmember.ktp', 'bankmember.ktp')->where('perusahaanmember.noid', $noid)->where('norek', $norek)->where('perusahaan_id', $perusahaan_id)->select('perusahaanmember.ktp')->first();
                     $num_bonus = Bonus::where('noid', $noid)->where('tahun', $request->tahun)->where('bulan', $request->bulan)->count();
                     $total_bonus = $total_bonus + $bonus;
                     $append = '<tr style="width:100%" id="trow'.$row.'" class="trow">
                     <td>'.$row.'</td>
-                    <td><input type="hidden" name="ktp[]" id="ktp'.$row.'" value="'.$pm->ktp.'">'.$pm->ktp.'</td>
+                    <td><input type="hidden" name="ktp[]" id="ktp'.$row.'" value="'.$ktp['ktp'].'">'.$ktp['ktp'].'</td>
                     <td><input type="hidden" name="noid[]" id="noid'.$row.'" value="'.$noid.'">'.$noid.'</td>
                     <td><input type="hidden" name="nama[]" id="nama'.$row.'" value="'.$nama.'">'.$nama.'</td>
                     <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$row.'" value="'.$bonus.'"></td>
@@ -615,19 +637,20 @@ class BonusController extends Controller
                     $data = array(
                         'append' => $append,
                         'count' => $row,
+                        'jenis' => 'berhasil',
                     );
                     array_push($result, $data);
                     $row++;
                 }
             }
         }
-        if(!empty($datas)){
-            $pdf = PDF::loadview('bonus.pdfbonusgagal',['member'=>$datas, 'bulan'=>$request->bulan, 'tahun'=>$request->tahun, 'jenis'=>"perhitungan"])->setPaper('a4', 'potrait');
-            $namafile = "gagal upload perhitungan bonus bulan $request->bulan $request->tahun.pdf";
-            $pdf->save(public_path('download/'.$namafile));
-            // return $pdf->download('gagal upload bonus bulan '.$request->bulan.' '.$request->tahun.'.pdf');
-            response()->download(public_path('download/'.$namafile));
-        }
+        // if(!empty($datas)){
+        //     $pdf = PDF::loadview('bonus.pdfbonusgagal',['member'=>$datas, 'bulan'=>$request->bulan, 'tahun'=>$request->tahun, 'jenis'=>"perhitungan"])->setPaper('a4', 'potrait');
+        //     $namafile = "gagal upload perhitungan bonus bulan $request->bulan $request->tahun.pdf";
+        //     $pdf->save(public_path('download/'.$namafile));
+        //     // return $pdf->download('gagal upload bonus bulan '.$request->bulan.' '.$request->tahun.'.pdf');
+        //     response()->download(public_path('download/'.$namafile));
+        // }
 
         return response()->json($result);
     }
@@ -830,6 +853,7 @@ class BonusController extends Controller
         $path = $request->file('file');
         $array = Excel::toArray(new BonusBayarImport, $path);
         $result = array();
+        $result_gagal = array();
         Carbon::setLocale('id');
         $tgl = date('Y-m-d', strtotime(Carbon::today()));
         $account = Coa::where('AccNo',$AccNo)->select('AccName')->first();
@@ -840,23 +864,36 @@ class BonusController extends Controller
         $count = count($array[0]);
         $xls = array_chunk($array[0],$count);
         $row = 1;
+        $r = 1;
         $datas = array();
 
         for ($i=1; $i < $count ; $i++) {
-            $norek = $xls[0][$i][1];
-            $nama = $xls[0][$i][2];
-            $bonus = $xls[0][$i][3];
+            $bank = $xls[0][$i][1];
+            $norek = $xls[0][$i][2];
+            $nama = $xls[0][$i][3];
+            $bonus = $xls[0][$i][4];
 
             if($norek <> ''){
-                $num_member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek',$norek)->where('tblmember.nama',"LIKE", $nama)->where('bankmember.bank_id',$bank_id)->count();
+                $num_member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('bankmember.norek',$norek)->where('tblmember.nama',"LIKE", $nama)->where('tblbank.nama', 'LIKE', $bank)->count();
                 // $num_member= $perusahaan['perusahaanmember.noid']->count();
                 if($num_member==0){
-                    $member = array(
-                        'norek' => $norek,
-                        'nama'  => $nama,
-                        'bonus' => $bonus
+                    $member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek', $norek)->select('tblmember.ktp AS ktp')->first();
+                    $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
+                    <td><input type="hidden" name="no[]" value="'.$r.'">'.$r.'</td>
+                    <td><input type="hidden" name="nama[]" id="nama'.$r.'" value="'.$nama.'">'.$nama.'</td>
+                    <td><input type="hidden" name="ktp[]" id="ktp'.$r.'" value="'.$member['ktp'].'">'.$member['ktp'].'</td>
+                    <td><input type="hidden" name="norekening[]" id="norekening'.$r.'" value="'.$norek.'">'.$norek.'</td>
+                    <td><input type="hidden" name="bonus[]" id="bonus'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    </tr>';
+
+                    $data = array(
+                        'append' => $append,
+                        'count' => $r,
+                        'jenis' => "bonus_gagal",
                     );
-                    array_push($datas, $member);
+
+                    array_push($result, $data);
+                    $r++;
                 }else{
                     // echo "berhasil";
                     $namabank = BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('norek', $norek)->select('nama')->first();
@@ -873,19 +910,20 @@ class BonusController extends Controller
                     $data = array(
                         'append' => $append,
                         'count' => $row,
+                        'jenis' => "berhasil",
                     );
                     array_push($result, $data);
                     $row++;
                 }
             }
         }
-        if(!empty($datas)){
-            $pdf = PDF::loadview('bonus.pdfbonusgagal',['member'=>$datas, 'bulan'=>$request->bulan, 'tahun'=>$request->tahun, 'jenis'=>"pembayaran"])->setPaper('a4', 'potrait');
-            $namafile = "gagal upload penerimaan bonus bulan $request->bulan $request->tahun.pdf";
-            $pdf->save(public_path('download/'.$namafile));
-            // return $pdf->download('gagal upload bonus bulan '.$request->bulan.' '.$request->tahun.'.pdf');
-            response()->download(public_path('download/'.$namafile));
-        }
+        // if(!empty($datas)){
+        //     $pdf = PDF::loadview('bonus.pdfbonusgagal',['member'=>$datas, 'bulan'=>$request->bulan, 'tahun'=>$request->tahun, 'jenis'=>"pembayaran"])->setPaper('a4', 'potrait');
+        //     $namafile = "gagal upload penerimaan bonus bulan $request->bulan $request->tahun.pdf";
+        //     $pdf->save(public_path('download/'.$namafile));
+        //     // return $pdf->download('gagal upload bonus bulan '.$request->bulan.' '.$request->tahun.'.pdf');
+        //     response()->download(public_path('download/'.$namafile));
+        // }
         return response()->json($result);
     }
 
@@ -998,79 +1036,95 @@ class BonusController extends Controller
         return view('bonus.ajxCreateBonus', compact('bonusapa','bank','AccNo', 'tgl'));
     }
 
-        // upload EXCEL pembayaran/penerimaan bonus yang baru
-        public function uploadBonusTopup(Request $request)
-        {
-            // echo "<pre>";
-            // print_r($request->all());
-            // die();
+    // upload EXCEL pembayaran/penerimaan bonus yang baru
+    public function uploadBonusTopup(Request $request)
+    {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        $bank_id = $request->bank_id;
+        $tgl = $request->tgl;
+        $AccNo = $request->AccNo;
+        $this->validate($request, ['file'  => 'required|mimes:xls,xlsx']);
+        $path = $request->file('file')->getRealPath();
+        $path = $request->file('file');
+        $array = Excel::toArray(new BonusTopupImport, $path);
+        $result = array();
+        Carbon::setLocale('id');
+        $tgl = date('Y-m-d', strtotime(Carbon::today()));
+        $account = Coa::where('AccNo',$AccNo)->select('AccName')->first();
+        $ket = 'topup bonus via upload excel ('.$tgl.') '.$account['AccName'].' - bulan '.$request->bulan.' '.$request->tahun;
+        $total_bonus = 0;
+        $bonus_tertahan = $request->bonus_tertahan;
+        $id_jurnal = Jurnal::getJurnalID('BT');
+        $count = count($array[0]);
+        $xls = array_chunk($array[0],$count);
+        $row = 1;
+        $r = 1;
+        $datas = array();
+        for ($i=1; $i < $count ; $i++) {
+            $bank = $xls[0][$i][1];
+            $norek = $xls[0][$i][2];
+            $nama = $xls[0][$i][3];
+            $bonus = $xls[0][$i][4];
+            if($norek <> ''){
+                $num_member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('bankmember.norek',$norek)->where('tblmember.nama',"LIKE", $nama)->where('tblbank.nama', 'LIKE', $bank)->count();
+                // $num_member= $perusahaan['perusahaanmember.noid']->count();
+                if($num_member==0){
+                    // $member = array(
+                    //     'norek' => $norek,
+                    //     'nama'  => $nama,
+                    //     'bonus' => $bonus
+                    // );
+                    // array_push($datas, $member);
+                    $member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek', $norek)->select('tblmember.ktp AS ktp')->first();
+                    $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
+                    <td><input type="hidden" name="no[]" value="'.$r.'">'.$r.'</td>
+                    <td><input type="hidden" name="nama[]" id="nama'.$r.'" value="'.$nama.'">'.$nama.'</td>
+                    <td><input type="hidden" name="ktp[]" id="ktp'.$r.'" value="'.$member['ktp'].'">'.$member['ktp'].'</td>
+                    <td><input type="hidden" name="norekening[]" id="norekening'.$r.'" value="'.$norek.'">'.$norek.'</td>
+                    <td><input type="hidden" name="bonus[]" id="bonus'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    </tr>';
 
-            $bank_id = $request->bank_id;
-            $tgl = $request->tgl;
-            $AccNo = $request->AccNo;
-            $this->validate($request, ['file'  => 'required|mimes:xls,xlsx']);
-            $path = $request->file('file')->getRealPath();
-            $path = $request->file('file');
-            $array = Excel::toArray(new BonusTopupImport, $path);
-            $result = array();
-            Carbon::setLocale('id');
-            $tgl = date('Y-m-d', strtotime(Carbon::today()));
-            $account = Coa::where('AccNo',$AccNo)->select('AccName')->first();
-            $ket = 'topup bonus via upload excel ('.$tgl.') '.$account['AccName'].' - bulan '.$request->bulan.' '.$request->tahun;
-            $total_bonus = 0;
-            $bonus_tertahan = $request->bonus_tertahan;
-            $id_jurnal = Jurnal::getJurnalID('BT');
-            $count = count($array[0]);
-            $xls = array_chunk($array[0],$count);
-            $row = 1;
-            $datas = array();
+                    $data = array(
+                        'append' => $append,
+                        'count' => $r,
+                        'jenis' => "bonus_gagal",
+                    );
 
-            for ($i=1; $i < $count ; $i++) {
-                $norek = $xls[0][$i][1];
-                $nama = $xls[0][$i][2];
-                $bonus = $xls[0][$i][3];
-
-                if($norek <> ''){
-                    $num_member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek',$norek)->where('tblmember.nama',"LIKE", $nama)->where('bankmember.bank_id',$bank_id)->count();
-                    // $num_member= $perusahaan['perusahaanmember.noid']->count();
-                    if($num_member==0){
-                        $member = array(
-                            'norek' => $norek,
-                            'nama'  => $nama,
-                            'bonus' => $bonus
-                        );
-                        array_push($datas, $member);
-                    }else{
-                        // echo "berhasil";
-                        $namabank = BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('norek', $norek)->select('nama')->first();
-                        $total_bonus = $total_bonus + $bonus;
-                        $append = '<tr style="width:100%" id="trow'.$row.'" class="trow">
-                        <td>'.$row.'</td>
-                        <td><input type="hidden" name="namabank[]" id="namabank'.$row.'" value="'.$namabank['nama'].'">'.$namabank['nama'].'</td>
-                        <td><input type="hidden" name="norekening[]" id="norekening'.$row.'" value="'.$norek.'">'.$norek.'</td>
-                        <td><input type="hidden" name="nama[]" id="nama'.$row.'" value="'.$nama.'">'.$nama.'</td>
-                        <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$row.'" value="'.$bonus.'"></td>
-                        <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$row.')" >Delete</a></td>
-                        </tr>';
-
-                        $data = array(
-                            'append' => $append,
-                            'count' => $row,
-                        );
-                        array_push($result, $data);
-                        $row++;
-                    }
+                    array_push($result, $data);
+                    $r++;
+                }else{
+                    // echo "berhasil";
+                    $namabank = BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('norek', $norek)->select('nama')->first();
+                    $total_bonus = $total_bonus + $bonus;
+                    $append = '<tr style="width:100%" id="trow'.$row.'" class="trow">
+                    <td>'.$row.'</td>
+                    <td><input type="hidden" name="namabank[]" id="namabank'.$row.'" value="'.$namabank['nama'].'">'.$namabank['nama'].'</td>
+                    <td><input type="hidden" name="norekening[]" id="norekening'.$row.'" value="'.$norek.'">'.$norek.'</td>
+                    <td><input type="hidden" name="nama[]" id="nama'.$row.'" value="'.$nama.'">'.$nama.'</td>
+                    <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$row.'" value="'.$bonus.'"></td>
+                    <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$row.')" >Delete</a></td>
+                    </tr>';
+                    $data = array(
+                        'append' => $append,
+                        'count' => $row,
+                        'jenis' => "berhasil",
+                    );
+                    array_push($result, $data);
+                    $row++;
                 }
             }
-            if(!empty($datas)){
-                $pdf = PDF::loadview('bonus.pdfbonusgagal',['member'=>$datas, 'tgl'=>$tgl, 'jenis'=>"topup"])->setPaper('a4', 'potrait');
-                $namafile = "gagal upload top up bonus tanggal $tgl.pdf";
-                $pdf->save(public_path('download/'.$namafile));
-                // return $pdf->download('gagal upload bonus bulan '.$request->bulan.' '.$request->tahun.'.pdf');
-                response()->download(public_path('download/'.$namafile));
-            }
-            return response()->json($result);
         }
+        // if(!empty($datas)){
+        //     $pdf = PDF::loadview('bonus.pdfbonusgagal',['member'=>$datas, 'tgl'=>$tgl, 'jenis'=>"topup"])->setPaper('a4', 'potrait');
+        //     $namafile = "gagal upload top up bonus tanggal $tgl.pdf";
+        //     $pdf->save(public_path('download/'.$namafile));
+        //     // return $pdf->download('gagal upload bonus bulan '.$request->bulan.' '.$request->tahun.'.pdf');
+        //     response()->download(public_path('download/'.$namafile));
+        // }
+        return response()->json($result);
+    }
 
     public function ajxAddRowTopup(Request $request){
         $id_member = $request->id_member;
@@ -1136,7 +1190,7 @@ class BonusController extends Controller
         // $search = $bankmember->join('tblmember','bankmember.ktp','=','tblmember.ktp')->orWhere('norek','LIKE', $key)->orWhere('tblmember.nama','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
 
         // $bankmember = BankMember::where('bank_id',$request->bankid);
-        $search = BankMember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->where('bank_id', $request->bankid)->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('tblmember.nama','LIKE', $key)->orWhere('norek','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp', 'tblbank.nama AS namabank')->limit(5)->get();
+        $search = BankMember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->orWhere('tblmember.nama','LIKE', $key)->orWhere('norek','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp', 'tblbank.nama AS namabank')->limit(5)->get();
         // $search = DB::raw("SELECT m.nama, b.norek, b.id AS id, m.ktp AS ktp FROM bankmember b INNER JOIN tblmember m ON b.ktp = m.ktp WHERE b.bank_id = $request->bankid AND b.norek LIKE $key OR m.nama LIKE $key OR m.ktp LIKE $key limit 5");
         // $search = BankMember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->where('bank_id', $request->bankid)->where('tblmember.nama','LIKE', $key)->orWhere(function($q, $key){ $q->where('bankmember.norek','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key);})->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
         // echo $search;
@@ -1164,5 +1218,91 @@ class BonusController extends Controller
             array_push($data,$arrayName);
         }
         echo json_encode($data, JSON_FORCE_OBJECT);
+    }
+
+    public function exportGagalBonus(Request $request)
+    {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        ini_set('max_execution_time', 3000);
+        $bonusapa = $request->bonusapa3;
+        if(($bonusapa=="perhitungan") OR ($bonusapa=="pembayaran")){
+            $tahun = $request->tahun3;
+            $bulan = $request->bulan3;
+        }
+        if($bonusapa=="perhitungan"){
+            $perusahaan = Perusahaan::where('id', $request->perusahaan3)->select('nama')->first();
+        }elseif(($bonusapa=="pembayaran") OR ($bonusapa=="topup")){
+            $AccNo = Coa::where('AccNo', $request->AccNo3)->select('AccName')->first();
+            $bank_id = $request->bank_id3;
+            $tgl = $request->tgl3;
+        }
+
+        if($bonusapa=="perhitungan"){
+            $filename = "Bonus Gagal Upload Perhitungan Bonus ".$perusahaan['nama']." bulan ".$bulan." ".$tahun;
+        }elseif($bonusapa=="pembayaran"){
+            $filename = "Bonus Gagal Upload Penerimaan Bonus ".$AccNo['AccName']." bulan ".$bulan." ".$tahun."(".$tgl.")";
+        }elseif($bonusapa=="topup"){
+            $filename = "Bonus Gagal Upload Top Up Bonus dari ".$AccNo['AccName']."(".$tgl.")";
+        }
+        $exportTo = $request['xto'];
+        $data = array();
+        // $filename="Bonus Gagal Upload";
+
+        $count = count($request->norekening);
+        for($i=0; $i<$count; $i++){
+            $nama = $request->nama[$i];
+            $ktp = $request->ktp[$i];
+            $norek = $request->norekening[$i];
+            $bonus = $request->bonus[$i];
+            $no = $i+1;
+            if($bonusapa=="perhitungan"){
+                $array = array(
+                    // Data Member
+                    'No' => $no,
+                    'Nama' => $nama,
+                    'No KTP' => $ktp,
+                    'No ID' => $request->noid[$i],
+                    'No Rekening' => $norek,
+                    'Bonus' => $bonus,
+                );
+            }elseif(($bonusapa=="pembayaran") OR ($bonusapa=="topup")){
+                $array = array(
+                    // Data Member
+                    'No' => $no,
+                    'Nama' => $nama,
+                    'No KTP' => $ktp,
+                    'No Rekening' => $norek,
+                    'Bonus' => $bonus,
+                );
+            }
+
+            array_push($data, $array);
+        }
+
+        // Export To 0 == Export to Excel
+        if($exportTo == 0){
+            if($bonusapa=="perhitungan"){
+                $export = new BonusGagalUploadExport1($data);
+            }else{
+                $export = new BonusGagalUploadExport2($data);
+            }
+
+            return Excel::download($export, $filename.'.xlsx');
+        // Export To 1 == Export To PDF
+        }elseif($exportTo == 1){
+            if($bonusapa=="perhitungan"){
+
+                $datas = ['member'=>$data, 'bulan'=>$bulan, 'tahun'=>$tahun, 'jenis'=>"perhitungan"];
+            }elseif($bonusapa=="pembayaran"){
+                $datas = ['member'=>$data, 'bulan'=>$bulan, 'tahun'=>$tahun, 'jenis'=>"pembayaran"];
+            }elseif($bonusapa=="topup"){
+                $datas = ['member'=>$data, 'tgl'=>$tgl, 'jenis'=>"topup"];
+            }
+
+            $pdf = PDF::loadview('bonus.pdfbonusgagal',$datas)->setPaper('a4', 'landscape');
+            return $pdf->download($filename.'.pdf');
+        }
     }
 }
