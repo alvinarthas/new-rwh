@@ -131,9 +131,14 @@ class JurnalController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Request $request,$id)
     {
-        //
+        if ($request->ajax()) {
+            $jurnals = Jurnal::where('id_jurnal',$request->id)->get();
+            $ttl_debet = Jurnal::where('id_jurnal',$request->id)->where('AccPos','Debet')->sum('Amount');
+            $ttl_credit = Jurnal::where('id_jurnal',$request->id)->where('AccPos','Credit')->sum('Amount');
+            return response()->json(view('jurnal.modal',compact('jurnals','ttl_debet','ttl_credit'))->render());
+        }
     }
 
     /**

@@ -64,19 +64,18 @@ class PurchaseController extends Controller
         $year = $request->tahun;
 
         $manage = ManageHarga::showProduct($product,$month,$year);
-
-        $sub_ttl_dist = $qty*$manage->harga_distributor;
-        $sub_ttl_mod = $qty*$manage->harga_modal;
+        $sub_ttl_dist = $qty*$manage['harga_distributor'];
+        $sub_ttl_mod = $qty*$manage['harga_modal'];
 
         $append = '<tr style="width:100%" id="trow'.$count.'">
         <td>'.$count.'</td>
         <input type="hidden" name="detail[]" id="detail'.$count.'" value="baru">
-        <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$manage->prod_id.'">'.$manage->prod_id.'</td>
-        <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$manage->name.'">'.$manage->name.'</td>
+        <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$product.'">'.$product.'</td>
+        <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$manage['prod_name'].'">'.$manage['prod_name'].'</td>
         <td><input type="number" name="qty[]" value="'.$qty.'" id="qty'.$count.'" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="hidden" name="unit[]" value="'.$unit.'" id="unit'.$count.'">'.$unit.'</td>
-        <td><input type="number" name="harga_dist[]" value="'.$manage->harga_distributor.'" id="harga_dist'.$count.'" onkeyup="changeTotal('.$count.')"></td>
-        <td><input type="number" name="harga_mod[]" value="'.$manage->harga_modal.'" id="harga_mod'.$count.'" onkeyup="changeTotal('.$count.')"></td>
+        <td><input type="number" name="harga_dist[]" value="'.$manage['harga_distributor'].'" id="harga_dist'.$count.'" onkeyup="changeTotal('.$count.')"></td>
+        <td><input type="number" name="harga_mod[]" value="'.$manage['harga_modal'].'" id="harga_mod'.$count.'" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="number" readonly name="sub_ttl_dist[]" value="'.$sub_ttl_dist.'" id="sub_ttl_dist'.$count.'"></td>
         <td><input type="number" readonly name="sub_ttl_mod[]" value="'.$sub_ttl_mod.'" id="sub_ttl_mod'.$count.'"></td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>

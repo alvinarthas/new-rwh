@@ -25,7 +25,8 @@ class SalesController extends Controller
     }
 
     public function showSales(Request $request){
-        $products = PriceDet::where('customer_id',$request->customer)->select('prod_id')->orderBy('prod_id','asc')->get();
+        // $products = PriceDet::where('customer_id',$request->customer)->select('prod_id')->orderBy('prod_id','asc')->get();
+        $products = Product::select('prod_id','name')->get();
         $customer = Customer::where('id',$request->customer)->select('id','apname','apphone','cicn','ciphone')->first();
         if ($request->ajax()) {
             return response()->json(view('sales.showsales',compact('products','customer'))->render());
@@ -37,23 +38,37 @@ class SalesController extends Controller
         $qty = $request->qty;
         $unit = $request->unit;
         $count = $request->count+1;
-        $product = $request->select_product;
+        $product_id = $request->select_product;
 
-        $product = PriceDet::where('customer_id',$customer)->where('prod_id',$product)->first();
+        $product = PriceDet::where('customer_id',$customer)->where('prod_id',$product_id)->first();
 
-        $sub_ttl_price = $qty*$product->price;
-        $sub_ttl_bv = $qty*$product->pv;
-
+        if(isset($product)){
+            $sub_ttl_price = $qty*$product->price;
+            $sub_ttl_bv = $qty*$product->pv;
+            $prod_name = $product->prod->name;
+            $prod_id = $product->prod_id;
+            $price = $product->price;
+            $bv = $product->pv;
+        }else{
+            $prod = Product::where('prod_id',$product_id)->first();
+            $sub_ttl_price = 0;
+            $sub_ttl_bv = 0;
+            $prod_name = $prod->name;
+            $prod_id = $prod->prod_id;
+            $price = 0;
+            $bv = 0;
+        }
+    
         $append = '<tr style="width:100%" id="trow'.$count.'">
         <input type="hidden" name="detail[]" id="detail'.$count.'" value="baru">
         <td>'.$count.'</td>
-        <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$product->prod_id.'">'.$product->prod_id.'</td>
-        <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$product->prod->name.'">'.$product->prod->name.'</td>
-        <td><input type="text" name="price[]" value="'.$product->price.'" id="price'.$count.'" onkeyup="changeTotal('.$count.')"></td>
+        <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$prod_id.'">'.$prod_id.'</td>
+        <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$prod_name.'">'.$prod_name.'</td>
+        <td><input type="text" name="price[]" value="'.$price.'" id="price'.$count.'" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="text" name="qty[]" value="'.$qty.'" id="qty'.$count.'" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="hidden" name="unit[]" value="'.$unit.'" id="unit'.$count.'">'.$unit.'</td>
         <td><input type="text" name="sub_ttl_price[]" value="'.$sub_ttl_price.'" id="sub_ttl_price'.$count.'" readonly></td>
-        <td><input type="text" name="bv_unit[]" value="'.$product->pv.'" id="bv_unit'.$count.'" onkeyup="changeTotal('.$count.')"></td>
+        <td><input type="text" name="bv_unit[]" value="'.$bv.'" id="bv_unit'.$count.'" onkeyup="changeTotal('.$count.',`bv`)"></td>
         <td><input type="text" name="sub_ttl_bv[]" value="'.$sub_ttl_bv.'" id="sub_ttl_bv'.$count.'" readonly></td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
         </tr>';

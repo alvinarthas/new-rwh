@@ -37,7 +37,7 @@
                         <select class="form-control select2" parsley-trigger="change" name="select_product" id="select_product">
                             <option value="#" selected>Pilih Product</option>
                             @foreach ($products as $product)
-                                <option value="{{$product->prod_id}}">{{$product->prod_id}} - {{$product->prod->name}}</option>
+                                <option value="{{$product->prod_id}}">{{$product->prod_id}} - {{$product->name}}</option>
                             @endforeach
                         </select>
                     </div>
@@ -188,7 +188,8 @@ function deleteItem(id){
     changeTotalHarga();
 }
 
-function changeTotal(i){
+function changeTotal(i,param=null){
+    console.log(param);
     price = $('#price'+i).val();
     if(price == NaN || price == null || price == ""){
         $('#price'+i).val(0);
@@ -207,6 +208,10 @@ function changeTotal(i){
     }
     $('#qty'+i).val(qty);
 
+    if(param != "bv"){
+        new_bv = price*0.003;
+        bv = $('#bv_unit'+i).val(new_bv);
+    }
     bv = $('#bv_unit'+i).val();
     if(bv == NaN || bv == null || bv == ""){
         $('#bv_unit'+i).val(0);
@@ -218,6 +223,7 @@ function changeTotal(i){
 
     ttl_price = price*qty;
     ttl_bv = bv*qty;
+
     $('#sub_ttl_price'+i).val(ttl_price);
     $('#sub_ttl_bv'+i).val(ttl_bv)
     

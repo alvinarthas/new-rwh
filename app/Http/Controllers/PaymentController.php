@@ -47,7 +47,7 @@ class PaymentController extends Controller
         $details = SalesDet::where('trx_id',$id)->get();
         $payment = SalesPayment::where('trx_id',$id)->get();
         $ttl_pay = SalesPayment::where('trx_id',$id)->sum('payment_amount');
-        $coas = Coa::where('grup_id',5)->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
+        $coas = Coa::where('AccNo','LIKE','1.1.1.2%')->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
         $page = MenuMapping::getMap(session('user_id'),"PSSP");
         return view('payment.sales.form',compact('sales','payment','coas','details','ttl_pay','page'));
     }
@@ -96,21 +96,16 @@ class PaymentController extends Controller
                 }
 
                 // Saldo
-                    if($request->payment_method == "saldo"){
-                        $saldo = Saldo::where('customer_id',$request->customer_info)->first();
-                        $saldodet = new SaldoHistory(array(
-                            'saldo_id' => $saldo->id,
-                            'customer_id' => $saldo->customer_id,
-                            'jenis' => 'Credit',
+                    if($request->payment_method == "2.1.2"){
+                        $saldo = new Saldo(array(
+                            'customer_id' => $request->customer_info,
+                            'status' => 0,
                             'amount' => $request->payment_amount,
                             'keterangan' => "Sales Order Payment SO.$request->trx_id",
                             'creator' => session('user_id'),
-                            'input_date' => $request->payment_date
+                            'tanggal' => $request->payment_date,
+                            'id_jurnal' => $id_jurnal,
                         ));
-                        $saldodet->save();
-
-                        $saldo_skrng = $saldo->saldo_skrng - $request->payment_amount;
-                        $saldo->saldo_skrng = $saldo_skrng;
                         $saldo->save();
                     }
 
@@ -128,14 +123,16 @@ class PaymentController extends Controller
 
     public function salesPayDestroy(Request $request){
         $payment = SalesPayment::where('id',$request->id)->first();
-        $jurnal = Jurnal::where('id_jurnal',$payment->jurnal_id)->first();
+        $jurnal = Jurnal::where('id_jurnal',$payment->jurnal_id);
         $sales = Sales::where('id',$payment->trx_id)->first();
+        $saldo = Saldo::where('id_jurnal',$payment->jurnal_id);
         $sales->status = 0;
         $sales->save();
 
         try {
             $payment->delete();
             $jurnal->delete();
+            $saldo->delete();
             return "true";
         } catch (\Exception $e) {
             return response()->json($e);

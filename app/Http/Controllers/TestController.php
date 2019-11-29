@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\DB;
 
 use App\User;
 use App\BankMember;
+use App\BankMember_copy;
+use App\PerusahaanMember_copy;
+use App\Member_copy;
 use App\Product;
 use App\PriceDet;
 use App\Jurnal;
@@ -22,7 +25,7 @@ use Carbon\Carbon;
 class TestController extends Controller
 {
 
-    public function index(){
+    public function indexfd(){
         dd(Employee::select('id','username')->join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.username')->get());
     }
 
@@ -86,31 +89,56 @@ class TestController extends Controller
         // }
     }
 
-    public function index5(){
-        $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/atm';
+    public function indexd(){
+        $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/ktp';
         if (is_dir($dir)){
             $files = scandir($dir);
-            // echo "<pre>";
-            // print_r($files);
-            $filecount = count($files);
             
+            echo "<pre>";
+            print_r($files);
+            $filecount = count($files);
             for ($i=0; $i < $filecount ; $i++) { 
                 if ($files[$i] != '.' && $files[$i] != '..') {
                     $subdir = $dir."/".$files[$i];
                     // $filebaru = $subdir."/".$files[$i].".jpg";
                     $subfiles = array_values(array_diff(scandir($subdir), array('..', '.')));
-                    echo "<pre>";
-                    print_r($subfiles);
                     if(is_array($subfiles) && $subfiles <> null){
-                        $member = Member::where('ktp',$files[$i])->first();
-                        if($member != null){
-                            $scanktp = $files[$i].".jpg";
-                            $member->scanktp = $scanktp;
-                            $member->update();
-                        }
+                        echo "<pre>";
+                        print_r($files[$i]);
+                        // $member = Member::where('ktp',$files[$i])->first();
+                        // if($member != null){
+                        //     $scanktp = $files[$i].".jpg";
+                        //     $member->scanktp = $scanktp;
+                        //     $member->update();
+                        // }
                     }
                 }
             }
+            die();
+        }
+    }
+
+    public function index(){
+        $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/ktp';
+        if (is_dir($dir)){
+            $files = scandir($dir);
+            $filecount = count($files);
+
+            for ($i=0; $i < $filecount ; $i++) {
+                if ($files[$i] != '.' && $files[$i] != '..') {
+                    $subdir = $dir."/".$files[$i];
+                    $member = Member_copy::where('ktp',$files[$i])->first();
+                    if($member){
+                        $files_next = scandir($subdir);
+                        echo "<pre>";
+                        print_r($files_next);
+                    }else{
+                        echo "Ga ada Cuk <br>";
+                    }
+                    echo "----------- <br>";
+                }
+            }
+            die();
         }
     }
 
@@ -141,12 +169,13 @@ class TestController extends Controller
         }
     }
 
-    public function index4(){
-        foreach(BM2::all() as $key){
-            $member = Member::where('ktp',$key->ktp)->first();
+    public function indexgg(){
+        foreach(PerusahaanMember_copy::all() as $key){
+            $member = Member_copy::where('ktp',$key->ktp)->first();
             if($member){
                 echo $member->ktp."<br>";
             }else{
+                $key->delete();
                 echo "Ga ada Cuk <br>";
             }
             echo "----------- <br>";
@@ -180,7 +209,7 @@ class TestController extends Controller
     }
 
     public function index3(){
-        $member = Mem2::all();
+        $member = Member_copy::all();
         foreach ($member as $key) {
             if($key->tgllhr != "-" || $key->tgllhr !="---"){
                 $newDate = date("Y-m-d", strtotime($key->tgllhr));

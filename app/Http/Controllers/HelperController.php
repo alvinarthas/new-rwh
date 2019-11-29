@@ -26,9 +26,12 @@ class HelperController extends Controller
     public function checkSaldo(Request $request){
         $customer = $request->customer;
 
-        $saldo = Saldo::where('customer_id',$customer)->first()->saldo_skrng;
+        $saldo_in = Saldo::where('customer_id',$customer)->where('status',1)->sum('amount');
+        $saldo_out = Saldo::where('customer_id',$customer)->where('status',0)->sum('amount');
 
-        return $saldo;
+        $total = $saldo_in - $saldo_out;
+
+        return $total;
     }
 
     public function ajxCoa(Request $request){

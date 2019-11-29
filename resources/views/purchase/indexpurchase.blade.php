@@ -25,7 +25,7 @@
                                 <a href="{{route('purchase.edit',['id'=>$purchase->id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
                                 @endif
                                 @if (array_search("PUPUD",$page))
-                                <a href="javascrip:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$purchase->id}})">Delete</a>
+                                <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$purchase->id}})">Delete</a>
                                 @endif
                                 @if ($purchase->approve == 0)
                                 <?php

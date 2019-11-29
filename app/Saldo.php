@@ -8,6 +8,6 @@ class Saldo extends Model
 {
     protected $table ='tblsaldo';
     protected $fillable = [
-        'customer_id','status','amount','keterangan','creator','tanggal', 'accNo', 'buktitf'
+        'customer_id','status','amount','keterangan','creator','tanggal', 'accNo', 'buktitf','id_jurnal'
     ];
 }
