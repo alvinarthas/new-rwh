@@ -96,6 +96,7 @@ Index Sales Payment
 
                     <div class="form-group text-left m-b-0">
                         <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData()">Show Data</a>
+                        <a href="javascript:;" class="btn btn-purple btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData('all')">Show All</a>
                     </div>
                 </div>
 
@@ -146,7 +147,7 @@ Index Sales Payment
 
     $(".select2").select2();
 
-    function showData(){
+    function showData(param=null){
         start_trx = $('#start_trx').val();
         end_trx = $('#end_trx').val();
         start_pay = $('#start_pay').val();
@@ -163,6 +164,7 @@ Index Sales Payment
                 start_pay: start_pay,
                 end_pay: end_pay,
                 customer: customer,
+                param: param,
             },
         }).done(function (data) {
             document.getElementById("sales-list").style.display = 'block';

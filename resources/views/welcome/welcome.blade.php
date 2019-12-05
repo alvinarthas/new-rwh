@@ -31,15 +31,15 @@
                                     <h1 class="text-dark">Hai {{ session('name') }},</h1>
                                     @php
                                         Carbon::setLocale('id');
-                                        $getTime = Carbon::now()->setTimezone('Asia/Phnom_Penh')->toTimeString();
-                                        if(($getTime>'11:00:00') && ($getTime<='15:00:00')){
-                                            $time = "SIANG";
-                                        }elseif(($getTime>'15:00:00') && ($getTime<='18:00:00')){
-                                            $time = "SORE";
-                                        }elseif(($getTime>'18:00:00') && ($getTime<='00:00:00')){
-                                            $time = "MALAM";
-                                        }else{
+                                        $getTime = Carbon::now()->toTimeString();
+                                        if($getTime < '12:00:00'){
                                             $time = "PAGI";
+                                        }elseif(($getTime >='12:00:00') && ($getTime < '15:00:00')){
+                                            $time = "SIANG";
+                                        }elseif(($getTime >='15:00:00') && ($getTime < '18:00:00')){
+                                            $time = "SORE";
+                                        }elseif($getTime >='18:00:00'){
+                                            $time = "MALAM";
                                         }
                                     @endphp
                                     <p class="text-dark">SELAMAT {{ $time }}, DAN SELAMAT BEKERJA!</p>

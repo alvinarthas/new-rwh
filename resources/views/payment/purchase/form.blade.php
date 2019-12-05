@@ -88,6 +88,7 @@ Form Purchase Payment
                                 <label class="col-2 col-form-label">Supplier Name</label>
                                 <div class="col-10">
                                     <input type="text" class="form-control" parsley-trigger="change" value="{{$purchase->supplier()->first()->nama}}" readonly>
+                                    <input type="hidden" class="form-control" id="supplier" parsley-trigger="change" value="{{$purchase->supplier}}" readonly>
                                 </div>
                             </div>
                         </div>
@@ -106,7 +107,7 @@ Form Purchase Payment
                 </div>
 
                 <div class="card-box">
-                    <form class="form-horizontal" role="form" action="{{ route('purchaseStore') }}" enctype="multipart/form-data" method="POST">
+                    <form class="form-horizontal" role="form" id="form" action="{{ route('purchaseStore') }}" enctype="multipart/form-data" method="POST">
                         @csrf
                         <input type="hidden" name="trx_id" value="{{$purchase->id}}">
                         <h4 class="m-t-0 header-title">Insert Payment</h4>
@@ -133,14 +134,24 @@ Form Purchase Payment
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Payment Method</label>
                                     <div class="col-10">
-                                        <select class="form-control select2" parsley-trigger="change" name="payment_method" id="payment_method" required>
+                                        <select class="form-control select2" parsley-trigger="change" name="payment_method" id="payment_method" onchange="ifSaldo(this.value)" required>
                                             <option value="#" disabled>Pilih Method</option>
                                             @foreach ($coas as $coa)
                                                 <option value="{{$coa->AccNo}}">{{$coa->AccName}}</option>
                                             @endforeach
+                                            <option value="1.1.3.3">Deposit Pembelian</option>
                                         </select>
                                     </div>
                                 </div>
+                                <div id="deposit" style="display:none">
+                                        <div class="form-group row">
+                                            <label class="col-2 col-form-label">Saldo Deposit Pembelian</label>
+                                            <div class="col-10">
+                                                <input type="text" class="form-control" parsley-trigger="change" id="deposit_amount" value="0">
+                                                <input type="hidden" class="form-control" parsley-trigger="change" id="deposit_amountraw" name="deposit_amount" value="0">
+                                            </div>
+                                        </div>
+                                    </div>
                                 <div id="saldo"></div>
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Payment Amount</label>
@@ -151,10 +162,18 @@ Form Purchase Payment
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Payment Deduction</label>
                                     <div class="col-10">
-                                        <select class="form-control select2" parsley-trigger="change" name="payment_deduction" id="payment_deduction" required>
+                                        <select class="form-control select2" parsley-trigger="change" name="payment_deduction" id="payment_deduction" required onchange="deduction(this.value)">
                                             <option value="No_Deduction">No Deduction</option>
                                             <option value="Biaya_Transfer_Bank">Biaya Transfer Bank</option>
                                         </select>
+                                    </div>
+                                </div>
+                                <div id="deduct" style="display:none">
+                                    <div class="form-group row">
+                                        <label class="col-2 col-form-label">Deduction Amount</label>
+                                        <div class="col-10">
+                                            <input type="text" class="form-control" parsley-trigger="change" id="deduct_amount" name="deduct_amount" value="0">
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -209,7 +228,7 @@ Form Purchase Payment
                                     <td>{{$pay->payment_desc}}</td>
                                     <td>{{$pay->deduct_category}}</td>
                                     <td>{{$pay->due_date}}</td>
-                                    <td></td>
+                                    <td>{{$pay->jurnal_id}}</td>
                                     <td>
                                         @if (array_search("PUPPD",$page))
                                         <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5" onclick="deletePayment({{$pay->id}})">Delete</a>
@@ -306,5 +325,64 @@ Form Purchase Payment
             }
         })
     }
+
+    function deduction(id) {
+        if(id == "Biaya_Transfer_Bank"){
+            document.getElementById("deduct").style.display='block';
+        }else{
+            document.getElementById("deduct").style.display='none';
+        }
+    }
+
+    function formatNumber(num) {
+        return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+    }
+
+    function ifSaldo(id){
+        supplier = $('#supplier').val();
+        if(id == "1.1.3.3"){
+            $.ajax({
+                url : "{{route('checkDeposit')}}",
+                type : "get",
+                dataType: 'json',
+                data:{
+                    supplier: supplier,
+                },
+            }).done(function (data) {
+                document.getElementById("deposit").style.display = 'block';
+                $('#deposit_amount').val(formatNumber(data));
+                $('#deposit_amountraw').val(data);
+            }).fail(function (msg) {
+                alert('Gagal menampilkan data, silahkan refresh halaman.');
+            });
+        }else{
+            document.getElementById("deposit").style.display='none';
+            $('#deposit_amount').val(formatNumber(0));
+            $('#deposit_amountraw').val(0);
+        }
+    }
+
+    $("form").submit(function(){
+        payamount = parseInt($('#payment_amount').val());
+        topaid = parseInt($('#paid').val());
+        method = $('#payment_method').val();
+        saldo = parseInt($('#deposit_amountraw').val());
+
+        if(payamount > topaid){
+            toastr.error("Biaya yang akan dibayar melebihi jumlah yang seharusnya dibayar", 'Error!!!')
+            event.preventDefault();
+        }else{
+            if(method == "1.1.3.3"){
+                if(payamount > saldo){
+                    toastr.error("Saldo anda tidak cukup untuk melakukan pembayaran", 'Error!!!')
+                    event.preventDefault();
+                }else{
+                    document.getElementById("form").submit();
+                }
+            }else{
+                document.getElementById("form").submit();
+            }
+        }
+    });
 </script>
 @endsection

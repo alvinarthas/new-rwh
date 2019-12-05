@@ -35,7 +35,7 @@ class PaymentController extends Controller
         $end_pay = $request->end_pay;
         $customer = $request->customer;
         $page = MenuMapping::getMap(session('user_id'),"PSSP");
-        $sales = Sales::getOrderPayment($start_trx,$end_trx,$start_pay,$end_pay,$customer);
+        $sales = Sales::getOrderPayment($start_trx,$end_trx,$start_pay,$end_pay,$customer,$request->param);
         if ($request->ajax()) {
             return response()->json(view('payment.sales.view',compact('sales','page'))->render());
         }
@@ -145,7 +145,7 @@ class PaymentController extends Controller
     }
 
     public function purchaseView(Request $request){
-        $purchase = Purchase::getOrderPayment($request->bulan,$request->tahun);
+        $purchase = Purchase::getOrderPayment($request->bulan,$request->tahun,$request->param);
         $page = MenuMapping::getMap(session('user_id'),"PUPP");
         if ($request->ajax()) {
             return response()->json(view('payment.purchase.view',compact('purchase','page'))->render());
@@ -158,7 +158,7 @@ class PaymentController extends Controller
         $payment = PurchasePayment::where('trx_id',$id)->get();
         $ttl_pay = PurchasePayment::where('trx_id',$id)->sum('payment_amount');
         $ttl_order = PurchaseDetail::where('trx_id',$id)->sum(DB::raw('qty * price'));
-        $coas = Coa::where('grup_id',5)->orWhere('grup_id',2)->orWhere(DB::raw("AccNo like '2%' and AccName like '%CC%'"))->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
+        $coas = Coa::where('AccNo','LIKE','1.1.1.2%')->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
         $page = MenuMapping::getMap(session('user_id'),"PUPP");
 
         return view('payment.purchase.form',compact('purchase','payment','coas','details','ttl_pay','ttl_order','page'));
@@ -186,9 +186,9 @@ class PaymentController extends Controller
                 'trx_id' => $request->trx_id,
                 'payment_date' => $request->payment_date,
                 'payment_amount' => $request->payment_amount,
-                'payment_deduction' => $request->payment_deduction,
+                'deduct_category' => $request->payment_deduction,
                 'payment_method' => $request->payment_method,
-                'payment_description' => $request->payment_description,
+                'payment_desc' => $request->payment_description,
                 'due_date' => $request->next_due_date,
                 'deduct_amount' =>$request->deduct_amount,
                 'jurnal_id' => $id_jurnal,
@@ -203,16 +203,11 @@ class PaymentController extends Controller
 
                     $purchase->save();
                 }
-                // Jurnal Debet kas/bank
-                Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'2-102002','Debet');
-                    if($request->payment_deduction == "Biaya_Transfer_Bank"){
-                        $pay_method = "4-201001";
+                // Jurnal Debet Hutang Dagang
+                Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'2.1.1','Debet');
 
-                        //insert debet potongan bank
-                        Jurnal::addJurnal($id_jurnal,$request->deduct_amount,$request->payment_date,$jurnal_desc,$pay_method,'Debet');
-                    }
-                // Jurnal Credit piutang konsumen
-                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Credit');
+                // Jurnal Credit Cash/Bank / Deposit Pembelian
+                Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Credit');
 
 
                 return redirect()->back()->with('status', 'Data berhasil dibuat');

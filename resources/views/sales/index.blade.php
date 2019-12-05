@@ -59,6 +59,7 @@ Index Sales Order
                         <a href="{{route('sales.create')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add Sales</a>
                         @endif
                         <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="chooseSales()">Show Data</a>
+                        <a href="javascript:;" class="btn btn-purple btn-rounded waves-effect waves-light w-md m-b-5" onclick="chooseSales('all')">Show All</a>
                     </div>
                 </div>
 
@@ -99,10 +100,10 @@ Index Sales Order
         orientation: "top"
     });
 
-    function chooseSales(){
+    function chooseSales(param=null){
         start = $('#trx_start').val();
         end = $('#trx_end').val();
-
+        
         $.ajax({
             url : "{{route('showIndexSales')}}",
             type : "get",
@@ -110,6 +111,7 @@ Index Sales Order
             data:{
                 start: start,
                 end: end,
+                param: param,
             },
         }).done(function (data) {
             document.getElementById("sales-list").style.display = 'block';

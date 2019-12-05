@@ -189,45 +189,46 @@ function deleteItem(id){
 }
 
 function changeTotal(i,param=null){
-    console.log(param);
-    price = $('#price'+i).val();
-    if(price == NaN || price == null || price == ""){
-        $('#price'+i).val(0);
-        price = parseInt($('#price'+i).val());
-    }else{
-        price = parseInt($('#price'+i).val(),10);
-    }
-    $('#price'+i).val(price);
+    setTimeout(function(){
+        price = $('#price'+i).val();
+        if(price == NaN || price == null || price == ""){
+            $('#price'+i).val(0);
+            price = parseInt($('#price'+i).val());
+        }else{
+            price = parseInt($('#price'+i).val(),10);
+        }
+        $('#price'+i).val(price);
 
-    qty = $('#qty'+i).val();
-    if(qty == NaN || qty == null || qty == ""){
-        $('#qty'+i).val(0);
-        qty = parseInt($('#qty'+i).val());
-    }else{
-        qty = parseInt($('#qty'+i).val(),10);
-    }
-    $('#qty'+i).val(qty);
+        qty = $('#qty'+i).val();
+        if(qty == NaN || qty == null || qty == ""){
+            $('#qty'+i).val(0);
+            qty = parseInt($('#qty'+i).val());
+        }else{
+            qty = parseInt($('#qty'+i).val(),10);
+        }
+        $('#qty'+i).val(qty);
 
-    if(param != "bv"){
-        new_bv = price*0.003;
-        bv = $('#bv_unit'+i).val(new_bv);
-    }
-    bv = $('#bv_unit'+i).val();
-    if(bv == NaN || bv == null || bv == ""){
-        $('#bv_unit'+i).val(0);
-        bv = parseInt($('#bv_unit'+i).val());
-    }else{
-        bv = parseInt($('#bv_unit'+i).val(),10);
-    }
-    $('#bv_unit'+i).val(bv);
+        if(param != "bv"){
+            new_bv = price*0.003;
+            bv = $('#bv_unit'+i).val(new_bv);
+        }
+        bv = $('#bv_unit'+i).val();
+        if(bv == NaN || bv == null || bv == ""){
+            $('#bv_unit'+i).val(0);
+            bv = parseFloat($('#bv_unit'+i).val());
+        }else{
+            bv = parseFloat($('#bv_unit'+i).val(),10);
+        }
+        $('#bv_unit'+i).val(bv);
 
-    ttl_price = price*qty;
-    ttl_bv = bv*qty;
+        ttl_price = price*qty;
+        ttl_bv = bv*qty;
 
-    $('#sub_ttl_price'+i).val(ttl_price);
-    $('#sub_ttl_bv'+i).val(ttl_bv)
-    
-    changeTotalHarga();
+        $('#sub_ttl_price'+i).val(ttl_price);
+        $('#sub_ttl_bv'+i).val(ttl_bv)
+        
+        changeTotalHarga();
+    }, 1000);
 }
 
 //setup before functions

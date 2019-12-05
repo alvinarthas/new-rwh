@@ -48,7 +48,12 @@ class PurchaseController extends Controller
     }
 
     public function showIndexPurchase(Request $request){
-        $purchases = Purchase::where('month',$request->bulan)->where('year',$request->tahun)->orderBy('created_at','desc')->get();
+        if($request->param == "all"){
+            $purchases = Purchase::orderBy('created_at','desc')->get();
+        }else{
+            $purchases = Purchase::where('month',$request->bulan)->where('year',$request->tahun)->orderBy('created_at','desc')->get();
+        }
+        
         $page = MenuMapping::getMap(session('user_id'),"PUPU");
         if ($request->ajax()) {
             return response()->json(view('purchase.indexpurchase',compact('purchases','page'))->render());

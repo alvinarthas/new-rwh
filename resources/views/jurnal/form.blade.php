@@ -111,13 +111,13 @@ Form Sales Payment
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Total Debet</label>
                             <div class="col-10">
-                                <input type="number" class="form-control" name="ttl_debet" id="ttl_debet" parsley-trigger="change" value="@isset($ttl_debet){{$ttl_debet}}@else{{0}}@endisset">
+                                <input type="number" class="form-control" name="ttl_debet" id="ttl_debet" parsley-trigger="change" readonly value="@isset($ttl_debet){{$ttl_debet}}@else{{0}}@endisset">
                             </div>
                         </div>
                         <div class="form-group row">
                                 <label class="col-2 col-form-label">Total Credit</label>
                                 <div class="col-10">
-                                    <input type="number" class="form-control" name="ttl_credit" id="ttl_credit" parsley-trigger="change" value="@isset($ttl_credit){{$ttl_credit}}@else{{0}}@endisset">
+                                    <input type="number" class="form-control" name="ttl_credit" id="ttl_credit" readonly parsley-trigger="change" value="@isset($ttl_credit){{$ttl_credit}}@else{{0}}@endisset">
                                 </div>
                             </div>
                         <div class="form-group row">
@@ -160,7 +160,9 @@ Form Sales Payment
 
 @section('script-js')
 <script>
-
+    // Select2
+    $(".select2").select2();
+    
     $("#form").submit(function(e){
         ttl_debet = parseInt($('#ttl_debet').val());
         ttl_credit = parseInt($('#ttl_credit').val());

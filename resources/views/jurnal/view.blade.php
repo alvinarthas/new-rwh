@@ -16,6 +16,7 @@
             @csrf
             @php($i=1)
             @foreach ($jurnals['data'] as $jurnal)
+            @isset($jurnal->coa->AccName)
                 <tr>
                     <td>{{$i}}</td>
                     <td>{{$jurnal->id_jurnal}}</td>
@@ -39,7 +40,8 @@
                         @endif
                     </td>
                 </tr>
-            @php($i++)
+                @php($i++)
+            @endisset
             @endforeach
         </tbody>
     </table>

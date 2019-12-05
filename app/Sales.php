@@ -19,16 +19,26 @@ class Sales extends Model
         return $this->belongsTo('App\Customer');
     }
 
-    public static function getOrder($start,$end){
+    public static function getOrder($start,$end,$param){
         $data = collect();
-        $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id')
-        ->whereBetween('trx_date',[$start,$end]);
+        if($param == "all"){
+            $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id');
+        }else{
+            $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id')
+            ->whereBetween('trx_date',[$start,$end]);
+        }
+        
         $ttl_count = $order->sum('x.qty');
         $order->orderBy('tblproducttrx.id')->select('tblproducttrx.*');
         
         $ttl_pemasukan = $order->sum('x.sub_ttl');
         $ttl_total = $order->sum('x.sub_ttl_pv');
-        $ttl_trx = Sales::whereBetween('trx_date',[$start,$end])->count('id');
+        if($param == "all"){
+            $ttl_trx = Sales::count('id');
+        }else{
+            $ttl_trx = Sales::whereBetween('trx_date',[$start,$end])->count('id');
+        }
+        
 
         $data->put('ttl_count',$ttl_count);
         $data->put('ttl_pemasukan',$ttl_pemasukan);
@@ -40,19 +50,31 @@ class Sales extends Model
         return $data;
     }
 
-    public static function getOrderPayment($start_trx,$end_trx,$start_pay,$end_pay,$customer){
-        $payment = SalesPayment::whereBetween('payment_date',[$start_pay,$end_pay])->sum('payment_amount');
-        $sales = Sales::whereBetween('trx_date',[$start_trx,$end_trx])->where('approve',1);
-        $data = collect();
-
-        if($customer <> "all"){
-            $sales->where('customer_id',$customer);
+    public static function getOrderPayment($start_trx,$end_trx,$start_pay,$end_pay,$customer,$param){
+        if($param == "all"){
+            $payment = SalesPayment::sum('payment_amount');
+            $sales = Sales::where('approve',1);
+            $data = collect();
+            
+            $ttl_trx = $sales->count('id');
+    
+            $ttl_harga = $sales->sum('ttl_harga');
+            $ttl_ongkir = $sales->sum('ongkir');
+        }elseif($param == null){
+            $payment = SalesPayment::whereBetween('payment_date',[$start_pay,$end_pay])->sum('payment_amount');
+            $sales = Sales::whereBetween('trx_date',[$start_trx,$end_trx])->where('approve',1);
+            $data = collect();
+    
+            if($customer <> "all"){
+                $sales->where('customer_id',$customer);
+            }
+            
+            $ttl_trx = $sales->count('id');
+    
+            $ttl_harga = $sales->sum('ttl_harga');
+            $ttl_ongkir = $sales->sum('ongkir');
         }
         
-        $ttl_trx = $sales->count('id');
-
-        $ttl_harga = $sales->sum('ttl_harga');
-        $ttl_ongkir = $sales->sum('ongkir');
         $ttl_sales = $ttl_harga+$ttl_ongkir;
 
         $data->put('ttl_trx',$ttl_trx);
@@ -64,7 +86,7 @@ class Sales extends Model
     }
 
     public static function checkDO($start,$end){
-        $sales = Sales::whereBetween('trx_date',[$start,$end])->get();
+        $sales = Sales::whereBetween('trx_date',[$start,$end])->where('status',1)->get();
         $data = collect();
         foreach ($sales as $sale) {
             $collect = collect();

@@ -8,7 +8,7 @@
 
 @section('content')
     {{-- Current Menu Mapping --}}
-    <form action="{{route('PurMapDelete')}}" method="post" enctype="multipart/form-data">
+    <form id="formdelete" role="form" action="{{route('PurMapDelete')}}" method="post" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="user_id" value="{{$id}}">
         <div class="row">
@@ -52,7 +52,7 @@
     </form>
 
     {{-- Rest of Menu Mapping --}}
-    <form action="{{route('PurMapStore')}}" method="post" enctype="multipart/form-data">
+    <form id="formstore" action="{{route('PurMapStore')}}" method="post" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="user_id" value="{{$id}}">
         <div class="row">
@@ -69,8 +69,7 @@
 
                         <tbody>
                             @php($i = 1)
-                            @if (empty($rests) || !isset($rest))
-                            @else
+                            @isset($rests)
                             @foreach($rests as $rest)
                             
                             <tr>
@@ -89,7 +88,9 @@
                             
                             @php($i++)
                             @endforeach
-                            @endif
+                            @else
+                            
+                            @endisset
                         </tbody>
                     </table>
                 </div>
@@ -108,4 +109,27 @@
 @endsection
 
 @section('script-js')
+<script>
+    $("#formstore").submit(function(e){
+        count_rest = $('input[name="rest[]"]:checked').length;
+
+        if(count_rest > 0){
+            $( "#formstore" ).submit();
+        }else{
+            toastr.warning("Belum ada data yang di check, silahkan coba lagi", 'Warning!')
+            e.preventDefault();
+        }
+    });
+
+    $("#formdelete").submit(function(e){
+        count_current = $('input[name="current[]"]:checked').length;
+
+        if(count_current > 0){
+            $( "#formDelete" ).submit();
+        }else{
+            toastr.warning("Belum ada data yang di check, silahkan coba lagi", 'Warning!')
+            e.preventDefault();
+        }
+    });
+</script>
 @endsection

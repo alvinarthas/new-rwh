@@ -45,9 +45,6 @@ class SaldoController extends Controller
      */
     public function store(Request $request)
     {
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
         $validator = Validator::make($request->all(), [
             'customer_id' => 'required',
             'nominal' => 'required|integer',

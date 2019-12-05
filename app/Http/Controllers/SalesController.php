@@ -83,9 +83,14 @@ class SalesController extends Controller
     }
 
     public function showIndexSales(Request $request){
-        $sales = Sales::whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
+        if($request->param == "all"){
+            $sales = Sales::orderBy('trx_date','desc')->get();
+        }else{
+            $sales = Sales::whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
+        }
+        
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
-        $transaksi = Sales::getOrder($request->start,$request->end);
+        $transaksi = Sales::getOrder($request->start,$request->end,$request->param);
         if ($request->ajax()) {
             return response()->json(view('sales.indexsales',compact('sales','page','transaksi'))->render());
         }

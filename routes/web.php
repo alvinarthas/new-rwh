@@ -128,6 +128,8 @@ Route::middleware(['checkUser'])->group(function () {
         'customer' => 'CustomerController',
         // Saldo
         'saldo' => 'SaldoController',
+        // Deposit Pembelian
+        'deposit' => 'DepositController',
     ]);
 
     // Member
@@ -262,6 +264,7 @@ Route::middleware(['checkUser'])->group(function () {
 
     // Saldo Helper
     Route::get('checksaldo','HelperController@checkSaldo')->name('checkSaldo');
+    Route::get('checkdeposit','HelperController@checkDeposit')->name('checkDeposit');
 
     // Jurnal Helper
     Route::get('jurnaladd','JurnalController@addJurnal')->name('addJurnal');
