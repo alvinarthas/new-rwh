@@ -19,7 +19,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::all();
+        $products = Product::orderBy('name','asc')->get();
         $page = MenuMapping::getMap(session('user_id'),"MDPD");
         return view('product.index', compact('products','page'));
     }
@@ -164,9 +164,10 @@ class ProductController extends Controller
 
     public function manage()
     {
-        $products = Product::all();
+        $prods = Product::select('name', 'prod_id', 'category', 'harga_distributor', 'harga_modal')->orderBy('name', 'asc')->get();
+        $i = 0;
 
-        return view('product.manageharga', compact('products'));
+        return view('product.manageharga', compact('prods','i'));
     }
 
     public function showProdAjx(Request $request)

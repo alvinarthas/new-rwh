@@ -41,7 +41,7 @@
 
                                     <td>
                                         {{-- tampil semua data member perusahaan --}}
-                                        <input class="form-control number" value="{{ number_format($data_bonus['bonus'],0) }}" type="text" name="bonus{{ $i }}">
+                                        <input class="form-control number" value="{{ number_format($data_bonus['bonus'],0) }}" type="text" name="bonus{{ $i }}" readonly>
 
                                         {{-- hanya yang bonus !=0 --}}
                                         {{-- <input class="form-control number" value="{{ number_format($prm['bonus'],0) }}" type="text" name="bonus{{ $i }}"> --}}
@@ -83,7 +83,7 @@
 
                                     @endphp
                                     <td>
-                                        <input class="form-control number" value="{{ number_format($data_bonus['bonus'],0) }}" type="text" name="bonus{{ $i }}">
+                                        <input class="form-control number" value="{{ number_format($data_bonus['bonus'],0) }}" type="text" name="bonus{{ $i }}" readonly>
                                     </td>
                                 </tr>
                                 @php

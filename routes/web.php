@@ -63,23 +63,31 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/createBonus', 'BonusController@createBonusPerhitungan')->name('createBonusPerhitungan');
     Route::post('/uploadBonus', 'BonusController@uploadBonusPerhitungan2')->name('uploadBonusPerhitungan');
     Route::post('/ajxaddrowperhitungan', 'BonusController@ajxAddRowPerhitungan')->name('ajxAddRowPerhitungan');
+    Route::get('/perhitunganbonus/{id}/deleterow','BonusController@deleteRowPerhitungan');
 
     Route::get('/bonus/bayar','BonusController@indexBayar')->name('bonus.penerimaan');
     Route::get('/bonus/bayar/create','BonusController@createBayar')->name('bonus.createPenerimaan');
     Route::post('/bonus/bayar/create','BonusController@storeBayar')->name('bonus.storePenerimaan');
+    Route::get('/bonus/bayar/{id}/edit','BonusController@editBayar')->name('bonus.editPenerimaan');
+    Route::put('/bonus/bayar/{id}/edit','BonusController@updateBayar')->name('bonus.updatePenerimaan');
     Route::get('/showBonusPembayaran', 'BonusController@showBonusPembayaran')->name('showBonusPenerimaan');
     Route::get('/createBonusPembayaran', 'BonusController@createBonusPembayaran')->name('createBonusPenerimaan');
     Route::post('/uploadBonusPenerimaan', 'BonusController@uploadBonusPenerimaan')->name('uploadBonusPenerimaan');
     Route::post('/ajxaddrowpembayaran', 'BonusController@ajxAddRowPembayaran')->name('ajxAddRowPenerimaan');
     Route::post('/exportGagalBonus', 'BonusController@exportGagalBonus')->name('exportGagalBonus');
+    Route::get('/penerimaanbonus/{id}/deleterow','BonusController@deleteRowPenerimaan');
 
     Route::get('/bonus/topup','BonusController@indexTopup')->name('bonus.topup');
     Route::get('/bonus/topup/create','BonusController@createTopup')->name('bonus.createtopup');
     Route::post('/bonus/topup/create','BonusController@storeTopup')->name('bonus.storetopup');
+    Route::get('/bonus/topup/{id}/edit','BonusController@editTopup')->name('bonus.edittopup');
+    Route::put('/bonus/topup/{id}/edit','BonusController@updateTopup')->name('bonus.updatetopup');
     Route::get('/showBonusTopup', 'BonusController@showBonusTopup')->name('showBonusTopup');
     Route::get('/createBonusTopup', 'BonusController@createBonusTopup')->name('createBonusTopup');
     Route::post('/uploadBonusTopup', 'BonusController@uploadBonusTopup')->name('uploadBonusTopup');
     Route::post('/ajxaddrowtopup', 'BonusController@ajxAddRowTopup')->name('ajxAddRowTopup');
+    Route::get('/topupbonus/{id}/deleterow','BonusController@deleteRowTopup');
+    Route::get('/checkEstimasiBonus', 'BonusController@checkEstimasiBonus')->name('checkEstimasiBonus');
 
     Route::get('/bonus/laporan','BonusController@indexLaporan')->name('bonus.laporan');
     Route::get('/showBonusLaporan', 'BonusController@showLaporanBonus')->name('showLaporanBonus');

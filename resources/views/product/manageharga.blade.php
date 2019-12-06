@@ -1,7 +1,7 @@
 @extends('layout.main')
 
 @php
-
+    use App\ManageHarga;
     use App\Perusahaan;
     use Illuminate\Support\Facades\DB;
 @endphp
@@ -28,50 +28,70 @@
 @endsection
 
 @section('content')
-{{-- <form class="form-horizontal" role="form" action="{{ route('product.show') }}" enctype="multipart/form-data" method="POST"> --}}
-    <div class="row">
-        <div class="col-12">
-            <div class="card-box">
-                <h4 class="m-t-0 header-title">Data Produk</h4>
-                <p class="text-muted m-b-30 font-14">
-                </p>
+<div class="row">
+    <div class="col-12">
+        <div class="card-box">
+            <h4 class="m-t-0 header-title">Manage Harga Produk</h4>
+            <p class="text-muted m-b-30 font-14">
+            </p>
 
-                <div class="row">
-                    <div class="col-12">
-                        <div class="p-20">
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label">Pilih Periode</label>
-                                <div class="col-5">
-                                    <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" required>
-                                        <option value="#" selected disabled>Pilih Bulan</option>
-                                        @for ($i = 1; $i <= 12; $i++)
-                                            <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
-                                        @endfor
-                                    </select>
-                                </div>
-                                <div class="col-5">
-                                    <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" required>
-                                        <option value="#" selected disabled>Pilih Tahun</option>
-                                        @for ($i = 2018; $i <= date('Y'); $i++)
-                                            <option value="{{$i}}">{{$i}}</option>
-                                        @endfor
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <form action="{{ route('manageharga.store') }}" method="POST">
+                @csrf
+                <table id="responsive-datatable" class="table table-bordered dt-responsive wrap" cellspacing="0">
+                    <thead>
+                        <th style="width:5%">No</th>
+                        <th style="width:5%">Product ID</th>
+                        {{-- <th width="col-md-3">Prod ID Baru</th> --}}
+                        <th width="10%">Product Name</th>
+                        <th style="width:10%">Product Brand</th>
+                        <th style="width:20%">Harga Distributor</th>
+                        <th style="width:20%">Harga Modal</th>
+                    </thead>
+                    <tbody>
+                        @foreach($prods as $prd)
+                        <tr>
+                            @php
+                                $i++;
+                            @endphp
+                            <td>{{$i}}</td>
+                            <input type="hidden" name="i" id="i" value="{{ $i }}"/>
+                            <td>{{$prd->prod_id}}</td>
+                            <input type="hidden" name="pid[]" id="pid{{ $i }}" value="{{ $prd->prod_id }}"/>
+                            {{-- <td>{{$prd->prod_id_new}}</td> --}}
+                            <td>{{$prd->name}}</td>
+                            <td>{{$prd->category}}</td>
+                            @php
+                                if($prd->harga_distributor == null OR $prd->harga_distributor == ""){
+                                    $harga_dis = 0;
+                                }else{
+                                    $harga_dis = $prd->harga_distributor;
+                                }
+
+                                if($prd->harga_modal == null OR $prd->harga_modal == ""){
+                                    $harga_mod = 0;
+                                }else{
+                                    $harga_mod = $prd->harga_modal;
+                                }
+                            @endphp
+                            <td>
+                                <input class="form-control" name="price_dis[]" type="text" value="{{ $harga_dis }}">
+                            </td>
+                            <td>
+                                <input class="form-control" name="price_mod[]" type="text" value="{{ $harga_mod }}">
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
                 <div class="form-group text-right m-b-0">
-                    <button class="btn btn-primary waves-effect waves-light" onclick="showLog()">
-                        Show
+                    <a href="{{ route('product.index') }}" class="btn btn-warning waves-effect waves-light">Kembali</a>
+                    <button class="btn btn-primary waves-effect waves-light" id="submit">
+                        Update Harga
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
-{{-- </form> --}}
-
-<div id="logTabel">
 </div>
 @endsection
 
@@ -97,17 +117,16 @@
 <script type="text/javascript">
     $(document).ready(function () {
         // Responsive Datatable
-        $('#responsive-datatable').DataTable();
+        var table = $('#responsive-datatable').DataTable({
+            searching : true,
+            paging : false,
+            scrollY: 400
+        });
 
-        // Select2
-        $("#bulan").select2({
-            templateResult: formatState,
-            templateSelection: formatState
-        });
-        $("#tahun").select2({
-            templateResult: formatState,
-            templateSelection: formatState
-        });
+        $('form').submit(function() {
+            table.search('').draw();
+            $('#form').submit();
+        })
 
         function formatState (opt) {
             if (!opt.id) {
@@ -125,25 +144,5 @@
             }
         };
     });
-
-    function showLog(){
-            var bulan = $("#bulan").val();
-            var tahun = $("#tahun").val();
-            $.ajax({
-                url         :   "{{route('showProdAjx')}}",
-                data        :   {
-                    bulan : bulan,
-                    tahun : tahun,
-                },
-                type		:	"GET",
-                dataType    :   "html",
-                success		:	function(data){
-                    $("#logTabel").html(data);
-                },
-                error       :   function(data){
-                    document.getElementById('period').value = '2018-06';
-                }
-            });
-    }
 </script>
 @endsection

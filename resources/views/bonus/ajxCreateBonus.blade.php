@@ -34,6 +34,8 @@
                 @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
                     <input type="hidden" name="AccNo3" id="AccNo3" value="{{ $AccNo }}">
                     <input type="hidden" name="bank_id3" id="bank_id3" value="{{ $bank['id'] }}">
+                @endif
+                @if($bonusapa!="laporan")
                     <input type="hidden" name="tgl3" id="tgl3" value="{{ $tgl }}">
                 @endif
                 <input type="hidden" name="xto" id="xto">
@@ -77,10 +79,12 @@
                     @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
                         <input type="hidden" name="AccNo2" id="AccNo2" value="{{ $AccNo }}">
                         <input type="hidden" name="bank_id2" id="bank_id2" value="{{ $bank['id'] }}">
-                        <input type="hidden" name="tgl2" id="tgl2" value="{{ $tgl }}">
                         @if($bonusapa=="pembayaran")
                             <input type="hidden" name="bonus_tertahan2" id="bonus_tertahan2" value="{{ $bonus_tertahan }}">
                         @endif
+                    @endif
+                    @if($bonusapa!="laporan")
+                        <input type="hidden" name="tgl2" id="tgl2" value="{{ $tgl }}">
                     @endif
                 </div>
                 <div class="form-row pull-right m-b-0">
@@ -237,7 +241,6 @@
                     <input type="hidden" name="perusahaan_id" id="perusahaan_id" value="{{ $perusahaan }}">
                 @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
                     <input type="hidden" name="AccNo" id="AccNo" value="{{ $AccNo }}">
-                    <input type="hidden" name="tgl" id="tgl" value="{{ $tgl }}">
                     <input type="hidden" name="bank_id" id="bank_id" value="{{ $bank['id'] }}">
                     @if($bonusapa=="pembayaran")
                         <div class="form-group row">
@@ -259,6 +262,9 @@
                 @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
                     <input type="hidden" name="bulan" value="{{ $bulan }}">
                     <input type="hidden" name="tahun" value="{{ $tahun }}">
+                @endif
+                @if($bonusapa!="laporan")
+                    <input type="hidden" name="tgl" id="tgl" value="{{ $tgl }}">
                 @endif
                 <input type="hidden" name="ctr" id="ctr" value="{{ $i }}">
                 <input type="hidden" name="bonusapa" id="bonusapa" value="{{ $bonusapa }}">
@@ -519,6 +525,7 @@
             var cnt = parseInt($('#ctr').val()) + 1;
             $('#ctr').val(cnt);
             resetall();
+            checkTotal();
             // changeTotalHarga(data.sub_ttl);
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
@@ -586,7 +593,8 @@
             var cnt = parseInt($('#ctr').val()) + 1;
             $('#ctr').val(cnt);
             resetall();
-            changeTotalHarga(data.sub_ttl);
+            checkTotal();
+            // changeTotalHarga(data.sub_ttl);
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });
