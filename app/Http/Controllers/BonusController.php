@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Exceptions\Handler;
 use App\Imports\BonusImport;
 use App\Imports\BonusBayarImport;
 use App\Imports\BonusTopupImport;
