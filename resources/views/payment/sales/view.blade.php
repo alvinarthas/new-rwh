@@ -21,7 +21,12 @@
                     <td>{{$sale->customer->apname}}</td>
                     <td>{{$sale->ongkir}}</td>
                     <td>Rp. {{number_format($sale->ttl_harga+$sale->ongkir)}}</td>
-                    <td>{{$sale->status}}</td>
+                    @if($sale->status == 1)
+                    <td><a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-md waves-danger m-b-5" >Lunas</a></td>
+                    @else
+                    <td><a href="javascript:;" disabled="disabled" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" >Belum Lunas</a></td>
+                    @endif
+                    
                     <td>
                         @if (array_search("PSSPC",$page))
                         <a href="{{route('salesCreate',['id'=>$sale->id])}}" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" >Detail Payment</a>

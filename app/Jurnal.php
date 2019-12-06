@@ -36,28 +36,36 @@ class Jurnal extends Model
         return $id_jurnal;
     }
 
-    public static function viewJurnal($start,$end,$coa,$position){
-        $jurnal = Jurnal::whereBetween('date',[$start,$end]);
-        $jurdebet = Jurnal::whereBetween('date',[$start,$end]);
-        $jurcredit = Jurnal::whereBetween('date',[$start,$end]);
-        if($coa <> "all"){
-            $jurnal->where('AccNo',$coa);
-            $jurdebet->where('AccNo',$coa);
-            $jurcredit->where('AccNo',$coa);
-        }
+    public static function viewJurnal($start,$end,$coa,$position,$param){
+        if($param == "all"){
+            $jurnal = Jurnal::orderBy('date','asc')->get();
+            $ttl_debet = Jurnal::where('AccPos','Debet')->sum('Amount');
+            $ttl_credit = Jurnal::where('AccPos','Credit')->sum('Amount');
+            
+        }elseif($param == NULL){
+            $jurnal = Jurnal::whereBetween('date',[$start,$end]);
+            $jurdebet = Jurnal::whereBetween('date',[$start,$end]);
+            $jurcredit = Jurnal::whereBetween('date',[$start,$end]);
+            if($coa <> "all"){
+                $jurnal->where('AccNo',$coa);
+                $jurdebet->where('AccNo',$coa);
+                $jurcredit->where('AccNo',$coa);
+            }
+    
+            $ttl_debet = $jurdebet->where('AccPos','Debet')->sum('Amount');
+            $ttl_credit = $jurcredit->where('AccPos','Credit')->sum('Amount');
+    
+            if($position <> "all"){
+                $jurnal->where('AccPos',$position);
+            }
 
-        $ttl_debet = $jurdebet->where('AccPos','Debet')->sum('Amount');
-        $ttl_credit = $jurcredit->where('AccPos','Credit')->sum('Amount');
-
-        if($position <> "all"){
-            $jurnal->where('AccPos',$position);
+            $jurnal = $jurnal->orderBy('date','asc')->get();
         }
         
         $data = collect();
-        $data->put('data',$jurnal->orderBy('date','asc')->get());
+        $data->put('data',$jurnal);
         $data->put('ttl_debet',$ttl_debet);
         $data->put('ttl_credit',$ttl_credit);
-        
         return $data;
     }
 

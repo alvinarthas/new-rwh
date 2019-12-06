@@ -27,10 +27,15 @@ class Purchase extends Model
         return Purchase::where('month',$month)->where('year',$year)->where('creator',$creator)->groupBy('supplier')->count('supplier');
     }
 
-    public static function getOrderPayment($bulan,$tahun){
+    public static function getOrderPayment($bulan,$tahun,$param){
         $data = collect();
         $data1 = collect();
-        $purchase = Purchase::where('month',$bulan)->where('year',$tahun)->where('approve',1);
+        if($param == 'all'){
+            $purchase = Purchase::where('approve',1);
+        }elseif($param == NULL){
+            $purchase = Purchase::where('month',$bulan)->where('year',$tahun)->where('approve',1);
+        }
+        
         $ttl_trx = $purchase->count('id');
         $ttl_order = 0;
         $ttl_pay = 0;

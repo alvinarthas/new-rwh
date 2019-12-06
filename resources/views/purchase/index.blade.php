@@ -53,6 +53,7 @@ Index Purchasing
                     <a href="{{route('purchase.create')}}" class="btn btn-success btn-rounded waves-effect waves-light w-md m-b-5">Add Purchase</a>
                     @endif
                     <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase()">Show Data</a>
+                    <a href="javascript:;" class="btn btn-purple btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase('all')">Show All</a>
                 </div>
             </div>
 
@@ -85,7 +86,7 @@ Index Purchasing
     // Select2
     $(".select2").select2();
 
-    function choosePurchase(){
+    function choosePurchase(param=null){
         bulan = $('#bulan').val();
         tahun = $('#tahun').val();
 
@@ -96,6 +97,7 @@ Index Purchasing
             data:{
                 bulan: bulan,
                 tahun: tahun,
+                param: param,
             },
         }).done(function (data) {
             document.getElementById("purchase-list").style.display = 'block';

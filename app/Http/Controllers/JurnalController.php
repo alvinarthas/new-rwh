@@ -20,7 +20,7 @@ class JurnalController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $jurnals = Jurnal::viewJurnal($request->start_date,$request->end_date,$request->coa,$request->position);
+            $jurnals = Jurnal::viewJurnal($request->start_date,$request->end_date,$request->coa,$request->position,$request->param);
             $page = MenuMapping::getMap(session('user_id'),"FIJU");
             return response()->json(view('jurnal.view',compact('jurnals','page'))->render());
         }else{

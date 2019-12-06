@@ -62,7 +62,7 @@ class ReceiveProductController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $id_jurnal = Jurnal::getJurnalID('SO');
+            $id_jurnal = Jurnal::getJurnalID('RP');
 
             $receive = new ReceiveDet(array(
                 'trx_id' => $request->trx_id,
@@ -74,13 +74,15 @@ class ReceiveProductController extends Controller
                 'id_jurnal' => $id_jurnal,
             ));
 
+            $desc = "Receive Barang Product_id: ".$request->product." SO.".$request->trx_id;
+
             try{
                 $receive->save();
                 // JURNAL
-                //insert debet Piutang Konsumen Masukkan harga total - diskon
-                Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'1.1.3.1','Debet');
-                //insert credit pendapatan retail (SALES)
-                Jurnal::addJurnal($id_jurnal,$request->raw_ttl_trx,$request->trx_date,$jurnal_desc,'4.1.1','Credit');
+                //insert debet Persediaan Barang di Gudang
+                Jurnal::addJurnal($id_jurnal,$request->qty,$request->receive_date,$desc,'1.1.4.1.2','Debet');
+                //insert credit Persediaan Barang Indent
+                Jurnal::addJurnal($id_jurnal,$request->qty,$request->receive_date,$desc,'1.1.4.1.1','Credit');
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
@@ -90,9 +92,11 @@ class ReceiveProductController extends Controller
 
     public function delete(Request $request){
         $receive = ReceiveDet::where('id',$request->id)->first();
+        $jurnal = Jurnal::where('id_jurnal',$receive->id_jurnal)->first();
 
         try {
             $receive->delete();
+            $jurnal->delete();
             return redirect()->back()->with('status', 'Data berhasil dihapus');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors($e);

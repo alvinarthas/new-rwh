@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\DataKota;
 use App\Saldo;
 use App\Coa;
+use App\Deposit;
 
 class HelperController extends Controller
 {
@@ -32,6 +33,11 @@ class HelperController extends Controller
         $total = $saldo_in - $saldo_out;
 
         return $total;
+    }
+
+    public function checkDeposit(Request $request){
+        $deposit  = Deposit::getSaldo($request->supplier);
+        return $deposit;
     }
 
     public function ajxCoa(Request $request){

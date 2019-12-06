@@ -19,6 +19,9 @@ use App\Jurnal;
 use App\Salary;
 use App\Employee;
 use App\Sales;
+use App\Koordinator;
+use App\Perusahaan;
+use App\SubKoordinator;
 
 use Carbon\Carbon;
 
@@ -89,13 +92,11 @@ class TestController extends Controller
         // }
     }
 
-    public function indexd(){
-        $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/ktp';
+    public function indexktp(){
+        // ktp
+        $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/atm';
         if (is_dir($dir)){
             $files = scandir($dir);
-            
-            echo "<pre>";
-            print_r($files);
             $filecount = count($files);
             for ($i=0; $i < $filecount ; $i++) { 
                 if ($files[$i] != '.' && $files[$i] != '..') {
@@ -103,8 +104,25 @@ class TestController extends Controller
                     // $filebaru = $subdir."/".$files[$i].".jpg";
                     $subfiles = array_values(array_diff(scandir($subdir), array('..', '.')));
                     if(is_array($subfiles) && $subfiles <> null){
-                        echo "<pre>";
-                        print_r($files[$i]);
+                        
+                        // echo "<pre>";
+                        // print_r($subdir."/".$subfiles[0]);
+                        $old = $subdir."/".$subfiles[0];
+                        $new = $subdir."/".$files[$i].".jpg";
+                        // echo "<pre>";
+                        // print_r($old);
+                        // echo "<pre>";
+                        // print_r($new);
+                        $member = Member_copy::where('ktp',$files[$i])->first();
+                        if($member){
+                            rename($old,$new);
+                            $member->scanktp = $files[$i].".jpg";
+                            $member->save();
+                        //     // $files_next = scandir($subdir);
+                        //     echo $files[$i]." Ada<br>";
+                        }else{
+                        //     echo $files[$i]." Tidak Ada<br>";
+                        }
                         // $member = Member::where('ktp',$files[$i])->first();
                         // if($member != null){
                         //     $scanktp = $files[$i].".jpg";
@@ -118,7 +136,7 @@ class TestController extends Controller
         }
     }
 
-    public function index(){
+    public function indexz(){
         $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/ktp';
         if (is_dir($dir)){
             $files = scandir($dir);
@@ -142,24 +160,40 @@ class TestController extends Controller
         }
     }
 
-    public function index6(){
-        $bankmember = BankMember::all();
+    public function indexd(){
+        // buat ganti koor dan sub koor
+        $perusahaans = Perusahaan::all();
+        foreach($perusahaans as $per){
+            echo "<pre>";
+            print_r($per->nama);
+        print_r(DB::table('perusahaanmember_copy')->where('perusahaan_id',$per->nama)->get());
+            // dd(DB::table('tbl_member_copy_copy1')->get());
+            // $do = DB::Raw("UPDATE tblmember_copy_copy1 SET subkoor = $koor->id WHERE subkoor = '$koor->nama'");per
+            // DB::table('perusahaanmember_copy')->where('perusahaan_id',$per->nama)->update(['perusahaan_id' => $per->id]);
+        }
+    }
+
+    public function index(){
+        $bankmember = BankMember_copy::all();
 
         foreach ($bankmember as $key) {
             $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/tabungan/'.str_replace(' ', '', $key->ktp).'/'.str_replace(' ', '', $key->norek);
 
             if(!is_dir($dir)){
             }else{
+                
                 $filebaru = $dir."/".str_replace(' ', '', $key->norek).".jpg";
                 $subfiles = array_values(array_diff(scandir($dir), array('..', '.')));
                 if(is_array($subfiles) && $subfiles <> null){
-                    // rename($dir."/".$subfiles[0],$filebaru);
-                    echo $subfiles[0]."<br>";
+                    // echo "<pre>";
+                    // print_r($subfiles);
+                    rename($dir."/".$subfiles[0],$filebaru);
+                    // echo $subfiles[0]."<br>";
                     // echo "<pre>";
                     // print_r($subfiles);
                     // $atm = BankMember::where('ktp',str_replace(' ', '', $key->ktp))->first();
-                    // $atm->scantabungan = str_replace(' ', '', $key->norek).".jpg";
-                    // $atm->update();
+                    $key->scantabungan = str_replace(' ', '', $key->norek).".jpg";
+                    $key->update();
                 }
                 
                 // echo "<pre>";
@@ -169,13 +203,13 @@ class TestController extends Controller
         }
     }
 
-    public function indexgg(){
+    public function indexpm(){
         foreach(PerusahaanMember_copy::all() as $key){
             $member = Member_copy::where('ktp',$key->ktp)->first();
             if($member){
                 echo $member->ktp."<br>";
             }else{
-                $key->delete();
+                // $key->delete();
                 echo "Ga ada Cuk <br>";
             }
             echo "----------- <br>";

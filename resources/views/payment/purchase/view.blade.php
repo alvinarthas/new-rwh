@@ -21,7 +21,11 @@
                     <td>{{$item['supplier']}}</td>
                     <td>Rp. {{number_format($item['order'])}}</td>
                     <td>Rp. {{number_format($item['paid'])}}</td>
-                    <td>{{$item['status']}}</td>
+                    @if($item['status'] == 1)
+                    <td><a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-md waves-danger m-b-5" >Lunas</a></td>
+                    @else
+                    <td><a href="javascript:;" disabled="disabled" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" >Belum Lunas</a></td>
+                    @endif
                     <td>
                         @if (array_search("PUPPC",$page))
                         <a href="{{route('purchaseCreate',['id'=>$item['trx_id']])}}" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" >Detail Payment</a>
