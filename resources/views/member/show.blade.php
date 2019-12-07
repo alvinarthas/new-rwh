@@ -166,7 +166,7 @@ Informasi Data Member
                             </div>
                         </div>
                     </div>
-                    @if (array_search("MBMBU",$page))
+                    @if (array_search("MBMMU",$page))
                         <div class="form-group text-right m-b-0">
                             <button class="btn btn-primary waves-effect waves-light" type="submit">
                                 Submit

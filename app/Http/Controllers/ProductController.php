@@ -9,6 +9,7 @@ use App\Product;
 use App\Perusahaan;
 use App\Company;
 use App\MenuMapping;
+use App\DeliveryDetail;
 
 class ProductController extends Controller
 {
@@ -181,5 +182,21 @@ class ProductController extends Controller
         $i = 0;
 
         return view('product.showProdAjxLog', compact('prods','bulan','tahun','i'));
+    }
+
+    public function controlling(Request $request){
+        if($request->ajax()){
+            $product = Product::where('prod_id',$request->prod_id)->first();
+            $indent = Product::getIndent($request->prod_id);
+            $gudang = Product::getGudang($request->prod_id);
+            $delivered = DeliveryDetail::where('product_id',$request->prod_id)->sum('qty');
+
+            return response()->json(view('product.controlling.modal',compact('indent','gudang','delivered','product'))->render());
+        }else{
+            $products = Product::all();
+        
+            return view('product.controlling.index',compact('products'));
+        }
+        
     }
 }

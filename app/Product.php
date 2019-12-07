@@ -4,6 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\PurchaseDetail;
+use App\DeliveryDetail;
+use App\ReceiveDet;
+
 class Product extends Model
 {
     protected $table ='tblproduct';
@@ -17,5 +21,21 @@ class Product extends Model
 
     public function supplier(){
         return $this->belongsTo('App\Perusahaan','supplier','id');
+    }
+
+    public static function getIndent($prod_id){
+        $qty_purchase = PurchaseDetail::where('prod_id',$prod_id)->sum('qty');
+        $qty_receive = ReceiveDet::where('prod_id',$prod_id)->sum('qty');
+
+        return $qty_purchase-$qty_receive;
+    }
+
+    public static function getGudang($prod_id){
+        $qty_receive = ReceiveDet::where('prod_id',$prod_id)->sum('qty');
+        $qty_delivery = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
+        $stock_awal = Product::where('prod_id',$prod_id)->first()->stock;
+        $gudang = $stock_awal+$qty_receive-$qty_delivery;
+
+        return $gudang;
     }
 }
