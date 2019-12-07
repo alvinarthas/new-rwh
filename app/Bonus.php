@@ -9,7 +9,7 @@ class Bonus extends Model
     protected $table ='tblbonus';
     protected $primaryKey = 'id_bonus';
     protected $fillable = [
-        'noid','bulan','tahun','bonus', 'creator', 'id_jurnal'
+        'noid','tgl','bulan','tahun','bonus', 'perusahaan_id','creator', 'id_jurnal'
     ];
 
     public $timestamps = true;

@@ -80,6 +80,7 @@
         $(document).ready(function () {
             // Responsive Datatable
             $('#responsive-datatable').DataTable({
+                searching : false,
                 paging : false,
                 scrollY: 400
             });

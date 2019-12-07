@@ -1,4 +1,5 @@
 @extends('layout.main')
+
 @php
     use App\Perusahaan;
 @endphp
@@ -14,9 +15,6 @@
 
     <!--venobox lightbox-->
     <link rel="stylesheet" href="{{ asset('assets/plugins/magnific-popup/dist/magnific-popup.css') }}"/>
-
-    {{-- Fingerprint --}}
-    <link href="{{ asset('assets/fingerprint/ajaxmask.css') }}" rel="stylesheet">
 
     <style>
     img.photo{
@@ -34,47 +32,48 @@
                     @if (array_search("MDPDC",$page))
                     <a href="{{ route('product.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Product</a>
                     @endif
-                    <a href="{{ route('manageproduct') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Manage Harga</a>
+                    <a href="{{ route('manageproduct') }}" class="btn btn-purple btn-rounded w-md waves-effect waves-light m-b-5">Manage Harga</a>
                 </p>
 
-                <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                     <thead>
                         <th style="width:5%">No</th>
                         <th>Supplier</th>
                         <th>Product ID</th>
-                        <th>Product ID Perusahaan</th>
                         <th>Product Name</th>
                         <th>Product Brand</th>
-                        <th>Stock Awal</th>
-                        <th>Total Stock In</th>
-                        <th>Total Stock Out</th>
-                        <th>Stock Saat Ini</th>
+                        <th>Harga Distributor</th>
+                        <th>Harga Modal</th>
                         <th>Actions</th>
                     </thead>
 
                     <tbody>
-                        @php($i = 1)
+                        @php
+                            $i = 1;
+                        @endphp
                         @foreach($products as $prd)
                         <tr>
                             <td>{{$i}}</td>
                             <td>{{$prd->supplier()->first()->nama}}</td>
                             <td>{{$prd->prod_id}}</td>
-                            <td>{{$prd->prod_id_new}}</td>
+                            {{-- <td>{{$prd->prod_id_new}}</td> --}}
                             <td>{{$prd->name}}</td>
                             <td>{{$prd->category}}</td>
-                            <td>{{$prd->stock}}</td>
-                            <td>
-                                @php($stock_in = DB::table('tblreceivedet')->where('prod_id', $prd->prod_id)->sum('qty'))
-                                {{ $stock_in }}
-                            </td>
-                            <td>
-                                @php($stock_out = DB::table('tblproducttrxdet')->where('prod_id', $prd->prod_id)->sum('qty'))
-                                {{ $stock_out }}
-                            </td>
-                            <td>
-                                @php($sisa=$stock_in - $stock_out + $prd->stock)
-                                {{ $sisa }}
-                            </td>
+                            @php
+                                if(($prd->harga_distributor == null) OR ($prd->harga_distributor == "")){
+                                    $harga_dis = 0;
+                                }else{
+                                    $harga_dis = $prd->harga_distributor;
+                                }
+
+                                if(($prd->harga_modal == null) OR ($prd->harga_modal == "")){
+                                    $harga_mod = 0;
+                                }else{
+                                    $harga_mod = $prd->harga_modal;
+                                }
+                            @endphp
+                            <td>{{$harga_dis}}</td>
+                            <td>{{$harga_mod}}</td>
                             <td>
                                 @if (array_search("MDPDU",$page))
                                 <a href="{{ route('product.edit', ['id' => $prd->id]) }}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
@@ -83,12 +82,14 @@
                                 <form class="" action="{{ route('product.destroy', ['id' => $prd->id]) }}" method="post">
                                     {{ csrf_field() }}
                                     {{ method_field('delete') }}
-                                    <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button></a>
+                                    <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
                                 </form>
                                 @endif
                             </td>
                         </tr>
-                        @php($i++)
+                        @php
+                            $i++;
+                        @endphp
                         @endforeach
                     </tbody>
                 </table>
@@ -119,9 +120,7 @@
 @endsection
 
 @section('script-js')
-
 <script type="text/javascript">
-
     $(document).ready(function () {
         // Responsive Datatable
         $('#responsive-datatable').DataTable();
@@ -129,8 +128,6 @@
         $('.image-popup').magnificPopup({
             type: 'image',
         });
-
     });
-
 </script>
 @endsection

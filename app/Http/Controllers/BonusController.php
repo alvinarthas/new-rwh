@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Exceptions\Handler;
 use App\Imports\BonusImport;
 use App\Imports\BonusBayarImport;
 use App\Imports\BonusTopupImport;
@@ -18,7 +17,6 @@ use App\Bonus;
 use App\BonusGagal;
 use App\PurchaseDetail;
 use App\Perusahaan;
-use App\CoaBayarBonus;
 use App\Coa;
 use App\BonusBayar;
 use App\Bank;
@@ -39,30 +37,29 @@ class BonusController extends Controller
     public function index(Request $request)
     {
         $page = MenuMapping::getMap(session('user_id'),"BMPB");
-        $perusahaans = Perusahaan::all();
+        $bonus = Bonus::join('tblperusahaan', 'tblbonus.perusahaan_id', 'tblperusahaan.id')->groupBy('id_jurnal')->select('id_bonus','bulan', 'tahun', 'tgl', 'tblperusahaan.nama', DB::raw('SUM(bonus) as total_bonus'))->orderBy('tgl', 'desc')->get();
         $bonusapa = "perhitungan";
         $jenis = "index";
-        return view('bonus.index', compact('perusahaans', 'bonusapa', 'jenis', 'page'));
+
+        return view('bonus.index', compact('bonusapa', 'jenis', 'page', 'bonus'));
     }
 
     public function indexBayar(Request $request)
     {
         $page = MenuMapping::getMap(session('user_id'),"BMBB");
-        $supplier = Perusahaan::all();
-        $rekening = Coa::where('StatusAccount', "Detail")->select('AccNo', 'AccName')->orderBy('AccNo','asc')->get();
+        $bonus = BonusBayar::join('tblcoa', 'tblbonusbayar.AccNo', 'tblcoa.AccNo')->groupBy('id_jurnal')->select('id_bonus','bulan', 'tahun', 'tgl', 'AccName', DB::raw('SUM(bonus) as total_bonus'))->orderBy('tgl', 'desc')->get();
         $bonusapa = "pembayaran";
         $jenis = "index";
-        return view('bonus.index', compact('rekening', 'bonusapa','jenis', 'page', 'supplier'));
+        return view('bonus.index', compact('bonusapa','jenis', 'page', 'bonus'));
     }
 
     public function indexTopup(Request $request)
     {
         $page = MenuMapping::getMap(session('user_id'),"BMTU");
-        $supplier = Perusahaan::all();
-        $rekening = Coa::where('StatusAccount', "Detail")->select('AccNo', 'AccName')->orderBy('AccNo','asc')->get();
+        $bonus = TopUpBonus::join('tblcoa', 'tbltopupbonus.AccNo', 'tblcoa.AccNo')->groupBy('tgl')->select('id_bonus', 'tgl', 'AccName', DB::raw('SUM(bonus) as total_bonus'))->orderBy('tgl', 'desc')->get();
         $bonusapa = "topup";
         $jenis = "index";
-        return view('bonus.index', compact('rekening', 'bonusapa','jenis', 'page', 'supplier'));
+        return view('bonus.index', compact('bonusapa','jenis', 'page', 'bonus'));
     }
 
     public function indexLaporan(Request $request)
@@ -137,7 +134,8 @@ class BonusController extends Controller
             // success
             try{
                 Carbon::setLocale('id');
-                $tgl = date('Y-m-d', strtotime(Carbon::today()));
+                // $tgl = date('Y-m-d', strtotime(Carbon::today()));
+                $tgl = $request->tgl;
                 $ctr = count($request->ktp);
                 $bulan = $request->bulan;
                 $tahun = $request->tahun;
@@ -160,16 +158,18 @@ class BonusController extends Controller
                         if($bonusperhitungan==0){
                             // bonus
                             $data = new Bonus(array(
-                                'noid'    => $noid,
+                                'noid'      => $noid,
+                                'tgl'       => $tgl,
                                 'bulan'     => $bulan,
                                 'tahun'     => $tahun,
                                 'bonus'     => $bonus,
+                                'perusahaan_id' => $perusahaan_id,
                                 'creator'   => session('user_id'),
                                 'id_jurnal' => $id_jurnal,
                             ));
                             $data->save();
                         }else{
-                            $bonushitung = Bonus::where('noid', $noid)->where('tahun', $tahun)->where('bulan', $bulan)->select('id_bonus','id_jurnal')->first();
+                            $bonushitung = Bonus::where('tgl', $tgl)->where('noid', $noid)->where('tahun', $tahun)->where('bulan', $bulan)->select('id_bonus','id_jurnal')->first();
                             $jurnal = Jurnal::where('id_jurnal', $bonushitung['id_jurnal']);
 
                             // bonus hitung
@@ -461,7 +461,58 @@ class BonusController extends Controller
      */
     public function edit($id)
     {
-        //
+        $bn = Bonus::where('id_bonus', $id)->select('bulan', 'tahun', 'perusahaan_id', 'tgl', 'id_jurnal', 'id_bonus')->first();
+        $perusahaans = Perusahaan::all();
+        $bonusapa = "perhitungan";
+        $jenis = "edit";
+        $page = MenuMapping::getMap(session('user_id'),"BMPB");
+        $bonus = Bonus::join('perusahaanmember', 'tblbonus.noid', 'perusahaanmember.noid')->join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('tgl', $bn->tgl)->where('bulan', $bn->bulan)->where('tahun', $bn->tahun)->where('tblbonus.perusahaan_id', $bn->perusahaan_id)->where('id_jurnal', $bn->id_jurnal)->select('bonus', 'perusahaanmember.ktp', 'tblbonus.noid', 'tblmember.nama', 'tblmember.member_id','id_bonus')->get();
+
+        $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$bn->bulan)->where('tblpotrx.year',$bn->tahun)->where('tblpotrx.supplier',$bn->perusahaan_id)->select('qty', 'price', 'price_dist')->get();
+        $estimasi_bonus = 0;
+        foreach($purchase as $p){
+            $estimasi_bonus = $estimasi_bonus + (($p['price_dist'] - $p['price']) * $p['qty']);
+        }
+
+        return view('bonus.index', compact('perusahaans', 'jenis', 'bonusapa','page', 'bonus' ,'bn', 'estimasi_bonus'));
+    }
+
+    public function editBayar($id)
+    {
+        $bn = BonusBayar::where('id_bonus', $id)->select('bulan', 'tahun', 'AccNo', 'supplier', 'tgl', 'id_jurnal', 'id_bonus')->first();
+        $rekening = Coa::where('StatusAccount', "Detail")->select('AccNo', 'AccName')->orderBy('AccNo','asc')->get();
+        $supplier = Perusahaan::all();
+        $bonusapa = "pembayaran";
+        $jenis = "edit";
+        $page = MenuMapping::getMap(session('user_id'),"BMBB");
+        $bonus = BonusBayar::join('bankmember', 'tblbonusbayar.no_rek', 'bankmember.norek')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('tgl', $bn->tgl)->where('bulan', $bn->bulan)->where('tahun', $bn->tahun)->where('AccNo', $bn->AccNo)->where('tblbonusbayar.id_jurnal', $bn->id_jurnal)->select('bonus', 'tblbank.nama AS namabank', 'tblbonusbayar.no_rek', 'tblmember.nama', 'id_bonus')->get();
+
+        $perhitunganbonus = Bonus::where('bulan', $bn->bulan)->where('tahun',$bn->tahun)->select('id_jurnal')->get();
+        $bonus_tertahan = 0;
+
+        foreach($perhitunganbonus as $b){
+            $jurnal  = Jurnal::where('id_jurnal', $b['id_jurnal'])->where('AccNo', "1.1.3.5")->select('Amount','AccPos')->first();
+            if($jurnal['AccPos'] == "Debet"){
+                $bonus_tertahan = $bonus_tertahan + $jurnal['Amount'];
+            }elseif($jurnal['AccPos'] == "Credit"){
+                $bonus_tertahan = $bonus_tertahan - $jurnal['Amount'];
+            }
+        }
+
+        return view('bonus.index', compact('rekening', 'supplier', 'jenis', 'bonusapa', 'page', 'bonus' ,'bn', 'bonus_tertahan'));
+    }
+
+    public function editTopup($id)
+    {
+        $bn = TopUpBonus::where('id_bonus', $id)->select('AccNo', 'tgl', 'id_jurnal', 'id_bonus')->first();
+        $rekening = Coa::where('StatusAccount', "Detail")->select('AccNo', 'AccName')->orderBy('AccNo','asc')->get();
+        $supplier = Perusahaan::all();
+        $bonusapa = "topup";
+        $jenis = "edit";
+        $page = MenuMapping::getMap(session('user_id'),"BMTU");
+        $bonus = TopUpBonus::join('bankmember', 'tbltopupbonus.no_rek', 'bankmember.norek')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('tgl', $bn->tgl)->where('AccNo', $bn->AccNo)->select('bonus', 'tblbank.nama AS namabank', 'tbltopupbonus.no_rek', 'tblmember.nama', 'id_bonus')->get();
+
+        return view('bonus.index', compact('rekening', 'supplier', 'jenis', 'bonusapa', 'page', 'bonus' ,'bn'));
     }
 
     /**
@@ -473,7 +524,124 @@ class BonusController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'tahun' => 'required',
+            'bulan' => 'required',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            // success
+            try{
+                $tgl = $request->tgl_transaksi;
+                $ctr = count($request->bonus);
+                $bulan = $request->bulan;
+                $tahun = $request->tahun;
+                $perusahaan_id = $request->perusahaan;
+                $perusahaan = Perusahaan::where('id',$perusahaan_id)->select('nama')->first();
+                $ket = 'perhitungan bonus '.$perusahaan['nama'].' - bulan '.$bulan.' '.$tahun;
+                $total_bonus = $request->total_bonus;
+                $estimasi_bonus = $request->estimasi_bonus;
+                $selisih = $request->selisih_bonus;
+                $id_jurnal = Jurnal::getJurnalID('BP');
+
+                for($i=0;$i<$ctr;$i++){
+                    $bonus = $request->bonus[$i];
+                    $noid = $request->noid[$i];
+
+                    if(isset($request->bonus_lama[$i])){
+                        $id_bonus = $request->id_bonus[$i];
+                        $data = Bonus::where('id_bonus', $id_bonus)->first();
+                        $jurnal = Jurnal::where('id_jurnal', $data['id_jurnal']);
+
+                        $data->tgl = $tgl;
+                        $data->bulan = $bulan;
+                        $data->tahun = $tahun;
+                        $data->bonus = $bonus;
+                        $data->perusahaan_id = $perusahaan_id;
+                        $data->id_jurnal = $id_jurnal;
+                        $data->creator = session('user_id');
+                        $jurnal->delete();
+                        $data->update();
+                    }else{
+                    // elseif(empty(Bonus::where('noid', $noid)->where('tgl', $tgl)->where('bulan', $bulan)->where('tahun', $tahun)->where('perusahaan_id', $perusahaan_id)->first())){
+                        $data = new Bonus(array(
+                            'tgl' => $tgl,
+                            'noid' => $noid,
+                            'bulan' => $bulan,
+                            'tahun' => $tahun,
+                            'bonus' => $bonus,
+                            'perusahaan_id' => $perusahaan_id,
+                            'id_jurnal' => $id_jurnal,
+                            'creator' => session('user_id'),
+                        ));
+                        $data->save();
+                    }
+                }
+
+                // debet Piutang Bonus
+                $debet = new Jurnal(array(
+                    'id_jurnal'     => $id_jurnal,
+                    'AccNo'         => "1.1.3.5",
+                    'AccPos'        => "Debet",
+                    'Amount'        => $total_bonus,
+                    'company_id'    => 1,
+                    'date'          => $tgl,
+                    'description'   => $ket,
+                    'creator'       => session('user_id')
+                ));
+                // credit Estimasi Bonus
+                $credit = new Jurnal(array(
+                    'id_jurnal'     => $id_jurnal,
+                    'AccNo'         => "1.1.3.4",
+                    'AccPos'        => "Credit",
+                    'Amount'        => $estimasi_bonus,
+                    'company_id'    => 1,
+                    'date'          => $tgl,
+                    'description'   => $ket,
+                    'creator'       => session('user_id')
+                ));
+
+                if($selisih!=0){
+                    // credit selisih laba/rugi estimasi bonus
+                    $credit2 = new Jurnal(array(
+                        'id_jurnal'     => $id_jurnal,
+                        'AccNo'         => "7.1",
+                        'AccPos'        => "Credit",
+                        'Amount'        => $selisih,
+                        'company_id'    => 1,
+                        'date'          => $tgl,
+                        'description'   => "selisih ".$ket,
+                        'creator'       => session('user_id')
+                    ));
+
+                    $credit2->save();
+                }
+
+                $debet->save();
+                $credit->save();
+
+                return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
+            }catch(\Exception $e) {
+                return redirect()->back()->withErrors($e->getMessage());
+            }
+        }
+    }
+
+    public function updateBayar(Request $request, $id)
+    {
+
+    }
+
+    public function updateTopup(Request $request, $id)
+    {
+
     }
 
     /**
@@ -510,6 +678,7 @@ class BonusController extends Controller
 
     public function createBonusPerhitungan(Request $request)
     {
+        $tgl = $request->tgl;
         $perusahaan = $request->perusahaan;
         $perusahaanmember = DB::table('perusahaanmember')->join('tblmember','perusahaanmember.ktp','=','tblmember.ktp')->where('perusahaanmember.perusahaan_id',$perusahaan)->orderBy('tblmember.nama', 'asc')->get();
         $tahun = $request->tahun;
@@ -521,7 +690,7 @@ class BonusController extends Controller
         foreach($purchase as $p){
             $estimasi_bonus = $estimasi_bonus + (($p['price_dist'] - $p['price']) * $p['qty']);
         }
-        return view('bonus.ajxCreateBonus', compact('perusahaanmember', 'bonus','tahun','bulan','perusahaan','bonusapa', 'estimasi_bonus'));
+        return view('bonus.ajxCreateBonus', compact('perusahaanmember', 'bonus','tahun','bulan','tgl','perusahaan','bonusapa', 'estimasi_bonus'));
     }
 
     public function ajxAddRowPerhitungan(Request $request){
@@ -745,6 +914,18 @@ class BonusController extends Controller
         $credit->save();
 
         return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
+    }
+
+    public function deleteRowPerhitungan(Request $request)
+    {
+        try{
+            $data = Bonus::where('id_bonus', $request->id)->first();
+            $data->delete();
+            return response()->json($data);
+        }catch(\Exception $e) {
+            return redirect()->back()->withErrors($e->getMessage());
+            // return response()->json($e);
+        }
     }
 
     public function showBonusPembayaran(Request $request)
@@ -1011,6 +1192,19 @@ class BonusController extends Controller
 
     }
 
+    public function deleteRowPenerimaan(Request $request)
+    {
+        echo "tes";
+        try{
+            $data = BonusBayar::where('id_bonus', $request->id)->first();
+            $data->delete();
+            return response()->json($data);
+        }catch(\Exception $e) {
+            return redirect()->back()->withErrors($e->getMessage());
+            // return response()->json($e);
+        }
+    }
+
     public function showBonusTopup(Request $request)
     {
         $tgl = $request->tgl;
@@ -1162,6 +1356,18 @@ class BonusController extends Controller
         return response()->json($data);
     }
 
+    public function deleteRowTopup(Request $request)
+    {
+        try{
+            $data = TopUpBonus::where('id_bonus', $request->id)->first();
+            $data->delete();
+            return response()->json($data);
+        }catch(\Exception $e) {
+            return redirect()->back()->withErrors($e->getMessage());
+            // return response()->json($e);
+        }
+    }
+
     public function showLaporanBonus(Request $request)
     {
         $tahun = $request->tahun;
@@ -1304,5 +1510,14 @@ class BonusController extends Controller
             $pdf = PDF::loadview('bonus.pdfbonusgagal',$datas)->setPaper('a4', 'landscape');
             return $pdf->download($filename.'.pdf');
         }
+    }
+
+    public function checkEstimasiBonus(Request $request){
+        $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$request->bulan)->where('tblpotrx.year',$request->tahun)->where('tblpotrx.supplier',$request->perusahaan_id)->select('qty', 'price', 'price_dist')->get();
+        $estimasi_bonus = 0;
+        foreach($purchase as $p){
+            $estimasi_bonus = $estimasi_bonus + (($p['price_dist'] - $p['price']) * $p['qty']);
+        }
+        return response()->json($estimasi_bonus);
     }
 }
