@@ -16,7 +16,9 @@
             <div class="card-box table-responsive">
                 <h4 class="m-t-0 header-title">Index COA</h4>
                 <p class="text-muted font-14 m-b-30">
-                    <a href="{{ route('coa.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah COA</a>
+                    @if (array_search("FICOC",$page))
+                        <a href="{{ route('coa.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah COA</a>
+                    @endif
                 </p>
 
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
@@ -41,12 +43,16 @@
                             <td>{{$item->SaldoNormal}}</td>
                             <td>{{$item->StatusAccount}}</td>
                             <td>
-                                <a href="{{route('coa.edit',['id'=>$item->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
-                                <form class="" action="{{ route('coa.destroy', ['id' => $item->id]) }}" method="post">
-                                    {{ csrf_field() }}
-                                    {{ method_field('delete') }}
-                                    <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button></a>
-                                </form>
+                                @if (array_search("FICOU",$page))
+                                    <a href="{{route('coa.edit',['id'=>$item->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
+                                @endif
+                                @if (array_search("FICOD",$page))
+                                    <form class="" action="{{ route('coa.destroy', ['id' => $item->id]) }}" method="post">
+                                        {{ csrf_field() }}
+                                        {{ method_field('delete') }}
+                                        <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button></a>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                         @php($i++)
