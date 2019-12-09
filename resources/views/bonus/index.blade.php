@@ -243,6 +243,7 @@
                                         @isset($bn->AccNo)
                                             @if($bn->supplier != 0)
                                                 <option value="{{ $bn->supplier }}">{{ Perusahaan::where('id', $bn->supplier)->first()->nama }}</option>
+                                            @else
                                                 @foreach($supplier as $s)
                                                     @if($bn->supplier != $s->id)
                                                         <option value="{{ $s->id }}">{{ $s->nama }}</option>
@@ -355,9 +356,9 @@
                                                     </td>
                                                     <td>
                                                         @if($bonusapa=="pembayaran")
-                                                            <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteRowPenerimaan({{ $b['id_bonus']}})">Delete</a>
+                                                            <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteRowPenerimaan({{ $b->id_bonus}})">Delete</a>
                                                         @elseif($bonusapa=="topup")
-                                                            <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteRowTopup({{ $b['id_bonus']}})">Delete</a>
+                                                            <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteRowTopup({{ $b->id_bonus}})">Delete</a>
                                                         @endif
                                                     </td>
                                                 </tr>
@@ -766,10 +767,11 @@
             url : "/penerimaanbonus/"+id+"/deleterow",
             type : "GET",
             dataType : "json",
-            data:{
+            data :{
                 id : id,
                 _token : token,
-            },success		:	function(data){
+            },
+            success	:	function(data){
                 checkTotal();
                 $('#trtd'+id).remove();
                 var cnt = $('#editable-datatable tbody tr.trow').length;
