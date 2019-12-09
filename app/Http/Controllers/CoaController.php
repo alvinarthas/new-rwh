@@ -7,13 +7,15 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Coa;
 use App\Company;
+use App\MenuMapping;
 
 class CoaController extends Controller
 {
     public function index()
     {
         $coa = Coa::all();
-        return view('coa.index', compact('coa'));
+        $page = MenuMapping::getMap(session('user_id'),"FICO");
+        return view('coa.index', compact('coa','page'));
     }
 
     public function create()

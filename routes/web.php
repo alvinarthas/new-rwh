@@ -190,6 +190,9 @@ Route::middleware(['checkUser'])->group(function () {
         Route::post('/pricebycustomer/manage/{id}', 'CustomerController@updateManagePriceBV')->name('updatebycustomer');
         Route::get('/cetakXlsProduct/{id}', 'CustomerController@exportProduct')->name('exportXlsProduct');
         Route::get('/cetakXlsCustomer/{id}', 'CustomerController@exportCustomer')->name('exportXlsCustomer');
+    
+    // Stock Controlling
+        Route::get('stockcontrolling','ProductController@controlling')->name('stockControlling');
 
     // Saldo
         Route::get('ajxCoaOrder', 'SaldoController@ajxCoaOrder')->name('ajxCoaOrder');
