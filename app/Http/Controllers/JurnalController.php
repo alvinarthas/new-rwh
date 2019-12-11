@@ -211,13 +211,12 @@ class JurnalController extends Controller
      */
     public function destroy($id)
     {
-        $jurnal = Jurnal::where('id_jurnal',$id)->first();
         try{
-            $jurnal->delete();
-            return redirect()->route('jurnal.index')->with('status', 'Data berhasil dihapus');
+            $jurnals = Jurnal::where('id_jurnal',$id)->delete();
+            return "true";
         // fail
         }catch (\Exception $e) {
-            return redirect()->back()->withErrors($e->errorInfo);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 

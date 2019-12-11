@@ -41,7 +41,7 @@ class Purchase extends Model
         $ttl_pay = 0;
         foreach($purchase->get() as $key){
             $temp = collect();
-            $order = PurchaseDetail::where('trx_id',$key->id)->sum(DB::raw('qty * price'));
+            $order = PurchaseDetail::where('trx_id',$key->id)->sum(DB::raw('qty * price_dist'));
             $pay_amount = PurchasePayment::where('trx_id',$key->id)->sum('payment_amount');
             $ttl_order+=$order;
             $ttl_pay+=$pay_amount;

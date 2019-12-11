@@ -157,7 +157,7 @@ class PaymentController extends Controller
         $details = PurchaseDetail::where('trx_id',$id)->get();
         $payment = PurchasePayment::where('trx_id',$id)->get();
         $ttl_pay = PurchasePayment::where('trx_id',$id)->sum('payment_amount');
-        $ttl_order = PurchaseDetail::where('trx_id',$id)->sum(DB::raw('qty * price'));
+        $ttl_order = PurchaseDetail::where('trx_id',$id)->sum(DB::raw('qty * price_dist'));
         $coas = Coa::where('AccNo','LIKE','1.1.1.2%')->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
         $page = MenuMapping::getMap(session('user_id'),"PUPP");
 

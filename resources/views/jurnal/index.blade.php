@@ -98,7 +98,7 @@ Index Jurnal Report
 
 @section('js')
 {{-- Select2 --}}
-<script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
+<script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}"></script>
 
 {{-- Date Picker --}}
 <script src="{{ asset('assets/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
