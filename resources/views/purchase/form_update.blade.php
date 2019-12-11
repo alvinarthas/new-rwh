@@ -102,7 +102,7 @@ Form Update Purchasing
                 </div>
             </div>
             {{-- Form Data --}}
-            <form class="form-horizontal" role="form" action="{{ route('purchase.update',['id'=>$purchase->id]) }}" enctype="multipart/form-data" method="POST">
+            <form class="form-horizontal" id="form" role="form" action="{{ route('purchase.update',['id'=>$purchase->id]) }}" enctype="multipart/form-data" method="POST">
                 {{ method_field('PUT') }}
                 @csrf
                 
@@ -136,7 +136,7 @@ Form Update Purchasing
                                                 <input type="hidden" name="detail[]" id="detail{{$i}}" value="{{$detail->id}}">
                                                 <td><input type="hidden" name="prod_id[]" id="prod_id{{$i}}" value="{{$detail->prod_id}}">{{$detail->prod_id}}</td>
                                                 <td><input type="hidden" name="prod_name[]" id="prod_name{{$i}}" value="{{$detail->product->name}}">{{$detail->product->name}}</td>
-                                                <td><input type="number" name="qty[]" id="qty{{$i}}" value="{{$detail->qty}}" onkeyup="changeTotal({{$i}})"></td>
+                                                <td><input type="number" name="qty[]" id="qty{{$i}}" value="{{$detail->qty}}" onchange="changeTotal({{$i}})" onkeyup="changeTotal({{$i}})"></td>
                                                 <td><input type="hidden" name="unit[]" id="unit{{$i}}" value="{{$detail->unit}}">{{$detail->unit}}</td>
                                                 <td><input type="number" name="harga_dist[]" id="harga_dist{{$i}}" value="{{$detail->price_dist}}" onkeyup="changeTotal({{$i}})"></td>
                                                 <td><input type="number" name="harga_mod[]" id="harga_mod{{$i}}" value="{{$detail->price}}" onkeyup="changeTotal({{$i}})"></td>
@@ -230,6 +230,20 @@ $(".select2").select2();
 // Date Picker
 jQuery('#po_date').datepicker();
 
+$("#form").submit(function(e){
+    ttl = 0;
+    $('input[name="prod_id[]"]').each(function() {
+        ttl++;
+    });
+
+    if(ttl == 0){
+        toastr.warning("Belum ada data yang dimasukkan", 'Warning!')
+        e.preventDefault();
+    }else{
+        $( "#form" ).submit();
+    }
+});
+
 function addItem(){
     bulanpost = $('#bulanpost').val();
     tahunpost = $('#tahunpost').val();
@@ -238,26 +252,30 @@ function addItem(){
     unit = $('#unit').val();
     count = $('#count').val();
 
-    $.ajax({
-        url : "{{route('addPurchase')}}",
-        type : "get",
-        dataType: 'json',
-        data:{
-            select_product: select_product,
-            bulan: bulanpost,
-            tahun: tahunpost,
-            qty: qty,
-            unit: unit,
-            count:count,
-        },
-    }).done(function (data) {
-        $('#purchase-list-body').append(data.append);
-        $('#count').val(data.count);
-        resetall();
-        changeTotalHarga();
-    }).fail(function (msg) {
-        alert('Gagal menampilkan data, silahkan refresh halaman.');
-    });
+    if(unit == null || unit == '' || qty == 0 || qty == null || qty == ''){
+        toastr.warning("Unit atau qty tidak boleh kosong!", 'Warning!')
+    }else{
+        $.ajax({
+            url : "{{route('addPurchase')}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                select_product: select_product,
+                bulan: bulanpost,
+                tahun: tahunpost,
+                qty: qty,
+                unit: unit,
+                count:count,
+            },
+        }).done(function (data) {
+            $('#purchase-list-body').append(data.append);
+            $('#count').val(data.count);
+            resetall();
+            changeTotalHarga();
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
 }
 
 function deleteItem(id){

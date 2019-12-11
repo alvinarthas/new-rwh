@@ -42,7 +42,7 @@
                         <select class="form-control select2" parsley-trigger="change" name="select_product" id="select_product">
                             <option value="#" selected>Pilih Product</option>
                             @foreach ($products as $product)
-                                <option value="{{$product['prod_id']}}">{{$product['prod_id']}} - {{$product['prod_name']}} - Rp.{{number_format($product['harga_distributor'])}} - Rp.{{number_format($product['harga_modal'])}}</option>
+                                <option value="{{$product->prod_id}}">{{$product->prod_id}} - {{$product->name}} - Rp.{{number_format($product->harga_distributor)}} - Rp.{{number_format($product->harga_modal)}}</option>
                             @endforeach
                         </select>
                     </div>
@@ -67,7 +67,7 @@
     </div>
 </div>
 
-<form class="form-horizontal" role="form" action="{{ route('purchase.store') }}" enctype="multipart/form-data" method="POST">
+<form class="form-horizontal" id="form" role="form" action="{{ route('purchase.store') }}" enctype="multipart/form-data" method="POST">
     @csrf
     <input type="hidden" name="bulanpost" id="bulanpost" value="{{$month}}">
     <input type="hidden" name="tahunpost" id="tahunpost" value="{{$year}}">
@@ -148,6 +148,20 @@ $(".select2").select2();
 // Date Picker
 jQuery('#po_date').datepicker();
 
+$("#form").submit(function(e){
+    ttl = 0;
+    $('input[name="prod_id[]"]').each(function() {
+        ttl++;
+    });
+
+    if(ttl == 0){
+        toastr.warning("Belum ada data yang dimasukkan", 'Warning!')
+        e.preventDefault();
+    }else{
+        $( "#form" ).submit();
+    }
+});
+
 function addItem(){
     bulanpost = $('#bulanpost').val();
     tahunpost = $('#tahunpost').val();
@@ -156,26 +170,31 @@ function addItem(){
     unit = $('#unit').val();
     count = $('#count').val();
 
-    $.ajax({
-        url : "{{route('addPurchase')}}",
-        type : "get",
-        dataType: 'json',
-        data:{
-            select_product: select_product,
-            bulan: bulanpost,
-            tahun: tahunpost,
-            qty: qty,
-            unit: unit,
-            count:count,
-        },
-    }).done(function (data) {
-        $('#purchase-list-body').append(data.append);
-        $('#count').val(data.count);
-        resetall();
-        changeTotalHarga();
-    }).fail(function (msg) {
-        alert('Gagal menampilkan data, silahkan refresh halaman.');
-    });
+    if(unit == null || unit == '' || qty == 0 || qty == null || qty == ''){
+        toastr.warning("Unit atau qty tidak boleh kosong!", 'Warning!')
+    }else{
+        $.ajax({
+            url : "{{route('addPurchase')}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                select_product: select_product,
+                bulan: bulanpost,
+                tahun: tahunpost,
+                qty: qty,
+                unit: unit,
+                count:count,
+            },
+        }).done(function (data) {
+            $('#purchase-list-body').append(data.append);
+            $('#count').val(data.count);
+            resetall();
+            changeTotalHarga();
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+    
 }
 
 function changeTotalHarga(){

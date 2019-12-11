@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 use App\Coa;
 use App\Product;
@@ -24,12 +25,12 @@ class Jurnal extends Model
     }
 
     public static function getJurnalID($jenis){
-        $jurnal = Jurnal::where('id_jurnal','LIKE',$jenis.'%')->distinct('id_jurnal')->orderBy('id_jurnal','desc');
+        $jurnal = Jurnal::where('id_jurnal','LIKE',$jenis.'%')->orderBy(DB::raw('CAST(SUBSTRING(id_jurnal, 4, 10) AS INT)'),'desc')->select('id_jurnal')->distinct('id_jurnal');
         $count_jurnal = $jurnal->count();
         if($count_jurnal == 0){
             $id_jurnal = $jenis.".1";
         }else{
-            $getJurnal = $jurnal->select('id_jurnal')->first();
+            $getJurnal = $jurnal->first();
             $num_jurnal = intval(substr($getJurnal->id_jurnal,3,10))+1;
             $id_jurnal = $jenis.".".$num_jurnal;
         }

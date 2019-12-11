@@ -13,6 +13,8 @@ use App\Perusahaan;
 use App\ManageHarga;
 use App\Jurnal;
 use App\MenuMapping;
+use App\Product;
+use App\Log;
 
 class PurchaseController extends Controller
 {
@@ -41,7 +43,7 @@ class PurchaseController extends Controller
         $supplier = Perusahaan::where('id',$request->supplier)->first();
         $month = $request->bulan;
         $year = $request->tahun;
-        $products = ManageHarga::showHarga($supplier->id,$month,$year);
+        $products = Product::where('supplier',$request->supplier)->get();
         if ($request->ajax()) {
             return response()->json(view('purchase.showpurchase',compact('supplier','month','year','products'))->render());
         }
@@ -77,7 +79,7 @@ class PurchaseController extends Controller
         <input type="hidden" name="detail[]" id="detail'.$count.'" value="baru">
         <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$product.'">'.$product.'</td>
         <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$manage['prod_name'].'">'.$manage['prod_name'].'</td>
-        <td><input type="number" name="qty[]" value="'.$qty.'" id="qty'.$count.'" onkeyup="changeTotal('.$count.')"></td>
+        <td><input type="number" name="qty[]" value="'.$qty.'" id="qty'.$count.'" onchange="changeTotal('.$count.')" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="hidden" name="unit[]" value="'.$unit.'" id="unit'.$count.'">'.$unit.'</td>
         <td><input type="number" name="harga_dist[]" value="'.$manage['harga_distributor'].'" id="harga_dist'.$count.'" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="number" name="harga_mod[]" value="'.$manage['harga_modal'].'" id="harga_mod'.$count.'" onkeyup="changeTotal('.$count.')"></td>
@@ -192,6 +194,7 @@ class PurchaseController extends Controller
                 //insert credit hutang Dagang
                 Jurnal::addJurnal($id_jurnal,$total_distributor,$request->po_date,$jurnal_desc,'2.1.1','Credit');
 
+                Log::setLog('PUPUC','Create PO.'.$purchase->id);
                 return redirect()->route('purchase.index')->with('status', 'Data berhasil dibuat');
 
             } catch (\Exception $e) {
@@ -236,7 +239,7 @@ class PurchaseController extends Controller
 
         $month = $purchase->month;
         $year = $purchase->year;
-        $products = ManageHarga::showHarga($purchase->supplier()->first()->id,$month,$year);
+        $products = Product::where('supplier',$purchase->supplier()->first()->id)->get();
 
         return view('purchase.form_update', compact('details','purchase','products','ttl_harga_modal','ttl_harga_dist'));
     }
@@ -268,11 +271,10 @@ class PurchaseController extends Controller
             $purchase->total_harga_modal = $request->ttl_harga_modal;
             $purchase->total_harga_dist = $request->ttl_harga_distributor;
             $purchase->approve = 0;
-
             // success
             try {
 
-                $purchase->update();
+                $purchase->save();
                 // insert Detail
                 for ($i=0; $i < $request->count ; $i++) {
                     

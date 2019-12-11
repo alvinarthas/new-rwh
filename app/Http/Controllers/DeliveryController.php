@@ -84,11 +84,13 @@ class DeliveryController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
+            $id_jurnal = Jurnal::getJurnalID('DO');
             try {
                 $do = new DeliveryOrder(array(
                     'sales_id' => $request->sales_id,
                     'date' => $request->do_date,
-                    'petugas' => session('user_id')
+                    'petugas' => session('user_id'),
+                    'jurnal_id' => $id_jurnal,
                 ));
     
                 $do->save();
@@ -98,10 +100,21 @@ class DeliveryController extends Controller
                        'do_id' => $do->id,
                        'sales_id' => $request->sales_id,
                        'product_id' => $request->prod_id[$i],
-                       'qty' => $request->qty[$i] 
+                       'qty' => $request->qty[$i]
                     ));
 
                     $dodet->save();
+
+                    $desc = "DO.".$do->id." Prod_ID: ".$request->prod_id[$i]." dengan QTY: ".$request->qty[$i]." SO.".$request->sales_id;
+                    $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price();
+
+                    $price = $pricedet * $request->qty[$i];
+
+                    // JURNAL
+                    //insert debet Persediaan Barang milik Customer
+                    Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'2.1.3','Debet');
+                    //insert credit Persediaan Barang digudang
+                    Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'1.1.4.1.2','Credit');
                 }
                 return redirect()->back()->with('status', 'Data DO berhasil dibuat');
             } catch (\Exception $e) {
