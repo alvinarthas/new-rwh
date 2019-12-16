@@ -49,7 +49,7 @@ Form Sales Order
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label for="total" class="col-form-label">Total Harga</label>
-                                    <input type="text" class="form-control" id="total" value="Rp. {{number_format($sales->ttl_harga+$sales->ongkir)}}" readonly>
+                                    <input type="text" class="form-control" id="total" value="Rp {{number_format($sales->ttl_harga+$sales->ongkir,2,",",".")}}" readonly>
                                 </div>
                             </div>
                             <br>

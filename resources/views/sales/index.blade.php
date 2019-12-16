@@ -85,6 +85,7 @@ Index Sales Order
 <!-- Responsive examples -->
 <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
+<script src="http://cdn.datatables.net/plug-ins/1.10.20/sorting/natural.js"></script>
 
 {{-- Fingerprint --}}
 <script src="{{ asset('assets/fingerprint/jquery.timer.js') }}"></script>

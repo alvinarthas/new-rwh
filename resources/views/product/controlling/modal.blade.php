@@ -9,8 +9,8 @@
     <div class="row">
         <div class="form-group col-sm-8">
             <h2 class="text-dark">Barang Indent: <strong>{{$indent}}</strong> <h2>
-            <h2 class="text-dark">Barang Dikirim: <strong>{{$delivered}}</strong> <h2>
             <h2 class="text-dark">Barang Di Gudang: <strong>{{$gudang}}</strong> <h2>
+            <h2 class="text-dark">Barang milik Customer: <strong>{{$brg_cust}}</strong> <h2>
         </div>
     </div>
 </div>

@@ -47,12 +47,12 @@
                         <td>{{$i}}</td>
                         <td>{{$detail->prod_id}}</td>
                         <td>{{$detail->product->name}}</td>
-                        <td>Rp. {{number_format($detail->price)}}</td>
+                        <td>Rp {{number_format($detail->price,2,",",".")}}</td>
                         <td>{{$detail->qty}}</td>
                         <td>{{$detail->unit}}</td>
-                        <td>Rp. {{number_format($detail->sub_ttl)}}</td>
-                        <td>Rp. {{number_format($detail->pv)}}</td>
-                        <td>Rp. {{number_format($detail->sub_ttl_pv)}}</td>
+                        <td>Rp {{number_format($detail->sub_ttl,2,",",".")}}</td>
+                        <td>Rp {{number_format($detail->pv,2,",",".")}}</td>
+                        <td>Rp {{number_format($detail->sub_ttl_pv,2,",",".")}}</td>
                     </tr>
                     @php($i++)
                     @endisset

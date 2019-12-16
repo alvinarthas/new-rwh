@@ -30,9 +30,6 @@
                 @if (array_search("ABKER",$page))
                     <a href="{{route('absensiRegister')}}" class="btn btn-primary btn-rounded waves-effect waves-light w-md m-b-5">Registrasi</a>
                 @endif
-                @if (array_search("ABLOV",$page2))
-                    <a href="{{route('absensiLog')}}" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Full Log</a>
-                @endif
             </div>
             <div class="row">
                 <div class="col-12">

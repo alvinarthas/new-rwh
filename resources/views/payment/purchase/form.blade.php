@@ -41,9 +41,9 @@ Form Purchase Payment
                                     <td>{{$i}}</td>
                                     <td>{{$item->prod_id}}</td>
                                     <td>{{$item->product->name}}</td>
-                                    <td>Rp. {{number_format($item->price_dist)}}</td>
+                                    <td>Rp {{number_format($item->price_dist,2,",",".")}}</td>
                                     <td>{{$item->qty}}</td>
-                                    <td>Rp. {{number_format($item->price_dist*$item->qty)}}</td>
+                                    <td>Rp {{number_format($item->price_dist*$item->qty,2,",",".")}}</td>
                                     <td></td>
                                 </tr>
                             @php($i++)
@@ -76,7 +76,7 @@ Form Purchase Payment
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Total Transaction Amount</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($ttl_order)}}" readonly>
+                                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($ttl_order,2,",",".")}}" readonly>
                                 </div>
                             </div>
                         </div>
@@ -116,7 +116,7 @@ Form Purchase Payment
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Total Transaction to Paid</label>
                                     <div class="col-10">
-                                        <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($ttl_order-$ttl_pay)}}" readonly>
+                                        <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($ttl_order-$ttl_pay,2,",",".")}}" readonly>
                                         <input type="hidden" name="paid" value="{{$ttl_order-$ttl_pay}}">
                                     </div>
                                 </div>
@@ -195,7 +195,7 @@ Form Purchase Payment
                                 </div>
                                 @if ($purchase->status == 0)
                                 <div class="form-group text-right m-b-0">
-                                    <button class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Simpan Purchase Order</a>
+                                    <button class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Simpan Purchase Payment</a>
                                 </div>
                                 @endif
                             </div>
@@ -223,7 +223,7 @@ Form Purchase Payment
                                     <tr>
                                     <td>{{$i}}</td>
                                     <td>{{$pay->payment_date}}</td>
-                                    <td>Rp. {{number_format($pay->payment_amount)}}</td>
+                                    <td>Rp {{number_format($pay->payment_amount,2,",",".")}}</td>
                                     <td>{{$pay->payment->AccName}}</td>
                                     <td>{{$pay->payment_desc}}</td>
                                     <td>{{$pay->deduct_category}}</td>

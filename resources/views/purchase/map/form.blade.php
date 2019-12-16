@@ -30,7 +30,7 @@
                                 <td>{{$i}}</td>
                                 <td>{{$current->supplier->nama}}</td>
                                 <td>
-                                    <div class="checkbox checkbox-primary">
+                                    <div>
                                         <input id="checkboxcurrent{{$current->supplier_id}}" name="current[]" type="checkbox" value="{{$current->supplier_id}}">
                                         <label for="checkboxcurrent{{$current->supplier_id}}"></label>
                                     </div>
@@ -78,7 +78,7 @@
                                 </td>
                                 <td>{{$rest->nama}}</td>
                                 <td>
-                                    <div class="checkbox checkbox-primary">
+                                    <div>
                                         <input id="checkboxrest{{$rest->id}}" name="rest[]" type="checkbox" value="{{$rest->id}}">
                                         <label for="checkboxrest{{$rest->id}}">
                                         </label>
@@ -106,10 +106,20 @@
 @endsection
 
 @section('js')
+<!-- Required datatable js -->
+<script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
+
+<!-- Responsive examples -->
+<script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
 @endsection
 
 @section('script-js')
 <script>
+    $('#responsive-datatable2').DataTable();
+    $('#responsive-datatable').DataTable();
+    
     $("#formstore").submit(function(e){
         count_rest = $('input[name="rest[]"]:checked').length;
 

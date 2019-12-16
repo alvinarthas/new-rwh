@@ -26,7 +26,8 @@ class MenuController extends Controller
     public function show($id){
         $currents = json_decode (json_encode(MenuMapping::current($id)),FALSE);
         $rests = json_decode (json_encode(MenuMapping::rest($id)),FALSE);
-        return view('menumapping.form',compact('currents','rests','id'));
+        $name = Employee::where('id',$id)->first()->name;
+        return view('menumapping.form',compact('currents','rests','id','name'));
     }
 
     public function store(Request $request){

@@ -20,7 +20,7 @@
                     <td>{{$sale->trx_date}}</td>
                     <td>{{$sale->customer->apname}}</td>
                     <td>{{$sale->ongkir}}</td>
-                    <td>Rp. {{number_format($sale->ttl_harga+$sale->ongkir)}}</td>
+                    <td>Rp {{number_format($sale->ttl_harga+$sale->ongkir,2,",",".")}}</td>
                     @if($sale->status == 1)
                     <td><a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-md waves-danger m-b-5" >Lunas</a></td>
                     @else
@@ -52,19 +52,19 @@
             <div class="form-group row">
                 <label class="col-2 col-form-label">Total Sales Order</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($sales['ttl_sales'])}}" readonly>
+                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($sales['ttl_sales'],2,",",".")}}" readonly>
                 </div>
             </div>
             <div class="form-group row">
                 <label class="col-2 col-form-label">Total Payment</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($sales['ttl_payment'])}}" readonly>
+                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($sales['ttl_payment'],2,",",".")}}" readonly>
                 </div>
             </div>
             <div class="form-group row">
                 <label class="col-2 col-form-label">Remaining Payment</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($sales['ttl_sales']-$sales['ttl_payment'])}}" readonly>
+                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($sales['ttl_sales']-$sales['ttl_payment'],2,",",".")}}" readonly>
                 </div>
             </div>
         </div>

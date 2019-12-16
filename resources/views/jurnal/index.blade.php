@@ -83,8 +83,8 @@ Index Jurnal Report
                     @if(array_search("FIJUC",$page))
                     <a href="{{ route('jurnal.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Jurnal</a>
                     @endif
-                    <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData()">Show Data</a>
-                    <a href="javascript:;" class="btn btn-purple btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData('all')">Show All</a>
+                    <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData('umum')">Show Jurnal Umum</a>
+                    <a href="javascript:;" class="btn btn-purple btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData('mutasi')">Show Mutasi Jurnal</a>
                 </div>
             </div>
 
@@ -106,6 +106,7 @@ Index Jurnal Report
 <!-- Required datatable js -->
 <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
+<script src="http://cdn.datatables.net/plug-ins/1.10.20/sorting/natural.js"></script>
 
 <!-- Responsive examples -->
 <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>

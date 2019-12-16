@@ -8,8 +8,8 @@
                 <div class="form-group col-sm-8">
                     <h2 class="text-dark">{{$saldet->employee->name}}</h2>
                     <h2 class="text-dark">{{$saldet->employee->nip}}</h2>
-                    <h2 class="text-dark">Take Home Pay: <strong> Rp. {{number_format($saldet->take_home_pay)}}</strong> <h2>
-                    <h2 class="text-dark">Total Bonus: <strong> Rp. {{number_format($saldet->bonus)}}</strong> <h2>
+                    <h2 class="text-dark">Take Home Pay: <strong> Rp {{number_format($saldet->take_home_pay,2,",",".")}}</strong> <h2>
+                    <h2 class="text-dark">Total Bonus: <strong> Rp {{number_format($saldet->bonus,2,",",".")}}</strong> <h2>
                 </div>
             </div>
         </div>
@@ -29,7 +29,7 @@
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Tugas Internal</strong></span>
-                                <span class="desc">Rp. {{number_format($bonpeg->tugas_internal)}}</span>
+                                <span class="desc">Rp {{number_format($bonpeg->tugas_internal,2,",",".")}}</span>
                             </div>
                         </div>
                     </li>
@@ -40,7 +40,7 @@
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Logistik</strong></span>
-                                <span class="desc">Rp. {{number_format($bonpeg->logistik)}}</span>
+                                <span class="desc">Rp {{number_format($bonpeg->logistik,2,",",".")}}</span>
                             </div>
                         </div>
                     </li>
@@ -51,7 +51,7 @@
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Kendali Perusahaan</strong></span>
-                                <span class="desc">Rp. {{number_format($bonpeg->kendali_perusahaan)}}</span>
+                                <span class="desc">Rp {{number_format($bonpeg->kendali_perusahaan,2,",",".")}}</span>
                             </div>
                         </div>
                     </li>
@@ -62,7 +62,7 @@
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Top 3 Posting</strong></span>
-                                <span class="desc">Rp. {{number_format($bonpeg->top3)}}</span>
+                                <span class="desc">Rp {{number_format($bonpeg->top3,2,",",".")}}</span>
                             </div>
                         </div>
                     </li>
@@ -73,7 +73,7 @@
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Employee Of the Month</strong></span>
-                                <span class="desc">Rp. {{number_format($bonpeg->eom)}}</span>
+                                <span class="desc">Rp {{number_format($bonpeg->eom,2,",",".")}}</span>
                             </div>
                         </div>
                     </li>

@@ -1,3 +1,7 @@
+@php
+    use App\TempPO;
+    use App\TempPODet;
+@endphp
 <div class="row">
     <div class="col-12">
         <div class="card-box table-responsive">
@@ -35,7 +39,20 @@
                                     <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase</a>
                                     @endif
                                 @else
-                                    <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Purchase sudah di approve</a>
+                                    <?php
+                                        $count_temp = TempPO::where('purchase_id',$purchase->id)->count('purchase_id');
+                                        $status_temp = TempPO::where('purchase_id',$purchase->id)->where('status',1)->count('purchase_id');
+                                    ?>
+                                    @if($count_temp > 0 && $status_temp == 1)
+                                        <?php
+                                            $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id,'role'=>session('role')]));
+                                        ?>
+                                        @if (array_search("PUPUA",$page))
+                                        <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase yang sudah diupdate</a>
+                                        @endif
+                                    @else
+                                        <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Purchase sudah di approve</a>
+                                    @endif
                                 @endif
                             </td>
                         </tr>
@@ -52,7 +69,7 @@
     <div class="modal-dialog modal-lg" id="do-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="myLargeModalLabel">Delivery Order Detail</h4>
+                <h4 class="modal-title" id="myLargeModalLabel">Purchase Order Detail</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
             </div>
             <div class="modal-body" id="modalView">
@@ -63,7 +80,11 @@
 
 <script>
 // Responsive Datatable
-$('#responsive-datatable').DataTable();
+$('#responsive-datatable').DataTable({
+     columnDefs: [
+       { type: 'natural', targets: '_all' }
+     ]
+  } );
 
 function deletePurchase(id){
     var token = $("meta[name='csrf-token']").attr("content");

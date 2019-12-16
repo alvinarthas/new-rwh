@@ -22,11 +22,16 @@ use App\Sales;
 use App\Koordinator;
 use App\Perusahaan;
 use App\SubKoordinator;
+use App\PurchaseDetail;
 
 use Carbon\Carbon;
 
 class TestController extends Controller
 {
+    public function index(){
+        $total_tertahan = PurchaseDetail::where('trx_id',4)->sum(DB::Raw('(price - price_dist)* qty'));
+        echo $total_tertahan;
+    }
 
     public function indexfd(){
         dd(Employee::select('id','username')->join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.username')->get());
@@ -173,7 +178,7 @@ class TestController extends Controller
         }
     }
 
-    public function index(){
+    public function indexb(){
         $bankmember = BankMember_copy::all();
 
         foreach ($bankmember as $key) {

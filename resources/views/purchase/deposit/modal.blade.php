@@ -8,7 +8,7 @@
     <div class="form-group row">
         <label class="col-2 col-form-label">Total Saldo</label>
         <div class="col-10">
-            <input type="text" class="form-control" name="ttl_harga_modal" id="ttl_harga_modal" parsley-trigger="change" value="Rp. {{number_format($saldo)}}" readonly>
+            <input type="text" class="form-control" name="ttl_harga_modal" id="ttl_harga_modal" parsley-trigger="change" value="Rp {{number_format($saldo,2,",",".")}}" readonly>
         </div>
     </div>
     <hr>
@@ -29,7 +29,7 @@
                     @foreach ($details as $key)
                         <tr>
                             <td>{{$i}}</td>
-                            <td>Rp. {{number_format($key->amount)}}</td>
+                            <td>Rp {{number_format($key->amount,2,",",".")}}</td>
                             <td>
                                 @if ($key->status == 1)
                                     <a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-md waves-danger m-b-5" >Masuk</a>

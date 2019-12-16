@@ -260,6 +260,7 @@ Route::middleware(['checkUser'])->group(function () {
     // ------------------------ HELPER -------------------------------------------------
     Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
     Route::get('/datacoa','HelperController@ajxCoa')->name('ajxCoa');
+    Route::get('coatable','CoaController@coaTable')->name('coaTable');
 
     // purchase helper
     Route::get('/showpurchase','PurchaseController@showPurchase')->name('showPurchase');

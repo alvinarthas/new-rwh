@@ -147,7 +147,7 @@
                                     $i++;
                                 @endphp
                                 <td>{{$coa['AccName']}}</td>
-                                <td>Rp. <span class="divide">{{$s->amount}}</span></td>
+                                <td>Rp <span class="divide">{{number_format($s->amount,2,",",".")}}</span></td>
                                 <td>{{$s->keterangan}}</td>
                                 <td>{{$creator['name']}}</td>
                                 <td>
