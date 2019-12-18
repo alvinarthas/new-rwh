@@ -80,7 +80,7 @@ class Purchase extends Model
         $purchase->update();
 
         $total_modal = $purchase->total_harga_modal;
-        $total_tertahan = PurchaseDetail::where('trx_id',$id)->sum(DB::Raw('(price - price_dist)* qty'));
+        $total_tertahan = PurchaseDetail::where('trx_id',$id)->sum(DB::Raw('(price_dist - price)* qty'));
         $total_distributor = $purchase->total_harga_dist;
 
         $jurnal_desc = "PO.".$id;
@@ -134,7 +134,7 @@ class Purchase extends Model
         $total_tertahan=0;
         $total_distributor=0;
         foreach (PurchaseDetail::where('trx_id',$id)->get() as $key) {
-            $selisih = $key->price - $key->price_dist;
+            $selisih = $key->price_dist - $key->price;
             $total_modal += ($key->price * $key->qty);
             $total_tertahan+=($selisih*$key->qty);
             $total_distributor+=($key->price_dist*$key->qty);

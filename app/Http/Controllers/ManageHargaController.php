@@ -52,7 +52,7 @@ class ManageHargaController extends Controller
                     $data->save();
                 }
             }
-            return redirect()->route('product.index')->with('status', 'Berhasil diupdate');
+            return redirect()->route('manageproduct')->with('status', 'Berhasil diupdate');
         }catch(\Exception $e){
             return redirect()->back()->withErrors($e);
         }
