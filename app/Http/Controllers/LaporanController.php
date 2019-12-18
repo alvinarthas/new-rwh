@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 use App\Coa;
 use App\CoaGrup;
 use App\Jurnal;
+use App\Purchase;
+use App\Sales;
+use App\Customer;
+use App\Perusahaan;
 
 class LaporanController extends Controller
 {
@@ -214,5 +218,29 @@ class LaporanController extends Controller
         }
     }
 
-    
+    public function salesReport(Request $request){
+        if($request->ajax()){
+            $start = $request->start;
+            $end = $request->end;
+
+            $report = Sales::report($start,$end);
+            $count = Customer::count();
+            return view('laporan.sales.show',compact('report','start','end','count'));
+        }else{
+            return view('laporan.sales.index');
+        }
+    }
+
+    public function purchaseReport(Request $request){
+        if($request->ajax()){
+            $start = $request->start;
+            $end = $request->end;
+
+            $report = Purchase::report($start,$end);
+            $count = Perusahaan::count();
+            return view('laporan.purchase.show',compact('report','start','end','count'));
+        }else{
+            return view('laporan.purchase.index');
+        }
+    }
 }

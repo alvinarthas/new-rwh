@@ -10,7 +10,7 @@ use App\PurchaseDetail;
 use App\TempPO;
 use App\TempPODet;
 use App\Jurnal;
-
+use App\Perushaan;
 
 class Purchase extends Model
 {
@@ -144,17 +144,17 @@ class Purchase extends Model
                 //Update debet Persediaan Barang Indent ( harga modal x qty )
                     $jurnal1 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.4.1.1')->first();
                     $jurnal1->amount = $jurnal1->amount+$total_modal;
-                    $jurnal1->date = $request->po_date;
+                    $jurnal1->date = $purchase->tgl;
                     $jurnal1->update();
                 //Update debet Estimasi Bonus
                     $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
                     $jurnal2->amount = $jurnal2->amount+$total_tertahan;
-                    $jurnal2->date = $request->po_date;
+                    $jurnal2->date = $purchase->tgl;
                     $jurnal2->update();
                 //Update credit hutang Dagang
                     $jurnal3 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','2.1.1')->first();
-                    $jurnal3->amount = $jurnal2->amount+$total_distributor;
-                    $jurnal3->date = $request->po_date;
+                    $jurnal3->amount = $jurnal3->amount+$total_distributor;
+                    $jurnal3->date = $purchase->tgl;
                     $jurnal3->update();
             }else{
                 $id_jurnal = Jurnal::getJurnalID('PO');
@@ -170,5 +170,28 @@ class Purchase extends Model
                 //insert credit hutang Dagang
                 Jurnal::addJurnal($id_jurnal,$total_distributor,$purchase->tgl,$jurnal_desc,'2.1.1','Credit',$user_id);
             }          
+    }
+
+    public static function report($start,$end){
+        $data = collect();
+
+        foreach(Perusahaan::all() as $key){
+            $temp = collect();
+            $detail = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id');
+
+            if($start <> NULL && $end <> NULL){
+                $detail->whereBetween('tblpotrx.tgl',[$start,$end]);
+            }
+
+            $price = $detail->where('tblpotrx.supplier',$key->id)->sum(DB::Raw('tblpotrxdet.qty * tblpotrxdet.price'));
+            $price_dist = $detail->where('tblpotrx.supplier',$key->id)->sum(DB::Raw('tblpotrxdet.qty * tblpotrxdet.price_dist'));
+
+            $temp->put('supplier',$key->nama);
+            $temp->put('price',$price);
+            $temp->put('price_dist',$price_dist);
+
+            $data->push($temp);
+        }
+        return $data;
     }
 }

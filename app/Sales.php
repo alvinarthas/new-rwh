@@ -13,6 +13,7 @@ use App\Jurnal;
 use App\Log;
 use App\TempSales;
 use App\TempSalesDet;
+use App\Customer;
 
 class Sales extends Model
 {
@@ -248,5 +249,28 @@ class Sales extends Model
                 //insert Credit Persediaan Barang milik customer
                 Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'1.1.4.1.2','Credit',$user_id);
         }
+    }
+
+    public static function report($start,$end){
+        $data = collect();
+
+        foreach(Customer::all() as $key){
+            $temp = collect();
+            $detail = Sales::join('tblproducttrxdet','tblproducttrx.id','=','tblproducttrxdet.trx_id');
+
+            if($start <> NULL && $end <> NULL){
+                $detail->whereBetween('tblproducttrx.trx_date',[$start,$end]);
+            }
+
+            $bv = $detail->where('tblproducttrx.customer_id',$key->id)->sum('tblproducttrxdet.sub_ttl_pv');
+            $price = $detail->where('tblproducttrx.customer_id',$key->id)->sum('tblproducttrxdet.sub_ttl');
+
+            $temp->put('customer',$key->apname);
+            $temp->put('price',$price);
+            $temp->put('bv',$bv);
+
+            $data->push($temp);
+        }
+        return $data;
     }
 }

@@ -191,8 +191,9 @@ class ProductController extends Controller
             $indent = Product::getIndent($request->prod_id);
             $gudang = Product::getGudang($request->prod_id);
             $brg_cust = Product::getBrgCust($request->prod_id);
+            $total = $indent+$gudang-$brg_cust;
 
-            return response()->json(view('product.controlling.modal',compact('indent','gudang','brg_cust','product'))->render());
+            return response()->json(view('product.controlling.modal',compact('indent','gudang','brg_cust','product','total'))->render());
         }else{
             $products = Product::all();
         

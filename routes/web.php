@@ -236,6 +236,10 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('perubahanmodal','LaporanController@perubahanModal')->name('perubahanModal');
         // Profit Loss
         Route::get('profitloss','LaporanController@profitLoss')->name('profitLoss');
+        // Purchase
+        Route::get('purchase','LaporanController@purchaseReport')->name('purchaseReport');
+        // Sales
+        Route::get('sales','LaporanController@salesReport')->name('salesReport');
     });
 
     Route::get('logout','HomeController@logout')->name('Logout');

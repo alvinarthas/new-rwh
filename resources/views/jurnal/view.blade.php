@@ -61,13 +61,23 @@
             <div class="form-group row">
                 <label class="col-2 col-form-label">Total Debet</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($jurnals['ttl_debet'],2,',','.')}}" readonly>
+                    @if ($jurnals['ttl_debet'] < 0)
+                        <input type="text" class="form-control" parsley-trigger="change" value="Rp ({{number_format($jurnals['ttl_debet'],2,',','.')}})" readonly>
+                    @else
+                        <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($jurnals['ttl_debet'],2,',','.')}}" readonly>
+                    @endif
+                    
                 </div>
             </div>
             <div class="form-group row">
                 <label class="col-2 col-form-label">Total Credit</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($jurnals['ttl_credit'],2,',','.')}}" readonly>
+                    @if ($jurnals['ttl_credit'] < 0)
+                        <input type="text" class="form-control" parsley-trigger="change" value="Rp ({{number_format($jurnals['ttl_credit'],2,',','.')}})" readonly>
+                    @else
+                        <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($jurnals['ttl_credit'],2,',','.')}}" readonly>
+                    @endif
+                    
                 </div>
             </div>
         </div>
