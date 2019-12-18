@@ -36,13 +36,46 @@
                             </p>
                         @endif
                     @endif
-                @elseif($bonusapa=="bonusgagal")
-                    <h3 class="m-t-0 header-title">Laporan Upload Gagal Perhitungan Bonus Member</h3>
-                @endif
-                @if($bonusapa=="pembayaran")
+                @elseif($bonusapa=="pembayaran")
                     <h3 class="m-t-0 header-title">Penerimaan Bonus Member</h3>
                 @elseif($bonusapa=="topup")
                     <h3 class="m-t-0 header-title">Top Up Bonus Member</h3>
+                @elseif($bonusapa=="laporan" OR $bonusapa=="bonusgagal")
+                    @if($bonusapa=="laporan")
+                        <h3 class="m-t-0 header-title">Laporan Realisasi Bonus Member</h3>
+                    @elseif($bonusapa=="bonusgagal")
+                        <h3 class="m-t-0 header-title">Laporan Upload Gagal Perhitungan Bonus Member</h3>
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">Nama Perusahaan</label>
+                            <div class="col-10">
+                                <select class="form-control select2" parsley-trigger="change" id="perusahaan" name="perusahaan">
+                                    <option value="#" disabled selected>Pilih Perusahaan</option>
+                                    @foreach ($perusahaans as $prs)
+                                        <option value="{{$prs->id}}">{{$prs->nama}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    @endif
+                    <div class="form-group row">
+                        <label class="col-2 col-form-label">Bulan & Tahun Bonus</label>
+                        <div class="col-5">
+                            <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" required>
+                                <option value="#" selected disabled>Pilih Bulan</option>
+                                @for ($i = 1; $i <= 12; $i++)
+                                    <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="col-5">
+                            <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" required>
+                                <option value="#" selected disabled>Pilih Tahun</option>
+                                @for ($i = 2018; $i <= date('Y'); $i++)
+                                    <option value="{{$i}}">{{$i}}</option>
+                                @endfor
+                            </select>
+                        </div>
+                    </div>
                 @endif
                 @if($jenis == "index")
                     @if($bonusapa=="pembayaran")
@@ -70,7 +103,7 @@
                     {{ csrf_field() }}
                     {{ method_field('PUT') }}
                 @endif
-                @if($bonusapa != "laporan")
+                @if($bonusapa != "laporan" OR $bonusapa != "bonusgagal")
                     @if($jenis == "create" OR $jenis == "edit")
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Tanggal Transaksi</label>
@@ -86,6 +119,7 @@
                     @endif
                 @endif
                 @if($jenis=="index")
+                    @if(($bonusapa=="perhitungan") OR ($bonusapa == "pembayaran") OR ($bonusapa == "topup"))
                     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                         <thead>
                             <th>No</th>
@@ -127,15 +161,36 @@
                                 <td>
                                     @if($bonusapa=="perhitungan")
                                         @if (array_search("BMPBU",$page))
-                                            <a href="{{route('bonus.edit',['id'=>$b->id_bonus])}}" class="btn btn-info btn-rounded waves-effect waves-light w-75 m-b-5">Update</a>
+                                            <a href="{{route('bonus.edit',['id'=>$b->id_bonus])}}" class="btn btn-info btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
+                                        @endif
+                                        @if (array_search("BMPBD",$page))
+                                            <form class="" action="{{ route('bonus.destroy', ['id' => $b->id_jurnal]) }}" method="post">
+                                                {{ csrf_field() }}
+                                                {{ method_field('delete') }}
+                                                <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
+                                            </form>
                                         @endif
                                     @elseif($bonusapa=="pembayaran")
                                         @if (array_search("BMBBU",$page))
-                                            <a href="{{route('bonus.editPenerimaan',['id'=>$b->id_bonus])}}" class="btn btn-info btn-rounded waves-effect waves-light w-75 m-b-5">Update</a>
+                                            <a href="{{route('bonus.editPenerimaan',['id'=>$b->id_bonus])}}" class="btn btn-info btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
+                                        @endif
+                                        @if (array_search("BMBBD",$page))
+                                            <form class="" action="{{ route('bonus.deletePenerimaan', ['id' => $b->id_jurnal]) }}" method="post">
+                                                {{ csrf_field() }}
+                                                {{ method_field('delete') }}
+                                                <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
+                                            </form>
                                         @endif
                                     @elseif($bonusapa=="topup")
                                         @if (array_search("BMTUU",$page))
-                                            <a href="{{route('bonus.edittopup',['id'=>$b->id_bonus])}}" class="btn btn-info btn-rounded waves-effect waves-light w-75 m-b-5">Update</a>
+                                            <a href="{{route('bonus.edittopup',['id'=>$b->id_bonus])}}" class="btn btn-info btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
+                                        @endif
+                                        @if (array_search("BMTUD",$page))
+                                            <form class="" action="{{ route('bonus.deletetopup', ['id' => $b->tgl]) }}" method="post">
+                                                {{ csrf_field() }}
+                                                {{ method_field('delete') }}
+                                                <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
+                                            </form>
                                         @endif
                                     @endif
                                 </td>
@@ -146,6 +201,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    @endif
                 @elseif($jenis == "create" OR $jenis == "edit")
                     <input type="hidden" name="bonusapa" id="bonusapa" value="{{ $bonusapa }}">
                     @if($bonusapa=="perhitungan" OR $bonusapa=="bonusgagal")
@@ -170,9 +226,7 @@
                             </div>
                         </div>
                     @endif
-                    @if($bonusapa=="laporan")
-                        <h3 class="m-t-0 header-title">Laporan Realisasi Bonus Member</h3>
-                    @endif
+
                     @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
                     <div class="form-group row">
                         <label class="col-2 col-form-label">Bulan & Tahun Bonus</label>
@@ -749,10 +803,10 @@
                 id : id,
                 _token : token,
             },success		:	function(data){
-                checkTotal();
                 $('#trsd'+id).remove();
                 var cnt = $('#editable-datatable tbody tr.trow').length;
                 $('#ctr').val(cnt);
+                checkTotal();
             },
             error       :   function(data){
                 alert('Gagal menampilkan data, silahkan refresh halaman.');
@@ -772,10 +826,10 @@
                 _token : token,
             },
             success	:	function(data){
-                checkTotal();
                 $('#trtd'+id).remove();
                 var cnt = $('#editable-datatable tbody tr.trow').length;
                 $('#ctr').val(cnt);
+                checkTotal();
             },
             error       :   function(data){
                 alert('Gagal menampilkan data, silahkan refresh halaman.');
@@ -794,10 +848,10 @@
                 id : id,
                 _token : token,
             },success		:	function(data){
-                checkTotal();
                 $('#trtd'+id).remove();
                 var cnt = $('#editable-datatable tbody tr.trow').length;
                 $('#ctr').val(cnt);
+                checkTotal();
             },
             error       :   function(data){
                 alert('Gagal menampilkan data, silahkan refresh halaman.');
@@ -872,23 +926,27 @@
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
         var perusahaan = $("#perusahaan").val()
-        $.ajax({
-            url         :   "{{route('createBonusPerhitungan')}}",
-            data        :   {
-                tgl : tgl,
-                tahun : thn,
-                bulan : bln,
-                perusahaan : perusahaan,
-            },
-            type		:	"GET",
-            dataType    :   "html",
-            success		:	function(data){
-                $("#tblBonus").html(data);
-            },
-            error       :   function(data){
-                document.getElementById('tahun').value = '2016';
-            }
-        });
+        if(tgl=="" || bln=="" || thn=="" || perusahaan==""){
+            alert('Pastikan isi field bulan, tahun, tanggal transaksi, dan perusahaan');
+        }else{
+            $.ajax({
+                url         :   "{{route('createBonusPerhitungan')}}",
+                data        :   {
+                    tgl : tgl,
+                    tahun : thn,
+                    bulan : bln,
+                    perusahaan : perusahaan,
+                },
+                type		:	"GET",
+                dataType    :   "html",
+                success		:	function(data){
+                    $("#tblBonus").html(data);
+                },
+                error       :   function(data){
+                    document.getElementById('tahun').value = '2016';
+                }
+            });
+        }
     }
 
     function showBonusPenerimaan(){
@@ -896,6 +954,7 @@
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
         var rekening = $("#coa").val()
+
         if(rekening == '1.1.3.3'){
             var supplier = $("#supplier").val()
         }else{
@@ -927,29 +986,33 @@
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
         var rekening = $("#coa").val()
-        if(rekening == '1.1.3.3'){
-            var supplier = $("#supplier").val()
+        if(tgl=="" || bln=="" || thn=="" || rekening==null){
+            alert('Pastikan isi field Bulan, Tahun, Tanggal Transaksi, dan Rekening Bank Tujuan');
         }else{
-            var supplier = 0
-        }
-        $.ajax({
-            url         :   "{{route('createBonusPenerimaan')}}",
-            data        :   {
-                tgl : tgl,
-                tahun : thn,
-                bulan : bln,
-                rkng : rekening,
-                splr : supplier,
-            },
-            type		:	"GET",
-            dataType    :   "html",
-            success		:	function(data){
-                $("#tblBonus").html(data);
-            },
-            error       :   function(data){
-                document.getElementById('tgl_transaksi').value = '1945-08-17';
+            if(rekening == '1.1.3.3'){
+                var supplier = $("#supplier").val()
+            }else{
+                var supplier = 0
             }
-        });
+            $.ajax({
+                url         :   "{{route('createBonusPenerimaan')}}",
+                data        :   {
+                    tgl : tgl,
+                    tahun : thn,
+                    bulan : bln,
+                    rkng : rekening,
+                    splr : supplier,
+                },
+                type		:	"GET",
+                dataType    :   "html",
+                success		:	function(data){
+                    $("#tblBonus").html(data);
+                },
+                error       :   function(data){
+                    document.getElementById('tgl_transaksi').value = '1945-08-17';
+                }
+            });
+        }
     }
 
     function showBonusTopup(){
@@ -975,21 +1038,25 @@
     function createBonusTopup(){
         var tgl = $("#tgl_transaksi").val()
         var rekening = $("#rekening").val()
-        $.ajax({
-            url         :   "{{route('createBonusTopup')}}",
-            data        :   {
-                tgl : tgl,
-                rkng : rekening,
-            },
-            type		:	"GET",
-            dataType    :   "html",
-            success		:	function(data){
-                $("#tblBonus").html(data);
-            },
-            error       :   function(data){
-                document.getElementById('tgl_transaksi').value = '1945-08-17';
-            }
-        });
+        if(tgl=="" || rekening==null){
+            alert('Pastikan isi field Tanggal Transaksi, dan Sumber Rekening');
+        }else{
+            $.ajax({
+                url         :   "{{route('createBonusTopup')}}",
+                data        :   {
+                    tgl : tgl,
+                    rkng : rekening,
+                },
+                type		:	"GET",
+                dataType    :   "html",
+                success		:	function(data){
+                    $("#tblBonus").html(data);
+                },
+                error       :   function(data){
+                    document.getElementById('tgl_transaksi').value = '1945-08-17';
+                }
+            });
+        }
     }
 
     function showLaporanBonus(){

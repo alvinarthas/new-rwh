@@ -195,9 +195,9 @@ class ProductController extends Controller
             return response()->json(view('product.controlling.modal',compact('indent','gudang','delivered','product'))->render());
         }else{
             $products = Product::all();
-        
+
             return view('product.controlling.index',compact('products'));
         }
-        
+
     }
 }

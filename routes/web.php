@@ -70,6 +70,7 @@ Route::middleware(['checkUser'])->group(function () {
     Route::post('/bonus/bayar/create','BonusController@storeBayar')->name('bonus.storePenerimaan');
     Route::get('/bonus/bayar/{id}/edit','BonusController@editBayar')->name('bonus.editPenerimaan');
     Route::put('/bonus/bayar/{id}/edit','BonusController@updateBayar')->name('bonus.updatePenerimaan');
+    Route::delete('/bonus/bayar/{id}/delete', 'BonusController@destroyBayar')->name('bonus.deletePenerimaan');
     Route::get('/showBonusPembayaran', 'BonusController@showBonusPembayaran')->name('showBonusPenerimaan');
     Route::get('/createBonusPembayaran', 'BonusController@createBonusPembayaran')->name('createBonusPenerimaan');
     Route::post('/uploadBonusPenerimaan', 'BonusController@uploadBonusPenerimaan')->name('uploadBonusPenerimaan');
@@ -82,6 +83,7 @@ Route::middleware(['checkUser'])->group(function () {
     Route::post('/bonus/topup/create','BonusController@storeTopup')->name('bonus.storetopup');
     Route::get('/bonus/topup/{id}/edit','BonusController@editTopup')->name('bonus.edittopup');
     Route::put('/bonus/topup/{id}/edit','BonusController@updateTopup')->name('bonus.updatetopup');
+    Route::delete('/bonus/topup/{id}/delete', 'BonusController@destroyTopup')->name('bonus.deletetopup');
     Route::get('/showBonusTopup', 'BonusController@showBonusTopup')->name('showBonusTopup');
     Route::get('/createBonusTopup', 'BonusController@createBonusTopup')->name('createBonusTopup');
     Route::post('/uploadBonusTopup', 'BonusController@uploadBonusTopup')->name('uploadBonusTopup');
@@ -190,7 +192,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::post('/pricebycustomer/manage/{id}', 'CustomerController@updateManagePriceBV')->name('updatebycustomer');
         Route::get('/cetakXlsProduct/{id}', 'CustomerController@exportProduct')->name('exportXlsProduct');
         Route::get('/cetakXlsCustomer/{id}', 'CustomerController@exportCustomer')->name('exportXlsCustomer');
-    
+
     // Stock Controlling
         Route::get('stockcontrolling','ProductController@controlling')->name('stockControlling');
 

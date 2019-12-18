@@ -8,7 +8,7 @@
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 </div>
 
-                <table id="table" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                <table id="table2" class="table table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                     <thead>
                         <tr>
                             <th width="5%">No</th>

@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 use App\Coa;
 use App\Product;
@@ -24,12 +25,12 @@ class Jurnal extends Model
     }
 
     public static function getJurnalID($jenis){
-        $jurnal = Jurnal::where('id_jurnal','LIKE',$jenis.'%')->distinct('id_jurnal')->orderBy('id_jurnal','desc');
+        $jurnal = Jurnal::where('id_jurnal','LIKE',$jenis.'%')->orderBy(DB::raw('CAST(SUBSTRING(id_jurnal, 4, 10) AS INT)'),'desc')->select('id_jurnal')->distinct('id_jurnal');
         $count_jurnal = $jurnal->count();
         if($count_jurnal == 0){
             $id_jurnal = $jenis.".1";
         }else{
-            $getJurnal = $jurnal->select('id_jurnal')->first();
+            $getJurnal = $jurnal->first();
             $num_jurnal = intval(substr($getJurnal->id_jurnal,3,10))+1;
             $id_jurnal = $jenis.".".$num_jurnal;
         }
@@ -41,7 +42,7 @@ class Jurnal extends Model
             $jurnal = Jurnal::orderBy('date','asc')->get();
             $ttl_debet = Jurnal::where('AccPos','Debet')->sum('Amount');
             $ttl_credit = Jurnal::where('AccPos','Credit')->sum('Amount');
-            
+
         }elseif($param == NULL){
             $jurnal = Jurnal::whereBetween('date',[$start,$end]);
             $jurdebet = Jurnal::whereBetween('date',[$start,$end]);
@@ -51,17 +52,17 @@ class Jurnal extends Model
                 $jurdebet->where('AccNo',$coa);
                 $jurcredit->where('AccNo',$coa);
             }
-    
+
             $ttl_debet = $jurdebet->where('AccPos','Debet')->sum('Amount');
             $ttl_credit = $jurcredit->where('AccPos','Credit')->sum('Amount');
-    
+
             if($position <> "all"){
                 $jurnal->where('AccPos',$position);
             }
 
             $jurnal = $jurnal->orderBy('date','asc')->get();
         }
-        
+
         $data = collect();
         $data->put('data',$jurnal);
         $data->put('ttl_debet',$ttl_debet);
@@ -264,7 +265,7 @@ class Jurnal extends Model
             $total_bonus+=$bonus;
         }
 
-        // 
+        //
         $total_realisasi_all=0;
         $members = Member::orderBy('nama','asc')->select('ktp')->get();
 
@@ -277,9 +278,9 @@ class Jurnal extends Model
                 if($bonus == NULL){
                     $total_realisasi+=0;
                 }else{
-                    $total_realisasi+=$bonus->bonus;                    
+                    $total_realisasi+=$bonus->bonus;
                 }
-                
+
             }
             $total_realisasi_all+=$total_realisasi;
         }

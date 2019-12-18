@@ -44,8 +44,9 @@ class ManageHargaController extends Controller
                 $price_dis = $request->price_dis[$i];
                 $price_mod = $request->price_mod[$i];
 
-                if($price_dis!=0 AND $price_mod!=0){
-                    $data = Product::where('prod_id', $prod_id)->first();
+
+                $data = Product::where('prod_id', $prod_id)->first();
+                if($data->harga_distributor != $price_dis OR $data->harga_modal != $price_mod){
                     $data->harga_distributor = $price_dis;
                     $data->harga_modal = $price_mod;
                     $data->creator = session('user_id');

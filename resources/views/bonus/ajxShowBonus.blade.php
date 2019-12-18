@@ -5,6 +5,7 @@
         use App\Bank;
         use App\PerusahaanMember;
         use App\Perusahaan;
+        use App\Bonus;
         use App\BonusBayar;
         use App\TopUpBonus;
     @endphp
@@ -122,19 +123,19 @@
                                             $totalr = 0;
                                             $total_perhitungan = 0;
                                             $total_realisasi = 0;
-                                            $prm = PerusahaanMember::where('ktp',$m->ktp)->get();
+                                            $prm = PerusahaanMember::join('tblperusahaan', 'perusahaanmember.perusahaan_id', 'tblperusahaan.id')->where('ktp',$m->ktp)->select('tblperusahaan.nama', 'noid')->get();
                                         @endphp
 
                                         @foreach($prm as $p)
                                         @php
-                                            $perusahaan = Perusahaan::where('id', $p->perusahaan_id)->select('nama')->first();
-                                            $data_bonus = $bonus->where('member_id', $p->noid)->sum('bonus');
+                                            $perusahaan = $p->nama;
+                                            $data_bonus = Bonus::where('bulan', $bulan)->where('tahun', $tahun)->where('noid', $p->noid)->sum('bonus');
                                         @endphp
 
-                                            {{ $no}}. {{ $perusahaan['nama'] }} {{ $p->noid}}<br><b>Bonus :{{ $data_bonus}}</b><br>
+                                            {{ $no }}. {{ $perusahaan }} {{ $p->noid}}<br><b>Bonus :{{ $data_bonus}}</b><br>
                                         @php
                                             $no++;
-                                            $totalp = $totalp;
+                                            $totalp = $totalp + $data_bonus;
                                         @endphp
                                         @endforeach
                                         @php
@@ -145,7 +146,7 @@
                                     </td>
                                     <td>
                                         @php
-                                            $bm = BankMember::where('ktp',$m->ktp)->get();
+                                            $bm = BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('ktp',$m->ktp)->select('norek', 'nama')->get();
                                             $no = 1;
                                             $totalr = 0;
                                         @endphp
@@ -153,8 +154,9 @@
                                         @php
                                             $bb = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('no_rek',$b->norek)->select('tgl')->first();
                                             $d_bonus = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('no_rek',$b->norek)->sum('bonus');
+                                            $d_bonus = $d_bonus;
                                             $d_tgl = $bb['tgl'];
-                                            $bank = Bank::where('id',$b->bank_id)->first()->nama;
+                                            $bank = $b->nama;
                                         @endphp
                                         {{ $no }}. {{ $bank }} {{ $b->norek }}<br><b>Bonus : {{ $d_bonus }}</b><br>Tgl : {{ $d_tgl }}<br>
                                         @php
