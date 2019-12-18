@@ -38,7 +38,7 @@ Index Purchasing
                             <tr>
                                 <td>{{$i}}</td>
                                 <td>{{$key['name']}}</td>
-                                <td>Rp. {{number_format($key['saldo'])}}</td>
+                                <td>Rp {{number_format($key['saldo'],2,",",".")}}</td>
                                 <td>
                                     @if (array_search("PUDPS",$page))
                                         <a href="javascript:;" onclick="getDetail({{$key['id']}},`{{$key['name']}}`)" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Detail</a>

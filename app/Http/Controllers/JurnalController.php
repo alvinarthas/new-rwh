@@ -21,8 +21,9 @@ class JurnalController extends Controller
     {
         if ($request->ajax()) {
             $jurnals = Jurnal::viewJurnal($request->start_date,$request->end_date,$request->coa,$request->position,$request->param);
+            $param = $request->param;
             $page = MenuMapping::getMap(session('user_id'),"FIJU");
-            return response()->json(view('jurnal.view',compact('jurnals','page'))->render());
+            return response()->json(view('jurnal.view',compact('jurnals','page','param'))->render());
         }else{
             $coas = Coa::where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
             $page = MenuMapping::getMap(session('user_id'),"FIJU");

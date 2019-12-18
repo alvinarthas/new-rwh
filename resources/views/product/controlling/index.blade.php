@@ -30,9 +30,6 @@
                         <th>Supplier</th>
                         <th>Product ID</th>
                         <th>Product Name</th>
-                        <th>Product Brand</th>
-                        <th>Harga Modal</th>
-                        <th>Harga Distributor</th>
                         <th>Detail Stock</th>
                     </thead>
 
@@ -44,9 +41,6 @@
                                 <td>{{$prd->supplier()->first()->nama}}</td>
                                 <td>{{$prd->prod_id}}</td>
                                 <td>{{$prd->name}}</td>
-                                <td>{{$prd->category}}</td>
-                                <td>Rp. {{number_format($prd->harga)}}</td>
-                                <td>Rp. {{number_format($prd->harga_distributor)}}</td>
                                 <td>
                                     <a href="javascript:;" onclick="getDetail('{{$prd->prod_id}}')" class="btn btn-primary btn-rounded waves-effect waves-light w-md m-b-5" disabled="disabled">Show Detail</a>
                                 </td>

@@ -15,7 +15,7 @@
                     <td>{{$i}}</td>
                     <td>SO.{{$sale['sales_id']}}</td>
                     <td>{{$sale['customer']}}</td>
-                    <td>Rp. {{number_format($sale['ttl'])}}</td>
+                    <td>Rp {{number_format($sale['ttl'],2,",",".")}}</td>
                     @if ($sale['status_do'] == 1)
                         <td><a href="javascrip:;" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Sudah selesai melakukan Delivery</a></td>
                     @else

@@ -41,9 +41,9 @@ Form Sales Payment
                                     <td>{{$i}}</td>
                                     <td>{{$item->prod_id}}</td>
                                     <td>{{$item->product->name}}</td>
-                                    <td>Rp. {{number_format($item->price)}}</td>
+                                    <td>Rp {{number_format($item->price,2,",",".")}}</td>
                                     <td>{{$item->qty}}</td>
-                                    <td>Rp. {{number_format($item->sub_ttl)}}</td>
+                                    <td>Rp {{number_format($item->sub_ttl,2,",",".")}}</td>
                                     <td></td>
                                 </tr>
                             @php($i++)
@@ -76,7 +76,7 @@ Form Sales Payment
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Total Transaction Amount</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($sales->ongkir+$sales->ttl_harga)}}" readonly>
+                                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($sales->ongkir+$sales->ttl_harga,2,",",".")}}" readonly>
                                 </div>
                             </div>
                         </div>
@@ -114,7 +114,7 @@ Form Sales Payment
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Total Transaction to Paid</label>
                                     <div class="col-10">
-                                        <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format(($sales->ongkir+$sales->ttl_harga)-$ttl_pay)}}" readonly>
+                                        <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format(($sales->ongkir+$sales->ttl_harga)-$ttl_pay,2,",",".")}}" readonly>
                                         <input type="hidden" name="paid" id="paid" value="{{($sales->ongkir+$sales->ttl_harga)-$ttl_pay}}">
                                         <input type="hidden" name="customer_info" id="customer_info" value="{{$sales->customer_id}}">
                                     </div>
@@ -193,7 +193,7 @@ Form Sales Payment
                                 </div>
                                 @if ($sales->status == 0)
                                 <div class="form-group text-right m-b-0">
-                                    <button onsubmit="checkPay()" class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Simpan Sales Order</a>
+                                    <button onsubmit="checkPay()" class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Simpan Sales Payment</a>
                                 </div>
                                 @endif
                             </div>
@@ -221,7 +221,7 @@ Form Sales Payment
                                 <tr>
                                     <td>{{$i}}</td>
                                     <td>{{$pay->payment_date}}</td>
-                                    <td>Rp. {{number_format($pay->payment_amount)}}</td>
+                                    <td>Rp {{number_format($pay->payment_amount,2,",",".")}}</td>
                                     <td>{{$pay->payment->AccName}}</td>
                                     <td>{{$pay->payment_desc}}</td>
                                     <td>{{$pay->deduct_category}}</td>

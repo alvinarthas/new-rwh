@@ -38,31 +38,39 @@ class Jurnal extends Model
     }
 
     public static function viewJurnal($start,$end,$coa,$position,$param){
-        if($param == "all"){
-            $jurnal = Jurnal::orderBy('date','asc')->get();
-            $ttl_debet = Jurnal::where('AccPos','Debet')->sum('Amount');
-            $ttl_credit = Jurnal::where('AccPos','Credit')->sum('Amount');
-            
-        }elseif($param == NULL){
-            $jurnal = Jurnal::whereBetween('date',[$start,$end]);
-            $jurdebet = Jurnal::whereBetween('date',[$start,$end]);
-            $jurcredit = Jurnal::whereBetween('date',[$start,$end]);
-            if($coa <> "all"){
-                $jurnal->where('AccNo',$coa);
-                $jurdebet->where('AccNo',$coa);
-                $jurcredit->where('AccNo',$coa);
-            }
-    
-            $ttl_debet = $jurdebet->where('AccPos','Debet')->sum('Amount');
-            $ttl_credit = $jurcredit->where('AccPos','Credit')->sum('Amount');
-    
-            if($position <> "all"){
-                $jurnal->where('AccPos',$position);
-            }
-
-            $jurnal = $jurnal->orderBy('date','asc')->get();
-        }
         
+        if ($param == "umum") {
+            $jurnal = Jurnal::where('id_jurnal','LIKE','JN%');
+            $jurdebet = Jurnal::where('id_jurnal','LIKE','JN%');
+            $jurcredit = Jurnal::where('id_jurnal','LIKE','JN%');
+        }elseif ($param == "mutasi") {
+            $jurnal = Jurnal::where('id_jurnal','LIKE','%%');
+            $jurdebet = Jurnal::where('id_jurnal','LIKE','%%');
+            $jurcredit = Jurnal::where('id_jurnal','LIKE','%%');
+        }
+
+        if($coa <> "all"){
+            $jurnal->where('AccNo',$coa);
+            $jurdebet->where('AccNo',$coa);
+            $jurcredit->where('AccNo',$coa);
+        }
+
+        if($position <> "all"){
+            $jurnal->where('AccPos',$position);
+            $jurdebet->where('AccPos',$position);
+            $jurcredit->where('AccPos',$position);
+        }
+
+        if($start <> NULL && $end <> NULL){
+            $jurnal->whereBetween('date',[$start,$end]);
+            $jurdebet->whereBetween('date',[$start,$end]);
+            $jurcredit->whereBetween('date',[$start,$end]);
+        }
+
+        $ttl_debet = $jurdebet->where('AccPos','Debet')->sum('Amount');
+        $ttl_credit = $jurcredit->where('AccPos','Credit')->sum('Amount');
+        $jurnal = $jurnal->orderBy('date','asc')->get();
+
         $data = collect();
         $data->put('data',$jurnal);
         $data->put('ttl_debet',$ttl_debet);
@@ -70,7 +78,13 @@ class Jurnal extends Model
         return $data;
     }
 
-    public static function addJurnal($id_jurnal,$amount,$date,$desc,$coa,$position){
+    public static function addJurnal($id_jurnal,$amount,$date,$desc,$coa,$position,$user_id=null){
+        if($user_id != null){
+            $user = $user_id;
+        }else{
+            $user = session('user_id');
+        }
+
         $jurnal = new Jurnal(array(
             'id_jurnal' => $id_jurnal,
             'AccNo' => $coa,
@@ -79,7 +93,7 @@ class Jurnal extends Model
             'company_id' => 1,
             'date' => $date,
             'description' => $desc,
-            'creator' => session('user_id'),
+            'creator' => $user,
         ));
 
         $jurnal->save();

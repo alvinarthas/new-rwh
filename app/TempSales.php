@@ -1,0 +1,17 @@
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class TempSales extends Model
+{
+    protected $table ='temp_tblproducttrx';
+    protected $fillable = [
+        'trx_date','creator','ttl_harga','customer_id','ongkir','status','trx_id'
+    ];
+
+    public function customer(){
+        return $this->belongsTo('App\Customer');
+    }
+}
