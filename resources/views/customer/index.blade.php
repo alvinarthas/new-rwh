@@ -34,11 +34,8 @@
                 @if($jenis == "customer")
                     <h4 class="m-t-0 header-title">Daftar Customer</h4>
                     <p class="text-muted font-14 m-b-30">
-                        @if (array_search("CRCSC",$page))
+                        @if (array_search("MDCSC",$page))
                             <a href="{{ route('customer.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Customer</a>
-                        @endif
-                        @if(array_search("CRCSP",$page))
-                            <a href="{{ route('pricebycustomer') }}" class="btn btn-purple btn-rounded w-md waves-effect waves-light m-b-5">Manage Price & BV by Customer</a>
                         @endif
                     </p>
                     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
@@ -64,11 +61,8 @@
                                 <td>{{$cus->cicn}}</td>
                                 <td>{{$cus->ciphone}}</td>
                                 <td>
-                                    @if (array_search("CRCSU",$page))
+                                    @if (array_search("MDCSU",$page))
                                         <a href="{{route('customer.edit',['id'=>$cus->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-75 m-b-5">Update Data</a>
-                                    @endif
-                                    @if (array_search("CRCSG",$page))
-                                        <a href="{{route('customer.pricebv',['id'=>$cus->id])}}" class="btn btn-warning btn-rounded waves-effect waves-light w-75 m-b-5">Update Price & BV</a>
                                     @endif
                                 </td>
                             </tr>
@@ -78,8 +72,8 @@
                             @endforeach
                         </tbody>
                     </table>
-                @elseif($jenis == "pricebycustomer")
-                    <h4 class="m-t-0 header-title">Update Price & BV by Customer</h4>
+                @elseif($jenis == "pricebyproduct")
+                    <h4 class="m-t-0 header-title">Update Price & BV by Product</h4>
                     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                         <thead>
                             <th>No</th>
@@ -101,9 +95,7 @@
                                 <td>{{$p->name}}</td>
                                 <td>{{$p->category}}</td>
                                 <td>
-                                    @if (array_search("CRCSR",$page))
-                                        <a href="{{route('managepricebycustomer',['id'=>$p->pid])}}" class="btn btn-warning btn-rounded waves-effect waves-light w-75 m-b-5">Update Price & BV</a>
-                                    @endif
+                                    <a href="{{route('managePriceByProduct',['id'=>$p->pid])}}" class="btn btn-warning btn-rounded waves-effect waves-light w-75 m-b-5">Update Price & BV</a>
                                 </td>
                             </tr>
                             @php

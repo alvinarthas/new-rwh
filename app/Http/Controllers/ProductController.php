@@ -21,7 +21,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::orderBy('name','asc')->get();
-        $page = MenuMapping::getMap(session('user_id'),"MDPD");
+        $page = MenuMapping::getMap(session('user_id'),"PRPD");
         return view('product.index', compact('products','page'));
     }
 
@@ -167,8 +167,8 @@ class ProductController extends Controller
     {
         $prods = Product::select('name', 'prod_id', 'category', 'harga_distributor', 'harga_modal')->orderBy('name', 'asc')->get();
         $i = 0;
-
-        return view('product.manageharga', compact('prods','i'));
+        $page = MenuMapping::getMap(session('user_id'),"PRMH");
+        return view('product.manageharga', compact('prods','i','page'));
     }
 
     public function showProdAjx(Request $request)

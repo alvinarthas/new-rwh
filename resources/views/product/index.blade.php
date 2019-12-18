@@ -29,10 +29,9 @@
             <div class="card-box table-responsive">
                 <h4 class="m-t-0 header-title">Index Product</h4>
                 <p class="text-muted font-14 m-b-30">
-                    @if (array_search("MDPDC",$page))
+                    @if (array_search("PRPDC",$page))
                     <a href="{{ route('product.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Product</a>
                     @endif
-                    <a href="{{ route('manageproduct') }}" class="btn btn-purple btn-rounded w-md waves-effect waves-light m-b-5">Manage Harga</a>
                 </p>
 
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
@@ -75,10 +74,10 @@
                             <td>{{$harga_dis}}</td>
                             <td>{{$harga_mod}}</td>
                             <td>
-                                @if (array_search("MDPDU",$page))
+                                @if (array_search("PRPDU",$page))
                                 <a href="{{ route('product.edit', ['id' => $prd->id]) }}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
                                 @endif
-                                @if (array_search("MDPDD",$page))
+                                @if (array_search("PRPDD",$page))
                                 <form class="" action="{{ route('product.destroy', ['id' => $prd->id]) }}" method="post">
                                     {{ csrf_field() }}
                                     {{ method_field('delete') }}

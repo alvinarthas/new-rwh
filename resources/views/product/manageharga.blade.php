@@ -85,9 +85,11 @@
                 </table>
                 <div class="form-group text-right m-b-0">
                     <a href="{{ route('product.index') }}" class="btn btn-warning waves-effect waves-light">Kembali</a>
+                    @if (array_search("PRMHU",$page))
                     <button class="btn btn-primary waves-effect waves-light" id="submit">
                         Update Harga
                     </button>
+                    @endif
                 </div>
             </form>
         </div>

@@ -249,7 +249,9 @@
 
     <div class="form-group text-right m-b-0">
         @if($jenis=="edit")
-            <a href="javascript:;" type="button" class="btn btn-danger waves-effect waves-danger" onclick="deleteCustomer({{ $customer->id}})" >Delete</a>
+            @if (array_search("MDCSD",$page))
+                <a href="javascript:;" type="button" class="btn btn-danger waves-effect waves-danger" onclick="deleteCustomer({{ $customer->id}})" >Delete</a>
+            @endif
         @endif
         <button class="btn btn-primary waves-effect waves-light" type="submit">
             Submit

@@ -182,14 +182,15 @@ Route::middleware(['checkUser'])->group(function () {
 
     // Customer
         Route::get('/deletecustomer/{id}','CustomerController@destroy');
+        Route::get('/pricecustomer', 'CustomerController@priceCustomer')->name('priceCustomer');
         Route::get('/customer/priceBV/{id}', 'CustomerController@priceBV')->name('customer.pricebv');
         Route::post('/customer/updatepriceBV/{id}', 'CustomerController@updatePriceBV')->name('customer.updatepricebv');
         Route::get('/ajxgetproduct', 'CustomerController@ajxGetProduct')->name('ajxGetProduct');
         Route::get('/ajxaddrowproduct', 'CustomerController@ajxAddRowProduct')->name('ajxAddRowProduct');
         Route::get('/pricedetail/{id}/delete','CustomerController@deletePriceDet');
-        Route::get('/pricebycustomer','CustomerController@priceByCustomer')->name('pricebycustomer');
-        Route::get('/pricebycustomer/manage/{id}','CustomerController@managePriceByCustomer')->name('managepricebycustomer');
-        Route::post('/pricebycustomer/manage/{id}', 'CustomerController@updateManagePriceBV')->name('updatebycustomer');
+        Route::get('/pricebyproduct','CustomerController@priceByProduct')->name('priceByProduct');
+        Route::get('/pricebyproduct/manage/{id}','CustomerController@managePriceByProduct')->name('managePriceByProduct');
+        Route::post('/pricebyproduct/manage/{id}', 'CustomerController@updateManagePriceProduct')->name('updateManagePriceProduct');
         Route::get('/cetakXlsProduct/{id}', 'CustomerController@exportProduct')->name('exportXlsProduct');
         Route::get('/cetakXlsCustomer/{id}', 'CustomerController@exportCustomer')->name('exportXlsCustomer');
 
