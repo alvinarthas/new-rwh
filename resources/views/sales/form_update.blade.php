@@ -1,4 +1,7 @@
 @extends('layout.main')
+@php
+    use App\TempSales;
+@endphp
 @section('css')
     <!-- DataTables -->
     <link href="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
@@ -59,6 +62,13 @@ Form Update Sales Order
                         </div>
                     </div>
                 </div>
+                @if ($status == 1)
+                    @php($sales_id = $sales->trx_id)
+                    <a href="javascript:;" class="btn btn-danger btn-trans w-md waves-effect waves-light m-b-5" onclick="getDetail({{$sales_id}})">Show Original Data</a>
+                @else
+                    @php($sales_id = $sales->id)
+                @endif
+                    <input type="hidden" name="status" id="status" value="{{$status}}">
             </div>
             {{-- Insert Item Card --}}
             <div class="card-box">
@@ -96,8 +106,22 @@ Form Update Sales Order
                     </div>
                 </div>
             </div>
+            <!--  Modal content for the above example -->
+            <div class="modal fade bs-example-modal-lg" id="modalLarge" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+                <div class="modal-dialog modal-lg" id="do-modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="myLargeModalLabel">Sales Order Detail</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
+                        </div>
+                        <div class="modal-body" id="modalView">
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+
             {{-- Form Data --}}
-            <form class="form-horizontal" role="form" action="{{ route('sales.update',['id'=>$sales->id]) }}" enctype="multipart/form-data" method="POST">
+            <form class="form-horizontal" role="form" action="{{ route('sales.update',['id'=>$sales_id]) }}" enctype="multipart/form-data" method="POST">
                 {{ method_field('PUT') }}
                 @csrf
                 
@@ -179,14 +203,29 @@ Form Update Sales Order
                     </div>
                     <div class="form-group text-right m-b-0">
                         @if ($sales->approve == 0)
-                        <?php
-                            $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sales->id,'role'=>session('role')]));
-                        ?>
+                            <?php
+                                $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sales_id,'role'=>session('role')]));
+                            ?>
+                            @if (array_search("PSSLA",$page))
                             <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales</a>
+                            @endif
                         @else
-                            <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Sales sudah di approve</a>
+                            <?php
+                                $count_temp = TempSales::where('trx_id',$sales_id)->count('trx_id');
+                                $status_temp = TempSales::where('trx_id',$sales_id)->where('status',1)->count('trx_id');
+                            ?>
+                            @if($count_temp > 0 && $status_temp == 1)
+                                <?php
+                                    $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sales_id,'role'=>session('role')]));
+                                ?>
+                                @if (array_search("PSSLA",$page))
+                                <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales yang sudah diupdate</a>
+                                @endif
+                            @else
+                                <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Sales sudah di approve</a>
+                            @endif
                         @endif
-                        <button class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Simpan Sales Order</a>
+                        <button class="btn btn-primary btn-rounded w-md waves-effect waves-light m-b-5">Update Sales Order</a>
                     </div>
                 </div>
             </form>
@@ -218,6 +257,20 @@ $(".select2").select2();
 // Date Picker
 jQuery('#trx_date').datepicker();
 
+$("#form").submit(function(e){
+    ttl = 0;
+    $('input[name="prod_id[]"]').each(function() {
+        ttl++;
+    });
+
+    if(ttl == 0){
+        toastr.warning("Belum ada data yang dimasukkan", 'Warning!')
+        e.preventDefault();
+    }else{
+        $( "#form" ).submit();
+    }
+});
+
 function addItem(){
     customer = $('#customer').val();
     qty = $('#qty').val();
@@ -225,25 +278,29 @@ function addItem(){
     count = $('#count').val();
     select_product = $('#select_product').val();
 
-    $.ajax({
-        url : "{{route('addSales')}}",
-        type : "get",
-        dataType: 'json',
-        data:{
-            select_product: select_product,
-            customer: customer,
-            qty: qty,
-            unit: unit,
-            count:count,
-        },
-    }).done(function (data) {
-        $('#sales-list-body').append(data.append);
-        $('#count').val(data.count);
-        resetall();
-        changeTotalHarga();
-    }).fail(function (msg) {
-        alert('Gagal menampilkan data, silahkan refresh halaman.');
-    });
+    if(unit == null || unit == '' || qty == 0 || qty == null || qty == ''){
+        toastr.warning("Unit atau qty tidak boleh kosong!", 'Warning!')
+    }else{
+        $.ajax({
+            url : "{{route('addSales')}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                select_product: select_product,
+                customer: customer,
+                qty: qty,
+                unit: unit,
+                count:count,
+            },
+        }).done(function (data) {
+            $('#sales-list-body').append(data.append);
+            $('#count').val(data.count);
+            resetall();
+            changeTotalHarga();
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
 }
 
 function changeTotalHarga(){
@@ -342,6 +399,7 @@ function ongkosKirim() {
 }
 
 function deleteItemOld(id,purdet){
+    status_so = $('#status').val();
     swal({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -359,6 +417,7 @@ function deleteItemOld(id,purdet){
             dataType: 'json',
             data:{
                 detail: purdet,
+                status: status_so,
             },
         }).done(function (data) {
             swal(
@@ -366,10 +425,7 @@ function deleteItemOld(id,purdet){
                 'Your file has been deleted.',
                 'success'
             )
-            count = parseInt($('#count').val()) - 1;
-            $('#trow'+id).remove();
-            $('#count').val(count);
-            changeTotalHarga();
+            location.reload();
         }).fail(function (msg) {
             swal(
                 'Failed',
@@ -390,6 +446,22 @@ function deleteItemOld(id,purdet){
             )
         }
     })
+}
+
+function getDetail(id){
+    $.ajax({
+        url : "{{route('sales.show',['id'=>1])}}",
+        type : "get",
+        dataType: 'json',
+        data:{
+            id:id,
+        },
+    }).done(function (data) {
+        $('#modalView').html(data);
+        $('#modalLarge').modal("show");
+    }).fail(function (msg) {
+        alert('Gagal menampilkan data, silahkan refresh halaman.');
+    });
 }
 </script>
 @endsection

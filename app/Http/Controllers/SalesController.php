@@ -14,6 +14,9 @@ use App\SalesDet;
 use App\PurchaseDetail;
 use App\Jurnal;
 use App\MenuMapping;
+use App\Log;
+use App\TempSales;
+use App\TempSalesDet;
 
 class SalesController extends Controller
 {
@@ -98,12 +101,22 @@ class SalesController extends Controller
 
     public function destroySalesDetail(Request $request){
         try {
-            $detail = SalesDet::where('id',$request->detail)->first();
-            $sales = Sales::where('id',$detail->trx_id)->first();
-            $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
-            $sales->save();
-
-            $detail->delete();
+            if($request->status == 1){
+                $detail = TempSalesDet::where('id',$request->detail)->first();
+                $sales = TempSales::where('id',$detail->temp_id)->first();
+                $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
+                $sales->save();
+    
+                $detail->delete();
+            }else{
+                $detail = SalesDet::where('id',$request->detail)->first();
+                $sales = Sales::where('id',$detail->trx_id)->first();
+                $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
+                $sales->save();
+    
+                $detail->delete();
+            }
+            
             return "true";
         } catch (\Exception $e) {
             return response()->json($e);
@@ -130,7 +143,6 @@ class SalesController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $id_jurnal = Jurnal::getJurnalID('SO');
             $sales = new Sales(array(
                 'customer_id' => $request->customer,
                 'trx_date' => $request->trx_date,
@@ -138,17 +150,12 @@ class SalesController extends Controller
                 'ttl_harga' => $request->raw_ttl_trx,
                 'ongkir' => $request->ongkir,
                 'approve' => 0,
-                'jurnal_id' => $id_jurnal,
             ));
             // success
             try {
                 $sales->save();
-                $total_transaksi = $request->raw_ttl_trx+$request->ongkir;
-                $jurnal_desc = "SO.".$sales->id;
-                $modal = 0;
+
                 for ($i=0; $i < $request->count ; $i++) {
-                    $avcharga = PurchaseDetail::where('prod_id',$request->prod_id[$i])->avg('price');
-                    $modal += ($request->qty[$i] * $avcharga);
                     $salesdet = new SalesDet(array(
                         'trx_id' => $sales->id,
                         'prod_id' => $request->prod_id[$i],
@@ -163,16 +170,7 @@ class SalesController extends Controller
                     $salesdet->save();
                 }
 
-                // Jurnal 1
-                    //insert debet Piutang Konsumen Masukkan harga total - diskon
-                    Jurnal::addJurnal($id_jurnal,$total_transaksi,$request->trx_date,$jurnal_desc,'1.1.3.1','Debet');
-                    //insert credit pendapatan retail (SALES)
-                    Jurnal::addJurnal($id_jurnal,$total_transaksi,$request->trx_date,$jurnal_desc,'4.1.1','Credit');
-                // Jurnal 2
-                    //insert debet COGS
-                    Jurnal::addJurnal($id_jurnal,$modal,$request->trx_date,$jurnal_desc,'5.1','Debet');
-                    //insert Credit Persediaan Barang milik customer
-                    Jurnal::addJurnal($id_jurnal,$modal,$request->trx_date,$jurnal_desc,'1.1.4.1.2','Credit');
+                Log::setLog('PSSLC','Create SO.'.$sales->id);
 
                 return redirect()->route('sales.index')->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
@@ -192,11 +190,22 @@ class SalesController extends Controller
 
     public function edit($id)
     {
-        $sales = Sales::where('id',$id)->first();
-        $salesdet = SalesDet::where('trx_id',$id)->get();
-        $products = PriceDet::where('customer_id',$sales->customer_id)->select('prod_id')->orderBy('prod_id','asc')->get();
+        $count_temp = TempSales::where('trx_id',$id)->count('trx_id');
+        $status_temp = TempSales::where('trx_id',$id)->where('status',1)->count('trx_id');
+        $page = MenuMapping::getMap(session('user_id'),"PSSL");
 
-        return view('sales.form_update', compact('salesdet','sales','products'));
+        if($count_temp > 0 && $status_temp == 1){
+            $status = 1;
+            $sales = TempSales::where('trx_id',$id)->first();
+            $salesdet = TempSalesDet::where('temp_id',$sales->id)->get();
+            $products = PriceDet::where('customer_id',$sales->customer_id)->select('prod_id')->orderBy('prod_id','asc')->get();
+        }else{
+            $status = 0;
+            $sales = Sales::where('id',$id)->first();
+            $salesdet = SalesDet::where('trx_id',$id)->get();
+            $products = PriceDet::where('customer_id',$sales->customer_id)->select('prod_id')->orderBy('prod_id','asc')->get();
+        }
+        return view('sales.form_update', compact('salesdet','sales','products','page','status'));
     }
 
     public function update(Request $request, $id)
@@ -213,71 +222,53 @@ class SalesController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $sales = Sales::where('id',$id)->first();
-
-            $sales->trx_date = $request->trx_date;
-            $sales->creator = session('user_id');
-            $sales->ttl_harga = $request->raw_ttl_trx;
-            $sales->ongkir = $request->ongkir;
             // success
             try {
-                $sales->update();
-                $total_transaksi = $request->raw_ttl_trx+$request->ongkir;
-                // Update Jurnal Piutang Customer dan Sales Update
+                $check = TempSales::where('trx_id',$id)->count();
 
-                $jurnal_a = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','1.1.3.1')->first();
-                $jurnal_a->Amount = $total_transaksi;
-                $jurnal_a->date = $request->trx_date;
-                $jurnal_a->update();
+                if($check > 0){
+                    $temp_sales = TempSales::where('trx_id',$id)->first();
+                    // Update and tranfer to Sales Orginal
+                    $temp_sales->trx_date = $request->trx_date;
+                    $temp_sales->creator = session('user_id');
+                    $temp_sales->ttl_harga = $request->raw_ttl_trx;
+                    $temp_sales->ongkir = $request->ongkir;
+                    $temp_sales->customer_id = $request->customer;
+                    $temp_sales->status = 1;
 
-                $jurnal_b = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','4.1.1')->first();
-                $jurnal_b->Amount = $total_transaksi;
-                $jurnal_b->date = $request->trx_date;
-                $jurnal_b->update();
-
-                $modal = 0;
-                for ($i=0; $i < $request->count ; $i++) {
-                    if($request->detail[$i] == "baru"){
-                        $salesdet = new SalesDet(array(
-                            'trx_id' => $sales->id,
-                            'prod_id' => $request->prod_id[$i],
-                            'qty' => $request->qty[$i],
-                            'unit' => $request->unit[$i],
-                            'creator' => session('user_id'),
-                            'price' => $request->price[$i],
-                            'pv' => $request->bv_unit[$i],
-                            'sub_ttl' => $request->sub_ttl_price[$i],
-                            'sub_ttl_pv' => $request->sub_ttl_bv[$i],
-                        ));
-                        $salesdet->save();
-                    }else{
-                        $salesdet = SalesDet::where('id',$request->detail[$i])->first();
-                        $salesdet->qty = $request->qty[$i];
-                        $salesdet->price = $request->price[$i];
-                        $salesdet->sub_ttl = $request->sub_ttl_price[$i];
-                        $salesdet->pv = $request->bv_unit[$i];
-                        $salesdet->sub_ttl_pv = $request->sub_ttl_bv[$i];
-                        $salesdet->update();
-                    }
-                }
-
-                // Get Modal COGS
-                $modal = 0;
-                foreach (SalesDet::where('trx_id',$id)->get() as $key) {
-                    $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->avg('price');
-                    $modal += ($key->qty * $avcharga);
+                    $temp_sales->update();
+                    // Delete Temp Detail
+                    $temp_purdet = TempSalesDet::where('temp_id',$temp_sales->id)->delete();
+                }else{
+                    $temp_sales = new TempSales(array(
+                        'trx_id' => $id,
+                        'customer_id' => $request->customer,
+                        'trx_date' => $request->trx_date,
+                        'creator' => session('user_id'),
+                        'ttl_harga' => $request->raw_ttl_trx,
+                        'ongkir' => $request->ongkir,
+                        'approve' => 0,
+                        'status' => 1,
+                    ));
+                    $temp_sales->save();
                 }
                 
-                // Update Jurnal COGS 
-                $jurnal_c = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','5.1')->first();
-                $jurnal_c->Amount = $modal;
-                $jurnal_c->date = $request->trx_date;
-                $jurnal_c->update();
-
-                $jurnal_d = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
-                $jurnal_d->Amount = $modal;
-                $jurnal_d->date = $request->trx_date;
-                $jurnal_d->update();
+                for ($i=0; $i < $request->count ; $i++) {
+                    $temp_salesdet = new TempSalesDet(array(
+                        'temp_id' => $temp_sales->id,
+                        'prod_id' => $request->prod_id[$i],
+                        'qty' => $request->qty[$i],
+                        'unit' => $request->unit[$i],
+                        'creator' => session('user_id'),
+                        'price' => $request->price[$i],
+                        'pv' => $request->bv_unit[$i],
+                        'sub_ttl' => $request->sub_ttl_price[$i],
+                        'sub_ttl_pv' => $request->sub_ttl_bv[$i],
+                    ));
+                    $temp_salesdet->save();
+                }
+                // Log::setLog('PSSLU','Update SO.'.$sales->id);
+                
                 return redirect()->route('sales.index')->with('status', 'Data berhasil diubah');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
@@ -289,9 +280,9 @@ class SalesController extends Controller
     {
         $sales = Sales::where('id',$id)->first();
         Jurnal::where('id_jurnal',$sales->jurnal_id)->delete();
-        Jurnal::where('id_jurnal',$sales->hpp_jurnal_id)->delete();
         try {
             $sales->delete();
+            Log::setLog('PSSLD','Delete SO.'.$id);
             return "true";
         } catch (\Exception $e) {
             return response()->json($e);

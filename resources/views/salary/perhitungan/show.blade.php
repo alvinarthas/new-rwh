@@ -25,11 +25,11 @@
                     <tr>
                         <td>{{$i}}</td>
                         <td>{{$salary->employee->name}}</td>
-                        <td>Rp. {{number_format($salary->gaji_pokok)}}</td>
-                        <td>Rp. {{number_format($salary->tunjangan_jabatan)}}</td>
-                        <td>Rp. {{number_format($salary->bonus_jabatan)}}</td>
-                        <td>Rp. {{number_format($salary->bonus)}}</td>
-                        <td>Rp. {{number_format($salary->take_home_pay)}}</td>
+                        <td>Rp {{number_format($salary->gaji_pokok,2,",",".")}}</td>
+                        <td>Rp {{number_format($salary->tunjangan_jabatan,2,",",".")}}</td>
+                        <td>Rp {{number_format($salary->bonus_jabatan,2,",",".")}}</td>
+                        <td>Rp {{number_format($salary->bonus,2,",",".")}}</td>
+                        <td>Rp {{number_format($salary->take_home_pay,2,",",".")}}</td>
                         <td>
                             @if (array_search("EMPGT",$page))
                                 <a href="javascript:;" onclick="getDetail({{$salary->employee_id}},{{$bulan}},{{$tahun}})" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5"><i class="fa fa-file-pdf-o"></i>View Detail Bonus</a>

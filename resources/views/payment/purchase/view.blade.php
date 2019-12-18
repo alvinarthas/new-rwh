@@ -19,8 +19,8 @@
                     <td>PO.{{$item['trx_id']}}</td>
                     <td>{{date("F", mktime(0, 0, 0, $item['month'], 10))}} {{$item['year']}}</td>
                     <td>{{$item['supplier']}}</td>
-                    <td>Rp. {{number_format($item['order'])}}</td>
-                    <td>Rp. {{number_format($item['paid'])}}</td>
+                    <td>Rp {{number_format($item['order'],2,",",".")}}</td>
+                    <td>Rp {{number_format($item['paid'],2,",",".")}}</td>
                     @if($item['status'] == 1)
                     <td><a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-md waves-danger m-b-5" >Lunas</a></td>
                     @else
@@ -51,13 +51,13 @@
             <div class="form-group row">
                 <label class="col-2 col-form-label">Total Purchase Order</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($purchase['ttl_order'])}}" readonly>
+                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($purchase['ttl_order'],2,",",".")}}" readonly>
                 </div>
             </div>
             <div class="form-group row">
                 <label class="col-2 col-form-label">Total Payment</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($purchase['ttl_pay'])}}" readonly>
+                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($purchase['ttl_pay'],2,",",".")}}" readonly>
                 </div>
             </div>
         </div>

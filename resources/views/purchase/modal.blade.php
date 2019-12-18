@@ -53,10 +53,10 @@
                         <td>{{$detail->product->name}}</td>
                         <td>{{$detail->qty}}</td>
                         <td>{{$detail->unit}}</td>
-                        <td>Rp. {{number_format($detail->price_dist)}}</td>
-                        <td>Rp. {{number_format($detail->price)}}</td>
-                        <td>Rp. {{number_format($detail->price_dist*$detail->qty)}}</td>
-                        <td>Rp. {{number_format($detail->price*$detail->qty)}}</td>
+                        <td>Rp {{number_format($detail->price_dist,2,",",".")}}</td>
+                        <td>Rp {{number_format($detail->price,2,",",".")}}</td>
+                        <td>Rp {{number_format($detail->price_dist*$detail->qty,2,",",".")}}</td>
+                        <td>Rp {{number_format($detail->price*$detail->qty,2,",",".")}}</td>
                     </tr>
                     @php($i++)
                     @endisset
@@ -68,13 +68,13 @@
     <div class="form-group row">
         <label class="col-2 col-form-label">Total Harga Distributor</label>
         <div class="col-10">
-            <input type="text" class="form-control" name="ttl_harga_distributor" id="ttl_harga_distributor" parsley-trigger="change" value="Rp. {{number_format($purchase->total_harga_dist)}}" readonly>
+            <input type="text" class="form-control" name="ttl_harga_distributor" id="ttl_harga_distributor" parsley-trigger="change" value="Rp {{number_format($purchase->total_harga_dist,2,",",".")}}" readonly>
         </div>
     </div>
     <div class="form-group row">
         <label class="col-2 col-form-label">Total Harga Modal</label>
         <div class="col-10">
-            <input type="text" class="form-control" name="ttl_harga_modal" id="ttl_harga_modal" parsley-trigger="change" value="Rp. {{number_format($purchase->total_harga_modal)}}" readonly>
+            <input type="text" class="form-control" name="ttl_harga_modal" id="ttl_harga_modal" parsley-trigger="change" value="Rp {{number_format($purchase->total_harga_modal,2,",",".")}}" readonly>
         </div>
     </div>
 </div>

@@ -238,6 +238,10 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('perubahanmodal','LaporanController@perubahanModal')->name('perubahanModal');
         // Profit Loss
         Route::get('profitloss','LaporanController@profitLoss')->name('profitLoss');
+        // Purchase
+        Route::get('purchase','LaporanController@purchaseReport')->name('purchaseReport');
+        // Sales
+        Route::get('sales','LaporanController@salesReport')->name('salesReport');
     });
 
     Route::get('logout','HomeController@logout')->name('Logout');
@@ -262,6 +266,7 @@ Route::middleware(['checkUser'])->group(function () {
     // ------------------------ HELPER -------------------------------------------------
     Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
     Route::get('/datacoa','HelperController@ajxCoa')->name('ajxCoa');
+    Route::get('coatable','CoaController@coaTable')->name('coaTable');
 
     // purchase helper
     Route::get('/showpurchase','PurchaseController@showPurchase')->name('showPurchase');

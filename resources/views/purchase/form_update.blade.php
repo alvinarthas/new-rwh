@@ -1,5 +1,8 @@
 @extends('layout.main')
-
+@php
+    use App\TempPO;
+    use App\TempPODet;
+@endphp
 @section('css')
     <!-- DataTables -->
     <link href="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
@@ -61,10 +64,19 @@ Form Update Purchasing
                                     <input type="text" class="form-control" value="{{date("F", mktime(0, 0, 0, $purchase->month, 10))}} {{$purchase->year}}">
                                 </div>
                             </div>
+                            @if ($status == 1)
+                                @php($purchase_id = $purchase->purchase_id)
+                            <a href="javascript:;" class="btn btn-danger btn-trans w-md waves-effect waves-light m-b-5" onclick="getDetail({{$purchase->purchase_id}})">Show Original Data</a>
+                            @else
+                                @php($purchase_id = $purchase->id)
+                            @endif
+                            
+                                <input type="hidden" name="status" id="status" value="{{$status}}">
                         </div>
                     </div>
                 </div>
             </div>
+
             {{-- Insert Item Card --}}
             <div class="card-box">
                 <h4 class="m-t-0 header-title">Insert Item</h4>
@@ -77,7 +89,7 @@ Form Update Purchasing
                                     <select class="form-control select2" parsley-trigger="change" name="select_product" id="select_product">
                                         <option value="#" selected>Pilih Product</option>
                                         @foreach ($products as $product)
-                                            <option value="{{$product->prod_id}}">{{$product->prod_id}} - {{$product->name}} - Rp.{{number_format($product->harga_distributor)}} - Rp.{{number_format($product->harga_modal)}}</option>
+                                            <option value="{{$product->prod_id}}">{{$product->prod_id}} - {{$product->name}} - Rp {{number_format($product->harga_distributor,2,",",".")}} - Rp {{number_format($product->harga_modal,2,",",".")}}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -101,8 +113,23 @@ Form Update Purchasing
                     </div>
                 </div>
             </div>
+
+            <!--  Modal content for the above example -->
+            <div class="modal fade bs-example-modal-lg" id="modalLarge" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+                <div class="modal-dialog modal-lg" id="do-modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="myLargeModalLabel">Purchase Order Detail</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
+                        </div>
+                        <div class="modal-body" id="modalView">
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+
             {{-- Form Data --}}
-            <form class="form-horizontal" role="form" action="{{ route('purchase.update',['id'=>$purchase->id]) }}" enctype="multipart/form-data" method="POST">
+            <form class="form-horizontal" id="form" role="form" action="{{ route('purchase.update',['id'=>$purchase_id]) }}" enctype="multipart/form-data" method="POST">
                 {{ method_field('PUT') }}
                 @csrf
                 
@@ -136,7 +163,7 @@ Form Update Purchasing
                                                 <input type="hidden" name="detail[]" id="detail{{$i}}" value="{{$detail->id}}">
                                                 <td><input type="hidden" name="prod_id[]" id="prod_id{{$i}}" value="{{$detail->prod_id}}">{{$detail->prod_id}}</td>
                                                 <td><input type="hidden" name="prod_name[]" id="prod_name{{$i}}" value="{{$detail->product->name}}">{{$detail->product->name}}</td>
-                                                <td><input type="number" name="qty[]" id="qty{{$i}}" value="{{$detail->qty}}" onkeyup="changeTotal({{$i}})"></td>
+                                                <td><input type="number" name="qty[]" id="qty{{$i}}" value="{{$detail->qty}}" onchange="changeTotal({{$i}})" onkeyup="changeTotal({{$i}})"></td>
                                                 <td><input type="hidden" name="unit[]" id="unit{{$i}}" value="{{$detail->unit}}">{{$detail->unit}}</td>
                                                 <td><input type="number" name="harga_dist[]" id="harga_dist{{$i}}" value="{{$detail->price_dist}}" onkeyup="changeTotal({{$i}})"></td>
                                                 <td><input type="number" name="harga_mod[]" id="harga_mod{{$i}}" value="{{$detail->price}}" onkeyup="changeTotal({{$i}})"></td>
@@ -192,13 +219,28 @@ Form Update Purchasing
                     <div class="form-group text-right m-b-0">
                         @if ($purchase->approve == 0)
                         <?php
-                            $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id,'role'=>session('role')]));
+                            $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase_id,'role'=>session('role')]));
                         ?>
+                            @if (array_search("PUPUA",$page))
                             <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase</a>
+                            @endif
                         @else
-                            <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Purchase sudah di approve</a>
+                            <?php
+                                $count_temp = TempPO::where('purchase_id',$purchase_id)->count('purchase_id');
+                                $status_temp = TempPO::where('purchase_id',$purchase_id)->where('status',1)->count('purchase_id');
+                            ?>
+                            @if($count_temp > 0 && $status_temp == 1)
+                                <?php
+                                    $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase_id,'role'=>session('role')]));
+                                ?>
+                                @if (array_search("PUPUA",$page))
+                                <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase yang sudah diupdate</a>
+                                @endif
+                            @else
+                                <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Purchase sudah di approve</a>
+                            @endif
                         @endif
-                        <button class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Simpan Purchase Order</a>
+                        <button class="btn btn-primary btn-rounded w-md waves-effect waves-light m-b-5">Update Purchase Order</a>
                     </div>
                 </div>
             </form>
@@ -230,6 +272,20 @@ $(".select2").select2();
 // Date Picker
 jQuery('#po_date').datepicker();
 
+$("#form").submit(function(e){
+    ttl = 0;
+    $('input[name="prod_id[]"]').each(function() {
+        ttl++;
+    });
+
+    if(ttl == 0){
+        toastr.warning("Belum ada data yang dimasukkan", 'Warning!')
+        e.preventDefault();
+    }else{
+        $( "#form" ).submit();
+    }
+});
+
 function addItem(){
     bulanpost = $('#bulanpost').val();
     tahunpost = $('#tahunpost').val();
@@ -238,26 +294,30 @@ function addItem(){
     unit = $('#unit').val();
     count = $('#count').val();
 
-    $.ajax({
-        url : "{{route('addPurchase')}}",
-        type : "get",
-        dataType: 'json',
-        data:{
-            select_product: select_product,
-            bulan: bulanpost,
-            tahun: tahunpost,
-            qty: qty,
-            unit: unit,
-            count:count,
-        },
-    }).done(function (data) {
-        $('#purchase-list-body').append(data.append);
-        $('#count').val(data.count);
-        resetall();
-        changeTotalHarga();
-    }).fail(function (msg) {
-        alert('Gagal menampilkan data, silahkan refresh halaman.');
-    });
+    if(unit == null || unit == '' || qty == 0 || qty == null || qty == ''){
+        toastr.warning("Unit atau qty tidak boleh kosong!", 'Warning!')
+    }else{
+        $.ajax({
+            url : "{{route('addPurchase')}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                select_product: select_product,
+                bulan: bulanpost,
+                tahun: tahunpost,
+                qty: qty,
+                unit: unit,
+                count:count,
+            },
+        }).done(function (data) {
+            $('#purchase-list-body').append(data.append);
+            $('#count').val(data.count);
+            resetall();
+            changeTotalHarga();
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
 }
 
 function deleteItem(id){
@@ -326,6 +386,7 @@ function resetall(){
 }
 
 function deleteItemOld(id,purdet){
+    status_po = $('#status').val();
     swal({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -343,6 +404,7 @@ function deleteItemOld(id,purdet){
             dataType: 'json',
             data:{
                 detail: purdet,
+                status: status_po,
             },
         }).done(function (data) {
             swal(
@@ -350,10 +412,7 @@ function deleteItemOld(id,purdet){
                 'Your file has been deleted.',
                 'success'
             )
-            count = parseInt($('#count').val()) - 1;
-            $('#trow'+id).remove();
-            $('#count').val(count);
-            changeTotalHarga();
+            location.reload();
         }).fail(function (msg) {
             swal(
                 'Failed',
@@ -374,6 +433,22 @@ function deleteItemOld(id,purdet){
             )
         }
     })
+}
+
+function getDetail(id){
+    $.ajax({
+        url : "{{route('purchase.show',['id'=>1])}}",
+        type : "get",
+        dataType: 'json',
+        data:{
+            id:id,
+        },
+    }).done(function (data) {
+        $('#modalView').html(data);
+        $('#modalLarge').modal("show");
+    }).fail(function (msg) {
+        alert('Gagal menampilkan data, silahkan refresh halaman.');
+    });
 }
 </script>
 @endsection

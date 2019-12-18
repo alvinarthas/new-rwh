@@ -75,14 +75,16 @@ class ReceiveProductController extends Controller
             ));
 
             $desc = "Receive Barang Product_id: ".$request->product." SO.".$request->trx_id;
+            $pricedet = PurchaseDetail::where('trx_id',$request->trx_id)->where('prod_id',$request->product)->first()->price;
+            $price = $pricedet * $request->qty;
 
             try{
                 $receive->save();
                 // JURNAL
                 //insert debet Persediaan Barang di Gudang
-                Jurnal::addJurnal($id_jurnal,$request->qty,$request->receive_date,$desc,'1.1.4.1.2','Debet');
+                Jurnal::addJurnal($id_jurnal,$price,$request->receive_date,$desc,'1.1.4.1.2','Debet');
                 //insert credit Persediaan Barang Indent
-                Jurnal::addJurnal($id_jurnal,$request->qty,$request->receive_date,$desc,'1.1.4.1.1','Credit');
+                Jurnal::addJurnal($id_jurnal,$price,$request->receive_date,$desc,'1.1.4.1.1','Credit');
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);

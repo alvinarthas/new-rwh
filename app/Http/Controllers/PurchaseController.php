@@ -13,6 +13,10 @@ use App\Perusahaan;
 use App\ManageHarga;
 use App\Jurnal;
 use App\MenuMapping;
+use App\Product;
+use App\Log;
+use App\TempPO;
+use App\TempPODet;
 
 class PurchaseController extends Controller
 {
@@ -41,7 +45,7 @@ class PurchaseController extends Controller
         $supplier = Perusahaan::where('id',$request->supplier)->first();
         $month = $request->bulan;
         $year = $request->tahun;
-        $products = ManageHarga::showHarga($supplier->id,$month,$year);
+        $products = Product::where('supplier',$request->supplier)->get();
         if ($request->ajax()) {
             return response()->json(view('purchase.showpurchase',compact('supplier','month','year','products'))->render());
         }
@@ -77,7 +81,7 @@ class PurchaseController extends Controller
         <input type="hidden" name="detail[]" id="detail'.$count.'" value="baru">
         <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$product.'">'.$product.'</td>
         <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$manage['prod_name'].'">'.$manage['prod_name'].'</td>
-        <td><input type="number" name="qty[]" value="'.$qty.'" id="qty'.$count.'" onkeyup="changeTotal('.$count.')"></td>
+        <td><input type="number" name="qty[]" value="'.$qty.'" id="qty'.$count.'" onchange="changeTotal('.$count.')" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="hidden" name="unit[]" value="'.$unit.'" id="unit'.$count.'">'.$unit.'</td>
         <td><input type="number" name="harga_dist[]" value="'.$manage['harga_distributor'].'" id="harga_dist'.$count.'" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="number" name="harga_mod[]" value="'.$manage['harga_modal'].'" id="harga_mod'.$count.'" onkeyup="changeTotal('.$count.')"></td>
@@ -97,12 +101,21 @@ class PurchaseController extends Controller
     } 
 
     public function destroyPurchaseDetail(Request $request){
-        $detail = PurchaseDetail::where('id',$request->detail)->first();
-        $purchase = Purchase::where('id',$detail->trx_id)->first();
-        $purchase->total_harga_modal = $purchase->total_harga_modal - ($detail->price * $detail->qty);
-        $purchase->total_harga_dist = $purchase->total_harga_dist - ($detail->qty * $detail->price_dist);
-        $purchase->update();
-        $detail->delete();
+        if($request->status == 1){
+            $detail = TempPODet::where('id',$request->detail)->first();
+            $purchase = TempPO::where('id',$detail->temp_id)->first();
+            $purchase->total_harga_modal = $purchase->total_harga_modal - ($detail->price * $detail->qty);
+            $purchase->total_harga_dist = $purchase->total_harga_dist - ($detail->qty * $detail->price_dist);
+            $purchase->update();
+            $detail->delete();
+        }else{
+            $detail = PurchaseDetail::where('id',$request->detail)->first();
+            $purchase = Purchase::where('id',$detail->trx_id)->first();
+            $purchase->total_harga_modal = $purchase->total_harga_modal - ($detail->price * $detail->qty);
+            $purchase->total_harga_dist = $purchase->total_harga_dist - ($detail->qty * $detail->price_dist);
+            $purchase->update();
+            $detail->delete();
+        }
         return "true";
     }
 
@@ -146,7 +159,6 @@ class PurchaseController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $id_jurnal = Jurnal::getJurnalID('PO');
             $purchase = new Purchase(array(
                 // Informasi Pribadi
                 'month' => $request->bulanpost,
@@ -156,7 +168,6 @@ class PurchaseController extends Controller
                 'notes' => $request->notes,
                 'tgl' => $request->po_date,
                 'approve' => 0,
-                'jurnal_id' => $id_jurnal,
                 'total_harga_dist' => $request->ttl_harga_distributor,
                 'total_harga_modal' => $request->ttl_harga_modal,
             ));
@@ -185,13 +196,14 @@ class PurchaseController extends Controller
                     $purchasedet->save();
                 }
 
-                //insert debet Persediaan Barang Indent ( harga modal x qty )
-                Jurnal::addJurnal($id_jurnal,$total_modal,$request->po_date,$jurnal_desc,'1.1.4.1.1','Debet');
-                //insert debet Estimasi Bonus
-                Jurnal::addJurnal($id_jurnal,$total_tertahan,$request->po_date,$jurnal_desc,'1.1.3.4','Debet');
-                //insert credit hutang Dagang
-                Jurnal::addJurnal($id_jurnal,$total_distributor,$request->po_date,$jurnal_desc,'2.1.1','Credit');
+                // //insert debet Persediaan Barang Indent ( harga modal x qty )
+                // Jurnal::addJurnal($id_jurnal,$total_modal,$request->po_date,$jurnal_desc,'1.1.4.1.1','Debet');
+                // //insert debet Estimasi Bonus
+                // Jurnal::addJurnal($id_jurnal,$total_tertahan,$request->po_date,$jurnal_desc,'1.1.3.4','Debet');
+                // //insert credit hutang Dagang
+                // Jurnal::addJurnal($id_jurnal,$total_distributor,$request->po_date,$jurnal_desc,'2.1.1','Credit');
 
+                Log::setLog('PUPUC','Create PO.'.$purchase->id);
                 return redirect()->route('purchase.index')->with('status', 'Data berhasil dibuat');
 
             } catch (\Exception $e) {
@@ -224,21 +236,43 @@ class PurchaseController extends Controller
      */
     public function edit($id)
     {
-        $purchase = Purchase::where('id',$id)->first();
-        $details = PurchaseDetail::where('trx_id',$id)->get();
-
-        $ttl_harga_modal = 0;
-        $ttl_harga_dist = 0;
-        foreach ($details as $key) {
-            $ttl_harga_modal += ($key->price*$key->qty);
-            $ttl_harga_dist += ($key->price_dist*$key->qty);
+        $count_temp = TempPO::where('purchase_id',$id)->count('purchase_id');
+        $status_temp = TempPO::where('purchase_id',$id)->where('status',1)->count('purchase_id');
+        $page = MenuMapping::getMap(session('user_id'),"PUPU");
+        if($count_temp > 0 && $status_temp == 1){
+            $status = 1;
+            $purchase = TempPO::where('purchase_id',$id)->first();
+            $details = TempPODet::where('temp_id',$purchase->id)->get();
+    
+            $ttl_harga_modal = 0;
+            $ttl_harga_dist = 0;
+            foreach ($details as $key) {
+                $ttl_harga_modal += ($key->price*$key->qty);
+                $ttl_harga_dist += ($key->price_dist*$key->qty);
+            }
+    
+            $month = $purchase->month;
+            $year = $purchase->year;
+            $products = Product::where('supplier',$purchase->supplier()->first()->id)->get();
+        }else{
+            $status = 0;
+            $purchase = Purchase::where('id',$id)->first();
+            $details = PurchaseDetail::where('trx_id',$id)->get();
+    
+            $ttl_harga_modal = 0;
+            $ttl_harga_dist = 0;
+            foreach ($details as $key) {
+                $ttl_harga_modal += ($key->price*$key->qty);
+                $ttl_harga_dist += ($key->price_dist*$key->qty);
+            }
+    
+            $month = $purchase->month;
+            $year = $purchase->year;
+            $products = Product::where('supplier',$purchase->supplier()->first()->id)->get();
         }
+        
 
-        $month = $purchase->month;
-        $year = $purchase->year;
-        $products = ManageHarga::showHarga($purchase->supplier()->first()->id,$month,$year);
-
-        return view('purchase.form_update', compact('details','purchase','products','ttl_harga_modal','ttl_harga_dist'));
+        return view('purchase.form_update', compact('details','purchase','products','ttl_harga_modal','ttl_harga_dist','status','page'));
     }
 
     /**
@@ -252,6 +286,9 @@ class PurchaseController extends Controller
     {
         // Validate
         $validator = Validator::make($request->all(), [
+            'bulanpost' => 'required',
+            'tahunpost' => 'required',
+            'supplierpost' => 'required',
             'count' => 'required',
             'po_date' => 'required',
         ]);
@@ -260,72 +297,53 @@ class PurchaseController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $purchase = Purchase::where('id',$id)->first();
-
-            $purchase->creator = session('user_id');
-            $purchase->notes = $request->notes;
-            $purchase->tgl = $request->po_date;
-            $purchase->total_harga_modal = $request->ttl_harga_modal;
-            $purchase->total_harga_dist = $request->ttl_harga_distributor;
-            $purchase->approve = 0;
-
-            // success
             try {
+                $check = TempPO::where('purchase_id',$id)->count();
 
-                $purchase->update();
-                // insert Detail
+                if($check > 0){
+                    $temp_purchase = TempPO::where('purchase_id',$id)->first();
+                    // Update and tranfer to Purchase Orginal
+                    $temp_purchase->notes = $request->notes;
+                    $temp_purchase->creator = session('user_id');
+                    $temp_purchase->tgl = $request->po_date;
+                    $temp_purchase->total_harga_modal = $request->ttl_harga_distributor;
+                    $temp_purchase->total_harga_dist = $request->ttl_harga_modal;
+
+                    $temp_purchase->update();
+                    // Delete Temp Detail
+                    $temp_purdet = TempPODet::where('temp_id',$temp_purchase->id)->delete();
+                }else{
+                    $temp_purchase = new TempPO(array(
+                        // Informasi Pribadi
+                        'purchase_id' => $id,
+                        'month' => $request->bulanpost,
+                        'year' => $request->tahunpost,
+                        'creator' => session('user_id'),
+                        'supplier' => $request->supplierpost,
+                        'notes' => $request->notes,
+                        'tgl' => $request->po_date,
+                        'status' => 1,
+                        'total_harga_dist' => $request->ttl_harga_distributor,
+                        'total_harga_modal' => $request->ttl_harga_modal,
+                    ));
+                    // success
+
+                    $temp_purchase->save();
+                }
                 for ($i=0; $i < $request->count ; $i++) {
-                    
-                    if($request->detail[$i] == "baru"){
-                        $purchasedet = new PurchaseDetail(array(
-                            'trx_id' => $purchase->id,
-                            'prod_id' => $request->prod_id[$i],
-                            'qty' => $request->qty[$i],
-                            'unit' => $request->unit[$i],
-                            'creator' => session('user_id'),
-                            'price' => $request->harga_mod[$i],
-                            'price_dist' => $request->harga_dist[$i],
-                        ));
-                        $purchasedet->save();
-                    }else{
-                        $purchasedet = PurchaseDetail::where('id',$request->detail[$i])->first();
-                        $purchasedet->qty = $request->qty[$i];
-                        $purchasedet->creator = session('user_id');
-                        $purchasedet->price = $request->harga_mod[$i];
-                        $purchasedet->price_dist = $request->harga_dist[$i];
-                        $purchasedet->update();
-                    }
+                    $temp_po_det = new TempPODet(array(
+                        'temp_id' => $temp_purchase->id,
+                        'prod_id' => $request->prod_id[$i],
+                        'qty' => $request->qty[$i],
+                        'unit' => $request->unit[$i],
+                        'creator' => session('user_id'),
+                        'price' => $request->harga_mod[$i],
+                        'price_dist' => $request->harga_dist[$i],
+                    ));
+                    $temp_po_det->save();
                 }
-
-                // Penjurnalan
-                $total_modal=0;
-                $total_tertahan=0;
-                $total_distributor=0;
-                foreach (PurchaseDetail::where('trx_id',$id)->get() as $key) {
-                    $selisih = $key->price - $key->price_dist;
-                    $total_modal += ($key->price * $key->qty);
-                    $total_tertahan+=($selisih*$key->qty);
-                    $total_distributor+=($key->price_dist*$key->qty);
-                }
-                //Update debet Persediaan Barang Indent ( harga modal x qty )
-                    $jurnal1 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.4.1.1')->first();
-                    $jurnal1->Amount = $jurnal1->Amount+$total_modal;
-                    $jurnal1->date = $request->po_date;
-                    $jurnal1->update();
-                //Update debet Estimasi Bonus
-                    $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
-                    $jurnal2->Amount = $jurnal2->Amount+$total_tertahan;
-                    $jurnal2->date = $request->po_date;
-                    $jurnal2->update();
-                //Update credit hutang Dagang
-                    $jurnal3 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','2.1.1')->first();
-                    $jurnal3->Amount = $jurnal2->Amount+$total_distributor;
-                    $jurnal3->date = $request->po_date;
-                    $jurnal3->update();
-                
-                
-                return redirect()->route('purchase.index')->with('status', 'Data berhasil dibuat');
-
+                Log::setLog('PUPUU','Update PO.'.$id);
+                return redirect()->back()->with('status', 'Data berhasil diubah');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
             }
@@ -344,6 +362,7 @@ class PurchaseController extends Controller
         Jurnal::where('id_jurnal',$purchase->jurnal_id)->delete();
         try {
             $purchase->delete();
+            Log::setLog('PUPUD','Delete PO.'.$id);
             return "true";
         } catch (\Exception $e) {
             return response()->json($e);

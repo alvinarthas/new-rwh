@@ -21,8 +21,9 @@ class JurnalController extends Controller
     {
         if ($request->ajax()) {
             $jurnals = Jurnal::viewJurnal($request->start_date,$request->end_date,$request->coa,$request->position,$request->param);
+            $param = $request->param;
             $page = MenuMapping::getMap(session('user_id'),"FIJU");
-            return response()->json(view('jurnal.view',compact('jurnals','page'))->render());
+            return response()->json(view('jurnal.view',compact('jurnals','page','param'))->render());
         }else{
             $coas = Coa::where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
             $page = MenuMapping::getMap(session('user_id'),"FIJU");
@@ -211,13 +212,12 @@ class JurnalController extends Controller
      */
     public function destroy($id)
     {
-        $jurnal = Jurnal::where('id_jurnal',$id)->first();
         try{
-            $jurnal->delete();
-            return redirect()->route('jurnal.index')->with('status', 'Data berhasil dihapus');
+            $jurnals = Jurnal::where('id_jurnal',$id)->delete();
+            return "true";
         // fail
         }catch (\Exception $e) {
-            return redirect()->back()->withErrors($e->errorInfo);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 

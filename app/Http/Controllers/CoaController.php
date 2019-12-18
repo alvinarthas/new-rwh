@@ -13,9 +13,16 @@ class CoaController extends Controller
 {
     public function index()
     {
+        $coas = Coa::where('StatusAcc',1)->get();
+        $page = MenuMapping::getMap(session('user_id'),"FICO");
+        return view('coa.index', compact('coas','page'));
+    }
+
+    public function coaTable()
+    {
         $coa = Coa::all();
         $page = MenuMapping::getMap(session('user_id'),"FICO");
-        return view('coa.index', compact('coa','page'));
+        return view('coa.index2', compact('coa','page'));
     }
 
     public function create()

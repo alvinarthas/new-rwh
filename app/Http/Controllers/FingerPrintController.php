@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\DB;
 
 use App\DemoDevice;
@@ -13,6 +12,10 @@ use App\DemoUser;
 use App\Purchase;
 use App\Sales;
 use App\Employee;
+use App\Jurnal;
+use App\PurchaseDetail;
+use App\TempPO;
+use App\TempSales;
 
 class FingerPrintController extends Controller
 {
@@ -191,15 +194,27 @@ class FingerPrintController extends Controller
             if (strtoupper($vStamp) == strtoupper($salt)) {
                 if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Keuangan"){
                     // Insert to Log
-                    $purchase = Purchase::where('id',$request->trx_id)->first();
-                    
-                    $purchase->approve = 1;
-                    $purchase->approve_by = $user_id;
                     try{
-                        $purchase->update();
+                        $approve = Purchase::where('id',$request->trx_id)->select('approve')->first()->approve;
+                        $count_temp = TempPO::where('purchase_id',$request->trx_id)->count('purchase_id');
+                        $status_temp = TempPO::where('purchase_id',$request->trx_id)->where('status',1)->count('purchase_id');
+                        
+                        if($approve == 0){
+                            if($count_temp > 0 && $status_temp == 1){
+                                Purchase::updatePurchase($request->trx_id,$user_id);  
+                            }else{
+                                Purchase::setJurnal($request->trx_id,$user_id);
+                            }
+                            
+                        }else{
+                            Purchase::updatePurchase($request->trx_id,$user_id);
+                        }
+
                         echo route('purchase.index');
+                        
                     }catch(\Exception $e){
-                        echo redirect()->back()->withErrors($e);
+                        echo "<pre>";
+                        print_r($e->getMessage());
                     }
                 }else{
                     echo route('purchase.index')->with('warning', 'Akun anda tidak bisa menggaprove transaksi ini');
@@ -241,15 +256,25 @@ class FingerPrintController extends Controller
             if (strtoupper($vStamp) == strtoupper($salt)) {
                 if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Keuangan"){
                     // Insert to Log
-                    $sales = Sales::where('id',$request->trx_id)->first();
-                    
-                    $sales->approve = 1;
-                    $sales->approve_by = $user_id;
                     try{
-                        $sales->update();
+                        $approve = Sales::where('id',$request->trx_id)->select('approve')->first()->approve;
+                        $count_temp = TempSales::where('trx_id',$request->trx_id)->count('trx_id');
+                        $status_temp = TempSales::where('trx_id',$request->trx_id)->where('status',1)->count('trx_id');
+                        
+                        if($approve == 0){
+                            if($count_temp > 0 && $status_temp == 1){
+                                Sales::updateSales($request->trx_id,$user_id);  
+                            }else{
+                                Sales::setJurnal($request->trx_id,$user_id);
+                            }
+                            
+                        }else{
+                            Sales::updateSales($request->trx_id,$user_id);
+                        }
                         echo route('sales.index');
                     }catch(\Exception $e){
-                        echo redirect()->back()->withErrors($e);
+                        echo "<pre>";
+                        print_r($e->getMessage());
                     }
                 }else{
                     echo route('sales.index')->with('warning', 'Akun anda tidak bisa menggaprove transaksi ini');

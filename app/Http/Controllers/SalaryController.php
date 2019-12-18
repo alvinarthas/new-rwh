@@ -275,7 +275,7 @@ class SalaryController extends Controller
 
                 // Employee of The Month Sementara
                 $eom = 0;
-
+                $tunjangan_persentase = 0;
                 // Tunjangan Persentase
                 if($value_share_internal == 0 || $ttl_poin_internal == 0){
                     $tunjangan_persentase = 0;

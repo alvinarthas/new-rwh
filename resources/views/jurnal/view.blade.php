@@ -10,7 +10,9 @@
             <th>Credit</th>
             <th>Notes</th>
             <th>Description</th>
+            @if($param == "umum")
             <th>Option</th>
+            @endif
         </thead>
         <tbody>
             @csrf
@@ -24,21 +26,26 @@
                     <td>{{$jurnal->AccNo}}</td>
                     <td>{{$jurnal->coa->AccName}}</td>
                     @if ($jurnal->AccPos == "Debet")
-                        <td>Rp. {{number_format($jurnal->Amount)}}</td>
+                        <td>Rp {{number_format($jurnal->Amount,2,",",".")}}</td>
                     @else <td></td> @endif
                     @if ($jurnal->AccPos == "Credit")
-                        <td>Rp. {{number_format($jurnal->Amount)}}</td>
+                        <td>Rp {{number_format($jurnal->Amount,2,",",".")}}</td>
                     @else <td></td> @endif
                     <td>{{$jurnal->notes_item}}</td>
                     <td>{{$jurnal->description}}</td>
+                    @php($id = substr($jurnal->id_jurnal,0,2))
+                    @if ($param == "umum")
                     <td>
+                        
                         @if(array_search("FIJUE",$page))
                         <a href="{{route('jurnal.edit',['id'=>$jurnal->id_jurnal])}}" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" >Update</a>
                         @endif
                         @if(array_search("FIJUD",$page))
-                        <a href="javascript:;" onclick="jurnalDelete({{$jurnal->id_jurnal}})" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" >Delete</a>
+                        <a href="javascript:;" onclick="jurnalDelete('{{$jurnal->id_jurnal}}')" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5">Delete</a>
                         @endif
+                        
                     </td>
+                    @endif
                 </tr>
                 @php($i++)
             @endisset
@@ -54,13 +61,23 @@
             <div class="form-group row">
                 <label class="col-2 col-form-label">Total Debet</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($jurnals['ttl_debet'])}}" readonly>
+                    @if ($jurnals['ttl_debet'] < 0)
+                        <input type="text" class="form-control" parsley-trigger="change" value="Rp ({{number_format($jurnals['ttl_debet'],2,',','.')}})" readonly>
+                    @else
+                        <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($jurnals['ttl_debet'],2,',','.')}}" readonly>
+                    @endif
+                    
                 </div>
             </div>
             <div class="form-group row">
                 <label class="col-2 col-form-label">Total Credit</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($jurnals['ttl_credit'])}}" readonly>
+                    @if ($jurnals['ttl_credit'] < 0)
+                        <input type="text" class="form-control" parsley-trigger="change" value="Rp ({{number_format($jurnals['ttl_credit'],2,',','.')}})" readonly>
+                    @else
+                        <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($jurnals['ttl_credit'],2,',','.')}}" readonly>
+                    @endif
+                    
                 </div>
             </div>
         </div>
@@ -69,57 +86,59 @@
     
 <script>
 // Responsive Datatable
-$('#responsive-datatable').DataTable();
+$('#responsive-datatable').DataTable({
+     columnDefs: [
+       { type: 'natural', targets: '_all' }
+     ]
+  } );
 
 function jurnalDelete(id){
-    function deletePurchase(id){
-        var token = $("meta[name='csrf-token']").attr("content");
+    var token = $("meta[name='csrf-token']").attr("content");
 
-        swal({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            type: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!',
-            confirmButtonClass: 'btn btn-success',
-            cancelButtonClass: 'btn btn-danger m-l-10',
-            buttonsStyling: false
-        }).then(function () {
-            $.ajax({
-                url: "jurnal/"+id,
-                type: 'DELETE',
-                data: {
-                    "id": id,
-                    "_token": token,
-                },
-            }).done(function (data) {
-                swal(
-                    'Deleted!',
-                    'Your file has been deleted.',
-                    'success'
-                )
-                location.reload();
-            }).fail(function (msg) {
-                swal(
-                    'Failed',
-                    'Your imaginary file is safe :)',
-                    'error'
-                )
-            });
-            
-        }, function (dismiss) {
-            // dismiss can be 'cancel', 'overlay',
-            // 'close', and 'timer'
-            if (dismiss === 'cancel') {
-                swal(
-                    'Cancelled',
-                    'Your imaginary file is safe :)',
-                    'error'
-                )
-            }
-        })
-    }
+    swal({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'No, cancel!',
+        confirmButtonClass: 'btn btn-success',
+        cancelButtonClass: 'btn btn-danger m-l-10',
+        buttonsStyling: false
+    }).then(function () {
+        $.ajax({
+            url: "jurnal/"+id,
+            type: 'DELETE',
+            data: {
+                "id": id,
+                "_token": token,
+            },
+        }).done(function (data) {
+            swal(
+                'Deleted!',
+                'Your file has been deleted.',
+                'success'
+            )
+            location.reload();
+        }).fail(function (msg) {
+            swal(
+                'Failed',
+                'Your imaginary file is safe :)',
+                'error'
+            )
+        });
+        
+    }, function (dismiss) {
+        // dismiss can be 'cancel', 'overlay',
+        // 'close', and 'timer'
+        if (dismiss === 'cancel') {
+            swal(
+                'Cancelled',
+                'Your imaginary file is safe :)',
+                'error'
+            )
+        }
+    })
 }
 </script>
     

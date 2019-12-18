@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\PurchaseDetail;
 use App\DeliveryDetail;
 use App\ReceiveDet;
+use App\SalesDet;
 
 class Product extends Model
 {
@@ -37,5 +38,12 @@ class Product extends Model
         $gudang = $stock_awal+$qty_receive-$qty_delivery;
 
         return $gudang;
+    }
+
+    public static function getBrgCust($prod_id){
+        $sales = SalesDet::where('prod_id',$prod_id)->sum('qty');
+        $delivery = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
+
+        return $sales-$delivery;
     }
 }

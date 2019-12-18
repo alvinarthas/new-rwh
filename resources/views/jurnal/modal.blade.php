@@ -18,7 +18,7 @@
                             <td>{{$item->AccNo}}</td>
                             <td>{{$item->coa->AccName}}</td>
                             <td><input type="hidden" value="{{$item->AccPos}}" id="position{{$i}}">{{$item->AccPos}}</td>
-                            <td><input type="hidden" value="{{$item->Amount}}" id="amount{{$i}}">Rp. {{number_format($item->Amount)}}</td>
+                            <td><input type="hidden" value="{{$item->Amount}}" id="amount{{$i}}">Rp {{number_format($item->Amount,2,",",".")}}</td>
                             <td>{{$item->notes_item}}</td>
                         </tr>
                     @php($i++)
@@ -33,13 +33,13 @@
     <div class="form-group row">
         <label class="col-2 col-form-label">Total Debet</label>
         <div class="col-10">
-            <input type="text" readonly class="form-control" name="ttl_debet" id="ttl_debet" parsley-trigger="change" value="Rp. @isset($ttl_debet){{$ttl_debet}}@else{{0}}@endisset">
+            <input type="text" readonly class="form-control" name="ttl_debet" id="ttl_debet" parsley-trigger="change" value="Rp @isset($ttl_debet){{number_format($ttl_debet,2,",",".")}}@else{{number_format(0,2,",",".")}}@endisset">
         </div>
     </div>
     <div class="form-group row">
             <label class="col-2 col-form-label">Total Credit</label>
             <div class="col-10">
-                <input type="text" readonly class="form-control" name="ttl_credit" id="ttl_credit" parsley-trigger="change" value="Rp. @isset($ttl_credit){{$ttl_credit}}@else{{0}}@endisset">
+                <input type="text" readonly class="form-control" name="ttl_credit" id="ttl_credit" parsley-trigger="change" value="Rp @isset($ttl_credit){{number_format($ttl_credit,2,",",".")}}@else{{number_format(0,2,",",".")}}@endisset">
             </div>
         </div>
     <div class="form-group row">

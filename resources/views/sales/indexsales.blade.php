@@ -1,3 +1,7 @@
+@php
+    use App\TempSales;
+    use App\TempSalesDet;
+@endphp
 <div class="row">
     <div class="col-12">
         <div class="card-box table-responsive">
@@ -19,7 +23,7 @@
                             <td><a href="javascript:;" onclick="getDetail({{$sale->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">SO.{{$sale->id}}</a></td>
                             <td>{{$sale->trx_date}}</td>
                             <td>{{$sale->customer->apname}}</td>
-                            <td>Rp. {{number_format($sale->ttl_harga+$sale->ongkir)}}</td>
+                            <td>Rp {{number_format($sale->ttl_harga+$sale->ongkir,2,",",".")}}</td>
                             <td>
                                 @if (array_search("PSSLU",$page))
                                 <a href="{{route('sales.edit',['id'=>$sale->id])}}" class="btn btn-purple btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
@@ -35,7 +39,20 @@
                                     <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales</a>
                                     @endif
                                 @else
-                                    <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5" disabled>Sales sudah di approve</a>
+                                    <?php
+                                        $count_temp = TempSales::where('trx_id',$sale->id)->count('trx_id');
+                                        $status_temp = TempSales::where('trx_id',$sale->id)->where('status',1)->count('trx_id');
+                                    ?>
+                                    @if($count_temp > 0 && $status_temp == 1)
+                                        <?php
+                                            $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sale->id,'role'=>session('role')]));
+                                        ?>
+                                        @if (array_search("PSSLA",$page))
+                                        <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales yang sudah diupdate</a>
+                                        @endif
+                                    @else
+                                        <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Sales sudah di approve</a>
+                                    @endif
                                 @endif
                                 @if (array_search("PSSLN",$page))
                                 <a href="javascript:;" class="btn btn-info btn-trans waves-effect w-md waves-danger m-b-5" onclick="previewInvoice({{$sale->id}})"><i class="fa fa-file-pdf-o"></i> Preview Invoice</a>
@@ -80,13 +97,13 @@
             <div class="form-group row">
                 <label class="col-2 col-form-label">Total Pendapatan</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($transaksi['ttl_pemasukan'])}}" readonly>
+                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($transaksi['ttl_pemasukan'],2,",",".")}}" readonly>
                 </div>
             </div>
             <div class="form-group row">
                 <label class="col-2 col-form-label">Total BV</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp. {{number_format($transaksi['ttl_total'])}}" readonly>
+                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($transaksi['ttl_total'],2,",",".")}}" readonly>
                 </div>
             </div>
             <div class="form-group row">
@@ -115,7 +132,11 @@
 
 <script>
 // Responsive Datatable
-$('#responsive-datatable').DataTable();
+$('#responsive-datatable').DataTable({
+     columnDefs: [
+       { type: 'natural', targets: '_all' }
+     ]
+  } );
 
 function deletePurchase(id){
     var token = $("meta[name='csrf-token']").attr("content");
