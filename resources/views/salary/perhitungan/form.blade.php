@@ -76,6 +76,35 @@ Tambah Data Gaji Pokok Pegawai
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-12">
+            <div class="card-box table-responsive">
+                <h4 class="m-t-0 header-title">Bonus Divisi</h4>
+                <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                    <thead>
+                        <th>No</th>
+                        <th>Nama Pegawai</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                    </thead>
+    
+                    <tbody>
+                        @php($i = 1)
+                        @foreach($employees as $emp)
+                        <tr>
+                            <td>{{$i}}</td>
+                            <td>{{$emp->name}}</td>
+                            <td>{{$emp->role_name}}</td>
+                            <td><input type="text" name="bonus[{{$emp->id}}]" value="0"></td>
+                        </tr>
+                        @php($i++)
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div> <!-- end row -->
+
     <div class="form-group text-right m-b-0">
         <button class="btn btn-primary waves-effect waves-light" type="submit">
             Submit

@@ -26,7 +26,7 @@ class SalaryController extends Controller
             $start = $request->start_date;
             $end = $request->end_date;
             $jenis = $request->jenis;
-            $employees = Employee::select('id','username')->join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.username')->get();
+            $employees = Employee::select('id','username')->join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','Supervisor')->orWhere('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.username')->get();
             $datas = collect();
 
             foreach ($employees as $employee) {
@@ -106,7 +106,7 @@ class SalaryController extends Controller
                     
                     $poin->save();
         
-                    return redirect()->route('indexPoin')->with('status', 'Data Poin berhasil dibuat');
+                    return redirect()->back()->with('status', 'Data Poin berhasil dibuat');
                 } catch (\Exception $e) {
                     return redirect()->back()->withErrors($e->getMessage());
                 }
@@ -157,7 +157,9 @@ class SalaryController extends Controller
             return Sales::getBV($request->bulan,$request->tahun);
         }else{
             $bv = Sales::getBV(date('m'),date('Y'));
-            return view('salary.perhitungan.form',compact('bv'));
+            $employees = Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','Supervisor')->orWhere('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.name','r.role_name')->get();
+
+            return view('salary.perhitungan.form',compact('bv','employees'));
         }
         
     }
@@ -224,11 +226,16 @@ class SalaryController extends Controller
                 $value_share_top3 = $anggaran_top3/$ttl_poin_top3;
             }
 
-            $pegawai = Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','NOT LIKE','Superadmin')->where('r.role_name','NOT LIKE','Direktur Utama')->select('tblemployee.id','tblemployee.username','r.gaji_pokok','r.tunjangan_jabatan')->get();
-
+            $pegawai = Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','NOT LIKE','Superadmin')->where('r.role_name','NOT LIKE','Direktur Utama')->select('tblemployee.id','tblemployee.username','r.gaji_pokok','r.tunjangan_jabatan','r.id as role_id')->get();
+            
             // Hitung Bonus tiap pegawai
             foreach ($pegawai as $peg) {
                 $eomcollect = collect();
+                $bonus_divisi = 0;
+
+                if(isset($request->bonus[$peg->id])){
+                    $bonus_divisi = $request->bonus[$peg->id];
+                }
                 // Share Internal
                 $poin_internal = RecordPoin::sumPoin2($peg->id,$month,$year,1);
                 if($ttl_poin_internal == 0){
@@ -275,12 +282,17 @@ class SalaryController extends Controller
 
                 // Employee of The Month Sementara
                 $eom = 0;
-                $tunjangan_persentase = 0;
+
                 // Tunjangan Persentase
                 if($value_share_internal == 0 || $ttl_poin_internal == 0){
                     $tunjangan_persentase = 0;
                 }else{
-                    $tunjangan_persentase = ((($peg->tunjangan_jabatan/$value_share_internal)/$ttl_poin_internal)*100)/2;
+                    if($peg->role_id == 47 || $peg->role_id == 48 || $peg->role_id == 49 || $peg->role_id == 50){
+                        $tunjangan_persentase = 0;
+                    }else{
+                        $tunjangan_persentase = ((($bonus_divisi/$value_share_internal)/$ttl_poin_internal))/2;
+                    }
+                    
                 }
 
                 // Bonus Jabatan Sementara
@@ -307,6 +319,7 @@ class SalaryController extends Controller
                     'take_home_pay' => $take_home_pay,
                     'employee_id' => $peg->id,
                     'tunjangan_jabatan' => $peg->tunjangan_jabatan,
+                    'bonus_divisi' => $bonus_divisi,
                 ));
                 $salarydet->save();
 

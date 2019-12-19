@@ -14,7 +14,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card-box table-responsive">
-                    <h4 class="m-t-0 header-title">Current Mapping</h4>
+                    <h4 class="m-t-0 header-title">Current Mapping: {{$name}}</h4>
 
                     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                         <thead>

@@ -68,7 +68,8 @@ class MenuController extends Controller
         $currents = PurchaseMap::where('employee_id',$id)->get();
         $rests = DB::select("SELECT id,nama FROM tblperusahaan WHERE id NOT IN (SELECT supplier_id FROM map_purchase WHERE employee_id = $id)");
         $rests = json_decode (json_encode($rests),FALSE);
-        return view('purchase.map.form',compact('currents','rests','id'));
+        $name = Employee::where('id',$id)->first()->name;
+        return view('purchase.map.form',compact('currents','rests','id','name'));
     }
 
     public function PurMapStore(Request $request){

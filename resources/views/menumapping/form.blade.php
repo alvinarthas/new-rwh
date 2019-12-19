@@ -21,8 +21,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card-box table-responsive">
-                    <h3 class="m-t-0 header-title">Nama: {{$name}}</h3>
-                    <h4 class="m-t-0 header-title">Current Mapping</h4>
+                    <h4 class="m-t-0 header-title">Current Mapping: {{$name}}</h4>
 
                     <table id="tbl-cur" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                         <thead>
@@ -78,7 +77,6 @@
         <div class="row">
             <div class="col-12">
                 <div class="card-box table-responsive">
-                    <h3 class="m-t-0 header-title">Nama: {{$name}}</h3>
                     <h4 class="m-t-0 header-title">List Modul</h4>
 
                     <table id="tbl-rest" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">

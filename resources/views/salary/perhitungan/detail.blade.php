@@ -77,6 +77,17 @@
                             </div>
                         </div>
                     </li>
+                    <li class="list-group-item">
+                        <div class="user-list-item">
+                            <div class="avatar">
+                                {{-- <img src="{{ asset('assets/images/flaticon/eom.png') }}" alt=""> --}}
+                            </div>
+                            <div class="user-desc">
+                                {{-- <span class="name"><strong>Employee Of the Month</strong></span>
+                                <span class="desc">Rp {{number_format($bonpeg->eom,2,",",".")}}</span> --}}
+                            </div>
+                        </div>
+                    </li>
                 </ul>
             </div>
             
@@ -135,8 +146,19 @@
                                 <img src="{{ asset('assets/images/flaticon/discount.png') }}" alt="">
                             </div>
                             <div class="user-desc">
-                                <span class="name"><strong>Tunjangan dan Total Presentase</strong></span>
-                                <span class="desc"><strong>({{$bonpegdet->tunjangan_persen}}%) ({{$bonpegdet->total_persen}}%)</strong></span>
+                                <span class="name"><strong>Tunjangan Presentase</strong></span>
+                                <span class="desc"><strong>({{$bonpegdet->tunjangan_persen}}%)</strong></span>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="user-list-item">
+                            <div class="avatar">
+                                <img src="{{ asset('assets/images/flaticon/discount.png') }}" alt="">
+                            </div>
+                            <div class="user-desc">
+                                <span class="name"><strong>Total Presentase</strong></span>
+                                <span class="desc"><strong>({{$bonpegdet->total_persen}}%)</strong></span>
                             </div>
                         </div>
                     </li>

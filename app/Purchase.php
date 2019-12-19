@@ -147,10 +147,19 @@ class Purchase extends Model
                     $jurnal1->date = $purchase->tgl;
                     $jurnal1->update();
                 //Update debet Estimasi Bonus
-                    $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
-                    $jurnal2->amount = $jurnal2->amount+$total_tertahan;
-                    $jurnal2->date = $purchase->tgl;
-                    $jurnal2->update();
+                    if($total_tertahan < 0){
+                        $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
+                        $jurnal2->amount = $jurnal2->amount+$total_tertahan;
+                        $jurnal2->date = $purchase->tgl;
+                        $jurnal2->AccPos = "Credit";
+                        $jurnal2->update();
+                    }else{
+                        $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
+                        $jurnal2->amount = $jurnal2->amount+$total_tertahan;
+                        $jurnal2->date = $purchase->tgl;
+                        $jurnal2->update();
+                    }
+                    
                 //Update credit hutang Dagang
                     $jurnal3 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','2.1.1')->first();
                     $jurnal3->amount = $jurnal3->amount+$total_distributor;
@@ -166,7 +175,12 @@ class Purchase extends Model
                 //insert debet Persediaan Barang Indent ( harga modal x qty )
                 Jurnal::addJurnal($id_jurnal,$total_modal,$purchase->tgl,$jurnal_desc,'1.1.4.1.1','Debet',$user_id);
                 //insert debet Estimasi Bonus
-                Jurnal::addJurnal($id_jurnal,$total_tertahan,$purchase->tgl,$jurnal_desc,'1.1.3.4','Debet',$user_id);
+                if($total_tertahan < 0){
+                    Jurnal::addJurnal($id_jurnal,$total_tertahan,$purchase->tgl,$jurnal_desc,'1.1.3.4','Credit',$user_id);
+                }else{
+                    Jurnal::addJurnal($id_jurnal,$total_tertahan,$purchase->tgl,$jurnal_desc,'1.1.3.4','Debet',$user_id);
+                }
+                
                 //insert credit hutang Dagang
                 Jurnal::addJurnal($id_jurnal,$total_distributor,$purchase->tgl,$jurnal_desc,'2.1.1','Credit',$user_id);
             }          

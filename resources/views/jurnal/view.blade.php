@@ -88,7 +88,7 @@
 // Responsive Datatable
 $('#responsive-datatable').DataTable({
      columnDefs: [
-       { type: 'natural', targets: '_all' }
+       {targets: '_all', type: 'natural'}
      ]
   } );
 
