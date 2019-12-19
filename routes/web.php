@@ -95,6 +95,7 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/showBonusLaporan', 'BonusController@showLaporanBonus')->name('showLaporanBonus');
 
     Route::get('/bonus/bonusgagal','BonusController@indexBonusGagal')->name('bonus.bonusgagal');
+    Route::delete('/bonus/bonusgagal/{id}/delete', 'BonusController@destroyGagalBonus')->name('bonus.deletegagalbonus');
     Route::get('/showBonusLaporanGagal', 'BonusController@showLaporanBonusGagal')->name('showLaporanBonusGagal');
 
     Route::get('/ajxbonusorder', 'BonusController@ajxBonusOrder')->name('ajxBonusOrder');

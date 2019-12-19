@@ -43,39 +43,63 @@
                 @elseif($bonusapa=="laporan" OR $bonusapa=="bonusgagal")
                     @if($bonusapa=="laporan")
                         <h3 class="m-t-0 header-title">Laporan Realisasi Bonus Member</h3>
-                    @elseif($bonusapa=="bonusgagal")
-                        <h3 class="m-t-0 header-title">Laporan Upload Gagal Perhitungan Bonus Member</h3>
                         <div class="form-group row">
-                            <label class="col-2 col-form-label">Nama Perusahaan</label>
-                            <div class="col-10">
-                                <select class="form-control select2" parsley-trigger="change" id="perusahaan" name="perusahaan">
-                                    <option value="#" disabled selected>Pilih Perusahaan</option>
-                                    @foreach ($perusahaans as $prs)
-                                        <option value="{{$prs->id}}">{{$prs->nama}}</option>
-                                    @endforeach
+                            <label class="col-2 col-form-label">Bulan & Tahun Bonus</label>
+                            <div class="col-5">
+                                <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" required>
+                                    <option value="#" selected disabled>Pilih Bulan</option>
+                                    @for ($i = 1; $i <= 12; $i++)
+                                        <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <div class="col-5">
+                                <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" required>
+                                    <option value="#" selected disabled>Pilih Tahun</option>
+                                    @for ($i = 2018; $i <= date('Y'); $i++)
+                                        <option value="{{$i}}">{{$i}}</option>
+                                    @endfor
                                 </select>
                             </div>
                         </div>
+                    @elseif($bonusapa=="bonusgagal")
+                        <h3 class="m-t-0 header-title">Laporan Upload Gagal Perhitungan Bonus Member</h3>
+                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
+                            <thead>
+                                <th>No</th>
+                                <th>Tanggal Transaksi</th>
+                                <th>Jenis Bonus</th>
+                                <th>File</th>
+                                <th>Action</th>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $i = 1;
+                                    $total_bonus = 0;
+                                @endphp
+                                @foreach($bonusgagal as $bg)
+                                <tr>
+                                    <td>{{$i}}</td>
+                                    <td>{{$bg->tgl}}</td>
+                                    <td>{{$bg->jenis}}</td>
+                                    <td><a href="{{ public_path('download/bonusgagal/'.$bg->file) }}">{{$bg->file}}</a></td>
+                                    <td>
+                                        @if (array_search("BMGUD",$page))
+                                            <form class="" action="{{ route('bonus.deletegagalbonus', ['id' => $bg->id]) }}" method="post">
+                                                {{ csrf_field() }}
+                                                {{ method_field('delete') }}
+                                                <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
+                                            </form>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @php
+                                    $i++;
+                                @endphp
+                                @endforeach
+                            </tbody>
+                        </table>
                     @endif
-                    <div class="form-group row">
-                        <label class="col-2 col-form-label">Bulan & Tahun Bonus</label>
-                        <div class="col-5">
-                            <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" required>
-                                <option value="#" selected disabled>Pilih Bulan</option>
-                                @for ($i = 1; $i <= 12; $i++)
-                                    <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
-                                @endfor
-                            </select>
-                        </div>
-                        <div class="col-5">
-                            <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" required>
-                                <option value="#" selected disabled>Pilih Tahun</option>
-                                @for ($i = 2018; $i <= date('Y'); $i++)
-                                    <option value="{{$i}}">{{$i}}</option>
-                                @endfor
-                            </select>
-                        </div>
-                    </div>
                 @endif
                 @if($jenis == "index")
                     @if($bonusapa=="pembayaran")
@@ -519,12 +543,6 @@
         @elseif($bonusapa=="laporan")
             @if($jenis=="index")
                 <button class="btn btn-primary waves-effect waves-light" onclick="showLaporanBonus()" type="submit">
-                    Show Bonus
-                </button>
-            @endif
-        @elseif($bonusapa=="bonusgagal")
-            @if($jenis=="index")
-                <button class="btn btn-primary waves-effect waves-light" onclick="showLaporanBonusGagal()" type="submit">
                     Show Bonus
                 </button>
             @endif

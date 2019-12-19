@@ -116,7 +116,7 @@
                     <h4 class="m-t-0 header-title">Saldo Customer</h4>
                     <p class="text-muted font-14 m-b-30">
                         @if (array_search("PSDCC",$page))
-                            <a href="{{ route('saldo.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Customer</a>
+                            <a href="{{ route('saldo.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Deposit</a>
                         @endif
                     </p>
                     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
