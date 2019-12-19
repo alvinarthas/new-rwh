@@ -13,84 +13,93 @@
             <div class="col-12">
                 <div class="card-box table-responsive">
                     <h4 class="m-t-0 header-title">Detail Bonus Member</h4>
-                    @if($bonusapa=="perhitungan")
+                    @if($bonusapa=="laporan2")
                         <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                             <thead>
                                 <th>No</th>
                                 <th>KTP</th>
-                                <th>No ID</th>
                                 <th>Nama</th>
-                                <th>Bonus</th>
+                                <th>Perhitungan Bonus</th>
+                                <th>Detail Realisasi Bonus</th>
+                                <th>Selisih</th>
                             </thead>
 
                             <tbody>
                                 @php
                                     $i = 1;
                                     $total_bonus = 0;
+                                    $selisih = 0;
                                 @endphp
-                                @foreach($perusahaanmember as $prm)
-                                <tr>
-                                    <td>{{$i}}</td>
-                                    <td>{{$prm->ktp}}</td>
-                                    <td>{{$prm->noid}}</td>
-                                    <td>{{$prm->nama}}</td>
-
-                                    {{-- tampil semua data member perusahaan --}}
+                                @foreach($member as $m)
                                     @php
-                                        $data_bonus = $bonus->where('noid', $prm->noid)->first();
-                                    @endphp
-
-                                    <td>
-                                        {{-- tampil semua data member perusahaan --}}
-                                        <input class="form-control number" value="{{ number_format($data_bonus['bonus'],0) }}" type="text" name="bonus{{ $i }}" readonly>
-
-                                        {{-- hanya yang bonus !=0 --}}
-                                        {{-- <input class="form-control number" value="{{ number_format($prm['bonus'],0) }}" type="text" name="bonus{{ $i }}"> --}}
-                                    </td>
-                                </tr>
-                                @php
-                                    $i++;
-                                    $total_bonus = $total_bonus + $data_bonus['bonus'];
-                                @endphp
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
-                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
-                            <thead>
-                                <th>No</th>
-                                <th>Nama Bank</th>
-                                <th>No Rekening</th>
-                                <th>Nama</th>
-                                <th>Bonus</th>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $i = 1;
-                                    $total_bonus = 0;
-                                @endphp
-                                @foreach($bankmember as $bm)
-                                <tr>
-                                    <td>{{$i}}</td>
-                                    <td>{{$namabank['AccName']}}</td>
-                                    <td>{{$bm->norek}}</td>
-                                    <td>{{ $bm->nama }}</td>
-                                    @php
-                                        if($bonusapa=="pembayaran"){
-                                            $data_bonus = BonusBayar::where('no_rek', $bm->norek)->where('bulan', $bulan)->where('tahun', $tahun)->where('tgl', $tgl)->where('AccNo', $AccNo)->select('bonus')->first();
-                                        }elseif($bonusapa=="topup"){
-                                            $data_bonus = TopUpBonus::where('no_rek', $bm->norek)->where('tgl', $tgl)->where('AccNo', $AccNo)->select('bonus')->first();
+                                        $no = 1;
+                                        $totalp = 0;
+                                        $totalr = 0;
+                                        $total_perhitungan = 0;
+                                        $total_realisasi = 0;
+                                        $prm = PerusahaanMember::join('tblperusahaan', 'perusahaanmember.perusahaan_id', 'tblperusahaan.id')->where('ktp',$m->ktp)->select('tblperusahaan.nama', 'noid')->get();
+                                        foreach ($prm as $p) {
+                                            $data_bonus = Bonus::where('bulan', $bulan)->where('tahun', $tahun)->where('noid', $p->noid)->sum('bonus');
+                                            $totalp = $totalp + $data_bonus;
                                         }
-
+                                        $total_perhitungan = $total_perhitungan + $totalp;
+                                        $bm = BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('ktp',$m->ktp)->select('norek', 'nama')->get();
+                                        $no = 1;
+                                        $totalr = 0;
+                                        foreach ($bm as $b) {
+                                            $d_bonus = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('no_rek',$b->norek)->sum('bonus');
+                                            $totalr = $totalr + $d_bonus;
+                                        }
+                                        $total_realisasi = $total_realisasi + $totalr;
+                                        $selisih = $total_perhitungan - $total_realisasi;
                                     @endphp
-                                    <td>
-                                        <input class="form-control number" value="{{ number_format($data_bonus['bonus'],0) }}" type="text" name="bonus{{ $i }}" readonly>
-                                    </td>
-                                </tr>
-                                @php
-                                    $i++;
-                                    $total_bonus = $total_bonus + $data_bonus['bonus'];
-                                @endphp
+
+                                    @if($total_perhitungan!=0 OR $total_realisasi!=0)
+                                        <tr>
+                                            <td>{{$i}}</td>
+                                            <td>{{$m->ktp}}</td>
+                                            <td>{{$m->nama}}</td>
+                                            <td>
+                                                @foreach($prm as $p)
+                                                    @php
+                                                        $perusahaan = $p->nama;
+                                                        $data_bonus = Bonus::where('bulan', $bulan)->where('tahun', $tahun)->where('noid', $p->noid)->sum('bonus');
+                                                    @endphp
+                                                        {{ $no }}. {{ $perusahaan }} {{ $p->noid}}<br><b>Bonus :{{ $data_bonus }}</b><br>
+                                                    @php
+                                                        $no++;
+                                                    @endphp
+                                                @endforeach
+
+                                                <br><b>Total : {{ $total_perhitungan }}</b>
+                                            </td>
+                                            <td>
+                                                @foreach ($bm as $b)
+                                                    @php
+                                                        $bb = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('no_rek',$b->norek)->select('tgl')->first();
+                                                        $d_bonus = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('no_rek',$b->norek)->sum('bonus');
+                                                        $d_tgl = $bb['tgl'];
+                                                        $bank = $b->nama;
+                                                    @endphp
+                                                    {{ $no }}. {{ $bank }} {{ $b->norek }}<br><b>Bonus : {{ $d_bonus }}</b><br>Tgl : {{ $d_tgl }}<br>
+                                                    @php
+                                                        $no++;
+                                                    @endphp
+                                                @endforeach
+                                                <br><b>Total : {{ $total_realisasi }}</b>
+                                            </td>
+                                            @if($selisih != 0)
+                                                <td class="table-danger">
+                                            @else
+                                                <td class="table-success">
+                                            @endif
+                                                {{ $selisih }}
+                                            </td>
+                                            @php
+                                                $i++;
+                                            @endphp
+                                        </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>
@@ -111,107 +120,75 @@
                                     $total_bonus = 0;
                                     $selisih = 0;
                                 @endphp
-                                @foreach($member as $m)
-                                <tr>
-                                    <td>{{$i}}</td>
-                                    <td>{{$m->ktp}}</td>
-                                    <td>{{$m->nama}}</td>
-                                    <td>
-                                        @php
-                                            $no = 1;
-                                            $totalp = 0;
-                                            $totalr = 0;
-                                            $total_perhitungan = 0;
-                                            $total_realisasi = 0;
-                                            $prm = PerusahaanMember::join('tblperusahaan', 'perusahaanmember.perusahaan_id', 'tblperusahaan.id')->where('ktp',$m->ktp)->select('tblperusahaan.nama', 'noid')->get();
-                                        @endphp
-
-                                        @foreach($prm as $p)
-                                        @php
-                                            $perusahaan = $p->nama;
+                                @foreach($bonus as $b)
+                                    @php
+                                        $no = 1;
+                                        $totalp = 0;
+                                        $totalr = 0;
+                                        $total_perhitungan = 0;
+                                        $total_realisasi = 0;
+                                        $member = Member::join('perusahaanmember', 'tblmember.ktp', 'perusahaanmember.ktp')->where('perusahaanmember.noid', $b->noid)->select('nama', 'tblmember.ktp')->first();
+                                        $prm = PerusahaanMember::join('tblperusahaan', 'perusahaanmember.perusahaan_id', 'tblperusahaan.id')->where('ktp',$member->ktp)->select('tblperusahaan.nama', 'noid')->get();
+                                        foreach ($prm as $p) {
                                             $data_bonus = Bonus::where('bulan', $bulan)->where('tahun', $tahun)->where('noid', $p->noid)->sum('bonus');
-                                        @endphp
-
-                                            {{ $no }}. {{ $perusahaan }} {{ $p->noid}}<br><b>Bonus :{{ $data_bonus}}</b><br>
-                                        @php
-                                            $no++;
                                             $totalp = $totalp + $data_bonus;
-                                        @endphp
-                                        @endforeach
-                                        @php
-                                            $total_perhitungan = $total_perhitungan + $totalp;
-                                        @endphp
-
-                                        <br><b>Total : {{ $total_perhitungan }}</b>
-                                    </td>
-                                    <td>
-                                        @php
-                                            $bm = BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('ktp',$m->ktp)->select('norek', 'nama')->get();
-                                            $no = 1;
-                                            $totalr = 0;
-                                        @endphp
-                                        @foreach ($bm as $b)
-                                        @php
-                                            $bb = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('no_rek',$b->norek)->select('tgl')->first();
+                                        }
+                                        $total_perhitungan = $total_perhitungan + $totalp;
+                                        $bm = BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('ktp',$member->ktp)->select('norek', 'nama')->get();
+                                        $no = 1;
+                                        $totalr = 0;
+                                        foreach ($bm as $b) {
                                             $d_bonus = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('no_rek',$b->norek)->sum('bonus');
-                                            $d_bonus = $d_bonus;
-                                            $d_tgl = $bb['tgl'];
-                                            $bank = $b->nama;
-                                        @endphp
-                                        {{ $no }}. {{ $bank }} {{ $b->norek }}<br><b>Bonus : {{ $d_bonus }}</b><br>Tgl : {{ $d_tgl }}<br>
-                                        @php
-                                            $no++;
                                             $totalr = $totalr + $d_bonus;
-                                        @endphp
-                                        @endforeach
+                                        }
+                                        $total_realisasi = $total_realisasi + $totalr;
+                                        $selisih = $total_perhitungan - $total_realisasi;
+                                    @endphp
 
+
+                                    <tr>
+                                        <td>{{$i}}</td>
+                                        <td>{{$member->ktp}}</td>
+                                        <td>{{$member->nama}}</td>
+                                        <td>
+                                            @foreach($prm as $p)
+                                                @php
+                                                    $perusahaan = $p->nama;
+                                                    $data_bonus = Bonus::where('bulan', $bulan)->where('tahun', $tahun)->where('noid', $p->noid)->sum('bonus');
+                                                @endphp
+                                                    {{ $no }}. {{ $perusahaan }} {{ $p->noid}}<br><b>Bonus :{{ $data_bonus }}</b><br>
+                                                @php
+                                                    $no++;
+                                                @endphp
+                                            @endforeach
+                                            <br><b>Total : {{ $total_perhitungan }}</b>
+                                        </td>
+                                        <td>
+                                            @foreach ($bm as $b)
+                                                @php
+                                                    $bb = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('no_rek',$b->norek)->select('tgl')->first();
+                                                    $d_bonus = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('no_rek',$b->norek)->sum('bonus');
+                                                    $d_tgl = $bb['tgl'];
+                                                    $bank = $b->nama;
+                                                @endphp
+                                                {{ $no }}. {{ $bank }} {{ $b->norek }}<br><b>Bonus : {{ $d_bonus }}</b><br>Tgl : {{ $d_tgl }}<br>
+                                                @php
+                                                    $no++;
+                                                @endphp
+                                            @endforeach
+                                            <br><b>Total : {{ $total_realisasi }}</b>
+                                        </td>
+                                        @if($selisih != 0)
+                                            <td class="table-danger">
+                                        @else
+                                            <td class="table-success">
+                                        @endif
+                                            {{ $selisih }}
+                                        </td>
                                         @php
-                                            $total_realisasi = $total_realisasi + $totalr;
-                                            $selisih = $total_perhitungan - $total_realisasi;
+                                            $i++;
                                         @endphp
-
-                                        <br><b>Total : {{ $total_realisasi }}</b>
-                                    </td>
-                                    @if($selisih != 0)
-                                        <td class="table-danger">
-                                    @else
-                                        <td class="table-success">
-                                    @endif
-                                        {{ $selisih }}
-                                    </td>
-                                    @php
-                                        $i++;
-                                    @endphp
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @elseif($bonusapa=="bonusgagal")
-                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
-                            <thead>
-                                <th>No</th>
-                                <th>KTP</th>
-                                <th>No ID</th>
-                                <th>Nama</th>
-                                <th>Bonus</th>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $i = 1;
-                                    $total_bonus = 0;
-                                @endphp
-                                @foreach($bonusgagal as $bg)
-                                <tr>
-                                    <td>{{$i}}</td>
-                                    <td>{{$bg->ktp}}</td>
-                                    <td>{{$bg->id_member}}</td>
-                                    <td>{{$bg->nama}}<td>
-                                    <td>{{$bg->bonus}}</td>
-                                    @php
-                                        $i++;
-                                        $total_bonus = $total_bonus + $bg->bonus;
-                                    @endphp
-                                </tr>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>

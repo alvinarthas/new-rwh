@@ -77,9 +77,9 @@ class BonusController extends Controller
         $perusahaans = Perusahaan::all();
         $bonusapa = "bonusgagal";
         $jenis = "index";
-        $bonus = Bonus::all();
+        $bonusgagal = BonusGagal::all();
 
-        return view('bonus.index', compact('bonusapa','jenis','perusahaans', 'page', 'bonus'));
+        return view('bonus.index', compact('bonusapa','jenis','perusahaans', 'page', 'bonusgagal'));
     }
 
     /**
@@ -905,6 +905,24 @@ class BonusController extends Controller
         }
     }
 
+    public function destroyGagalBonus($id)
+    {
+        try{
+            $data = BonusGagal::where('id', $id)->first();
+            $file = public_path('download/bonusgagal/').$data->file;
+            // echo $file;
+            // die();
+            if (file_exists($file)){
+                unlink($file);
+            }
+            $data->delete();
+            return redirect()->route('bonus.bonusgagal')->with('status', 'Data berhasil dihapus');
+        }catch(\Exception $e){
+            return redirect()->back()->withErrors($e->getMessage());
+            // return response()->json($e);
+        }
+    }
+
     public function showBonusPerhitungan(Request $request)
     {
         $perusahaan = $request->perusahaan;
@@ -1623,7 +1641,7 @@ class BonusController extends Controller
         }
     }
 
-    public function showLaporanBonus(Request $request)
+    public function showLaporanBonuslama(Request $request)
     {
         $tahun = $request->tahun;
         $bulan = $request->bulan;
@@ -1633,6 +1651,18 @@ class BonusController extends Controller
         // $bonusbayar = BonusBayar::where('tahun', $tahun)->where('bulan', $bulan)->get();
 
         return view('bonus.ajxShowBonus', compact('member', 'tahun','bulan','bonusapa'));
+    }
+
+    public function showLaporanBonus(Request $request)
+    {
+        $tahun = $request->tahun;
+        $bulan = $request->bulan;
+        $member = Member::select('ktp','nama')->orderBy('nama','asc')->get();
+        $bonusapa = "laporan";
+        $bonus = Bonus::where('tahun',$tahun)->where('bulan',$bulan)->get();
+        // $bonusbayar = BonusBayar::where('tahun', $tahun)->where('bulan', $bulan)->get();
+
+        return view('bonus.ajxShowBonus', compact('member', 'tahun','bulan','bonusapa', 'bonus'));
     }
 
     public function showLaporanBonusGagal(Request $request)
@@ -1698,11 +1728,11 @@ class BonusController extends Controller
         }elseif(($bonusapa=="pembayaran") OR ($bonusapa=="topup")){
             $AccNo = Coa::where('AccNo', $request->AccNo3)->select('AccName')->first();
             $bank_id = $request->bank_id3;
-            $tgl = $request->tgl3;
         }
+        $tgl = $request->tgl3;
 
         if($bonusapa=="perhitungan"){
-            $filename = "Bonus Gagal Upload Perhitungan Bonus ".$perusahaan['nama']." bulan ".$bulan." ".$tahun;
+            $filename = "Bonus Gagal Upload Perhitungan Bonus ".$perusahaan['nama']." bulan ".$bulan." ".$tahun."(".$tgl.")";
         }elseif($bonusapa=="pembayaran"){
             $filename = "Bonus Gagal Upload Penerimaan Bonus ".$AccNo['AccName']." bulan ".$bulan." ".$tahun."(".$tgl.")";
         }elseif($bonusapa=="topup"){
@@ -1764,6 +1794,14 @@ class BonusController extends Controller
             }
 
             $pdf = PDF::loadview('bonus.pdfbonusgagal',$datas)->setPaper('a4', 'landscape');
+            $data = new BonusGagal(array(
+                'tgl' => $tgl,
+                'jenis' => $bonusapa,
+                'file'  => $filename.'.pdf',
+                'creator' => session('user_id'),
+            ));
+            $data->save();
+
             $pdf->save(public_path('download/bonusgagal/'.$filename.'.pdf'));
             return $pdf->download($filename.'.pdf');
         }

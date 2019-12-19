@@ -253,8 +253,8 @@ class SaldoController extends Controller
     public function ajxCoaOrder(Request $request)
     {
         $keyword = strip_tags(trim($request->keyword));
-        $key = $keyword.'%';
-        $datas = Coa::where('StatusAccount', "Detail")->where('tblcoa.AccName','LIKE',$key.'%')->orderBy('tblcoa.AccName')->limit(10)->get();
+        $key = '%'.$keyword.'%';
+        $datas = Coa::where('StatusAccount', "Detail")->where('tblcoa.AccName','LIKE',$key)->orderBy('tblcoa.AccName')->limit(10)->get();
         $data = array();
         $array = json_decode( json_encode($datas), true);
         foreach ($array as $a) {

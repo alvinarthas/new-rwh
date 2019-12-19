@@ -43,7 +43,7 @@
 
                 <div id="btn_cetak" class="modal-body form-group text-right m-b-0">
                     <button class="btn btn-rounded btn-success w-md waves-effect waves-light m-b-5" onclick="cetakXls()">Cetak file Excel</button>
-                    <button class="btn btn-rounded btn-warning w-md waves-effect waves-light m-b-5" onclick="cetakPdf()">Cetak file PDF</button>
+                    <button class="btn btn-rounded btn-warning w-md waves-effect waves-light m-b-5" onclick="cetakPdf()">Simpan file PDF</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
