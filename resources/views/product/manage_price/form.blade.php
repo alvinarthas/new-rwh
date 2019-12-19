@@ -57,7 +57,7 @@
                                     <input type="text" class="form-control" parsley-trigger="change" readonly name="phone" id="phone" value="@isset($customer->apphone){{$customer->apphone}}@endisset">
                                 </div>
                             </div>
-                        @elseif($jenis == "produk")
+                        @elseif($jenis == "product")
                             <p class="text-muted font-13">Product Information</p>
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Product ID</label>
@@ -195,9 +195,6 @@
                 Update Data
             </button>
             @endif
-            {{-- <a href="javascript:;" type="button" class="btn btn-success waves-effect waves-light" onclick="Cetak()">
-                Cetak file Excel
-            </a> --}}
             @if (array_search("PRMCP",$page))
             <button class="btn btn-success waves-effect waves-light" type="submit" onclick="exportXls()">
                 Cetak file Excel
@@ -205,8 +202,8 @@
             @endif
         </div>
     </form>
-@elseif($jenis=="produk")
-    <form class="form-horizontal" role="form" action="{{ route('updateManagePriceProduct',['id' => $product->id]) }}" enctype="multipart/form-data" method="POST">
+@elseif($jenis=="product")
+    <form class="form-horizontal" role="form" action="{{ route('updatebycustomer',['id' => $product->id]) }}" enctype="multipart/form-data" method="POST">
         @csrf
         <div class="row">
             <div class="col-12">

@@ -22,7 +22,7 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        $page = MenuMapping::getMap(session('user_id'),"CRCS");
+        $page = MenuMapping::getMap(session('user_id'),"MDCS");
         $jenis = "customer";
         $customers = Customer::select('id', 'apname', 'cid' ,'apphone', 'cicn' , 'ciphone')->get();
         return view('customer.index', compact('customers', 'jenis', 'page'));
@@ -104,7 +104,8 @@ class CustomerController extends Controller
     {
         $customer = Customer::where('id', $id)->first();
         $jenis = "edit";
-        return view('customer.form', compact('jenis', 'customer'));
+        $page = MenuMapping::getMap(session('user_id'),"MDCS");
+        return view('customer.form', compact('jenis', 'customer','page'));
     }
 
     /**
@@ -170,13 +171,20 @@ class CustomerController extends Controller
         }
     }
 
+    public function priceCustomer()
+    {
+        $customers = Customer::select('id', 'apname', 'cid' ,'apphone', 'cicn' , 'ciphone')->get();
+        return view('customer.price_index', compact('customers'));
+    }
+
     public function priceBV($id)
     {
+        $page = MenuMapping::getMap(session('user_id'),"PRMC");
         $customer = Customer::where('id', $id)->first();
         // $product = Product::join('tblperusahaan','tblproduct.supplier', 'tblperusahaan.id')->select('tblproduct.name','tblperusahaan.nama AS namasupplier', 'prod_id', 'category')->get();
         $product = PriceDet::join('tblproduct', 'tblpricedetail.prod_id', 'tblproduct.prod_id')->join('tblperusahaan','tblproduct.supplier', 'tblperusahaan.id')->where('customer_id', $id)->select('tblproduct.name','tblperusahaan.nama AS namasupplier', 'tblproduct.prod_id', 'category', 'tblpricedetail.price', 'tblpricedetail.pv', 'tblpricedetail.id AS pdid')->orderBy('tblproduct.name', 'asc')->get();
         $jenis = "customer";
-        return view('customer.pricebv', compact('jenis', 'customer', 'product'));
+        return view('customer.pricebv', compact('jenis', 'customer', 'product','page'));
     }
 
     public function updatePriceBV(Request $request, $id)
@@ -208,9 +216,9 @@ class CustomerController extends Controller
                             $pricedet->save();
                         }
                     }
-                    return redirect()->route('customer.index')->with('status','Price & BV berhasil diupdate!');
+                    return redirect()->route('priceCustomer')->with('status','Price & BV berhasil diupdate!');
                 }else{
-                    return redirect()->route('customer.index')->with('warning','Price & BV gagal terupdate!');
+                    return redirect()->route('priceCustomer')->with('warning','Price & BV gagal terupdate!');
                 }
             }catch(\Exception $e) {
                 return redirect()->back()->withErrors($e->getMessage());
@@ -275,25 +283,23 @@ class CustomerController extends Controller
         }
     }
 
-    public function priceByCustomer()
+    public function priceByProduct()
     {
-        $page = MenuMapping::getMap(session('user_id'),"CRCS");
         $products = Product::join('tblperusahaan','tblproduct.supplier', 'tblperusahaan.id')->select('tblproduct.id AS pid', 'tblproduct.name','tblperusahaan.nama AS namasupplier', 'prod_id', 'category')->get();
-        $jenis = "pricebycustomer";
+        $jenis = "pricebyproduct";
         return view('customer.index', compact('jenis', 'products', 'page'));
     }
 
-    public function managePriceByCustomer($id)
+    public function managePriceByProduct($id)
     {
         $product = Product::where('id', $id)->select('id', 'prod_id', 'name', 'category', 'supplier')->first();
-        // $customer = PriceDet::join('tblcustomer', 'tblpricedetail.customer_id', 'tblcustomer.id')->where('tblpricedetail.prod_id', $product->prod_id)->select('tblcustomer.apname','tblcustomer.cid', 'tblcustomer.cicn', 'tblpricedetail.price', 'tblpricedetail.pv', 'tblpricedetail.id AS pdid')->orderBy('tblcustomer.apname', 'asc')->get();
-        // $customer = Customer::join('tblpricedetail', 'tblcustomer.id', 'tblpricedetail.customer_id')->where('tblpricedetail.prod_id', $product->prod_id)->select('tblcustomer.apname','tblcustomer.cid', 'tblcustomer.cicn', 'tblpricedetail.price', 'tblpricedetail.pv', 'tblpricedetail.id AS pdid')->orderBy('tblcustomer.apname', 'asc')->get();
         $customer = Customer::select('apname', 'cid', 'cicn', 'id')->orderBy('apname', 'asc')->get();
         $jenis = "produk";
-        return view('customer.pricebv', compact('jenis', 'customer', 'product'));
+        $page = MenuMapping::getMap(session('user_id'),"PRMP");
+        return view('customer.pricebv', compact('jenis', 'customer', 'product','page'));
     }
 
-    public function updateManagePriceBV(Request $request, $id)
+    public function updateManagePriceProduct(Request $request, $id)
     {
         if($request->opsi==0){
             try{
@@ -322,9 +328,9 @@ class CustomerController extends Controller
                             $pricedet->save();
                         }
                     }
-                    return redirect()->route('pricebycustomer')->with('status','Price & BV berhasil diupdate!');
+                    return redirect()->route('priceByProduct')->with('status','Price & BV berhasil diupdate!');
                 }else{
-                    return redirect()->route('pricebycustomer')->with('warning','Price & BV gagal terupdate!');
+                    return redirect()->route('priceByProduct')->with('warning','Price & BV gagal terupdate!');
                 }
             }catch(\Exception $e) {
                 return redirect()->back()->withErrors($e->getMessage());
