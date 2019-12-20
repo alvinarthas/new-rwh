@@ -27,7 +27,7 @@ Tambah Data Gaji Pokok Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Periode Gaji</label>
                                 <div class="col-5">
-                                    <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" onchange="getBV()" required>
+                                    <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" onchange="getBV('bv')" required>
                                         <option value="#" selected disabled>Pilih Bulan</option>
                                         @for ($i = 1; $i <= 12; $i++)
                                             @if ($i == date('m'))
@@ -39,7 +39,7 @@ Tambah Data Gaji Pokok Pegawai
                                     </select>
                                 </div>
                                 <div class="col-5">
-                                    <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" onchange="getBV()" required>
+                                    <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" onchange="getBV('bv')" required>
                                         <option value="#" selected disabled>Pilih Tahun</option>
                                         @for ($i = 2018; $i <= date('Y'); $i++)
                                             @if ($i == date('Y'))
@@ -69,6 +69,17 @@ Tambah Data Gaji Pokok Pegawai
                                     <input type="number" class="form-control" parsley-trigger="change" required name="hari_kerja" id="hari_kerja">
                                 </div>
                             </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Divisi Bonus Pegawai</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="employee" id="employee" onchange="getBV('bonus',this.value)">
+                                        <option value="#" disabled selected>Pilih Pegawai</option>
+                                        @foreach ($employees as $employee)
+                                            <option value="{{$employee->id}}" data-image="{{asset('assets/images/employee/foto/'.$employee->scanfoto)}}">{{$employee->name}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -82,23 +93,13 @@ Tambah Data Gaji Pokok Pegawai
                 <h4 class="m-t-0 header-title">Bonus Divisi</h4>
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                     <thead>
-                        <th>No</th>
                         <th>Nama Pegawai</th>
                         <th>Role</th>
+                        <th>Nilai</th>
                         <th>Action</th>
                     </thead>
     
-                    <tbody>
-                        @php($i = 1)
-                        @foreach($employees as $emp)
-                        <tr>
-                            <td>{{$i}}</td>
-                            <td>{{$emp->name}}</td>
-                            <td>{{$emp->role_name}}</td>
-                            <td><input type="text" name="bonus[{{$emp->id}}]" value="0"></td>
-                        </tr>
-                        @php($i++)
-                        @endforeach
+                    <tbody id="tbondiv">
                     </tbody>
                 </table>
             </div>
@@ -126,9 +127,13 @@ Tambah Data Gaji Pokok Pegawai
             $('form').parsley();
             // Select2
             $(".select2").select2();
+            $("#employee").select2({
+                templateResult: formatState,
+                templateSelection: formatState
+            });
         });
 
-        function getBV() {
+        function getBV(param,emp=null) {
             bulan = $('#bulan').val();
             tahun = $('#tahun').val();
 
@@ -139,13 +144,41 @@ Tambah Data Gaji Pokok Pegawai
                 data:{
                     bulan: bulan,
                     tahun: tahun,
+                    employee: emp,
+                    jenis: param,
                 },
             }).done(function (data) {
-                console.log(data);
-                $('#bv').val(data);
+                if(param == 'bv'){
+                    $('#bv').val(data);
+                }else{
+                    html = '<tr id="tr'+data.id+'"><td>'+data.name+'</td><td>'+data.role_name+'</td><td><input type="text" name="bonus['+data.id+']" id="bonus'+data.id+'" value="0"></td><td><a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5" onclick="deletePegawai('+data.id+')">Delete Data Gaji</a></td></tr>';
+                    $('#tbondiv').append(html);
+                }
+                
             }).fail(function (msg) {
                 alert('Gagal menampilkan data, silahkan refresh halaman.');
             });
+        }
+
+        function deletePegawai(id){
+            $('#tr'+id).remove();
+        }
+
+        function formatState (opt) {
+            if (!opt.id) {
+                return opt.text.toUpperCase();
+            }
+
+            var optimage = $(opt.element).attr('data-image');
+            console.log(optimage)
+            if(!optimage){
+                return opt.text.toUpperCase();
+            } else {
+                var $opt = $(
+                '<span><img src="' + optimage + '" width="30px" /> ' + opt.text.toUpperCase() + '</span>'
+                );
+                return $opt;
+            }
         }
     </script>
 @endsection

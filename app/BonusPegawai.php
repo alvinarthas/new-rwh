@@ -8,6 +8,6 @@ class BonusPegawai extends Model
 {
     protected $table ='tbl_bonus_pegawai';
     protected $fillable = [
-        'tugas_internal', 'logistik','kendali_perusahaan','top3','eom','total_bonus','month','year','employee_id','salary_det_id'
+        'tugas_internal', 'logistik','kendali_perusahaan','top3','eom','total_bonus','month','year','employee_id','salary_det_id','bonus_divisi'
     ];
 }

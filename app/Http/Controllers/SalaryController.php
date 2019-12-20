@@ -154,10 +154,15 @@ class SalaryController extends Controller
 
     public function createPerhitunganGaji(Request $request){
         if($request->ajax()){
-            return Sales::getBV($request->bulan,$request->tahun);
+            if($request->jenis == 'bv'){
+                return Sales::getBV($request->bulan,$request->tahun);
+            }else{
+                return Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','Supervisor')->orWhere('r.role_name','LIKE','Staff%')->where('tblemployee.id',$request->employee)->select('tblemployee.id','tblemployee.name','r.role_name')->first();
+            }
+            
         }else{
             $bv = Sales::getBV(date('m'),date('Y'));
-            $employees = Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','Supervisor')->orWhere('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.name','r.role_name')->get();
+            $employees = Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','Supervisor')->orWhere('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.name','tblemployee.scanfoto')->get();
 
             return view('salary.perhitungan.form',compact('bv','employees'));
         }
@@ -300,7 +305,7 @@ class SalaryController extends Controller
 
                 // Total Bonus dan Persen
                 $total_persen_all = $persen_internal+$persen_logistik+$persen_kendali_perusahaan+$persen_top3+$tunjangan_persentase;
-                $total_bonus = $value_internal+$value_logistik+$value_kendali_perusahaan+$value_top3+$eom;
+                $total_bonus = $value_internal+$value_logistik+$value_kendali_perusahaan+$value_top3+$eom+$bonus_divisi;
 
                 // Take Home Pay
                 $take_home_pay = $peg->gaji_pokok+$peg->tunjangan_jabatan+$bonus_jabatan+$total_bonus;
@@ -319,7 +324,6 @@ class SalaryController extends Controller
                     'take_home_pay' => $take_home_pay,
                     'employee_id' => $peg->id,
                     'tunjangan_jabatan' => $peg->tunjangan_jabatan,
-                    'bonus_divisi' => $bonus_divisi,
                 ));
                 $salarydet->save();
 
@@ -334,6 +338,7 @@ class SalaryController extends Controller
                     'kendali_perusahaan' => $value_kendali_perusahaan,
                     'top3' => $value_top3,
                     'eom' => $eom,
+                    'bonus_divisi' => $bonus_divisi,
                     'total_bonus' => $total_bonus,
                 ));
                 $bonus_pegawai->save();

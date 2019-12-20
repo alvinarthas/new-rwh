@@ -80,11 +80,11 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                {{-- <img src="{{ asset('assets/images/flaticon/eom.png') }}" alt=""> --}}
+                                <img src="{{ asset('assets/images/flaticon/bonus.png') }}" alt="">
                             </div>
                             <div class="user-desc">
-                                {{-- <span class="name"><strong>Employee Of the Month</strong></span>
-                                <span class="desc">Rp {{number_format($bonpeg->eom,2,",",".")}}</span> --}}
+                                <span class="name"><strong>Bonus Divisi</strong></span>
+                                <span class="desc">Rp {{number_format($bonpeg->bonus_divisi,2,",",".")}}</span>
                             </div>
                         </div>
                     </li>
@@ -154,7 +154,7 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/discount.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/discount2.png') }}" alt="">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Total Presentase</strong></span>
