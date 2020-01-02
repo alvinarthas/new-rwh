@@ -15,6 +15,7 @@ use App\SalesDet;
 use App\MenuMapping;
 use App\DeliveryOrder;
 use App\DeliveryDetail;
+use App\Jurnal;
 
 class DeliveryController extends Controller
 {
@@ -106,7 +107,7 @@ class DeliveryController extends Controller
                     $dodet->save();
 
                     $desc = "DO.".$do->id." Prod_ID: ".$request->prod_id[$i]." dengan QTY: ".$request->qty[$i]." SO.".$request->sales_id;
-                    $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price();
+                    $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price;
 
                     $price = $pricedet * $request->qty[$i];
 
@@ -125,8 +126,11 @@ class DeliveryController extends Controller
 
     public function delete(Request $request){
         $do_id = $request->id;
+        $do = DeliveryOrder::where('id',$do_id)->first();
+        
         try {
-            $do = DeliveryOrder::where('id',$do_id)->delete();
+            $jurnal = Jurnal::where('id_jurnal',$do->jurnal_id)->delete();
+            $do->delete();
 
             return "true";
         } catch (\Exception $e) {
