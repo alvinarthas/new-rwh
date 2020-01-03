@@ -8,7 +8,7 @@ class DeliveryOrder extends Model
 {
     protected $table ='delivery_order';
     protected $fillable = [
-        'sales_id','date','petugas'
+        'sales_id','date','petugas','jurnal_id'
     ];
 
     public function sales(){

@@ -16,6 +16,7 @@ use App\SalesDet;
 use App\MenuMapping;
 use App\DeliveryOrder;
 use App\DeliveryDetail;
+use App\Jurnal;
 
 class DeliveryController extends Controller
 {
@@ -126,8 +127,11 @@ class DeliveryController extends Controller
 
     public function delete(Request $request){
         $do_id = $request->id;
+        $do = DeliveryOrder::where('id',$do_id)->first();
+        
         try {
-            $do = DeliveryOrder::where('id',$do_id)->delete();
+            $jurnal = Jurnal::where('id_jurnal',$do->jurnal_id)->delete();
+            $do->delete();
 
             return "true";
         } catch (\Exception $e) {

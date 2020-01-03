@@ -228,14 +228,9 @@ Route::middleware(['checkUser'])->group(function () {
     // Laporan
     Route::prefix('laporan')->group(function () {
         // Balance Sheet Neraca Saldo Awal
-        Route::get('neracaawal','LaporanController@neraca_awal')->name('neracaAwal');
-        // Balance Sheet (Laporan Neraca)
-        Route::get('laporannerace','LaporanController@laporan_neraca')->name('neracaLaporan');
-        Route::get('viewlapnerace','LaporanController@laporan_neraca_view')->name('neracaLaporanView');
+        Route::get('neraca','LaporanController@neraca')->name('neraca');
         // General Ledger
-        Route::get('generalledger','LaporanController@index_gl')->name('indexGL');
-        Route::get('viewgl','LaporanController@view_gl')->name('viewGL');
-        Route::get('viewgljurnal','LaporanController@view_glJurnal')->name('viewGlJurnal');
+        Route::get('generalledger','LaporanController@generalLedger')->name('generalLedger');
         // Perubahan Modal
         Route::get('perubahanmodal','LaporanController@perubahanModal')->name('perubahanModal');
         // Profit Loss

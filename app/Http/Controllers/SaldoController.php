@@ -159,16 +159,15 @@ class SaldoController extends Controller
         // Validation success
         }else{
             try{
-                // Pembuatan Jurnal
-                $id_jurnal = Jurnal::getJurnalID('SD');
+                // Save Deposit
                 $saldo = Saldo::where('id', $id)->first();
-                $jurnal = Jurnal::where('id_jurnal', $saldo['id_jurnal'])->first();
 
                 $saldo->customer_id = $request->customer_id;
                 $saldo->amount = $request->nominal;
                 $saldo->accNo = $request->search;
                 $saldo->status = 1;
                 $saldo->tanggal = $request->tanggal;
+
                 $namacust = Customer::where('id', $request->customer_id)->select('apname')->first();
                 $namarek = Coa::where('AccNo', $request->search)->select('AccName')->first();
 
@@ -180,43 +179,34 @@ class SaldoController extends Controller
                     $buktitf = $namacust['apname'].'.'.$request->tanggal.'.'.$namarek['AccName'].'.'.$request->buktitf->getClientOriginalExtension();
                     $request->buktitf->move(public_path('assets/images/saldo/topup/'),$buktitf);
                 }else{
-                    $buktitf = "";
+                    $buktitf = $saldo->buktitf;
                 }
 
                 $saldo->buktitf = $buktitf;
                 $saldo->keterangan = $request->keterangan;
-                $saldo->id_jurnal = $id_jurnal;
                 $saldo->creator = session('user_id');
 
-                $ket = 'Deposit dari '.$namacust['apname'].'('.$request->tanggal.')';
-
-                // debet Cash/Bank
-                $debet = new Jurnal(array(
-                    'id_jurnal'     => $id_jurnal,
-                    'AccNo'         => $request->search,
-                    'AccPos'        => "Debet",
-                    'Amount'        => $request->nominal,
-                    'company_id'    => 1,
-                    'date'          => $request->tanggal,
-                    'description'   => $ket,
-                    'creator'       => session('user_id')
-                ));
-                // credit Deposit dari Customer
-                $credit = new Jurnal(array(
-                    'id_jurnal'     => $id_jurnal,
-                    'AccNo'         => "2.1.2",
-                    'AccPos'        => "Credit",
-                    'Amount'        => $request->nominal,
-                    'company_id'    => 1,
-                    'date'          => $request->tanggal,
-                    'description'   => $ket,
-                    'creator'       => session('user_id')
-                ));
-
                 $saldo->save();
-                $jurnal->delete();
-                $debet->save();
-                $credit->save();
+
+                
+                $ket = 'Deposit dari '.$namacust['apname'].'('.$request->tanggal.')';
+                
+                // Update Jurnal Debet
+                $jurnal1 = Jurnal::where('id_jurnal',$saldo->id_jurnal)->where('AccPos','Debet')->first();
+                $jurnal1->AccNo = $request->search;
+                $jurnal1->amount = $request->nominal;
+                $jurnal1->date = $request->tanggal;
+                $jurnal1->description = $ket;
+                $jurnal1->creator = session('user_id');
+                $jurnal1->update();
+
+                // Update Jurnal Credit
+                $jurnal2 = Jurnal::where('id_jurnal',$saldo->id_jurnal)->where('AccNo','2.1.2')->first();
+                $jurnal2->amount = $request->nominal;
+                $jurnal2->date = $request->tanggal;
+                $jurnal2->description = $ket;
+                $jurnal2->creator = session('user_id');
+                $jurnal2->update();
 
                 return redirect()->route('saldo.index')->with('status','Data berhasil diupdate');
             }catch(\Exception $e) {
