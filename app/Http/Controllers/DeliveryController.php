@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Customer;
 use App\Product;
+use App\Jurnal;
 use App\PriceDet;
 use App\Sales;
 use App\SalesDet;
@@ -69,7 +70,7 @@ class DeliveryController extends Controller
 
         return response()->json($data);
     }
-    
+
     public function store(Request $request){
         // Validate
         $validator = Validator::make($request->all(), [
@@ -92,7 +93,7 @@ class DeliveryController extends Controller
                     'petugas' => session('user_id'),
                     'jurnal_id' => $id_jurnal,
                 ));
-    
+
                 $do->save();
 
                 for ($i=0; $i < $request->count ; $i++) {
@@ -106,7 +107,7 @@ class DeliveryController extends Controller
                     $dodet->save();
 
                     $desc = "DO.".$do->id." Prod_ID: ".$request->prod_id[$i]." dengan QTY: ".$request->qty[$i]." SO.".$request->sales_id;
-                    $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price();
+                    $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price;
 
                     $price = $pricedet * $request->qty[$i];
 

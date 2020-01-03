@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
+use App\Jurnal;
 use App\ReturPembelian;
 use App\ReturPembelianDet;
 use App\ReturPenjualan;
@@ -28,21 +29,23 @@ class ReturController extends Controller
     public function index()
     {
         $purchase = Purchase::join('tblpotrxdet', 'tblpotrx.id', '=', 'tblpotrxdet.trx_id')->orderBy('tblpotrx.id', 'desc')->get();
-        $retur = ReturPembelianDet::all();
+        // echo $purchase;
+        // die();
+        // $retur = ReturPembelianDet::join('tblreturpb','tblreturpbdet.trx_id', 'tblreturpb.trx_id')->join('tblperusahaan','tblreturpb.supplier', 'tblperusahaan.id')->join('tblproduct', 'tblreturpbdet.prod_id', 'tblproduct.id')->select('tblreturpb.trx_id', 'tblperusahaan.nama', 'tblproduct.name', 'tblproduct.prod_id');
         $jenis = "report";
         $jenisretur = "pembelian";
         $page = MenuMapping::getMap(session('user_id'),"REPB");
-        return view('retur.index', compact('purchase', 'retur', 'jenis', 'jenisretur','page'));
+        return view('retur.index', compact('purchase', 'jenis', 'jenisretur','page'));
     }
 
     public function indexpj()
     {
         $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', '=', 'tblproducttrxdet.trx_id')->orderBy('tblproducttrx.id', 'desc')->get();
-        $retur = ReturPenjualanDet::all();
+        // $retur = ReturPenjualanDet::all();
         $jenis = "report";
         $jenisretur = "penjualan";
         $page = MenuMapping::getMap(session('user_id'),"REPJ");
-        return view('retur.index', compact('sales', 'retur', 'jenis', 'jenisretur','page'));
+        return view('retur.index', compact('sales', 'jenis', 'jenisretur','page'));
     }
 
     /**
@@ -136,10 +139,13 @@ class ReturController extends Controller
         // Validation success
         }else{
             try{
+                $id_jurnal = Jurnal::getJurnalID('RB');
+
                 $retur = new ReturPembelian;
                 $retur->trx_id = $id;
                 $retur->tgl = $tgl;
                 $retur->supplier = $request->supplier;
+                $retur->id_jurnal = $request->$id_jurnal;
                 $retur->creator = session('user_id');
                 $ctr = count($request->qtyretur);
 
