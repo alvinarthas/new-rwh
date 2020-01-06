@@ -178,6 +178,7 @@ class BonusController extends Controller
                 if($selisih!=0){
                     if($selisih < 0){
                         $pos = "Debet";
+                        $selisih = abs($selisih);
                     }else{
                         $pos = "Credit";
                     }
