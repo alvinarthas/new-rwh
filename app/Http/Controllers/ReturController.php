@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 use App\Jurnal;
 use App\ReturPembelian;
@@ -174,6 +175,21 @@ class ReturController extends Controller
                 }
 
                 $retur->save();
+
+                $purchase = Purchase::where('id',$id)->first();
+                $total_modal = $purchase->total_harga_modal;
+                $total_tertahan = PurchaseDetail::where('trx_id',$id)->sum(DB::Raw('(price_dist - price)*'.$qty));
+                $total_distributor = $purchase->total_harga_dist;
+
+                $jurnal_desc = "retur dari PO.".$id;
+
+                //insert debet hutang Dagang
+                Jurnal::addJurnal($id_jurnal,$total_distributor,$purchase->tgl,$jurnal_desc,'2.1.1','Debet',session('$user_id'));
+                //insert credit Persediaan Barang Indent ( harga modal x qty )
+                Jurnal::addJurnal($id_jurnal,$total_modal,$purchase->tgl,$jurnal_desc,'1.1.4.1.1','Credit',session('user_id'));
+                //insert credit Estimasi Bonus
+                Jurnal::addJurnal($id_jurnal,$total_tertahan,$purchase->tgl,$jurnal_desc,'1.1.3.4','Credit',session('user_id'));
+
                 return redirect()->route('retur.index')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $a){
                 return redirect()->back()->withErrors($a->errorInfo);
@@ -199,12 +215,15 @@ class ReturController extends Controller
         // Validation success
         }else{
             try{
+                $id_jurnal = Jurnal::getJurnalID('RJ');
+
                 $retur = new ReturPenjualan;
                 $retur->trx_id = $id;
                 $retur->tgl = $tgl;
                 $retur->customer = $request->customer;
                 $retur->creator = session('user_id');
                 $ctr = count($request->qtyretur);
+                $modal = 0;
                 for($i=0;$i<$ctr;$i++){
                     $qty = $request->qtyretur[$i];
                     $reason = $request->reason[$i];
@@ -227,7 +246,30 @@ class ReturController extends Controller
                             // return response()->json($e);
                         }
                     }
+
+                    foreach (SalesDet::where('trx_id',$id)->get() as $key) {
+                        $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->avg('price');
+                        $modal += ($qty * $avcharga);
+                    }
                 }
+
+                $sales = Sales::where('id',$id)->first();
+
+                $jurnal_desc = "Retur dari SO.".$sales->id;
+
+                $total_transaksi = $sales->ttl_harga + $sales->ongkir;
+
+                // Jurnal 1
+                //insert debet pendapatan retail (SALES)
+                Jurnal::addJurnal($id_jurnal,$total_transaksi,$sales->trx_date,$jurnal_desc,'4.1.2','Debet',session('user_id'));
+                //insert credit Piutang Konsumen Masukkan harga total - diskon
+                Jurnal::addJurnal($id_jurnal,$total_transaksi,$sales->trx_date,$jurnal_desc,'1.1.3.1','Credit',session('user_id'));
+
+                // Jurnal 2
+                //insert debet Persediaan Barang milik customer
+                Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'1.1.4.1.2','Debet',session('user_id'));
+                //insert credit COGS
+                Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'5.1','Credit',session('user_id'));
 
                 $retur->save();
                 return redirect()->route('retur.indexpj')->with('status', 'Data berhasil disimpan');
