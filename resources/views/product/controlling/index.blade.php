@@ -1,6 +1,7 @@
 @extends('layout.main')
 @php
     use App\Perusahaan;
+    use App\Product;
 @endphp
 
 @section('css')
@@ -27,25 +28,41 @@
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                     <thead>
                         <th style="width:5%">No</th>
-                        <th>Supplier</th>
+                        {{-- <th>Supplier</th> --}}
                         <th>Product ID</th>
                         <th>Product Name</th>
-                        <th>Detail Stock</th>
+                        <th>Indent</th>
+                        <th>di Gudang</th>
+                        <th>milik Customer</th>
+                        <th>Nett</th>
+                        {{-- <th>Detail Stock</th> --}}
                     </thead>
 
                     <tbody>
-                        @php($i = 1)
+                        @php
+                            $i = 1
+                        @endphp
                         @foreach($products as $prd)
                             <tr>
                                 <td>{{$i}}</td>
-                                <td>{{$prd->supplier()->first()->nama}}</td>
+                                {{-- <td>{{$prd->supplier()->first()->nama}}</td> --}}
                                 <td>{{$prd->prod_id}}</td>
                                 <td>{{$prd->name}}</td>
-                                <td>
+                                    @php
+                                        $i++;
+                                        $indent = Product::getIndent($prd->prod_id);
+                                        $gudang = Product::getGudang($prd->prod_id);
+                                        $brgcust = Product::getBrgCust($prd->prod_id);
+                                        $nett = $indent + $gudang - $brgcust;
+                                    @endphp
+                                <td><a href="javascript:;" onclick="getIndent('{{ $prd->id }}')" disabled="disabled"><strong>{{ $indent }}</strong></a></td>
+                                <td><a href="javascript:;" onclick="getGudang('{{ $prd->id }}')" disabled="disabled"><strong>{{ $gudang }}</strong></a></td>
+                                <td><a href="javascript:;" onclick="getBrgCust('{{ $prd->id }}')" disabled="disabled"><strong>{{ $brgcust }}</strong></a></td>
+                                <td><strong>{{ $nett }}</strong></td>
+                                {{-- <td>
                                     <a href="javascript:;" onclick="getDetail('{{$prd->prod_id}}')" class="btn btn-primary btn-rounded waves-effect waves-light w-md m-b-5" disabled="disabled">Show Detail</a>
-                                </td>
+                                </td> --}}
                             </tr>
-                        @php($i++)
                         @endforeach
                     </tbody>
                 </table>
@@ -54,11 +71,11 @@
     </div> <!-- end row -->
 
     <!--  Modal content for the above example -->
-    <div class="modal fade bs-example-modal-lg" id="modalLarge" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal fade bs-example-modal-lg" id="modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
         <div class="modal-dialog modal-lg" id="do-modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="myLargeModalLabel">Detail Stock Product</h4>
+                    <h4 class="modal-title" id="myLargeModalLabel">Mutasi Product</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
                 </div>
                 <div class="modal-body" id="modalView">
@@ -101,11 +118,61 @@
             },
         }).done(function (data) {
             $('#modalView').html(data);
-            $('#modalLarge').modal("show");
+            $('#modal').modal("show");
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });
     }
 
+    function getIndent(id){
+        $.ajax({
+            url : '/stockcontrolling/'+id+'/mutasi/brgindent',
+            type : "get",
+            dataType: 'json',
+            data:{
+                id:id,
+            },
+        }).done(function (data) {
+            $('h4.modal-title').text('Mutasi Barang Indent');
+            $('#modalView').html(data);
+            $('#modal').modal("show");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+
+    function getGudang(id){
+        $.ajax({
+            url : '/stockcontrolling/'+id+'/mutasi/brggudang',
+            type : "get",
+            dataType: 'json',
+            data:{
+                id:id,
+            },
+        }).done(function (data) {
+            $('h4.modal-title').text('Mutasi Barang di Gudang');
+            $('#modalView').html(data);
+            $('#modal').modal("show");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+
+    function getBrgCust(id){
+        $.ajax({
+            url : '/stockcontrolling/'+id+'/mutasi/brgcustomer',
+            type : "get",
+            dataType: 'json',
+            data:{
+                id:id,
+            },
+        }).done(function (data) {
+            $('h4.modal-title').text('Mutasi Barang milik Customer');
+            $('#modalView').html(data);
+            $('#modal').modal("show");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
 </script>
 @endsection

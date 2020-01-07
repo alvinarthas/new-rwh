@@ -25,25 +25,30 @@ class Product extends Model
     }
 
     public static function getIndent($prod_id){
-        $qty_purchase = PurchaseDetail::where('prod_id',$prod_id)->sum('qty');
+        $qty_purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('prod_id',$prod_id)->where('jurnal_id', '!=', '0')->sum('qty');
         $qty_receive = ReceiveDet::where('prod_id',$prod_id)->sum('qty');
 
-        return $qty_purchase-$qty_receive;
+        $indent = $qty_purchase-$qty_receive;
+
+        return $indent;
     }
 
     public static function getGudang($prod_id){
         $qty_receive = ReceiveDet::where('prod_id',$prod_id)->sum('qty');
-        $qty_delivery = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
-        $stock_awal = Product::where('prod_id',$prod_id)->first()->stock;
-        $gudang = $stock_awal+$qty_receive-$qty_delivery;
+        $qty_delivered = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
+        // STOCK AWAL, kata bos nggak usah
+        // $stock_awal = Product::where('prod_id',$prod_id)->first()->stock;
+        $gudang = $qty_receive-$qty_delivered;
 
         return $gudang;
     }
 
     public static function getBrgCust($prod_id){
-        $sales = SalesDet::where('prod_id',$prod_id)->sum('qty');
+        $sales = SalesDet::join('tblproducttrx', 'tblproducttrxdet.trx_id', 'tblproducttrx.id')->where('prod_id',$prod_id)->where('jurnal_id','!=','0')->sum('qty');
         $delivery = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
 
-        return $sales-$delivery;
+        $brgcust = $sales-$delivery;
+
+        return $brgcust;
     }
 }

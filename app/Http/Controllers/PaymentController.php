@@ -201,6 +201,11 @@ class PaymentController extends Controller
             ));
 
             try {
+                // Jurnal Debet Hutang Dagang
+                Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'2.1.1','Debet');
+
+                // Jurnal Credit Cash/Bank / Deposit Pembelian
+                Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Credit');
                 // Payment
                     $payment->save();
                 if($rest == 0){
@@ -209,11 +214,6 @@ class PaymentController extends Controller
 
                     $purchase->save();
                 }
-                // Jurnal Debet Hutang Dagang
-                Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'2.1.1','Debet');
-
-                // Jurnal Credit Cash/Bank / Deposit Pembelian
-                Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Credit');
 
                 Log::setLog('PUPPC','Create Purchase Payment PO.'.$request->trx_id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
@@ -236,7 +236,7 @@ class PaymentController extends Controller
             $payment->delete();
             $jurnal->delete();
             Log::setLog('PUPPD','Delete Purchase Payment PO.'.$request->id.' Jurnal ID: '.$id_jurnal);
-            
+
             return "true";
         } catch (\Exception $e) {
             return response()->json($e);
