@@ -84,6 +84,10 @@ class PaymentController extends Controller
             ));
 
             try {
+                // Jurnal Debet kas/bank
+                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Debet');
+                // Jurnal Credit piutang konsumen
+                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'1.1.3.1','Credit');
 
                 // Payment
                     $payment->save();
@@ -110,11 +114,6 @@ class PaymentController extends Controller
                         $saldo->save();
                     }
 
-                // Jurnal Debet kas/bank
-                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Debet');
-                // Jurnal Credit piutang konsumen
-                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'1.1.3.1','Credit');
-
                     Log::setLog('PSSPC','Create Sales Payment SO.'.$sales->id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
@@ -125,7 +124,6 @@ class PaymentController extends Controller
 
     public function salesPayDestroy(Request $request){
         $payment = SalesPayment::where('id',$request->id)->first();
-        $jurnal = Jurnal::where('id_jurnal',$payment->jurnal_id);
         $sales = Sales::where('id',$payment->trx_id)->first();
         $saldo = Saldo::where('id_jurnal',$payment->jurnal_id);
         $sales->status = 0;
@@ -135,7 +133,6 @@ class PaymentController extends Controller
 
         try {
             $payment->delete();
-            $jurnal->delete();
             $saldo->delete();
             Log::setLog('PSSPD','Delete Sales Payment SO.'.$request->id.' Jurnal ID: '.$id_jurnal);
             return "true";
@@ -187,7 +184,7 @@ class PaymentController extends Controller
             // Jurnal
             $jurnal_desc = "PO.".$request->trx_id;
             $id_jurnal = Jurnal::getJurnalID('PP');
-
+            
             $payment = new PurchasePayment(array(
                 'trx_id' => $request->trx_id,
                 'payment_date' => $request->payment_date,
@@ -201,19 +198,22 @@ class PaymentController extends Controller
             ));
 
             try {
+                // Jurnal Debet Hutang Dagang
+                Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'2.1.1','Debet');
+
+                // Jurnal Credit Cash/Bank / Deposit Pembelian
+                Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Credit');
+                
                 // Payment
-                    $payment->save();
+                $payment->save();
+
                 if($rest == 0){
                     $purchase = Purchase::where('id',$request->trx_id)->first();
                     $purchase->status = 1;
 
                     $purchase->save();
                 }
-                // Jurnal Debet Hutang Dagang
-                Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'2.1.1','Debet');
-
-                // Jurnal Credit Cash/Bank / Deposit Pembelian
-                Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Credit');
+                
 
                 Log::setLog('PUPPC','Create Purchase Payment PO.'.$request->trx_id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
@@ -225,7 +225,6 @@ class PaymentController extends Controller
 
     public function purchasePayDestroy(Request $request){
         $payment = PurchasePayment::where('id',$request->id)->first();
-        $jurnal = Jurnal::where('id_jurnal',$payment->jurnal_id)->first();
         $purchase = Purchase::where('id',$payment->trx_id)->first();
         $purchase->status = 0;
         $purchase->save();
@@ -234,7 +233,6 @@ class PaymentController extends Controller
 
         try {
             $payment->delete();
-            $jurnal->delete();
             Log::setLog('PUPPD','Delete Purchase Payment PO.'.$request->id.' Jurnal ID: '.$id_jurnal);
             
             return "true";

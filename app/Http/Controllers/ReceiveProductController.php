@@ -74,17 +74,19 @@ class ReceiveProductController extends Controller
                 'id_jurnal' => $id_jurnal,
             ));
 
-            $desc = "Receive Barang Product_id: ".$request->product." SO.".$request->trx_id;
+            $desc = "Receive Barang Product_id: ".$request->product." PO.".$request->trx_id;
             $pricedet = PurchaseDetail::where('trx_id',$request->trx_id)->where('prod_id',$request->product)->first()->price;
             $price = $pricedet * $request->qty;
 
             try{
-                $receive->save();
                 // JURNAL
                 //insert debet Persediaan Barang di Gudang
                 Jurnal::addJurnal($id_jurnal,$price,$request->receive_date,$desc,'1.1.4.1.2','Debet');
                 //insert credit Persediaan Barang Indent
                 Jurnal::addJurnal($id_jurnal,$price,$request->receive_date,$desc,'1.1.4.1.1','Credit');
+                
+                $receive->save();
+                
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
@@ -94,11 +96,9 @@ class ReceiveProductController extends Controller
 
     public function delete(Request $request){
         $receive = ReceiveDet::where('id',$request->id)->first();
-        $jurnal = Jurnal::where('id_jurnal',$receive->id_jurnal)->first();
 
         try {
             $receive->delete();
-            $jurnal->delete();
             return redirect()->back()->with('status', 'Data berhasil dihapus');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors($e);

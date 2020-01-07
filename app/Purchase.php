@@ -69,7 +69,7 @@ class Purchase extends Model
     }
 
     public static function setJurnal($id,$user_id){
-        $id_jurnal = Jurnal::getJurnalID('PO');
+        $id_jurnal = 'PO'.$id;
 
         $purchase = Purchase::where('id',$id)->first();
 
@@ -166,7 +166,7 @@ class Purchase extends Model
                     $jurnal3->date = $purchase->tgl;
                     $jurnal3->update();
             }else{
-                $id_jurnal = Jurnal::getJurnalID('PO');
+                $id_jurnal = 'PO'.$id;
                 $purchase->jurnal_id = $id_jurnal;
                 $purchase->approve = 1;
                 $purchase->approve_by = $user_id;

@@ -135,7 +135,7 @@ class Sales extends Model
     }
 
     public static function setJurnal($id,$user_id){
-        $id_jurnal = Jurnal::getJurnalID('SO');
+        $id_jurnal = 'SO.'.$id;
 
         $sales = Sales::where('id',$id)->first();
         $sales->approve = 1;
@@ -230,7 +230,7 @@ class Sales extends Model
             $jurnal_d->date = $sales->trx_date;
             $jurnal_d->update();
         }else{
-            $id_jurnal = Jurnal::getJurnalID('SO');
+            $id_jurnal = 'SO.'.$id;
             $sales->jurnal_id = $id_jurnal;
             $sales->approve = 1;
             $sales->approve_by = $user_id;

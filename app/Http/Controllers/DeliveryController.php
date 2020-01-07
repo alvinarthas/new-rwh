@@ -86,14 +86,22 @@ class DeliveryController extends Controller
         // Validation success
         }else{
             $id_jurnal = Jurnal::getJurnalID('DO');
+
+            $do = new DeliveryOrder(array(
+                'sales_id' => $request->sales_id,
+                'date' => $request->do_date,
+                'petugas' => session('user_id'),
+                'jurnal_id' => $id_jurnal,
+            ));
+
             try {
-                $do = new DeliveryOrder(array(
-                    'sales_id' => $request->sales_id,
-                    'date' => $request->do_date,
-                    'petugas' => session('user_id'),
-                    'jurnal_id' => $id_jurnal,
-                ));
-    
+
+                // JURNAL
+                    //insert debet Persediaan Barang milik Customer
+                    Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'2.1.3','Debet');
+                    //insert credit Persediaan Barang digudang
+                    Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'1.1.4.1.2','Credit');
+                    
                 $do->save();
 
                 for ($i=0; $i < $request->count ; $i++) {
@@ -111,11 +119,6 @@ class DeliveryController extends Controller
 
                     $price = $pricedet * $request->qty[$i];
 
-                    // JURNAL
-                    //insert debet Persediaan Barang milik Customer
-                    Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'2.1.3','Debet');
-                    //insert credit Persediaan Barang digudang
-                    Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'1.1.4.1.2','Credit');
                 }
                 return redirect()->back()->with('status', 'Data DO berhasil dibuat');
             } catch (\Exception $e) {
@@ -129,7 +132,6 @@ class DeliveryController extends Controller
         $do = DeliveryOrder::where('id',$do_id)->first();
         
         try {
-            $jurnal = Jurnal::where('id_jurnal',$do->jurnal_id)->delete();
             $do->delete();
 
             return "true";

@@ -26,7 +26,21 @@ class LaporanController extends Controller
 
     // PROFIT LOSS
     public function profitLoss(Request $request){
-        return view('laporan.profit_loss.index');
+        if($request->ajax()){
+            $start = $request->start;
+            $end = $request->end;
+
+            $nett_sales = Coa::nettSales($start,$end);
+            $cogs = Coa::cogs($start,$end);
+            $gross_profit = $nett_sales - $cogs;
+            $biayaa = Coa::biaya($start,$end);
+            $laba_rugi = Coa::laba_rugi($start,$end);
+            $laba_rugi_bonus = Coa::laba_rugi_bonus($start,$end);
+            $laba_bersih_non = Coa::laba_bersih_non($start,$end);
+
+        }else{
+            return view('laporan.profit_loss.index');
+        }
     }
 
     // General Ledger
