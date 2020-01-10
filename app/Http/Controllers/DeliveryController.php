@@ -16,7 +16,6 @@ use App\SalesDet;
 use App\MenuMapping;
 use App\DeliveryOrder;
 use App\DeliveryDetail;
-use App\Jurnal;
 
 class DeliveryController extends Controller
 {
@@ -95,17 +94,7 @@ class DeliveryController extends Controller
                     'jurnal_id' => $id_jurnal,
                 ));
 
-                $do->save();
-
                 for ($i=0; $i < $request->count ; $i++) {
-                    $dodet = new DeliveryDetail(array(
-                       'do_id' => $do->id,
-                       'sales_id' => $request->sales_id,
-                       'product_id' => $request->prod_id[$i],
-                       'qty' => $request->qty[$i]
-                    ));
-
-                    $dodet->save();
 
                     $desc = "DO.".$do->id." Prod_ID: ".$request->prod_id[$i]." dengan QTY: ".$request->qty[$i]." SO.".$request->sales_id;
                     $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price;
@@ -117,7 +106,19 @@ class DeliveryController extends Controller
                     Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'2.1.3','Debet');
                     //insert credit Persediaan Barang digudang
                     Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'1.1.4.1.2','Credit');
+
+                    $dodet = new DeliveryDetail(array(
+                       'do_id' => $do->id,
+                       'sales_id' => $request->sales_id,
+                       'product_id' => $request->prod_id[$i],
+                       'qty' => $request->qty[$i]
+                    ));
+
+                    $dodet->save();
                 }
+
+                $do->save();
+
                 return redirect()->back()->with('status', 'Data DO berhasil dibuat');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->errorInfo);
@@ -128,7 +129,7 @@ class DeliveryController extends Controller
     public function delete(Request $request){
         $do_id = $request->id;
         $do = DeliveryOrder::where('id',$do_id)->first();
-        
+
         try {
             $jurnal = Jurnal::where('id_jurnal',$do->jurnal_id)->delete();
             $do->delete();
@@ -141,23 +142,39 @@ class DeliveryController extends Controller
 
     public function print(Request $request){
         $trx_id = $request->trx_id;
-        $transaksi = SalesDet::where('id',$trx_id)->first();
+        $transaksi = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('do_id',$trx_id)->first();
+        $do_id = 'DO-'.$transaksi->do_id;
+        $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', 'tblproducttrxdet.trx_id')->join('tblcustomer', 'tblproducttrx.customer_id', 'tblcustomer.id')->where('tblproducttrx.id', $transaksi->sales_id)->select('apname','unit')->first();
+        $product = Product::where('prod_id', $transaksi->product_id)->select('name')->first();
+        // echo "tes print";
+        // $data = array();
+        $data = array(
+            'trx_id' => $do_id,
+            'trx_date' => $transaksi->date,
+            'customer_name' => $sales->apname,
+            'product_name' => $product->name,
+            'qty' => $transaksi->qty,
+            'unit' => $sales->unit,
+        );
+        // array_push($data, $result);
 
-        $file =  'DO-'.$trx_id.'.txt';  # nama file temporary yang akan dicetak
+        return response()->json($data);
+
+        // $file =  'DO-'.$trx_id.'.txt';  # nama file temporary yang akan dicetak
         // $handle = fopen($file, 'w');
-        $Data = "=========================\r\n";
-        $Data .= "|       RWH HERBAL    |\r\n";
-        $Data .= "|    DELIVERY ORDER   |\r\n";
-        $Data .= "========================\r\n";
-        $Data .= "TRXID : ".$transaksi->trx->trx_id."\r\n";
-        $Data .= "DATE : ".$transaksi->trx->trx_date."\r\n";
-        $Data .= "MARKETING : ".strtoupper($transaksi->trx->customer->apname)."\r\n";
-        $Data .= "==========================\r\n";
-        $Data .= $transaksi->product->name."\r\n";
-        $Data .= "Qty : ".$transaksi->qty." ".$transaksi->unit."\r\n";
-        $Data .= "\r\n";
-        $Data .= "Approved By\r\nInventory Officer\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
-        Storage::put($file, $Data);
+        // $Data = "=========================\r\n";
+        // $Data .= "|       RWH HERBAL    |\r\n";
+        // $Data .= "|    DELIVERY ORDER   |\r\n";
+        // $Data .= "========================\r\n";
+        // $Data .= "TRXID : ".$transaksi->trx->trx_id."\r\n";
+        // $Data .= "DATE : ".$transaksi->trx->trx_date."\r\n";
+        // $Data .= "MARKETING : ".strtoupper($transaksi->trx->customer->apname)."\r\n";
+        // $Data .= "==========================\r\n";
+        // $Data .= $transaksi->product->name."\r\n";
+        // $Data .= "Qty : ".$transaksi->qty." ".$transaksi->unit."\r\n";
+        // $Data .= "\r\n";
+        // $Data .= "Approved By\r\nInventory Officer\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
+        // Storage::put($file, $Data);
         // file_put_contents($file, $Data);
         // fwrite($handle, $Data);
         // fclose($handle);

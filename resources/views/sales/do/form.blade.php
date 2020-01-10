@@ -100,6 +100,7 @@ Form Sales Order
                                                 @if (array_search("PSDOD",$page))
                                                     <a href="javascript:;" onclick="deleteDO({{ $do->id}})" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5">Delete DO</a>
                                                 @endif
+                                                <a href="javascript:;" onclick="printdo({{$do->id}})" class="btn btn-success btn-rounded waves-effect w-xs waves-success m-b-5">Print DO</a>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -108,7 +109,7 @@ Form Sales Order
                         </div>
                     </div>
                 </div>
-                
+
             </div>
 
             <!--  Modal content for the above example -->
@@ -273,6 +274,23 @@ Form Sales Order
         });
     }
 
+    function printdo(id){
+        console.log("print");
+        $.ajax({
+            url : "{{route('printDo')}}",
+            type : "get",
+            dataType : 'json',
+            data:{
+                trx_id:id,
+            },
+        }).done(function (data) {
+            console.log(data);
+            window.location.replace("http://rwhserver:8060/new-rwh/do/"+data.trx_id+"/"+data.trx_date+"/"+data.customer_name+"/"+data.product_name+"/"+data.qty+"/"+data.unit+"/print");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.'+msg);
+        });
+    }
+
     function deleteDO(id){
         var token = $("meta[name='csrf-token']").attr("content");
 
@@ -308,7 +326,7 @@ Form Sales Order
                     'error'
                 )
             });
-            
+
         }, function (dismiss) {
             // dismiss can be 'cancel', 'overlay',
             // 'close', and 'timer'
