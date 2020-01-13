@@ -232,7 +232,7 @@ class SaldoController extends Controller
                 unlink(public_path('assets/images/saldo/topup/').$saldo->buktitf);
             }
             Jurnal::where('id_jurnal', $saldo['id_jurnal'])->delete();
-            $saldo->delete();
+            // $saldo->delete();
             return redirect()->back()->with('status','Data berhasil dihapus');
         }catch(\Exception $e){
             return redirect()->back()->withErrors($e->getMessage());

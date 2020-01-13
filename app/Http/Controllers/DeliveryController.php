@@ -16,7 +16,6 @@ use App\SalesDet;
 use App\MenuMapping;
 use App\DeliveryOrder;
 use App\DeliveryDetail;
-use App\Jurnal;
 
 class DeliveryController extends Controller
 {
@@ -96,7 +95,13 @@ class DeliveryController extends Controller
             ));
 
             try {
+                for ($i=0; $i < $request->count ; $i++) {
+                    $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price;
 
+                    $price = $pricedet * $request->qty[$i];
+                }
+
+                $desc = "Delivery Order SO.".$request->sales_id;
                 // JURNAL
                     //insert debet Persediaan Barang milik Customer
                     Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'2.1.3','Debet');
@@ -104,6 +109,12 @@ class DeliveryController extends Controller
                     Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'1.1.4.1.2','Credit');
                     
                 $do->save();
+
+                $desc = "Delivery Order ID=".$do->id." SO.".$request->sales_id;
+                foreach(Jurnal::where('id_jurnal',$id_jurnal)->get() as $key){
+                    $key->description = $desc;
+                    $key->save();
+                }
 
                 for ($i=0; $i < $request->count ; $i++) {
                     $dodet = new DeliveryDetail(array(
@@ -114,13 +125,8 @@ class DeliveryController extends Controller
                     ));
 
                     $dodet->save();
-
-                    $desc = "DO.".$do->id." Prod_ID: ".$request->prod_id[$i]." dengan QTY: ".$request->qty[$i]." SO.".$request->sales_id;
-                    $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price;
-
-                    $price = $pricedet * $request->qty[$i];
-
                 }
+
                 return redirect()->back()->with('status', 'Data DO berhasil dibuat');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->errorInfo);
@@ -130,10 +136,10 @@ class DeliveryController extends Controller
 
     public function delete(Request $request){
         $do_id = $request->id;
-        $do = DeliveryOrder::where('id',$do_id)->first();
+        $do = DeliveryOrder::where('id',$do_id)->select('jurnal_id')->first();
         
         try {
-            $do->delete();
+            $jurnal = Jurnal::where('id_jurnal',$do->jurnal_id)->delete();
 
             return "true";
         } catch (\Exception $e) {

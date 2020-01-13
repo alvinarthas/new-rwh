@@ -150,7 +150,7 @@ class DepositController extends Controller
     {
         $deposit = Deposit::where('id',$id)->first();
         try{
-            $deposit->delete();
+            $jurnal = Jurnal::where('id_jurnal',$deposit->jurnal_id)->delete();
             return "true";
         // fail
         }catch (\Exception $e) {

@@ -15,28 +15,59 @@ use App\Perusahaan;
 class LaporanController extends Controller
 {
     // BALANCE SHEET
-    public function neraca(){
-        return view('laporan.neraca.index');
+    public function neraca(Request $request){
+        if($request->ajax()){
+            $date = $request->date;
+            $start = '2019-10-01';
+
+            $assets = Coa::neraca($date,1);
+            $hutangs = Coa::neraca($date,2);
+            $modal = Coa::modalAkhir($start,$date);
+
+            return response()->json(view('laporan.neraca.view',compact('date','assets','hutangs','modal'))->render());
+        }else{
+            return view('laporan.neraca.index');
+        }
+        
     }
 
     // PERUBAHAN MODAL
     public function perubahanModal(Request $request){
-        return view('laporan.perubahan_modal.index');
+        if($request->ajax()){
+            $start = $request->start_date;
+            $end = $request->end_date;
+
+            $modal_awal = Coa::modalAwal($start,$end);
+            $set_modal = Coa::setoranModal($start,$end);
+            $prive = Coa::pengeluaranPribadi($start,$end);
+            $nett_profit = Coa::nettProfit($start,$end);
+            $perubahan_modal = $set_modal-$prive+$nett_profit;
+            $modal_akhir = $modal_awal+$perubahan_modal;
+
+            return response()->json(view('laporan.perubahan_modal.view',compact('start','end','modal_awal','set_modal','prive','nett_profit','modal_akhir','laba_operasional','perubahan_modal'))->render());
+        }else{
+            return view('laporan.perubahan_modal.index');
+        }
+        
     }
 
     // PROFIT LOSS
     public function profitLoss(Request $request){
         if($request->ajax()){
-            $start = $request->start;
-            $end = $request->end;
+            $start = $request->start_date;
+            $end = $request->end_date;
 
             $nett_sales = Coa::nettSales($start,$end);
             $cogs = Coa::cogs($start,$end);
             $gross_profit = $nett_sales - $cogs;
             $biayaa = Coa::biaya($start,$end);
-            $laba_rugi = Coa::laba_rugi($start,$end);
-            $laba_rugi_bonus = Coa::laba_rugi_bonus($start,$end);
+            $laba_operasional = $gross_profit - $biayaa['amount'];
             $laba_bersih_non = Coa::laba_bersih_non($start,$end);
+            $laba_rugi = Coa::laba_rugi($start,$end);
+
+            $nett_profit = $laba_operasional+$laba_bersih_non['amount']+$laba_rugi[0]['amount']+$laba_rugi[1]['amount'];
+
+            return response()->json(view('laporan.profit_loss.view',compact('start','end','nett_sales','cogs','gross_profit','biayaa','laba_bersih_non','laba_operasional','laba_rugi','nett_profit'))->render());
 
         }else{
             return view('laporan.profit_loss.index');
@@ -55,6 +86,7 @@ class LaporanController extends Controller
         }
     }
 
+    // Laporan Sales
     public function salesReport(Request $request){
         if($request->ajax()){
             $start = $request->start;
@@ -68,6 +100,7 @@ class LaporanController extends Controller
         }
     }
 
+    // Laporan Purchase
     public function purchaseReport(Request $request){
         if($request->ajax()){
             $start = $request->start;

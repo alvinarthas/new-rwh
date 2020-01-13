@@ -30,34 +30,177 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
-
     public function index(){
-        $parent = Coa::where('AccNo','1.1.1.2')->first();
-        $data_parent = collect();
-        $subparent = collect();
-        foreach(Coa::where('AccParent',$parent->AccNo)->get() as $key){
-            $subsub = collect();
-            
-            $sales = Jurnal::join('tblcoa','tblcoa.AccNo','=','tbljurnal.AccNo')->where('tbljurnal.AccNo','LIKE',$key->AccNo.'%');
-            // if($start <> NULL && $end <> NULL){
-            //     $sales->whereBetween('date',[$start,$end]);
-            // }
-            $sum = $sales;
-            $sales->select(DB::raw('SUM(tbljurnal.Amount) as total'),'tblcoa.AccName','tblcoa.AccNo')->groupBy('tbljurnal.AccNo');
-            
-            $subsub->put('name',$key->AccName);
-            $subsub->put('no',$key->AccNo);
-            $subsub->put('amount',$sum->sum('Amount'));
-            $subsub->put('data',$sales->get());
-            $subparent->push($subsub);
-        }
-        $data_parent->put('name',$parent->AccName);
-        $data_parent->put('no',$parent->AccNo);
-        $data_parent->put('amount',0);
-        $data_parent->put('data',$subparent);
+        $date = '2020-02-01';
+        // GET Parent Account  = ASSET
+        $parent = Coa::where('AccNo','1')->select('AccNo','AccName')->first();
+        $sum = 0;
+        $data = collect();
 
-        dd($data_parent);
+        // GET 2nd inheritance
+        $collect2 = collect();
+        foreach(Coa::where('AccParent',$parent->AccNo)->where('AccNo','NOT LIKE',$parent->AccNo)->get() as $key2){
+            $sum2 = 0;
+            $col2 = collect();
+
+            // GET 3rd Inheritance
+            $collect3 = collect();
+            foreach(Coa::where('AccParent',$key2->AccNo)->get() as $key3){
+                $sum3 = 0;
+                $col3 = collect();
+
+                // GET 4th Inheritance
+                $collect4 = collect();
+                foreach(Coa::where('AccParent',$key3->AccNo)->get() as $key4){
+                    $sum4 = 0;
+                    $col4 = collect();
+
+                    // Get 5th Inheritance
+                    $collect5 = collect();
+                    foreach(Coa::where('AccParent',$key4->AccNo)->get() as $key5){
+                        $col5 = collect();
+                        if($key5->StatusAccount == 'Detail'){
+                            // Get Total Amount From Jurnal
+                            $sales5 = Jurnal::where('AccNo',$key5->AccNo);
+                            if($date <> NULL){
+                                $sales5->where('date','<=',$date);
+                            }
+                            $amount5 = $sales5->sum('Amount');
+
+                            // Incement
+                            $sum4+=$amount5;
+                        }
+
+                        $col5->put('name',$key5->AccName);
+                        $col5->put('no',$key5->AccNo);
+                        $col5->put('amount',$amount5);
+
+                        $collect5->push($col5);
+                    }
+
+                    // Cek if Detail or not
+                    if($key4->StatusAccount == 'Detail'){
+                        // Get Total Amount From Jurnal
+                        $sales4 = Jurnal::where('AccNo',$key4->AccNo);
+                        if($date <> NULL){
+                            $sales4->where('date','<=',$date);
+                        }
+                        $amount4 = $sales4->sum('Amount');
+
+                        // Incement
+                        $sum3+=$amount4;
+                    }else{
+                        $sum3+=$sum4;
+                        $amount4=$sum3;
+                    }
+
+                    $col4->put('name',$key4->AccName);
+                    $col4->put('no',$key4->AccNo);
+                    $col4->put('amount',$amount4);
+                    $col4->put('data',$collect5);
+
+                    $collect4->push($col4);
+                }
+
+                // Cek if Detail or not
+                if($key3->StatusAccount == 'Detail'){
+                    // Get Total Amount From Jurnal
+                    $sales3 = Jurnal::where('AccNo',$key3->AccNo);
+                    if($date <> NULL){
+                        $sales3->where('date','<=',$date);
+                    }
+                    $amount3 = $sales3->sum('Amount');
+
+                    // Incement
+                    $sum2+=$amount3;
+                }else{
+                    $sum2+=$sum3;
+                    $amount3=$sum2;
+                }
+
+                $col3->put('name',$key3->AccName);
+                $col3->put('no',$key3->AccNo);
+                $col3->put('amount',$amount3);
+                $col3->put('data',$collect4);
+
+                $collect3->push($col3);
+        }
+
+            // Cek if Detail or not
+            if($key2->StatusAccount == 'Detail'){
+                // Get Total Amount From Jurnal
+                $sales2 = Jurnal::where('AccNo',$sum2->AccNo);
+                if($date <> NULL){
+                    $sales2->where('date','<=',$date);
+                }
+                $amount2 = $sales2->sum('Amount');
+
+                // Incement
+                $sum+=$amount2;
+            }else{
+                $sum+=$sum2;
+                $amount2=$sum;
+            }
+            $col2->put('name',$key2->AccName);
+            $col2->put('no',$key2->AccNo);
+            $col2->put('amount',$amount2);
+            $col2->put('data',$collect3);
+
+            $collect2->push($col2);
+        }
+
+        $data->put('name',$parent->AccName);
+        $data->put('no',$parent->AccNo);
+        $data->put('amount',$sum);
+        $data->put('data',$collect2);
+
+        dd($data);
     }
+
+    // public function index(){
+    //     dd(Jurnal::where('date','<=','2019-11-04')->get());
+    // }
+
+    // public function index(){
+    //     $data_parent = collect();
+    //     $subparent = collect();
+    //     $parent_sum = 0;
+
+    //     foreach(Coa::where('AccNo','LIKE','6.3')->orwhere('AccNo','LIKE','6.4')->orwhere('AccNo','LIKE','7.3')->orwhere('AccNo','LIKE','7.4')->get() as $key){
+    //         $subsub = collect();
+    //         $sub_coa_collect = collect();
+    //         $sub_sum = 0;
+
+    //         foreach (Coa::where('AccParent',$key->AccNo)->get() as $key2) {
+
+    //             $coa_collect = collect();
+    //             $sales = Jurnal::where('AccNo',$key2->AccNo);
+    //             // if($start <> NULL && $end <> NULL){
+    //             //     $sales->whereBetween('date',[$start,$end]);
+    //             // }
+
+    //             $coasum = $sales->sum('Amount');
+    //             $sub_sum+=$coasum;
+
+    //             $coa_collect->put('name',$key2->AccName);
+    //             $coa_collect->put('amount',$coasum);
+
+    //             $sub_coa_collect->push($coa_collect);
+    //         }
+
+    //         $parent_sum+=$sub_sum;
+            
+    //         $subsub->put('name',$key->AccName);
+    //         $subsub->put('amount',$sub_sum);
+    //         $subsub->put('data',$sub_coa_collect);
+    //         $subparent->push($subsub);
+    //     }
+    //     $data_parent->put('name',"Laba/Rugi Bersih Non Operasional");
+    //     $data_parent->put('amount',$parent_sum);
+    //     $data_parent->put('data',$subparent);
+
+    //     dd($data_parent);
+    // }
 
     // public function index(){
     //     foreach (Jurnal::where('AccNo','LIKE','PO%')->get() as $key) {
