@@ -2,6 +2,7 @@
     use App\Supplier;
     use App\Product;
     use App\ReturPembelianDet;
+    use App\ReturPenjualanDet;
     use App\Perusahaan;
     use App\Customer;
 @endphp
@@ -32,7 +33,7 @@
                         @endphp
                         @foreach($purchase as $p)
                             @php
-                                $dataretur = $retur->where('trx_id', $p['trx_id'])->where('prod_id', $p['prod_id'])->first();
+                                $dataretur = ReturPembelianDet::where('trx_id', $p['trx_id'])->where('prod_id', $p['prod_id'])->first();
                             @endphp
                             <tr>
                                 <td class="text-center">{{$i++}}</td>
@@ -73,7 +74,7 @@
                         @endphp
                         @foreach($sales as $s)
                             @php
-                                $dataretur = $retur->where('trx_id', $s['trx_id'])->where('prod_id', $s['prod_id'])->first();
+                                $dataretur = ReturPenjualanDet::where('trx_id', $s['trx_id'])->where('prod_id', $s['prod_id'])->first();
                             @endphp
                             <tr>
                                 <td class="text-center">{{$i++}}</td>

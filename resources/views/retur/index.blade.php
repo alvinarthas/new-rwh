@@ -23,6 +23,8 @@
     use App\Perusahaan;
     use App\Customer;
     use App\Product;
+    use App\ReturPembelianDet;
+    use App\ReturPenjualanDet;
 @endphp
     <div class="row">
         <div class="col-12">
@@ -94,7 +96,7 @@
                                 @endphp
                                 @foreach($sales as $s)
                                     @php
-                                        $dataretur = $retur->where('trx_id', $s['trx_id'])->where('prod_id', $s['prod_id'])->first();
+                                        $dataretur = ReturPenjualanDet::where('trx_id', $s['trx_id'])->where('prod_id', $s['prod_id'])->first();
                                     @endphp
                                     @if($dataretur['qty']!=0)
                                         <tr>
@@ -124,7 +126,7 @@
                         <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                             <thead>
                                 <th>Transaction ID</th>
-                                <th>Posting Period</th>
+                                <th>Transaction Date</th>
                                 <th>Supplier Name</th>
                                 <th>Product ID</th>
                                 <th>Product Name</th>
@@ -141,7 +143,7 @@
                                 @endphp
                                 @foreach($purchase as $p)
                                     @php
-                                        $dataretur = $retur->where('trx_id', $p['trx_id'])->where('prod_id', $p['prod_id'])->first();
+                                        $dataretur = ReturPembelianDet::where('trx_id', $p['trx_id'])->where('prod_id', $p['prod_id'])->first();
                                     @endphp
                                     @if($dataretur['qty']!=0)
                                         <tr>

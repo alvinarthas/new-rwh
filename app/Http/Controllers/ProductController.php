@@ -10,6 +10,9 @@ use App\Perusahaan;
 use App\Company;
 use App\MenuMapping;
 use App\DeliveryDetail;
+use App\PurchaseDetail;
+use App\ReceiveDet;
+use App\SalesDet;
 
 class ProductController extends Controller
 {
@@ -192,13 +195,199 @@ class ProductController extends Controller
             $gudang = Product::getGudang($request->prod_id);
             $brg_cust = Product::getBrgCust($request->prod_id);
             $total = $indent+$gudang-$brg_cust;
+            $modal = "stock";
 
-            return response()->json(view('product.controlling.modal',compact('indent','gudang','brg_cust','product','total'))->render());
+            return response()->json(view('product.controlling.modal',compact('indent','gudang','brg_cust','product','total','modal'))->render());
+        }else{
+            $products = Product::all();
+            // $indent = Product::getIndent($request->prod_id);
+            // $gudang = Product::getGudang($request->prod_id);
+            // $brg_cust = Product::getBrgCust($request->prod_id);
+
+            return view('product.controlling.index',compact('products'));
+        }
+
+    }
+
+    public function mutasiBrgIndent(Request $request){
+        if($request->ajax()){
+            $modal = "mutasi";
+            $product = Product::join('tblperusahaan', 'tblproduct.supplier', 'tblperusahaan.id')->where('tblproduct.id', $request->id)->select('tblproduct.id', 'name', 'prod_id', 'tblperusahaan.nama AS supplier')->first();
+            $result = array();
+            $total = 0;
+
+            // $stockreal = StockReal::join('tbl_receiveitem', 'tbl_stockreal.ri_trx', 'tbl_receiveitem.trx_id')->join('tbl_sales', 'tbl_stockreal.so_trx', 'tbl_sales.trx_id')->where('product_id', $id)->select('tbl_receiveitem.tanggal AS r_tanggal', 'tbl_sales.tanggal AS s_tanggal', 'tbl_receiveitem.trx_id AS ri_trx', 'tbl_sales.trx_id AS so_trx', 'qty', 'hrg_distributor', 'bv')->get();
+            $po = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('prod_id', $product->prod_id)->where('jurnal_id', '!=', '0')->select('jurnal_id','tgl', 'qty')->get();
+
+            foreach($po AS $p){
+                $tgl = $p['tgl'];
+                $trx_id = $p->jurnal_id;
+                $status = "IN";
+                $total = $total + $p->qty;
+
+                $stock = array(
+                    'tanggal' => $tgl,
+                    'trx_id'  => $trx_id,
+                    'status'  => $status,
+                    'qty'     => $p->qty,
+                );
+                array_push($result, $stock);
+            }
+
+            $ri = ReceiveDet::join('tblpotrx', 'tblreceivedet.trx_id', 'tblpotrx.id')->where('prod_id', $product->prod_id)->select('id_jurnal', 'receive_date', 'qty')->get();
+
+            foreach($ri AS $p){
+                $tgl = $p['receive_date'];
+                $trx_id = $p->id_jurnal;
+                $status = "OUT";
+                $total = $total - $p->qty;
+
+                $stock = array(
+                    'tanggal' => $tgl,
+                    'trx_id'  => $trx_id,
+                    'status'  => $status,
+                    'qty'     => $p->qty,
+                );
+                array_push($result, $stock);
+            }
+
+            $date = array();
+            foreach ($result as $key => $row){
+                $date[$key] = $row['tanggal'];
+            }
+            array_multisort($date, SORT_DESC, $result);
+
+            // return view('product.controlling.mutasi_produk', compact('product','result', 'total'));
+            return response()->json(view('product.controlling.modal',compact('product','result','total','modal'))->render());
         }else{
             $products = Product::all();
 
             return view('product.controlling.index',compact('products'));
         }
+    }
 
+    public function mutasiBrgGudang(Request $request){
+        if($request->ajax()){
+            $modal = "mutasi";
+            $product = Product::join('tblperusahaan', 'tblproduct.supplier', 'tblperusahaan.id')->where('tblproduct.id', $request->id)->select('tblproduct.id', 'name', 'prod_id', 'tblperusahaan.nama AS supplier')->first();
+            $result = array();
+            $total = 0;
+
+            // STOCK AWAL, kata bos nggak usah
+            // $stock_awal = Product::where('prod_id',$product->prod_id)->first()->stock;
+            // $total = $total + $stock_awal;
+            // if($stock_awal!=0){
+            //     $stockawal = array(
+            //         'tanggal'   => "",
+            //         'trx_id'    => "Stok Awal",
+            //         'status'    => "IN",
+            //         'qty'       => $stock_awal,
+            //     );
+            //     array_push($result, $stockawal);
+            // }
+
+            $ri = ReceiveDet::join('tblpotrx', 'tblreceivedet.trx_id', 'tblpotrx.id')->where('prod_id', $product->prod_id)->select('id_jurnal', 'receive_date', 'qty')->get();
+
+            foreach($ri AS $p){
+                $tgl = $p['receive_date'];
+                $trx_id = $p->id_jurnal;
+                $status = "IN";
+                $total = $total + $p->qty;
+
+                $stock = array(
+                    'tanggal' => $tgl,
+                    'trx_id'  => $trx_id,
+                    'status'  => $status,
+                    'qty'     => $p->qty,
+                );
+                array_push($result, $stock);
+            }
+
+            $do = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('product_id', $product->prod_id)->select('jurnal_id', 'date', 'qty')->get();
+
+            foreach($do AS $d){
+                $tgl = $d['date'];
+                $trx_id = $d->jurnal_id;
+                $status = "OUT";
+                $total = $total - $d->qty;
+
+                $stock = array(
+                    'tanggal' => $tgl,
+                    'trx_id'  => $trx_id,
+                    'status'  => $status,
+                    'qty'     => $d->qty,
+                );
+                array_push($result, $stock);
+            }
+
+            $date = array();
+            foreach ($result as $key => $row){
+                $date[$key] = $row['tanggal'];
+            }
+            array_multisort($date, SORT_DESC, $result);
+
+            // return view('product.controlling.mutasi_produk', compact('product','result', 'total'));
+            return response()->json(view('product.controlling.modal',compact('product','result','total','modal'))->render());
+        }else{
+            $products = Product::all();
+
+            return view('product.controlling.index',compact('products'));
+        }
+    }
+
+    public function mutasiBrgCustomer(Request $request){
+        if($request->ajax()){
+            $modal = "mutasi";
+            $product = Product::join('tblperusahaan', 'tblproduct.supplier', 'tblperusahaan.id')->where('tblproduct.id', $request->id)->select('tblproduct.id', 'name', 'prod_id', 'tblperusahaan.nama AS supplier')->first();
+            $result = array();
+            $total = 0;
+
+            $so = SalesDet::join('tblproducttrx', 'tblproducttrxdet.trx_id', 'tblproducttrx.id')->where('prod_id', $product->prod_id)->where('jurnal_id', '!=', '0')->select('jurnal_id','trx_date', 'qty')->get();
+
+            foreach($so AS $s){
+                $tgl = $s['trx_date'];
+                $trx_id = $s->jurnal_id;
+                $status = "IN";
+                $total = $total + $s->qty;
+
+                $stock = array(
+                    'tanggal' => $tgl,
+                    'trx_id'  => $trx_id,
+                    'status'  => $status,
+                    'qty'     => $s->qty,
+                );
+                array_push($result, $stock);
+            }
+
+            $do = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('product_id', $product->prod_id)->select('jurnal_id', 'date', 'qty')->get();
+
+            foreach($do AS $d){
+                $tgl = $d['date'];
+                $trx_id = $d->jurnal_id;
+                $status = "OUT";
+                $total = $total - $d->qty;
+
+                $stock = array(
+                    'tanggal' => $tgl,
+                    'trx_id'  => $trx_id,
+                    'status'  => $status,
+                    'qty'     => $d->qty,
+                );
+                array_push($result, $stock);
+            }
+
+            $date = array();
+            foreach ($result as $key => $row){
+                $date[$key] = $row['tanggal'];
+            }
+            array_multisort($date, SORT_DESC, $result);
+
+            // return view('product.controlling.mutasi_produk', compact('product','result', 'total'));
+            return response()->json(view('product.controlling.modal',compact('product','result','total','modal'))->render());
+        }else{
+            $products = Product::all();
+
+            return view('product.controlling.index',compact('products'));
+        }
     }
 }

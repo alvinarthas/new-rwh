@@ -214,7 +214,6 @@ class PaymentController extends Controller
                     $purchase->save();
                 }
                 
-
                 Log::setLog('PUPPC','Create Purchase Payment PO.'.$request->trx_id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
@@ -234,7 +233,7 @@ class PaymentController extends Controller
         try {
             $payment->delete();
             Log::setLog('PUPPD','Delete Purchase Payment PO.'.$request->id.' Jurnal ID: '.$id_jurnal);
-            
+
             return "true";
         } catch (\Exception $e) {
             return response()->json($e);
