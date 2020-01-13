@@ -484,7 +484,7 @@ class BonusController extends Controller
         $bonusapa = "perhitungan";
         $jenis = "edit";
         $page = MenuMapping::getMap(session('user_id'),"BMPB");
-        $bonus = Bonus::join('perusahaanmember', 'tblbonus.noid', 'perusahaanmember.noid')->join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('tgl', $bn->tgl)->where('bulan', $bn->bulan)->where('tahun', $bn->tahun)->where('tblbonus.perusahaan_id', $bn->perusahaan_id)->where('id_jurnal', $bn->id_jurnal)->select('bonus', 'perusahaanmember.ktp', 'tblbonus.noid', 'tblmember.nama', 'tblmember.member_id','id_bonus')->get();
+        $bonus = Bonus::join('perusahaanmember', 'tblbonus.noid', 'perusahaanmember.noid')->join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('tgl', $bn->tgl)->where('bulan', $bn->bulan)->where('tahun', $bn->tahun)->where('tblbonus.perusahaan_id', $bn->perusahaan_id)->where('id_jurnal', $bn->id_jurnal)->select('bonus', 'id_jurnal', 'perusahaanmember.ktp', 'tblbonus.noid', 'tblmember.nama', 'tblmember.member_id','id_bonus')->get();
 
         $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$bn->bulan)->where('tblpotrx.year',$bn->tahun)->where('tblpotrx.supplier',$bn->perusahaan_id)->select('qty', 'price', 'price_dist')->get();
         $estimasi_bonus = 0;
@@ -503,7 +503,7 @@ class BonusController extends Controller
         $bonusapa = "pembayaran";
         $jenis = "edit";
         $page = MenuMapping::getMap(session('user_id'),"BMBB");
-        $bonus = BonusBayar::join('bankmember', 'tblbonusbayar.no_rek', 'bankmember.norek')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('tgl', $bn->tgl)->where('bulan', $bn->bulan)->where('tahun', $bn->tahun)->where('AccNo', $bn->AccNo)->where('tblbonusbayar.id_jurnal', $bn->id_jurnal)->select('bonus', 'tblbank.nama AS namabank', 'tblbonusbayar.no_rek', 'tblmember.nama', 'id_bonus')->get();
+        $bonus = BonusBayar::join('bankmember', 'tblbonusbayar.no_rek', 'bankmember.norek')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('tgl', $bn->tgl)->where('bulan', $bn->bulan)->where('tahun', $bn->tahun)->where('AccNo', $bn->AccNo)->where('tblbonusbayar.id_jurnal', $bn->id_jurnal)->select('bonus', 'tblbonusbayar.id_jurnal', 'tblbank.nama AS namabank', 'tblbonusbayar.no_rek', 'tblmember.nama', 'id_bonus')->get();
 
         $perhitunganbonus = Bonus::where('bulan', $bn->bulan)->where('tahun',$bn->tahun)->select('id_jurnal')->get();
         $bonus_tertahan = 0;
@@ -528,7 +528,7 @@ class BonusController extends Controller
         $bonusapa = "topup";
         $jenis = "edit";
         $page = MenuMapping::getMap(session('user_id'),"BMTU");
-        $bonus = TopUpBonus::join('bankmember', 'tbltopupbonus.no_rek', 'bankmember.norek')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('tgl', $bn->tgl)->where('AccNo', $bn->AccNo)->select('bonus', 'tblbank.nama AS namabank', 'tbltopupbonus.no_rek', 'tblmember.nama', 'id_bonus')->get();
+        $bonus = TopUpBonus::join('bankmember', 'tbltopupbonus.no_rek', 'bankmember.norek')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('tgl', $bn->tgl)->where('AccNo', $bn->AccNo)->select('bonus', 'tbltopupbonus.id_jurnal', 'tblbank.nama AS namabank', 'tbltopupbonus.no_rek', 'tblmember.nama', 'id_bonus')->get();
 
         return view('bonus.index', compact('rekening', 'supplier', 'jenis', 'bonusapa', 'page', 'bonus' ,'bn'));
     }
@@ -557,6 +557,9 @@ class BonusController extends Controller
         }else{
             // success
             try{
+                // echo "<pre>";
+                // print_r($request->all());
+                // die();
                 $tgl = $request->tgl_transaksi;
                 $ctr = count($request->bonus);
                 $bulan = $request->bulan;
@@ -568,6 +571,7 @@ class BonusController extends Controller
                 $estimasi_bonus = $request->estimasi_bonus;
                 $selisih = $request->selisih_bonus;
                 $id_jurnal = Jurnal::getJurnalID('BP');
+                $id_jurnal_lama = $request->id_jurnal_lama[0];
 
                 // debet Piutang Bonus
                 $debet = new Jurnal(array(
@@ -622,10 +626,14 @@ class BonusController extends Controller
                     $noid = $request->noid[$i];
 
                     if(isset($request->bonus_lama[$i])){
+                        $bonus_lama = $request->bonus_lama[$i];
+                        if($bonus_lama != $bonus){
+                            $bonus = $bonus;
+                        }else{
+                            $bonus = $bonus_lama;
+                        }
                         $id_bonus = $request->id_bonus[$i];
                         $data = Bonus::where('id_bonus', $id_bonus)->first();
-                        $jurnal = Jurnal::where('id_jurnal', $data['id_jurnal']);
-
                         $data->tgl = $tgl;
                         $data->bulan = $bulan;
                         $data->tahun = $tahun;
@@ -633,10 +641,11 @@ class BonusController extends Controller
                         $data->perusahaan_id = $perusahaan_id;
                         $data->id_jurnal = $id_jurnal;
                         $data->creator = session('user_id');
-                        $jurnal->delete();
                         $data->update();
                     }else{
                     // elseif(empty(Bonus::where('noid', $noid)->where('tgl', $tgl)->where('bulan', $bulan)->where('tahun', $tahun)->where('perusahaan_id', $perusahaan_id)->first())){
+                        // echo "new".$tgl." ".$id_bonus[$i]." ".$bonus;
+                        // die();
                         $data = new Bonus(array(
                             'tgl' => $tgl,
                             'noid' => $noid,
@@ -650,6 +659,9 @@ class BonusController extends Controller
                         $data->save();
                     }
                 }
+                $jurnal = Jurnal::where('id_jurnal', $id_jurnal_lama);
+                $jurnal->delete();
+                // die();
 
                 return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $e) {
@@ -673,6 +685,9 @@ class BonusController extends Controller
         // Validation success
         }else{
             try{
+                // echo "<pre>";
+                // print_r($request->all());
+                // die();
                 $bulan = $request->bulan;
                 $tahun = $request->tahun;
                 $tgl = $request->tgl_transaksi;
@@ -681,6 +696,7 @@ class BonusController extends Controller
                 $selisih = $request->selisih_bonus;
                 $bonus_tertahan = $request->bonus_tertahan;
                 $ket = 'penerimaan bonus ke '.$AccNo.' - bulan '.$bulan.' '.$tahun;
+                $id_jurnal_lama = $request->id_jurnal_lama[0];
                 if($request->supplier != null){
                     $supplier = $request->supplier;
                 }else{
@@ -749,7 +765,7 @@ class BonusController extends Controller
                     if(isset($request->bonus_lama[$i])){
                         $id_bonus = $request->id_bonus[$i];
                         $data = BonusBayar::where('id_bonus',$id_bonus)->first();
-                        $jurnal_lama = Jurnal::where('id_jurnal', $data['id_jurnal']);
+
 
                         $data->tgl = $tgl;
                         $data->bulan = $bulan;
@@ -759,7 +775,6 @@ class BonusController extends Controller
                         $data->supplier = $supplier;
                         $data->id_jurnal = $id_jurnal;
                         $data->creator = session('user_id');
-                        $jurnal_lama->delete();
                         $data->update();
                     }else{
                         // bonus bayar
@@ -777,7 +792,8 @@ class BonusController extends Controller
                         $data->save();
                     }
                 }
-
+                $jurnal_lama = Jurnal::where('id_jurnal', $id_jurnal_lama);
+                $jurnal_lama->delete();
 
                 return redirect()->route('bonus.penerimaan')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $e) {
@@ -800,10 +816,15 @@ class BonusController extends Controller
         // Validation success
         }else{
             try{
+                // echo "<pre>";
+                // print_r($request->all());
+                // die();
                 $ctr = count($request->norekening);
                 $tgl = $request->tgl_transaksi;
                 $AccNo = $request->rekening;
+
                 for($i=0;$i<$ctr;$i++){
+                    $id_jurnal_lama = $request->id_jurnal_lama[$i];
                     $norek = $request->norekening[$i];
                     $bonus = $request->bonus[$i];
                     $bank = $request->namabank[$i];
@@ -842,15 +863,14 @@ class BonusController extends Controller
                     if(isset($request->bonus_lama[$i])){
                         $id_bonus = $request->id_bonus[$i];
                         $data = TopUpBonus::where('id_bonus', $id_bonus)->first();
-                        $jurnal = Jurnal::where('id_jurnal', $data['id_jurnal']);
-
                         $data->tgl = $tgl;
                         $data->bonus = $bonus;
                         $data->AccNo = $AccNo;
                         $data->creator = session('user_id');
                         $data->id_jurnal = $id_jurnal;
-                        $jurnal->delete();
                         $data->update();
+                        $jurnal = Jurnal::where('id_jurnal', $id_jurnal_lama);
+                        $jurnal->delete();
                     }else{
                         // Top Up Bonus
                         $data = new TopUpBonus(array(
@@ -864,6 +884,7 @@ class BonusController extends Controller
                         $data->save();
                     }
                 }
+
                 return redirect()->route('bonus.topup')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $e){
                 return redirect()->back()->withErrors($e->getMessage());

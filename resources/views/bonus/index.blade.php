@@ -378,6 +378,7 @@
                                                         {{-- tampil semua data member perusahaan --}}
                                                         <input class="form-control" value="{{ $b['bonus'] }}" type="text" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()">
                                                         <input value="{{ $b['bonus'] }}" type="hidden" name="bonus_lama[]">
+                                                        <input value="{{ $b['id_jurnal'] }}" type="hidden" name="id_jurnal_lama[]">
                                                         {{-- hanya yang bonus !=0 --}}
                                                         {{-- <input class="form-control number" value="{{ number_format($prm['bonus'],0) }}" type="text" name="bonus{{ $i }}"> --}}
                                                     </td>
@@ -429,6 +430,7 @@
                                                         {{-- tampil semua data member perusahaan --}}
                                                         <input class="form-control" value="{{ $b['bonus'] }}" type="text" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()">
                                                         <input value="{{ $b['bonus'] }}" type="hidden" name="bonus_lama[]">
+                                                        <input value="{{ $b['id_jurnal'] }}" type="hidden" name="id_jurnal_lama[]">
                                                         {{-- hanya yang bonus !=0 --}}
                                                         {{-- <input class="form-control number" value="{{ number_format($prm['bonus'],0) }}" type="text" name="bonus{{ $i }}"> --}}
                                                     </td>
