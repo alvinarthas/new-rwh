@@ -285,7 +285,10 @@ Form Sales Order
             },
         }).done(function (data) {
             console.log(data);
-            window.location.replace("http://rwhserver:8060/new-rwh/do/"+data.trx_id+"/"+data.trx_date+"/"+data.customer_name+"/"+data.product_name+"/"+data.qty+"/"+data.unit+"/print");
+            // wnd = window.open("http://www.google.com");
+            wnd = window.open("http://rwhserver:8060/new-rwh/do/"+data.trx_id+"/"+data.trx_date+"/"+data.customer_name+"/"+data.product_name+"/"+data.qty+"/"+data.unit+"/print");
+            // wnd.close();
+            setTimeout(function (){wnd.close();}, 5000 );
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.'+msg);
         });
