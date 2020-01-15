@@ -17,7 +17,7 @@
     <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
     <!-- Sweet Alert css -->
     <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
-    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('judul')
@@ -274,8 +274,21 @@ Form Sales Order
         });
     }
 
+    function printing(id, data){
+        var token = $("meta[name='csrf-token']").attr("content");
+        console.log("printing");
+        $.ajax({
+            url : "http://rwhserver:8060/new-rwh/do/"+id+"/print",
+            type : "get",
+            data : {
+                data : data,
+                _token : token,
+            },
+        })
+    }
+
     function printdo(id){
-        console.log("print");
+        //console.log("print");
         $.ajax({
             url : "{{route('printDo')}}",
             type : "get",
@@ -285,10 +298,7 @@ Form Sales Order
             },
         }).done(function (data) {
             console.log(data);
-            // wnd = window.open("http://www.google.com");
-            wnd = window.open("http://rwhserver:8060/new-rwh/do/"+data.trx_id+"/"+data.trx_date+"/"+data.customer_name+"/"+data.product_name+"/"+data.qty+"/"+data.unit+"/print");
-            // wnd.close();
-            setTimeout(function (){wnd.close();}, 5000 );
+            printing(data[0].trx_id, data);
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.'+msg);
         });

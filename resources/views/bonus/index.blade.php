@@ -147,6 +147,7 @@
                     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                         <thead>
                             <th>No</th>
+                            <th>ID Jurnal</th>
                             <th>Tanggal Transaksi</th>
                             @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
                                 <th>Bulan</th>
@@ -171,6 +172,7 @@
                             @foreach($bonus as $b)
                             <tr>
                                 <td>{{$i}}</td>
+                                <td>{{$b->id_jurnal}}</td>
                                 <td>{{$b->tgl}}</td>
                                 @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
                                     <td>{{$b->bulan}}</td>
@@ -1154,7 +1156,7 @@
         if(bonusapa=="perhitungan"){
             var selisih = totalharga - parseInt($('#estimasi_bonus').val());
         }else if(bonusapa=="pembayaran"){
-            var selisih = totalharga - parseInt($('#bonus_tertahan').val());
+            var selisih = parseInt($('#bonus_tertahan').val()) - totalharga;
         }
 
         // console.log(totalharga)

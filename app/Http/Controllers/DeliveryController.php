@@ -142,12 +142,37 @@ class DeliveryController extends Controller
 
     public function print(Request $request){
         $trx_id = $request->trx_id;
+        $transaksi = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->join('tblproduct', 'delivery_detail.product_id', 'tblproduct.prod_id')->where('do_id',$trx_id)->select('delivery_order.sales_id', 'date', 'do_id', 'qty', 'tblproduct.name', 'delivery_detail.product_id')->get();
+        $data = array();
+        foreach($transaksi as $t){
+            $do_id = 'DO-'.$t->do_id;
+            $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', 'tblproducttrxdet.trx_id')->join('tblcustomer', 'tblproducttrx.customer_id', 'tblcustomer.id')->where('tblproducttrx.id', $t->sales_id)->where('tblproducttrxdet.prod_id', $t->product_id)->select('apname','unit')->first();
+            $result = array(
+                'trx_id' => $do_id,
+                'trx_date' => $t->date,
+                'customer_name' => $sales->apname,
+                'product_name' => $t->name,
+                'qty' => $t->qty,
+                'unit' => $sales->unit,
+            );
+            array_push($data, $result);
+        }
+        return response()->json($data);
+    }
+
+    public function printing($trx_id, Request $request){
+        echo "<pre>";
+        print_r("tes");
+        die();
+    }
+
+    public function printtunggal(Request $request){
+        $trx_id = $request->trx_id;
         $transaksi = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('do_id',$trx_id)->first();
         $do_id = 'DO-'.$transaksi->do_id;
         $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', 'tblproducttrxdet.trx_id')->join('tblcustomer', 'tblproducttrx.customer_id', 'tblcustomer.id')->where('tblproducttrx.id', $transaksi->sales_id)->select('apname','unit')->first();
         $product = Product::where('prod_id', $transaksi->product_id)->select('name')->first();
-        // echo "tes print";
-        // $data = array();
+
         $data = array(
             'trx_id' => $do_id,
             'trx_date' => $transaksi->date,

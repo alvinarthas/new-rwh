@@ -677,7 +677,7 @@
         if(bonusapa=="perhitungan"){
             var selisih = totalharga - parseInt($('#estimasi_bonus').val());
         }else if(bonusapa=="pembayaran"){
-            var selisih = totalharga - parseInt($('#bonus_tertahan').val());
+            var selisih = parseInt($('#bonus_tertahan').val()) - totalharga;
         }
 
         // console.log(totalharga)
