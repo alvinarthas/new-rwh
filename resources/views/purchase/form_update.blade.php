@@ -28,7 +28,7 @@
 @endsection
 
 @section('judul')
-Form Update Purchasing
+Form Update Purchasing #{{$purchase->id}}
 @endsection
 
 @section('content')

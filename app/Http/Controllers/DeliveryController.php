@@ -16,6 +16,7 @@ use App\SalesDet;
 use App\MenuMapping;
 use App\DeliveryOrder;
 use App\DeliveryDetail;
+use App\PurchaseDetail;
 
 class DeliveryController extends Controller
 {
@@ -86,6 +87,7 @@ class DeliveryController extends Controller
         // Validation success
         }else{
             $id_jurnal = Jurnal::getJurnalID('DO');
+            $sales = Sales::where('id',$request->sales_id)->first();
 
             $do = new DeliveryOrder(array(
                 'sales_id' => $request->sales_id,
@@ -98,7 +100,9 @@ class DeliveryController extends Controller
                 for ($i=0; $i < $request->count ; $i++) {
                     $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price;
 
-                    $price = $pricedet * $request->qty[$i];
+                    $avcharga = PurchaseDetail::where('prod_id',$request->prod_id[$i])->where('created_at','<=',$sales->created_at)->avg('price');
+
+                    $price = $avcharga * $request->qty[$i];
                 }
 
                 $desc = "Delivery Order SO.".$request->sales_id;

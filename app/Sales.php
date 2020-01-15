@@ -19,11 +19,15 @@ class Sales extends Model
 {
     protected $table ='tblproducttrx';
     protected $fillable = [
-        'trx_date','creator','payment','ttl_harga','customer_id','jurnal_id','hpp_jurnal_id','ongkir','approve','approve_by','status'
+        'trx_date','creator','payment','ttl_harga','customer_id','jurnal_id','hpp_jurnal_id','ongkir','approve','approve_by','status','cogs'
     ];
 
     public function customer(){
         return $this->belongsTo('App\Customer');
+    }
+
+    public function creator(){
+        return $this->belongsTo('App\Employee','creator','id');
     }
 
     public static function getOrder($start,$end,$param){
@@ -149,7 +153,8 @@ class Sales extends Model
 
         $modal = 0;
         foreach (SalesDet::where('trx_id',$id)->get() as $key) {
-            $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->avg('price');
+            $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->where('created_at','<=',$sales->created_at)->avg('price');
+
             $modal += ($key->qty * $avcharga);
         }
 
@@ -162,7 +167,7 @@ class Sales extends Model
             //insert debet COGS
             Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'5.1','Debet',$user_id);
             //insert Credit Persediaan Barang milik customer
-            Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'1.1.4.1.2','Credit',$user_id);
+            Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'2.1.3','Credit',$user_id);
     }
 
     public static function updateSales($id,$user_id){
@@ -200,7 +205,7 @@ class Sales extends Model
             
             $salesdet->save();
 
-            $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->avg('price');
+            $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->where('created_at','<=',$sales->created_at)->avg('price');
             $modal += ($key->qty * $avcharga);
         }
 
@@ -225,7 +230,7 @@ class Sales extends Model
             $jurnal_c->date = $sales->trx_date;
             $jurnal_c->update();
 
-            $jurnal_d = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
+            $jurnal_d = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','2.1.3')->first();
             $jurnal_d->amount = $modal;
             $jurnal_d->date = $sales->trx_date;
             $jurnal_d->update();
@@ -247,7 +252,7 @@ class Sales extends Model
                 //insert debet COGS
                 Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'5.1','Debet',$user_id);
                 //insert Credit Persediaan Barang milik customer
-                Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'1.1.4.1.2','Credit',$user_id);
+                Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'2.1.3','Credit',$user_id);
         }
     }
 

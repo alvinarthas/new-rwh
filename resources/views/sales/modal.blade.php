@@ -1,4 +1,5 @@
 <div class="card-box">
+    <h4>Sales Order #{{$sales->id}}</h4>
     <div class="form-row">
         <div class="form-group col-md-6">
             <label for="salesid" class="col-form-label">Nama</label>
@@ -19,12 +20,7 @@
             <input type="text" class="form-control" id="salesdate" value="{{$sales->customer->ciphone}}" readonly>
         </div>
     </div>
-    <div class="form-group-row">
-        <div class="form-group col-md-12">
-            <label for="salesid" class="col-form-label">Ongkir</label>
-            <input type="text" class="form-control" id="ongkir" value="{{$sales->ongkir}}" readonly>
-        </div>
-    </div>
+
     <div class="row">
         <hr>
         <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
@@ -59,5 +55,18 @@
                 @endforeach
             </tbody>
         </table>
+    </div>
+
+    <div class="form-group-row">
+        <div class="form-group col-md-12">
+            <label for="salesid" class="col-form-label">Total Transaksi</label>
+            <input type="text" class="form-control" id="ongkir" value="{{$sales->ttl_harga+$sales->ongkir}}" readonly>
+        </div>
+    </div>
+    <div class="form-group-row">
+        <div class="form-group col-md-12">
+            <label for="salesid" class="col-form-label">Ongkir</label>
+            <input type="text" class="form-control" id="ongkir" value="{{$sales->ongkir}}" readonly>
+        </div>
     </div>
 </div>
