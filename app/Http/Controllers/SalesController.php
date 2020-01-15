@@ -17,6 +17,7 @@ use App\MenuMapping;
 use App\Log;
 use App\TempSales;
 use App\TempSalesDet;
+use App\DeliveryOrder;
 
 class SalesController extends Controller
 {
@@ -91,7 +92,6 @@ class SalesController extends Controller
         }else{
             $sales = Sales::whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
         }
-        
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
         $transaksi = Sales::getOrder($request->start,$request->end,$request->param);
         if ($request->ajax()) {
@@ -198,12 +198,12 @@ class SalesController extends Controller
             $status = 1;
             $sales = TempSales::where('trx_id',$id)->first();
             $salesdet = TempSalesDet::where('temp_id',$sales->id)->get();
-            $products = PriceDet::where('customer_id',$sales->customer_id)->select('prod_id')->orderBy('prod_id','asc')->get();
+            $products = Product::select('prod_id','name')->get();
         }else{
             $status = 0;
             $sales = Sales::where('id',$id)->first();
             $salesdet = SalesDet::where('trx_id',$id)->get();
-            $products = PriceDet::where('customer_id',$sales->customer_id)->select('prod_id')->orderBy('prod_id','asc')->get();
+            $products = Product::select('prod_id','name')->get();
         }
         return view('sales.form_update', compact('salesdet','sales','products','page','status'));
     }
@@ -267,7 +267,7 @@ class SalesController extends Controller
                     ));
                     $temp_salesdet->save();
                 }
-                // Log::setLog('PSSLU','Update SO.'.$sales->id);
+                Log::setLog('PSSLU','Update SO.'.$id);
                 
                 return redirect()->route('sales.index')->with('status', 'Data berhasil diubah');
             } catch (\Exception $e) {
@@ -279,7 +279,11 @@ class SalesController extends Controller
     public function destroy($id)
     {
         $sales = Sales::where('id',$id)->first();
+        foreach (DeliveryOrder::where('sales_id',$id)->select('jurnal_id')->get() as $key) {
+            Jurnal::where('id_jurnal',$key->jurnal_id)->delete();
+        }
         Jurnal::where('id_jurnal',$sales->jurnal_id)->delete();
+        
         try {
             $sales->delete();
             Log::setLog('PSSLD','Delete SO.'.$id);

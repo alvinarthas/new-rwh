@@ -28,7 +28,7 @@
 @endsection
 
 @section('judul')
-Form Update Sales Order
+Form Update Sales Order #{{$sales->id}}
 @endsection
 
 @section('content')
@@ -82,7 +82,7 @@ Form Update Sales Order
                                     <select class="form-control select2" parsley-trigger="change" name="select_product" id="select_product">
                                         <option value="#" selected>Pilih Product</option>
                                         @foreach ($products as $product)
-                                            <option value="{{$product->prod_id}}">{{$product->prod_id}} - {{$product->prod->name}}</option>
+                                            <option value="{{$product->prod_id}}">{{$product->prod_id}} - {{$product ->name}}</option>
                                         @endforeach
                                     </select>
                                 </div>

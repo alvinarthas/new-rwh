@@ -99,71 +99,70 @@ class MemberController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-
-            //setup member id
-            $month=	date("m");
-            $year=	date("y");
-            $last_member = Member::lastMember();
-            if($last_member){
-                $member_id=substr($last_member->member_id,12);
-                $member_id=intval($member_id);
-                $member_id=$member_id+2;
-
-                $leng = strlen($member_id);
-
-                switch ($leng)
-                {
-                    case 4:
-                    $member_id="RWHMB".$month.$year."000".$member_id;
-                    break;
-                    case 5:
-                    $member_id="RWHMB".$month.$year."00".$member_id;
-                    break;
-                    case 6:
-                    $member_id="RWHMB".$month.$year."0".$member_id;
-                    break;
-                    case 7:
-                    $member_id="RWHMB".$month.$year.$member_id;
-                    break;
-                }
-            }else{
-                $member_id="RWHMB".$month.$year."0001001";
-            }
-
-
-            // Upload KTP
-            $scanktp = "noimage.jpg";
-
-            if($request->scanktp <> NULL|| $request->scanktp <> ''){
-                $scanktp = $request->ktp.'.'.$request->scanktp->getClientOriginalExtension();
-                $request->scanktp->move(public_path('assets/images/member/ktp/'),$scanktp);
-            }
-
-            $member = new Member(array(
-                'member_id' => $member_id,
-                'koordinator' => $request->koordinator,
-                'scanktp' => $scanktp,
-                'ktp' => $request->ktp,
-                'subkoor' => $request->subkoor,
-                'nama' => $request->nama,
-                'alamat' => $request->alamat,
-                'telp' => $request->telp,
-                'tempat_lahir' => $request->tempat_lahir,
-                'tgl_lahir' => $request->tanggal_lahir,
-                'ibu' => $request->ibu,
-                'creator' => session('user_id'),
-                'status' => 'RWH',
-                'cetak' => 0,
-                'prov' => $request->prov,
-                'city' => $request->city,
-
-            ));
-            // success
             try{
-                $member->save();
-                return redirect()->route('member.index')->with('status', 'Data berhasil diubah');
+                //setup member id
+                $month=	date("m");
+                $year=	date("y");
+                $last_member = Member::lastMember();
+                if($last_member){
+                    $member_id=substr($last_member->member_id,12);
+                    $member_id=intval($member_id);
+                    $member_id=$member_id+2;
+
+                    $leng = strlen($member_id);
+
+                    switch ($leng)
+                    {
+                        case 4:
+                        $member_id="RWHMB".$month.$year."000".$member_id;
+                        break;
+                        case 5:
+                        $member_id="RWHMB".$month.$year."00".$member_id;
+                        break;
+                        case 6:
+                        $member_id="RWHMB".$month.$year."0".$member_id;
+                        break;
+                        case 7:
+                        $member_id="RWHMB".$month.$year.$member_id;
+                        break;
+                    }
+                }else{
+                    $member_id="RWHMB".$month.$year."0001001";
+                }
+
+
+                // Upload KTP
+                $scanktp = "noimage.jpg";
+
+                if($request->scanktp <> NULL|| $request->scanktp <> ''){
+                    $scanktp = $request->ktp.'.'.$request->scanktp->getClientOriginalExtension();
+                    $request->scanktp->move(public_path('assets/images/member/ktp/'),$scanktp);
+                }
+
+                $member = new Member(array(
+                    'member_id' => $member_id,
+                    'koordinator' => $request->koordinator,
+                    'scanktp' => $scanktp,
+                    'ktp' => $request->ktp,
+                    'subkoor' => $request->subkoor,
+                    'nama' => $request->nama,
+                    'alamat' => $request->alamat,
+                    'telp' => $request->telp,
+                    'tempat_lahir' => $request->tempat_lahir,
+                    'tgl_lahir' => $request->tanggal_lahir,
+                    'ibu' => $request->ibu,
+                    'creator' => session('user_id'),
+                    'status' => 'RWH',
+                    'cetak' => 0,
+                    'prov' => $request->prov,
+                    'city' => $request->city,
+
+                ));
+                // success
+                    $member->save();
+                    return redirect()->route('member.index')->with('status', 'Data berhasil diubah');
             }catch(\Exception $e){
-                return redirect()->back()->withErrors($e);
+                return redirect()->back()->withErrors($e->getMessage());
             }
         }
     }

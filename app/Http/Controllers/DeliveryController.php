@@ -16,6 +16,7 @@ use App\SalesDet;
 use App\MenuMapping;
 use App\DeliveryOrder;
 use App\DeliveryDetail;
+use App\PurchaseDetail;
 
 class DeliveryController extends Controller
 {
@@ -86,27 +87,40 @@ class DeliveryController extends Controller
         // Validation success
         }else{
             $id_jurnal = Jurnal::getJurnalID('DO');
+            $sales = Sales::where('id',$request->sales_id)->first();
+
+            $do = new DeliveryOrder(array(
+                'sales_id' => $request->sales_id,
+                'date' => $request->do_date,
+                'petugas' => session('user_id'),
+                'jurnal_id' => $id_jurnal,
+            ));
+
             try {
-                $do = new DeliveryOrder(array(
-                    'sales_id' => $request->sales_id,
-                    'date' => $request->do_date,
-                    'petugas' => session('user_id'),
-                    'jurnal_id' => $id_jurnal,
-                ));
-
                 for ($i=0; $i < $request->count ; $i++) {
-
-                    $desc = "DO.".$do->id." Prod_ID: ".$request->prod_id[$i]." dengan QTY: ".$request->qty[$i]." SO.".$request->sales_id;
                     $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price;
 
-                    $price = $pricedet * $request->qty[$i];
+                    $avcharga = PurchaseDetail::where('prod_id',$request->prod_id[$i])->where('created_at','<=',$sales->created_at)->avg('price');
 
-                    // JURNAL
+                    $price = $avcharga * $request->qty[$i];
+                }
+
+                $desc = "Delivery Order SO.".$request->sales_id;
+                // JURNAL
                     //insert debet Persediaan Barang milik Customer
                     Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'2.1.3','Debet');
                     //insert credit Persediaan Barang digudang
                     Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'1.1.4.1.2','Credit');
+                    
+                $do->save();
 
+                $desc = "Delivery Order ID=".$do->id." SO.".$request->sales_id;
+                foreach(Jurnal::where('id_jurnal',$id_jurnal)->get() as $key){
+                    $key->description = $desc;
+                    $key->save();
+                }
+
+                for ($i=0; $i < $request->count ; $i++) {
                     $dodet = new DeliveryDetail(array(
                        'do_id' => $do->id,
                        'sales_id' => $request->sales_id,
@@ -117,8 +131,6 @@ class DeliveryController extends Controller
                     $dodet->save();
                 }
 
-                $do->save();
-
                 return redirect()->back()->with('status', 'Data DO berhasil dibuat');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->errorInfo);
@@ -128,11 +140,10 @@ class DeliveryController extends Controller
 
     public function delete(Request $request){
         $do_id = $request->id;
-        $do = DeliveryOrder::where('id',$do_id)->first();
-
+        $do = DeliveryOrder::where('id',$do_id)->select('jurnal_id')->first();
+        
         try {
             $jurnal = Jurnal::where('id_jurnal',$do->jurnal_id)->delete();
-            $do->delete();
 
             return "true";
         } catch (\Exception $e) {

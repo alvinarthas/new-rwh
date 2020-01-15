@@ -48,7 +48,7 @@ class PaymentController extends Controller
         $details = SalesDet::where('trx_id',$id)->get();
         $payment = SalesPayment::where('trx_id',$id)->get();
         $ttl_pay = SalesPayment::where('trx_id',$id)->sum('payment_amount');
-        $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo','LIKE','1.10.%')->orderBy('AccName','asc')->get();
+        $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo','LIKE','1.10.%')->orWhere('AccNo','LIKE','1.1.1.1.000003')->orderBy('AccName','asc')->get();
         $page = MenuMapping::getMap(session('user_id'),"PSSP");
         return view('payment.sales.form',compact('sales','payment','coas','details','ttl_pay','page'));
     }
@@ -84,6 +84,10 @@ class PaymentController extends Controller
             ));
 
             try {
+                // Jurnal Debet kas/bank
+                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Debet');
+                // Jurnal Credit piutang konsumen
+                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'1.1.3.1','Credit');
 
                 // Payment
                     $payment->save();
@@ -110,11 +114,6 @@ class PaymentController extends Controller
                         $saldo->save();
                     }
 
-                // Jurnal Debet kas/bank
-                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Debet');
-                // Jurnal Credit piutang konsumen
-                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,'1.1.3.1','Credit');
-
                     Log::setLog('PSSPC','Create Sales Payment SO.'.$sales->id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
@@ -125,7 +124,6 @@ class PaymentController extends Controller
 
     public function salesPayDestroy(Request $request){
         $payment = SalesPayment::where('id',$request->id)->first();
-        $jurnal = Jurnal::where('id_jurnal',$payment->jurnal_id);
         $sales = Sales::where('id',$payment->trx_id)->first();
         $saldo = Saldo::where('id_jurnal',$payment->jurnal_id);
         $sales->status = 0;
@@ -134,8 +132,7 @@ class PaymentController extends Controller
         $id_jurnal = $payment->jurnal_id;
 
         try {
-            $payment->delete();
-            $jurnal->delete();
+            $jurnal = Jurnal::where('id_jurnal',$payment->jurnal_id)->delete();
             $saldo->delete();
             Log::setLog('PSSPD','Delete Sales Payment SO.'.$request->id.' Jurnal ID: '.$id_jurnal);
             return "true";
@@ -163,7 +160,7 @@ class PaymentController extends Controller
         $payment = PurchasePayment::where('trx_id',$id)->get();
         $ttl_pay = PurchasePayment::where('trx_id',$id)->sum('payment_amount');
         $ttl_order = PurchaseDetail::where('trx_id',$id)->sum(DB::raw('qty * price_dist'));
-        $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo','LIKE','2.5%')->orWhere('AccNo','LIKE','1.10.%')->orderBy('AccName','asc')->get();
+        $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo','LIKE','2.5%')->orWhere('AccNo','LIKE','1.10.%')->orWhere('AccNo','LIKE','1.1.1.1.000003')->orderBy('AccName','asc')->get();
         $page = MenuMapping::getMap(session('user_id'),"PUPP");
 
         return view('payment.purchase.form',compact('purchase','payment','coas','details','ttl_pay','ttl_order','page'));
@@ -187,7 +184,7 @@ class PaymentController extends Controller
             // Jurnal
             $jurnal_desc = "PO.".$request->trx_id;
             $id_jurnal = Jurnal::getJurnalID('PP');
-
+            
             $payment = new PurchasePayment(array(
                 'trx_id' => $request->trx_id,
                 'payment_date' => $request->payment_date,
@@ -206,15 +203,17 @@ class PaymentController extends Controller
 
                 // Jurnal Credit Cash/Bank / Deposit Pembelian
                 Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Credit');
+                
                 // Payment
-                    $payment->save();
+                $payment->save();
+
                 if($rest == 0){
                     $purchase = Purchase::where('id',$request->trx_id)->first();
                     $purchase->status = 1;
 
                     $purchase->save();
                 }
-
+                
                 Log::setLog('PUPPC','Create Purchase Payment PO.'.$request->trx_id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
@@ -225,7 +224,6 @@ class PaymentController extends Controller
 
     public function purchasePayDestroy(Request $request){
         $payment = PurchasePayment::where('id',$request->id)->first();
-        $jurnal = Jurnal::where('id_jurnal',$payment->jurnal_id)->first();
         $purchase = Purchase::where('id',$payment->trx_id)->first();
         $purchase->status = 0;
         $purchase->save();
@@ -233,8 +231,7 @@ class PaymentController extends Controller
         $id_jurnal = $payment->jurnal_id;
 
         try {
-            $payment->delete();
-            $jurnal->delete();
+            $jurnal = Jurnal::where('id_jurnal',$payment->jurnal_id)->delete();
             Log::setLog('PUPPD','Delete Purchase Payment PO.'.$request->id.' Jurnal ID: '.$id_jurnal);
 
             return "true";

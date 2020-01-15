@@ -1,7 +1,4 @@
 @extends('layout.main')
-@php
-    use App\Coa;
-@endphp
 
 @section('css')
     <!-- DataTables -->
@@ -9,95 +6,87 @@
     <link href="{{ asset('assets/plugins/datatables/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Responsive datatable examples -->
     <link href="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
-
-    <style>
-        table {border: none;}
-    </style>
+    {{-- Date Picker --}}
+    <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
 @endsection
 
 @section('judul')
-    Laporan Neraca Per XX-XX-XXXX
+Neraca
 @endsection
 
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="card-box table-responsive">
-            <h4 class="m-t-0 header-title"></h4>
+    <div class="row">
+        <div class="col-12">
+            <div class="card-box">
+                <h4 class="m-t-0 header-title">Pilih Per Tanggal Neraca</h4>
+                <div class="col-12">
+                    <div class="p-20">
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">Start Date</label>
+                            <div class="col-10">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start_date" id="start_date"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                    </div>
+                                </div><!-- input-group -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <table id="responsive-datatable" class="table dt-responsive nowrap">
-                <tbody>
-                    <tr>
-                        <td>1. ASSET</td>
-                        <td></td>
-                        <td></td>
-                        <td>Rp 1.000.000,00</td>
-                    </tr>
-                    @foreach (Coa::where('AccParent',1)->where('AccNo','NOT LIKE',1)->where('AccNo','NOT LIKE','1.10')->get() as $item)
-                    <tr>
-                        <td>&emsp;{{$item->AccNo}} {{$item->AccName}}</td>
-                        <td></td>
-                        <td>Rp 1.000.000,00</td>
-                        <td></td>
-                    </tr>
-                        @foreach (Coa::where('AccParent',$item->AccNo)->where('AccNo','NOT LIKE',$item->AccNo)->get() as $item2)
-                        <tr>
-                            <td>&emsp;&emsp;{{$item2->AccNo}} {{$item2->AccName}}</td>
-                            <td></td>
-                            <td>Rp 1.000.000,00</td>
-                            <td></td>
-                        </tr>
-                            @foreach (Coa::where('AccParent',$item2->AccNo)->where('AccNo','NOT LIKE',$item2->AccNo)->get() as $item3)
-                            <tr>
-                                <td>&emsp;&emsp;&emsp;{{$item3->AccNo}} {{$item3->AccName}}</td>
-                                <td></td>
-                                <td>Rp 1.000.000,00</td>
-                                <td></td>
-                            </tr>
-                                @foreach (Coa::where('AccParent',$item3->AccNo)->where('AccNo','NOT LIKE',$item3->AccNo)->get() as $item4)
-                                <tr>
-                                    <td>&emsp;&emsp;&emsp;&emsp;{{$item4->AccNo}} {{$item4->AccName}}</td>
-                                    <td></td>
-                                    <td>Rp 1.000.000,00</td>
-                                    <td></td>
-                                </tr>
-                                    @foreach (Coa::where('AccParent',$item4->AccNo)->where('AccNo','NOT LIKE',$item4->AccNo)->get() as $item5)
-                                    <tr>
-                                        <td>&emsp;&emsp;&emsp;&emsp;&emsp;{{$item4->AccNo}} {{$item4->AccName}}</td>
-                                        <td>Rp 1.000.000,00</td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                        @foreach (Coa::where('AccParent',$item5->AccNo)->where('AccNo','NOT LIKE',$item5->AccNo)->get() as $item6)
-                                        <tr>
-                                            <td>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;{{$item6->AccNo}} {{$item6->AccName}}</td>
-                                            <td>Rp 1.000.000,00</td>
-                                            <td></td>
-                                            <td></td>
-                                        </tr>
-                                        @endforeach
-                                    @endforeach
-                                @endforeach
-                            @endforeach
-                        @endforeach
-                    @endforeach
-                </tbody>
-            </table>
+                <div class="form-group text-left m-b-0">
+                    <a href="javascript:;" class="btn btn-primary btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData()">Show Data</a>
+                </div>
+            </div>
+
+            <div id="jurnal-list" style="display:none">
+                <section id="showjurnal">
+                </section>
+            </div>
         </div>
     </div>
-</div>
 @endsection
 
 @section('js')
-    <!-- Required datatable js -->
-    <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
+{{-- Date Picker --}}
+<script src="{{ asset('assets/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
 
-    <!-- Responsive examples -->
-    <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
-    <script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
+<!-- Required datatable js -->
+<script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables/natural.js') }}"></script>
+{{-- <script src="http://cdn.datatables.net/plug-ins/1.10.20/sorting/natural.js"></script> --}}
+
+<!-- Responsive examples -->
+<script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
 @endsection
 
 @section('script-js')
-    
+<script>
+    // Date Picker
+    jQuery('#start_date').datepicker({
+        todayHighlight: true,
+        autoclose: true
+    });
+
+    function showData(param=null){
+        date = $('#start_date').val();
+
+        $.ajax({
+            url : "{{route('neraca')}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                date: date,
+            },
+        }).done(function (data) {
+            document.getElementById("jurnal-list").style.display = 'block';
+            $('#showjurnal').html(data);
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+</script>
 @endsection

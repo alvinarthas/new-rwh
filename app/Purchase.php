@@ -21,7 +21,11 @@ class Purchase extends Model
 
     public function supplier(){
         return $this->belongsTo('App\Perusahaan','supplier');
-    }   
+    }
+
+    public function creator(){
+        return $this->belongsTo('App\Employee','creator','id');
+    }
 
     public static function getTop3($month,$year){
         return Purchase::where('month',$month)->where('year',$year)->groupBy('supplier')->orderBy(DB::raw('SUM(total_harga_dist)'),'desc')->select('creator')->get();
@@ -69,7 +73,7 @@ class Purchase extends Model
     }
 
     public static function setJurnal($id,$user_id){
-        $id_jurnal = Jurnal::getJurnalID('PO');
+        $id_jurnal = 'PO.'.$id;
 
         $purchase = Purchase::where('id',$id)->first();
 
@@ -166,7 +170,7 @@ class Purchase extends Model
                     $jurnal3->date = $purchase->tgl;
                     $jurnal3->update();
             }else{
-                $id_jurnal = Jurnal::getJurnalID('PO');
+                $id_jurnal = 'PO.'.$id;
                 $purchase->jurnal_id = $id_jurnal;
                 $purchase->approve = 1;
                 $purchase->approve_by = $user_id;

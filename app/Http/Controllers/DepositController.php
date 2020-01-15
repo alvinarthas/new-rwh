@@ -68,29 +68,31 @@ class DepositController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $id_jurnal = Jurnal::getJurnalID('DPS');
+            $id_jurnal = Jurnal::getJurnalID('DS');
+
+            $data = new Deposit(array(
+                'supplier_id' => $request->supplier,
+                'status' => 1,
+                'amount' => $request->amount,
+                'keterangan' => $request->keterangan,
+                'creator' => session('user_id'),
+                'date' => $request->tanggal,
+                'jurnal_id' => $id_jurnal,
+                'AccNo' => $request->method,
+            ));
 
             try{
-                $data = new Deposit(array(
-                    'supplier_id' => $request->supplier,
-                    'status' => 1,
-                    'amount' => $request->amount,
-                    'keterangan' => $request->keterangan,
-                    'creator' => session('user_id'),
-                    'date' => $request->tanggal,
-                    'jurnal_id' => $id_jurnal,
-                    'AccNo' => $request->method,
-                ));
-
-                $data->save();
-
-                $desc = "Top Up Deposit Pembelian, id=".$data->id;
-
                 // Jurnal Debet Deposit Pembelian
                 Jurnal::addJurnal($id_jurnal,$request->amount,$request->tanggal,$desc,'1.1.3.3','Debet');
 
                 // Jurnal Kredit Cash/Bank
                 Jurnal::addJurnal($id_jurnal,$request->amount,$request->tanggal,$desc,$request->method,'Credit');
+
+                $data->save();
+
+                $desc = "Top Up Deposit Pembelian, id=".$data->id;
+
+               
 
                 return redirect()->route('deposit.index')->with('status', 'Data berhasil ditambah');
             }catch(\Exception $e) {
@@ -149,7 +151,6 @@ class DepositController extends Controller
         $deposit = Deposit::where('id',$id)->first();
         try{
             $jurnal = Jurnal::where('id_jurnal',$deposit->jurnal_id)->delete();
-            $deposit->delete();
             return "true";
         // fail
         }catch (\Exception $e) {

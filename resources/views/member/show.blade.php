@@ -11,6 +11,13 @@
      <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- form Uploads -->
     <link href="{{ asset('assets/plugins/fileuploads/css/dropify.min.css') }}" rel="stylesheet" type="text/css" />
+    <!--venobox lightbox-->
+    <link rel="stylesheet" href="{{ asset('assets/plugins/magnific-popup/dist/magnific-popup.css') }}"/>
+<style>
+    img.photo{
+        display:block; width:50%; height:auto;
+    }
+    </style>
 @endsection
 
 @section('judul')
@@ -214,8 +221,18 @@ Informasi Data Member
                                     <td>{{$i}}</td>
                                     <td>{{$bm->bank->nama}}</td>
                                     <td>{{$bm->norek}}</td>
-                                    <td>{{$bm->noatm}}</td>
-                                    <td>{{$bm->nobuku}}</td>
+                                    <td>
+                                        <a href="{{ asset('assets/images/member/atm/'.$bm->scanatm) }}" class="image-popup" title="{{$bm->noatm}}">
+                                            <img src="{{ asset('assets/images/member/atm/'.$bm->scanatm) }}"  alt="user-img" title="{{$bm->noatm}}" class="img-responsive photo">
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{{ asset('assets/images/member/tabungan/'.$bm->scantabungan) }}" class="image-popup" title="{{$bm->nobuku}}">
+                                            <img src="{{ asset('assets/images/member/tabungan/'.$bm->scantabungan) }}"  alt="user-img" title="{{$bm->nobuku}}" class="img-responsive photo">
+                                        </a>
+                                    </td>
+                                    {{-- <td>{{$bm->norek}}</td> --}}
+                                    {{-- <td>{{$bm->noatm}}</td> --}}
                                     <td>{{$bm->cabbank}}</td>
                                     <td>{{$bm->status}}</td>
                                     <td>{{$bm->p_status}}</td>
@@ -314,12 +331,18 @@ Informasi Data Member
 <script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
 <!-- file uploads js -->
 <script src="{{ asset('assets/plugins/fileuploads/js/dropify.min.js') }}"></script>
+<!-- Magnific popup -->
+<script type="text/javascript" src="{{ asset('assets/plugins/magnific-popup/dist/jquery.magnific-popup.min.js') }}"></script>
 @endsection
 
 @section('script-js')
     <script type="text/javascript">
         $(document).ready(function() {
             $('form').parsley();
+        });
+
+        $('.image-popup').magnificPopup({
+            type: 'image',
         });
 
         var ktp = $('#ktp').val();

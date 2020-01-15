@@ -1,4 +1,5 @@
 <div class="card-box table-responsive">
+    <h4>Sales Order #{{$purchase->id}}</h4>
     <h4 class="m-t-0 header-title">Supplier Data</h4>
     <div class="row">
         <div class="col-12">

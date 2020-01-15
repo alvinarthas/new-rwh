@@ -14,7 +14,7 @@ use App\BankMember_copy;
 use App\PerusahaanMember_copy;
 use App\Member_copy;
 use App\Product;
-use App\PriceDet;
+use App\Coa;
 use App\Jurnal;
 use App\Salary;
 use App\Employee;
@@ -31,276 +31,459 @@ use Carbon\Carbon;
 class TestController extends Controller
 {
     public function index(){
+        $date = '2020-02-01';
+        // GET Parent Account  = ASSET
+        $parent = Coa::where('AccNo','1')->select('AccNo','AccName')->first();
+        $sum = 0;
         $data = collect();
 
-        foreach(Customer::all() as $key){
-            $temp = collect();
-            $detail = Sales::join('tblproducttrxdet','tblproducttrx.id','=','tblproducttrxdet.trx_id');
+        // GET 2nd inheritance
+        $collect2 = collect();
+        foreach(Coa::where('AccParent',$parent->AccNo)->where('AccNo','NOT LIKE',$parent->AccNo)->get() as $key2){
+            $sum2 = 0;
+            $col2 = collect();
 
-            // if($start <> NULL && $end <> NULL){
-            //     $detail->whereBetween('tblproducttrx.trx_date',[$start,$end]);
-            // }
+            // GET 3rd Inheritance
+            $collect3 = collect();
+            foreach(Coa::where('AccParent',$key2->AccNo)->get() as $key3){
+                $sum3 = 0;
+                $col3 = collect();
 
-            $bv = $detail->where('tblproducttrx.customer_id',$key->id)->sum('tblproducttrxdet.sub_ttl_pv');
-            $price = $detail->where('tblproducttrx.customer_id',$key->id)->sum('tblproducttrxdet.sub_ttl');
+                // GET 4th Inheritance
+                $collect4 = collect();
+                foreach(Coa::where('AccParent',$key3->AccNo)->get() as $key4){
+                    $sum4 = 0;
+                    $col4 = collect();
 
-            $temp->put('customer',$key->apname);
-            $temp->put('price',$price);
-            $temp->put('bv',$bv);
+                    // Get 5th Inheritance
+                    $collect5 = collect();
+                    foreach(Coa::where('AccParent',$key4->AccNo)->get() as $key5){
+                        $col5 = collect();
+                        if($key5->StatusAccount == 'Detail'){
+                            // Get Total Amount From Jurnal
+                            $sales5 = Jurnal::where('AccNo',$key5->AccNo);
+                            if($date <> NULL){
+                                $sales5->where('date','<=',$date);
+                            }
+                            $amount5 = $sales5->sum('Amount');
 
-            $data->push($temp);
+                            // Incement
+                            $sum4+=$amount5;
+                        }
+
+                        $col5->put('name',$key5->AccName);
+                        $col5->put('no',$key5->AccNo);
+                        $col5->put('amount',$amount5);
+
+                        $collect5->push($col5);
+                    }
+
+                    // Cek if Detail or not
+                    if($key4->StatusAccount == 'Detail'){
+                        // Get Total Amount From Jurnal
+                        $sales4 = Jurnal::where('AccNo',$key4->AccNo);
+                        if($date <> NULL){
+                            $sales4->where('date','<=',$date);
+                        }
+                        $amount4 = $sales4->sum('Amount');
+
+                        // Incement
+                        $sum3+=$amount4;
+                    }else{
+                        $sum3+=$sum4;
+                        $amount4=$sum3;
+                    }
+
+                    $col4->put('name',$key4->AccName);
+                    $col4->put('no',$key4->AccNo);
+                    $col4->put('amount',$amount4);
+                    $col4->put('data',$collect5);
+
+                    $collect4->push($col4);
+                }
+
+                // Cek if Detail or not
+                if($key3->StatusAccount == 'Detail'){
+                    // Get Total Amount From Jurnal
+                    $sales3 = Jurnal::where('AccNo',$key3->AccNo);
+                    if($date <> NULL){
+                        $sales3->where('date','<=',$date);
+                    }
+                    $amount3 = $sales3->sum('Amount');
+
+                    // Incement
+                    $sum2+=$amount3;
+                }else{
+                    $sum2+=$sum3;
+                    $amount3=$sum2;
+                }
+
+                $col3->put('name',$key3->AccName);
+                $col3->put('no',$key3->AccNo);
+                $col3->put('amount',$amount3);
+                $col3->put('data',$collect4);
+
+                $collect3->push($col3);
         }
+
+            // Cek if Detail or not
+            if($key2->StatusAccount == 'Detail'){
+                // Get Total Amount From Jurnal
+                $sales2 = Jurnal::where('AccNo',$sum2->AccNo);
+                if($date <> NULL){
+                    $sales2->where('date','<=',$date);
+                }
+                $amount2 = $sales2->sum('Amount');
+
+                // Incement
+                $sum+=$amount2;
+            }else{
+                $sum+=$sum2;
+                $amount2=$sum;
+            }
+            $col2->put('name',$key2->AccName);
+            $col2->put('no',$key2->AccNo);
+            $col2->put('amount',$amount2);
+            $col2->put('data',$collect3);
+
+            $collect2->push($col2);
+        }
+
+        $data->put('name',$parent->AccName);
+        $data->put('no',$parent->AccNo);
+        $data->put('amount',$sum);
+        $data->put('data',$collect2);
+
         dd($data);
     }
-    
-    public function indexww(){
-        $total_tertahan = PurchaseDetail::where('trx_id',4)->sum(DB::Raw('(price - price_dist)* qty'));
-        echo $total_tertahan;
-    }
 
-    public function indexfd(){
-        dd(Employee::select('id','username')->join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.username')->get());
-    }
+    // public function index(){
+    //     dd(Jurnal::where('date','<=','2019-11-04')->get());
+    // }
 
-    public function indextime(){
-        $date = '2019-11-17';
-        $date = Carbon::createFromFormat('Y-m-d H:i:s',$date.'00:00:00');
-        echo $date."<br>";
-        $today = Carbon::now();
-        echo $today."<br>";
-        
-        $interval = date_diff($today, $date);
-        $selisih = intval($interval->format('%R%a'));
-        echo $interval->format('%R%a days')."<br>";
-        echo $selisih."<br>";
+    // public function index(){
+    //     $data_parent = collect();
+    //     $subparent = collect();
+    //     $parent_sum = 0;
 
-        if($interval->days > 2){
-            echo "lebih";
-        }else{
-            echo "masih bisa";
-        }
-        
-    }
+    //     foreach(Coa::where('AccNo','LIKE','6.3')->orwhere('AccNo','LIKE','6.4')->orwhere('AccNo','LIKE','7.3')->orwhere('AccNo','LIKE','7.4')->get() as $key){
+    //         $subsub = collect();
+    //         $sub_coa_collect = collect();
+    //         $sub_sum = 0;
 
-    public function indexwq(){
-        dd(session('role'));
-        $sales = Sales::all();
-        $collect = collect();
-        foreach($sales as $sale){
-            $sale->put('status',1);
-            // $colect = collect();
-            // $colect->push($sale);
-            // $colect->put('status',1);
-            // $collect->push($colect);
-            dd($sale);
-        }
-        dd($collect);
-    }
-    public function indexxxxx(){
-        $collection = collect([
-            ['id' => 1, 'value' => 10],
-            ['id' => 2, 'value' => 20],
-            ['id' => 3, 'value' => 100],
-            ['id' => 4, 'value' => 250],
-            ['id' => 5, 'value' => 150],
-        ]);
-        $sorted = $collection->sortByDesc('value');
-        // 5.1
-        dd($sorted->values()->first());
-    }
+    //         foreach (Coa::where('AccParent',$key->AccNo)->get() as $key2) {
 
-    public function indexs(){
-        echo $test = Hash::make("canik123");
-        // foreach(PriceDet::groupBy('prod_id')->distinct()->get() as $key){
-        //     $product = Product::where('prod_id',$key->prod_id)->first();
-        //     if($product){
-        //         echo $key->prod_id." ADA <br>";
-        //     }else{
-        //         PriceDet::where('prod_id',$key->prod_id)->delete();
-        //         echo $key->prod_id." Ga Ada <br>";
-        //     }
-        // }
-    }
+    //             $coa_collect = collect();
+    //             $sales = Jurnal::where('AccNo',$key2->AccNo);
+    //             // if($start <> NULL && $end <> NULL){
+    //             //     $sales->whereBetween('date',[$start,$end]);
+    //             // }
 
-    public function indexktp(){
-        // ktp
-        $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/atm';
-        if (is_dir($dir)){
-            $files = scandir($dir);
-            $filecount = count($files);
-            for ($i=0; $i < $filecount ; $i++) { 
-                if ($files[$i] != '.' && $files[$i] != '..') {
-                    $subdir = $dir."/".$files[$i];
-                    // $filebaru = $subdir."/".$files[$i].".jpg";
-                    $subfiles = array_values(array_diff(scandir($subdir), array('..', '.')));
-                    if(is_array($subfiles) && $subfiles <> null){
-                        
-                        // echo "<pre>";
-                        // print_r($subdir."/".$subfiles[0]);
-                        $old = $subdir."/".$subfiles[0];
-                        $new = $subdir."/".$files[$i].".jpg";
-                        // echo "<pre>";
-                        // print_r($old);
-                        // echo "<pre>";
-                        // print_r($new);
-                        $member = Member_copy::where('ktp',$files[$i])->first();
-                        if($member){
-                            rename($old,$new);
-                            $member->scanktp = $files[$i].".jpg";
-                            $member->save();
-                        //     // $files_next = scandir($subdir);
-                        //     echo $files[$i]." Ada<br>";
-                        }else{
-                        //     echo $files[$i]." Tidak Ada<br>";
-                        }
-                        // $member = Member::where('ktp',$files[$i])->first();
-                        // if($member != null){
-                        //     $scanktp = $files[$i].".jpg";
-                        //     $member->scanktp = $scanktp;
-                        //     $member->update();
-                        // }
-                    }
-                }
-            }
-            die();
-        }
-    }
+    //             $coasum = $sales->sum('Amount');
+    //             $sub_sum+=$coasum;
 
-    public function indexz(){
-        $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/ktp';
-        if (is_dir($dir)){
-            $files = scandir($dir);
-            $filecount = count($files);
+    //             $coa_collect->put('name',$key2->AccName);
+    //             $coa_collect->put('amount',$coasum);
 
-            for ($i=0; $i < $filecount ; $i++) {
-                if ($files[$i] != '.' && $files[$i] != '..') {
-                    $subdir = $dir."/".$files[$i];
-                    $member = Member_copy::where('ktp',$files[$i])->first();
-                    if($member){
-                        $files_next = scandir($subdir);
-                        echo "<pre>";
-                        print_r($files_next);
-                    }else{
-                        echo "Ga ada Cuk <br>";
-                    }
-                    echo "----------- <br>";
-                }
-            }
-            die();
-        }
-    }
+    //             $sub_coa_collect->push($coa_collect);
+    //         }
 
-    public function indexd(){
-        // buat ganti koor dan sub koor
-        $perusahaans = Perusahaan::all();
-        foreach($perusahaans as $per){
-            echo "<pre>";
-            print_r($per->nama);
-        print_r(DB::table('perusahaanmember_copy')->where('perusahaan_id',$per->nama)->get());
-            // dd(DB::table('tbl_member_copy_copy1')->get());
-            // $do = DB::Raw("UPDATE tblmember_copy_copy1 SET subkoor = $koor->id WHERE subkoor = '$koor->nama'");per
-            // DB::table('perusahaanmember_copy')->where('perusahaan_id',$per->nama)->update(['perusahaan_id' => $per->id]);
-        }
-    }
-
-    public function indexb(){
-        $bankmember = BankMember_copy::all();
-
-        foreach ($bankmember as $key) {
-            $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/tabungan/'.str_replace(' ', '', $key->ktp).'/'.str_replace(' ', '', $key->norek);
-
-            if(!is_dir($dir)){
-            }else{
-                
-                $filebaru = $dir."/".str_replace(' ', '', $key->norek).".jpg";
-                $subfiles = array_values(array_diff(scandir($dir), array('..', '.')));
-                if(is_array($subfiles) && $subfiles <> null){
-                    // echo "<pre>";
-                    // print_r($subfiles);
-                    rename($dir."/".$subfiles[0],$filebaru);
-                    // echo $subfiles[0]."<br>";
-                    // echo "<pre>";
-                    // print_r($subfiles);
-                    // $atm = BankMember::where('ktp',str_replace(' ', '', $key->ktp))->first();
-                    $key->scantabungan = str_replace(' ', '', $key->norek).".jpg";
-                    $key->update();
-                }
-                
-                // echo "<pre>";
-                // print_r($subfiles);
-                // echo "enggak<br>";
-            }
-        }
-    }
-
-    public function indexpm(){
-        foreach(PerusahaanMember_copy::all() as $key){
-            $member = Member_copy::where('ktp',$key->ktp)->first();
-            if($member){
-                echo $member->ktp."<br>";
-            }else{
-                // $key->delete();
-                echo "Ga ada Cuk <br>";
-            }
-            echo "----------- <br>";
-        }
-    }
-
-    public function index2(Request $request){
-        $keyword = $request->get('search');
-        $datas = User::where('name', 'LIKE',$keyword . '%')
-            ->paginate();
-        $data = collect();
-        $i=1;
-        foreach ($datas as $key) {
-            $memcollect = collect();
-            $memcollect->put('no',$i);
-            $memcollect->put('ktp',$key->name);
-            $memcollect->put('nama',$key->email);
-            $data->push($memcollect);
-            $i++;
-        }
-        $data2 = $datas->links();
-        $datas->withPath('yourPath');
-        $datas->appends($request->all());
-
-        echo "<pre>";
-        print_r($datas);die();
-        if ($request->ajax()) {
-            return response()->json(view('test.list',compact('data','datas','data2'))->render());
-        }
-        return view('test.index',compact('data', 'keyword','data2'));
-    }
-
-    public function index3(){
-        $member = Member_copy::all();
-        foreach ($member as $key) {
-            if($key->tgllhr != "-" || $key->tgllhr !="---"){
-                $newDate = date("Y-m-d", strtotime($key->tgllhr));
-                $key->tgllhr = $newDate;
-                $key->update();
-            }
+    //         $parent_sum+=$sub_sum;
             
-        }
-        
-    }
+    //         $subsub->put('name',$key->AccName);
+    //         $subsub->put('amount',$sub_sum);
+    //         $subsub->put('data',$sub_coa_collect);
+    //         $subparent->push($subsub);
+    //     }
+    //     $data_parent->put('name',"Laba/Rugi Bersih Non Operasional");
+    //     $data_parent->put('amount',$parent_sum);
+    //     $data_parent->put('data',$subparent);
 
-    public function indexaa(){
-        // foreach(ManageHarga2::groupBy('prod_id')->distinct()->get() as $key){
-        //     $product = Product::where('prod_id',$key->prod_id)->first();
-        //     if($product){
-        //         echo $key->prod_id." ADA <br>";
-        //     }else{
-        //         ManageHarga2::where('prod_id',$key->prod_id)->delete();
-        //         echo $key->prod_id." Ga Ada <br>";
-        //     }
-        // }
-        $encrypted = Crypt::encryptString('Belajar Laravel Di malasngoding.com');
-		$decrypted = Crypt::decryptString('$2y$10$Rchoh5O7de3roYe84yGfweyAQFkMHm3SYrevYfBk/oBXzV7A4P4p2');
+    //     dd($data_parent);
+    // }
+
+    // public function index(){
+    //     foreach (Jurnal::where('AccNo','LIKE','PO%')->get() as $key) {
+    //         $check = Purchase::where('jurnal_id',$key->id_jurnal)->count('jurnal_id');
+    //         if($check > 0){
+    //             echo $check."<br>";
+    //         }else{
+    //             echo $key->id_jurnal."<br>";
+    //         }
+    //     }
+    // }
+
+    // public function index(){
+    //     $data = collect();
+
+    //     foreach(Customer::all() as $key){
+    //         $temp = collect();
+    //         $detail = Sales::join('tblproducttrxdet','tblproducttrx.id','=','tblproducttrxdet.trx_id');
+
+    //         // if($start <> NULL && $end <> NULL){
+    //         //     $detail->whereBetween('tblproducttrx.trx_date',[$start,$end]);
+    //         // }
+
+    //         $bv = $detail->where('tblproducttrx.customer_id',$key->id)->sum('tblproducttrxdet.sub_ttl_pv');
+    //         $price = $detail->where('tblproducttrx.customer_id',$key->id)->sum('tblproducttrxdet.sub_ttl');
+
+    //         $temp->put('customer',$key->apname);
+    //         $temp->put('price',$price);
+    //         $temp->put('bv',$bv);
+
+    //         $data->push($temp);
+    //     }
+    //     dd($data);
+    // }
+    
+    // public function indexww(){
+    //     $total_tertahan = PurchaseDetail::where('trx_id',4)->sum(DB::Raw('(price - price_dist)* qty'));
+    //     echo $total_tertahan;
+    // }
+
+    // public function indexfd(){
+    //     dd(Employee::select('id','username')->join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.username')->get());
+    // }
+
+    // public function indextime(){
+    //     $date = '2019-11-17';
+    //     $date = Carbon::createFromFormat('Y-m-d H:i:s',$date.'00:00:00');
+    //     echo $date."<br>";
+    //     $today = Carbon::now();
+    //     echo $today."<br>";
+        
+    //     $interval = date_diff($today, $date);
+    //     $selisih = intval($interval->format('%R%a'));
+    //     echo $interval->format('%R%a days')."<br>";
+    //     echo $selisih."<br>";
+
+    //     if($interval->days > 2){
+    //         echo "lebih";
+    //     }else{
+    //         echo "masih bisa";
+    //     }
+        
+    // }
+
+    // public function indexwq(){
+    //     dd(session('role'));
+    //     $sales = Sales::all();
+    //     $collect = collect();
+    //     foreach($sales as $sale){
+    //         $sale->put('status',1);
+    //         // $colect = collect();
+    //         // $colect->push($sale);
+    //         // $colect->put('status',1);
+    //         // $collect->push($colect);
+    //         dd($sale);
+    //     }
+    //     dd($collect);
+    // }
+    // public function indexxxxx(){
+    //     $collection = collect([
+    //         ['id' => 1, 'value' => 10],
+    //         ['id' => 2, 'value' => 20],
+    //         ['id' => 3, 'value' => 100],
+    //         ['id' => 4, 'value' => 250],
+    //         ['id' => 5, 'value' => 150],
+    //     ]);
+    //     $sorted = $collection->sortByDesc('value');
+    //     // 5.1
+    //     dd($sorted->values()->first());
+    // }
+
+    // public function indexs(){
+    //     echo $test = Hash::make("canik123");
+    //     // foreach(PriceDet::groupBy('prod_id')->distinct()->get() as $key){
+    //     //     $product = Product::where('prod_id',$key->prod_id)->first();
+    //     //     if($product){
+    //     //         echo $key->prod_id." ADA <br>";
+    //     //     }else{
+    //     //         PriceDet::where('prod_id',$key->prod_id)->delete();
+    //     //         echo $key->prod_id." Ga Ada <br>";
+    //     //     }
+    //     // }
+    // }
+
+    // public function indexktp(){
+    //     // ktp
+    //     $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/atm';
+    //     if (is_dir($dir)){
+    //         $files = scandir($dir);
+    //         $filecount = count($files);
+    //         for ($i=0; $i < $filecount ; $i++) { 
+    //             if ($files[$i] != '.' && $files[$i] != '..') {
+    //                 $subdir = $dir."/".$files[$i];
+    //                 // $filebaru = $subdir."/".$files[$i].".jpg";
+    //                 $subfiles = array_values(array_diff(scandir($subdir), array('..', '.')));
+    //                 if(is_array($subfiles) && $subfiles <> null){
+                        
+    //                     // echo "<pre>";
+    //                     // print_r($subdir."/".$subfiles[0]);
+    //                     $old = $subdir."/".$subfiles[0];
+    //                     $new = $subdir."/".$files[$i].".jpg";
+    //                     // echo "<pre>";
+    //                     // print_r($old);
+    //                     // echo "<pre>";
+    //                     // print_r($new);
+    //                     $member = Member_copy::where('ktp',$files[$i])->first();
+    //                     if($member){
+    //                         rename($old,$new);
+    //                         $member->scanktp = $files[$i].".jpg";
+    //                         $member->save();
+    //                     //     // $files_next = scandir($subdir);
+    //                     //     echo $files[$i]." Ada<br>";
+    //                     }else{
+    //                     //     echo $files[$i]." Tidak Ada<br>";
+    //                     }
+    //                     // $member = Member::where('ktp',$files[$i])->first();
+    //                     // if($member != null){
+    //                     //     $scanktp = $files[$i].".jpg";
+    //                     //     $member->scanktp = $scanktp;
+    //                     //     $member->update();
+    //                     // }
+    //                 }
+    //             }
+    //         }
+    //         die();
+    //     }
+    // }
+
+    // public function indexz(){
+    //     $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/ktp';
+    //     if (is_dir($dir)){
+    //         $files = scandir($dir);
+    //         $filecount = count($files);
+
+    //         for ($i=0; $i < $filecount ; $i++) {
+    //             if ($files[$i] != '.' && $files[$i] != '..') {
+    //                 $subdir = $dir."/".$files[$i];
+    //                 $member = Member_copy::where('ktp',$files[$i])->first();
+    //                 if($member){
+    //                     $files_next = scandir($subdir);
+    //                     echo "<pre>";
+    //                     print_r($files_next);
+    //                 }else{
+    //                     echo "Ga ada Cuk <br>";
+    //                 }
+    //                 echo "----------- <br>";
+    //             }
+    //         }
+    //         die();
+    //     }
+    // }
+
+    // public function indexd(){
+    //     // buat ganti koor dan sub koor
+    //     $perusahaans = Perusahaan::all();
+    //     foreach($perusahaans as $per){
+    //         echo "<pre>";
+    //         print_r($per->nama);
+    //     print_r(DB::table('perusahaanmember_copy')->where('perusahaan_id',$per->nama)->get());
+    //         // dd(DB::table('tbl_member_copy_copy1')->get());
+    //         // $do = DB::Raw("UPDATE tblmember_copy_copy1 SET subkoor = $koor->id WHERE subkoor = '$koor->nama'");per
+    //         // DB::table('perusahaanmember_copy')->where('perusahaan_id',$per->nama)->update(['perusahaan_id' => $per->id]);
+    //     }
+    // }
+
+    // public function indexb(){
+    //     $bankmember = BankMember_copy::all();
+
+    //     foreach ($bankmember as $key) {
+    //         $dir = 'D:/DATA/Kerja/RWH/KERAJ/mv/tabungan/'.str_replace(' ', '', $key->ktp).'/'.str_replace(' ', '', $key->norek);
+
+    //         if(!is_dir($dir)){
+    //         }else{
+                
+    //             $filebaru = $dir."/".str_replace(' ', '', $key->norek).".jpg";
+    //             $subfiles = array_values(array_diff(scandir($dir), array('..', '.')));
+    //             if(is_array($subfiles) && $subfiles <> null){
+    //                 // echo "<pre>";
+    //                 // print_r($subfiles);
+    //                 rename($dir."/".$subfiles[0],$filebaru);
+    //                 // echo $subfiles[0]."<br>";
+    //                 // echo "<pre>";
+    //                 // print_r($subfiles);
+    //                 // $atm = BankMember::where('ktp',str_replace(' ', '', $key->ktp))->first();
+    //                 $key->scantabungan = str_replace(' ', '', $key->norek).".jpg";
+    //                 $key->update();
+    //             }
+                
+    //             // echo "<pre>";
+    //             // print_r($subfiles);
+    //             // echo "enggak<br>";
+    //         }
+    //     }
+    // }
+
+    // public function indexpm(){
+    //     foreach(PerusahaanMember_copy::all() as $key){
+    //         $member = Member_copy::where('ktp',$key->ktp)->first();
+    //         if($member){
+    //             echo $member->ktp."<br>";
+    //         }else{
+    //             // $key->delete();
+    //             echo "Ga ada Cuk <br>";
+    //         }
+    //         echo "----------- <br>";
+    //     }
+    // }
+
+    // public function index2(Request $request){
+    //     $keyword = $request->get('search');
+    //     $datas = User::where('name', 'LIKE',$keyword . '%')
+    //         ->paginate();
+    //     $data = collect();
+    //     $i=1;
+    //     foreach ($datas as $key) {
+    //         $memcollect = collect();
+    //         $memcollect->put('no',$i);
+    //         $memcollect->put('ktp',$key->name);
+    //         $memcollect->put('nama',$key->email);
+    //         $data->push($memcollect);
+    //         $i++;
+    //     }
+    //     $data2 = $datas->links();
+    //     $datas->withPath('yourPath');
+    //     $datas->appends($request->all());
+
+    //     echo "<pre>";
+    //     print_r($datas);die();
+    //     if ($request->ajax()) {
+    //         return response()->json(view('test.list',compact('data','datas','data2'))->render());
+    //     }
+    //     return view('test.index',compact('data', 'keyword','data2'));
+    // }
+
+    // public function index3(){
+    //     $member = Member_copy::all();
+    //     foreach ($member as $key) {
+    //         if($key->tgllhr != "-" || $key->tgllhr !="---"){
+    //             $newDate = date("Y-m-d", strtotime($key->tgllhr));
+    //             $key->tgllhr = $newDate;
+    //             $key->update();
+    //         }
+            
+    //     }
+        
+    // }
+
+    // public function indexaa(){
+    //     // foreach(ManageHarga2::groupBy('prod_id')->distinct()->get() as $key){
+    //     //     $product = Product::where('prod_id',$key->prod_id)->first();
+    //     //     if($product){
+    //     //         echo $key->prod_id." ADA <br>";
+    //     //     }else{
+    //     //         ManageHarga2::where('prod_id',$key->prod_id)->delete();
+    //     //         echo $key->prod_id." Ga Ada <br>";
+    //     //     }
+    //     // }
+    //     $encrypted = Crypt::encryptString('Belajar Laravel Di malasngoding.com');
+	// 	$decrypted = Crypt::decryptString('$2y$10$Rchoh5O7de3roYe84yGfweyAQFkMHm3SYrevYfBk/oBXzV7A4P4p2');
  
-		echo "Hasil Enkripsi : " . $encrypted;
-		echo "<br/>";
-		echo "<br/>";
-		echo "Hasil Dekripsi : " . $decrypted;
-    }
+	// 	echo "Hasil Enkripsi : " . $encrypted;
+	// 	echo "<br/>";
+	// 	echo "<br/>";
+	// 	echo "Hasil Dekripsi : " . $decrypted;
+    // }
 }   

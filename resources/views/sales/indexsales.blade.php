@@ -11,6 +11,7 @@
                     <th>Transaction ID</th>
                     <th>Transaction Date</th>
                     <th>Customer</th>
+                    <th>Creator</th>
                     <th>Total</th>
                     <th>Option</th>
                 </thead>
@@ -23,6 +24,7 @@
                             <td><a href="javascript:;" onclick="getDetail({{$sale->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">SO.{{$sale->id}}</a></td>
                             <td>{{$sale->trx_date}}</td>
                             <td>{{$sale->customer->apname}}</td>
+                            <td>{{$sale->creator()->first()->name}}</td>
                             <td>Rp {{number_format($sale->ttl_harga+$sale->ongkir,2,",",".")}}</td>
                             <td>
                                 @if (array_search("PSSLU",$page))
