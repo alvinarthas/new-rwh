@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Excel;
+use PDF;
+use App\Exports\StockControllingExport;
+use Carbon\Carbon;
 
 use App\Product;
 use App\Perusahaan;
@@ -206,7 +210,64 @@ class ProductController extends Controller
 
             return view('product.controlling.index',compact('products'));
         }
+    }
 
+    public function export(Request $request)
+    {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        ini_set('max_execution_time', 3000);
+
+        $tgl = date('Y-m-d', strtotime(Carbon::today()));
+
+        $filename = "Stock Controlling RWH (".$tgl.")";
+
+        $exportTo = $request['xto'];
+        $data = array();
+
+        $product = Product::all();
+        $no = 0;
+
+        foreach($product as $p){
+            $supplier = $p->supplier()->first()->nama;
+            $prod_id = $p->prod_id;
+            $name = $p->name;
+            $indent = Product::getIndent($p->prod_id);
+            $gudang = Product::getGudang($p->prod_id);
+            $brgcust = Product::getBrgCust($p->prod_id);
+            $nett = $indent + $gudang - $brgcust;
+            $no++;
+
+            $array = array(
+                // Data Member
+                'No' => $no,
+                'Supplier' => $supplier,
+                'Product ID' => $prod_id,
+                'Nama Produk' => $name,
+                'Indent' => $indent,
+                'di Gudang' => $gudang,
+                'milik Customer' => $brgcust,
+                'Nett' => $nett,
+            );
+
+            array_push($data, $array);
+        }
+
+        // Export To 0 == Export to Excel
+        if($exportTo == 0){
+            $export = new StockControllingExport($data);
+
+            return Excel::download($export, $filename.'.xlsx');
+        // Export To 1 == Export To PDF
+        }elseif($exportTo == 1){
+            $datas = ['product'=>$data, 'tgl'=>$tgl];
+
+            $pdf = PDF::loadview('product.controlling.pdfstock',$datas)->setPaper('a4', 'landscape');
+
+            $pdf->save(public_path('download/stockcontrolling/'.$filename.'.pdf'));
+            return $pdf->download($filename.'.pdf');
+        }
     }
 
     public function mutasiBrgIndent(Request $request){

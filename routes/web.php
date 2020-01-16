@@ -200,6 +200,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('/stockcontrolling/{id}/mutasi/brgindent', 'ProductController@mutasiBrgIndent');
         Route::get('/stockcontrolling/{id}/mutasi/brggudang', 'ProductController@mutasiBrgGudang');
         Route::get('/stockcontrolling/{id}/mutasi/brgcustomer', 'ProductController@mutasiBrgCustomer');
+        Route::post('/stockcontrolling/export/', 'ProductController@export')->name('exportStock');
 
     // Saldo
         Route::get('ajxCoaOrder', 'SaldoController@ajxCoaOrder')->name('ajxCoaOrder');
