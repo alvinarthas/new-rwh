@@ -45,6 +45,7 @@ class SalesController extends Controller
         $product_id = $request->select_product;
 
         $product = PriceDet::where('customer_id',$customer)->where('prod_id',$product_id)->first();
+        $avcost = PurchaseDetail::where('prod_id',$product_id)->avg('price');
 
         if(isset($product)){
             $sub_ttl_price = $qty*$product->price;
@@ -69,6 +70,7 @@ class SalesController extends Controller
         <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$prod_id.'">'.$prod_id.'</td>
         <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$prod_name.'">'.$prod_name.'</td>
         <td><input type="text" name="price[]" value="'.$price.'" id="price'.$count.'" onkeyup="changeTotal('.$count.')"></td>
+        <td>Rp&nbsp;'.number_format($avcost,2,",",".").'</td>
         <td><input type="text" name="qty[]" value="'.$qty.'" id="qty'.$count.'" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="hidden" name="unit[]" value="'.$unit.'" id="unit'.$count.'">'.$unit.'</td>
         <td><input type="text" name="sub_ttl_price[]" value="'.$sub_ttl_price.'" id="sub_ttl_price'.$count.'" readonly></td>

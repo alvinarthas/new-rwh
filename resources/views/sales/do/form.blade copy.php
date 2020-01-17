@@ -18,7 +18,6 @@
     <!-- Sweet Alert css -->
     <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> 
 @endsection
 
 @section('judul')
@@ -275,17 +274,31 @@ Form Sales Order
         });
     }
 
+    function printing(id, data){
+        var token = $("meta[name='csrf-token']").attr("content");
+        console.log("printing");
+        $.ajax({
+            url : "http://rwhserver:8060/new-rwh/do/"+id+"/print",
+            type : "get",
+            data : {
+                data : data,
+                _token : token,
+            },
+        })
+    }
+
     function printdo(id){
         //console.log("print");
         $.ajax({
-            url : "http://rwhserver:8060/new-rwh/do/print/19",
+            url : "{{route('printDo')}}",
             type : "get",
             dataType : 'json',
             data:{
-                
+                trx_id:id,
             },
         }).done(function (data) {
-
+            console.log(data);
+            printing(data[0].trx_id, data);
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.'+msg);
         });

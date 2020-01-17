@@ -114,7 +114,7 @@ class PaymentController extends Controller
                         $saldo->save();
                     }
 
-                    Log::setLog('PSSPC','Create Sales Payment SO.'.$sales->id.' Jurnal ID: '.$id_jurnal);
+                    Log::setLog('PSSPC','Create Sales Payment SO.'.$request->trx_id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->getMessage());

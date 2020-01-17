@@ -25,137 +25,218 @@ use App\SubKoordinator;
 use App\PurchaseDetail;
 use App\Purchase;
 use App\Customer;
+use App\SalesDet;
+use App\DeliveryOrder;
+use GuzzleHttp\Client;
 
 use Carbon\Carbon;
 
 class TestController extends Controller
 {
     public function index(){
-        $date = '2020-02-01';
-        // GET Parent Account  = ASSET
-        $parent = Coa::where('AccNo','1')->select('AccNo','AccName')->first();
-        $sum = 0;
-        $data = collect();
+        $content = file_get_contents('https://www.royalcontrolling.com/api/do/print/19');
+        $decode = json_decode($content);
 
-        // GET 2nd inheritance
-        $collect2 = collect();
-        foreach(Coa::where('AccParent',$parent->AccNo)->where('AccNo','NOT LIKE',$parent->AccNo)->get() as $key2){
-            $sum2 = 0;
-            $col2 = collect();
-
-            // GET 3rd Inheritance
-            $collect3 = collect();
-            foreach(Coa::where('AccParent',$key2->AccNo)->get() as $key3){
-                $sum3 = 0;
-                $col3 = collect();
-
-                // GET 4th Inheritance
-                $collect4 = collect();
-                foreach(Coa::where('AccParent',$key3->AccNo)->get() as $key4){
-                    $sum4 = 0;
-                    $col4 = collect();
-
-                    // Get 5th Inheritance
-                    $collect5 = collect();
-                    foreach(Coa::where('AccParent',$key4->AccNo)->get() as $key5){
-                        $col5 = collect();
-                        if($key5->StatusAccount == 'Detail'){
-                            // Get Total Amount From Jurnal
-                            $sales5 = Jurnal::where('AccNo',$key5->AccNo);
-                            if($date <> NULL){
-                                $sales5->where('date','<=',$date);
-                            }
-                            $amount5 = $sales5->sum('Amount');
-
-                            // Incement
-                            $sum4+=$amount5;
-                        }
-
-                        $col5->put('name',$key5->AccName);
-                        $col5->put('no',$key5->AccNo);
-                        $col5->put('amount',$amount5);
-
-                        $collect5->push($col5);
-                    }
-
-                    // Cek if Detail or not
-                    if($key4->StatusAccount == 'Detail'){
-                        // Get Total Amount From Jurnal
-                        $sales4 = Jurnal::where('AccNo',$key4->AccNo);
-                        if($date <> NULL){
-                            $sales4->where('date','<=',$date);
-                        }
-                        $amount4 = $sales4->sum('Amount');
-
-                        // Incement
-                        $sum3+=$amount4;
-                    }else{
-                        $sum3+=$sum4;
-                        $amount4=$sum3;
-                    }
-
-                    $col4->put('name',$key4->AccName);
-                    $col4->put('no',$key4->AccNo);
-                    $col4->put('amount',$amount4);
-                    $col4->put('data',$collect5);
-
-                    $collect4->push($col4);
-                }
-
-                // Cek if Detail or not
-                if($key3->StatusAccount == 'Detail'){
-                    // Get Total Amount From Jurnal
-                    $sales3 = Jurnal::where('AccNo',$key3->AccNo);
-                    if($date <> NULL){
-                        $sales3->where('date','<=',$date);
-                    }
-                    $amount3 = $sales3->sum('Amount');
-
-                    // Incement
-                    $sum2+=$amount3;
-                }else{
-                    $sum2+=$sum3;
-                    $amount3=$sum2;
-                }
-
-                $col3->put('name',$key3->AccName);
-                $col3->put('no',$key3->AccNo);
-                $col3->put('amount',$amount3);
-                $col3->put('data',$collect4);
-
-                $collect3->push($col3);
+        $file =  'DO-19.txt';  # nama file temporary yang akan dicetak
+        $handle = fopen($file, 'w');
+        $Data = "=========================\r\n";
+        $Data .= "|       RWH HERBAL    |\r\n";
+        $Data .= "|    DELIVERY ORDER   |\r\n";
+        $Data .= "========================\r\n";
+        $Data .= "TRXID : ".$decode->data[0]->trx_id."\r\n";
+        $Data .= "DATE : ".$decode->data[0]->trx_date."\r\n";
+        $Data .= "MARKETING : ".strtoupper($decode->data[0]->customer_name)."\r\n";
+        $Data .= "==========================\r\n";
+        $no = 1;
+        foreach($decode->data as $key){
+            $Data .= $no.". ".$key->product_name."\r\n";
+            $Data .= "Qty : ".$key->qty." ".$key->unit."\r\n";
+            $Data .= "\r\n";
+            $no++;
         }
-
-            // Cek if Detail or not
-            if($key2->StatusAccount == 'Detail'){
-                // Get Total Amount From Jurnal
-                $sales2 = Jurnal::where('AccNo',$sum2->AccNo);
-                if($date <> NULL){
-                    $sales2->where('date','<=',$date);
-                }
-                $amount2 = $sales2->sum('Amount');
-
-                // Incement
-                $sum+=$amount2;
-            }else{
-                $sum+=$sum2;
-                $amount2=$sum;
-            }
-            $col2->put('name',$key2->AccName);
-            $col2->put('no',$key2->AccNo);
-            $col2->put('amount',$amount2);
-            $col2->put('data',$collect3);
-
-            $collect2->push($col2);
-        }
-
-        $data->put('name',$parent->AccName);
-        $data->put('no',$parent->AccNo);
-        $data->put('amount',$sum);
-        $data->put('data',$collect2);
-
-        dd($data);
+        $Data .= "Approved By\r\nInventory Officer\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
+        Storage::put($file, $Data);
+        file_put_contents($file, $Data);
+        fwrite($handle, $Data);
+        fclose($handle);
+        copy($file, "//localhost/POS-80C");
+        unlink($file);
     }
+    // public function index(){
+    //     // dd(SalesDet::where('trx_id',21)->select('prod_id')->pluck('prod_id')->toArray());
+    //     $prodarray = collect();
+    //     foreach (PurchaseDetail::where('trx_id',18)->get() as $key) {
+    //         $prodarray->push($key->prod_id);
+    //     }
+    //     dd($prodarray);
+    // }
+    // public function index(){
+    //     // $prodarray = collect();
+    //     // foreach (PurchaseDetail::where('trx_id',18)->get() as $key) {
+    //     //     $prodarray->push($key->prod_id);
+    //     // }
+    //     // $getTrxId = SalesDet::whereIn('prod_id',$prodarray)->select('trx_id')->groupBy('trx_id')->orderBy('trx_id')->get();
+    //     // $getTrxId = SalesDet::whereIn('prod_id',['GHB01','GHB02','MHPAR01'])->select('trx_id')->groupBy('trx_id')->orderBy('trx_id')->get();
+    //     $getTrxId = SalesDet::select('trx_id','prod_id')->groupBy('trx_id')->orderBy('trx_id')->get();
+    //     foreach ($getTrxId as $key) {
+    //         $sales_jurnal = $key->trx->jurnal_id;
+    //         $do_jurnal = DeliveryOrder::where('sales_id',$key->trx_id)->select('jurnal_id')->first();
+    //         $cogs = 0;
+    //         foreach (SalesDet::where('trx_id',$key->trx_id)->select('price','qty','prod_id')->get() as $key2) {
+    //             $avcost = PurchaseDetail::where('prod_id',$key2->prod_id)->where('created_at','<=',$key->trx->created_at)->avg('price');
+    //             $cogs +=  $avcost * $key2->qty;
+    //         }
+    //         // Update Jurnal Sales
+    //         if($sales_jurnal <> 0){
+    //             // debet COGS
+    //                 $jurnal_sales_a = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','5.1')->first();
+    //                 $jurnal_sales_a->amount = $cogs;
+    //                 $jurnal_sales_a->update();
+    //             // Credit Persediaan Barang milik customer
+    //                 $jurnal_sales_b = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','2.1.3')->first();
+    //                 $jurnal_sales_b->amount = $cogs;
+    //                 $jurnal_sales_b->update();
+    //         }
+    //         if($do_jurnal){
+    //         // Update Jurnal DO
+    //             // debet Persediaan Barang milik Customer
+    //                 $jurnal_do_a = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','2.1.3')->first();
+    //                 $jurnal_do_a->amount = $cogs;
+    //                 $jurnal_do_a->update();
+    //             // credit Persediaan Barang digudang
+    //                 $jurnal_do_b = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
+    //                 $jurnal_do_b->amount = $cogs;
+    //                 $jurnal_do_b->update();
+                                    
+    //         }
+    //     }
+    // }
+    // public function index(){
+    //     $date = '2020-02-01';
+    //     // GET Parent Account  = ASSET
+    //     $parent = Coa::where('AccNo','1')->select('AccNo','AccName')->first();
+    //     $sum = 0;
+    //     $data = collect();
+
+    //     // GET 2nd inheritance
+    //     $collect2 = collect();
+    //     foreach(Coa::where('AccParent',$parent->AccNo)->where('AccNo','NOT LIKE',$parent->AccNo)->get() as $key2){
+    //         $sum2 = 0;
+    //         $col2 = collect();
+
+    //         // GET 3rd Inheritance
+    //         $collect3 = collect();
+    //         foreach(Coa::where('AccParent',$key2->AccNo)->get() as $key3){
+    //             $sum3 = 0;
+    //             $col3 = collect();
+
+    //             // GET 4th Inheritance
+    //             $collect4 = collect();
+    //             foreach(Coa::where('AccParent',$key3->AccNo)->get() as $key4){
+    //                 $sum4 = 0;
+    //                 $col4 = collect();
+
+    //                 // Get 5th Inheritance
+    //                 $collect5 = collect();
+    //                 foreach(Coa::where('AccParent',$key4->AccNo)->get() as $key5){
+    //                     $col5 = collect();
+    //                     if($key5->StatusAccount == 'Detail'){
+    //                         // Get Total Amount From Jurnal
+    //                         $sales5 = Jurnal::where('AccNo',$key5->AccNo);
+    //                         if($date <> NULL){
+    //                             $sales5->where('date','<=',$date);
+    //                         }
+    //                         $amount5 = $sales5->sum('Amount');
+
+    //                         // Incement
+    //                         $sum4+=$amount5;
+    //                     }
+
+    //                     $col5->put('name',$key5->AccName);
+    //                     $col5->put('no',$key5->AccNo);
+    //                     $col5->put('amount',$amount5);
+
+    //                     $collect5->push($col5);
+    //                 }
+
+    //                 // Cek if Detail or not
+    //                 if($key4->StatusAccount == 'Detail'){
+    //                     // Get Total Amount From Jurnal
+    //                     $sales4 = Jurnal::where('AccNo',$key4->AccNo);
+    //                     if($date <> NULL){
+    //                         $sales4->where('date','<=',$date);
+    //                     }
+    //                     $amount4 = $sales4->sum('Amount');
+
+    //                     // Incement
+    //                     $sum3+=$amount4;
+    //                 }else{
+    //                     $sum3+=$sum4;
+    //                     $amount4=$sum3;
+    //                 }
+
+    //                 $col4->put('name',$key4->AccName);
+    //                 $col4->put('no',$key4->AccNo);
+    //                 $col4->put('amount',$amount4);
+    //                 $col4->put('data',$collect5);
+
+    //                 $collect4->push($col4);
+    //             }
+
+    //             // Cek if Detail or not
+    //             if($key3->StatusAccount == 'Detail'){
+    //                 // Get Total Amount From Jurnal
+    //                 $sales3 = Jurnal::where('AccNo',$key3->AccNo);
+    //                 if($date <> NULL){
+    //                     $sales3->where('date','<=',$date);
+    //                 }
+    //                 $amount3 = $sales3->sum('Amount');
+
+    //                 // Incement
+    //                 $sum2+=$amount3;
+    //             }else{
+    //                 $sum2+=$sum3;
+    //                 $amount3=$sum2;
+    //             }
+
+    //             $col3->put('name',$key3->AccName);
+    //             $col3->put('no',$key3->AccNo);
+    //             $col3->put('amount',$amount3);
+    //             $col3->put('data',$collect4);
+
+    //             $collect3->push($col3);
+    //     }
+
+    //         // Cek if Detail or not
+    //         if($key2->StatusAccount == 'Detail'){
+    //             // Get Total Amount From Jurnal
+    //             $sales2 = Jurnal::where('AccNo',$sum2->AccNo);
+    //             if($date <> NULL){
+    //                 $sales2->where('date','<=',$date);
+    //             }
+    //             $amount2 = $sales2->sum('Amount');
+
+    //             // Incement
+    //             $sum+=$amount2;
+    //         }else{
+    //             $sum+=$sum2;
+    //             $amount2=$sum;
+    //         }
+    //         $col2->put('name',$key2->AccName);
+    //         $col2->put('no',$key2->AccNo);
+    //         $col2->put('amount',$amount2);
+    //         $col2->put('data',$collect3);
+
+    //         $collect2->push($col2);
+    //     }
+
+    //     $data->put('name',$parent->AccName);
+    //     $data->put('no',$parent->AccNo);
+    //     $data->put('amount',$sum);
+    //     $data->put('data',$collect2);
+
+    //     dd($data);
+    // }
 
     // public function index(){
     //     dd(Jurnal::where('date','<=','2019-11-04')->get());

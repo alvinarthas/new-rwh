@@ -151,7 +151,67 @@ class DeliveryController extends Controller
         }
     }
 
-    public function print(Request $request){
+    public function print($id){
+        $content = file_get_contents('https://www.royalcontrolling.com/api/do/print/'.$id);
+        $decode = json_decode($content);
+
+        $file =  'DO-'.$decode->data[0]->trx_id.'.txt';  # nama file temporary yang akan dicetak
+        $handle = fopen($file, 'w');
+        $Data = "=========================\r\n";
+        $Data .= "|       RWH HERBAL    |\r\n";
+        $Data .= "|    DELIVERY ORDER   |\r\n";
+        $Data .= "========================\r\n";
+        $Data .= "TRXID : ".$decode->data[0]->trx_id."\r\n";
+        $Data .= "DATE : ".$decode->data[0]->trx_date."\r\n";
+        $Data .= "MARKETING : ".strtoupper($decode->data[0]->customer_name)."\r\n";
+        $Data .= "==========================\r\n";
+        $no = 1;
+        foreach($decode->data as $key){
+            $Data .= $no.". ".$key->product_name."\r\n";
+            $Data .= "Qty : ".$key->qty." ".$key->unit."\r\n";
+            $Data .= "\r\n";
+            $no++;
+        }
+        $Data .= "Approved By\r\nInventory Officer\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
+        Storage::put($file, $Data);
+        file_put_contents($file, $Data);
+        fwrite($handle, $Data);
+        fclose($handle);
+        copy($file, "//localhost/POS-80C");
+        unlink($file);
+    }
+
+    public function getDO(Request $request){
+        $trx_id = $request->trx_id;
+        $transaksi = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->join('tblproduct', 'delivery_detail.product_id', 'tblproduct.prod_id')->where('do_id',$trx_id)->select('delivery_order.sales_id', 'date', 'do_id', 'qty', 'tblproduct.name', 'delivery_detail.product_id')->get();
+        $deliveries = array();
+        foreach($transaksi as $t){
+            $do_id = 'DO-'.$t->do_id;
+            $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', 'tblproducttrxdet.trx_id')->join('tblcustomer', 'tblproducttrx.customer_id', 'tblcustomer.id')->where('tblproducttrx.id', $t->sales_id)->where('tblproducttrxdet.prod_id', $t->product_id)->select('apname','unit')->first();
+            $result = array(
+                'trx_id' => $do_id,
+                'trx_date' => $t->date,
+                'customer_name' => $sales->apname,
+                'product_name' => $t->name,
+                'qty' => $t->qty,
+                'unit' => $sales->unit,
+            );
+            array_push($deliveries, $result);
+        }
+
+        $statusCode = 200;
+        $data = array(
+            'code' => '200',
+            'status' => 'success',
+            'message' => 'Data customer telah ditemukan',
+            'data' => $deliveries
+        );
+        return response()->json($data,$statusCode);
+    }
+
+    // OLD CODE
+
+    public function old_print(Request $request){
         $trx_id = $request->trx_id;
         $transaksi = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->join('tblproduct', 'delivery_detail.product_id', 'tblproduct.prod_id')->where('do_id',$trx_id)->select('delivery_order.sales_id', 'date', 'do_id', 'qty', 'tblproduct.name', 'delivery_detail.product_id')->get();
         $data = array();
@@ -171,13 +231,13 @@ class DeliveryController extends Controller
         return response()->json($data);
     }
 
-    public function printing($trx_id, Request $request){
+    public function old_printing($trx_id, Request $request){
         echo "<pre>";
         print_r("tes");
         die();
     }
 
-    public function printtunggal(Request $request){
+    public function old_printtunggal(Request $request){
         $trx_id = $request->trx_id;
         $transaksi = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('do_id',$trx_id)->first();
         $do_id = 'DO-'.$transaksi->do_id;

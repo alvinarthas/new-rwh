@@ -98,7 +98,7 @@ class ReceiveProductController extends Controller
         $receive = ReceiveDet::where('id',$request->id)->first();
 
         try {
-            $receive->delete();
+            $jurnal = Jurnal::where('id_jurnal',$receive->id_jurnal)->delete();
             return redirect()->back()->with('status', 'Data berhasil dihapus');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors($e);

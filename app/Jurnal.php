@@ -121,4 +121,40 @@ class Jurnal extends Model
 
         $jurnal->save();
     }
+
+    public static function refreshCogs($data){
+        $getTrxId = SalesDet::whereIn('prod_id',$data)->select('trx_id')->groupBy('trx_id')->orderBy('trx_id')->get();
+        foreach ($getTrxId as $key) {
+            $sales_jurnal = $key->trx->jurnal_id;
+            $do_jurnal = DeliveryOrder::where('sales_id',$key->trx_id)->select('jurnal_id')->first();
+            $cogs = 0;
+            foreach (SalesDet::where('trx_id',$key->trx_id)->select('price','qty','prod_id')->get() as $key2) {
+                $avcost = PurchaseDetail::where('prod_id',$key2->prod_id)->where('created_at','<=',$key->trx->created_at)->avg('price');
+                $cogs +=  $avcost * $key2->qty;
+            }
+            // Update Jurnal Sales
+            if($sales_jurnal <> 0){
+                // debet COGS
+                    $jurnal_sales_a = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','5.1')->first();
+                    $jurnal_sales_a->amount = $cogs;
+                    $jurnal_sales_a->update();
+                // Credit Persediaan Barang milik customer
+                    $jurnal_sales_b = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','2.1.3')->first();
+                    $jurnal_sales_b->amount = $cogs;
+                    $jurnal_sales_b->update();
+            }
+            if($do_jurnal){
+            // Update Jurnal DO
+                // debet Persediaan Barang milik Customer
+                    $jurnal_do_a = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','2.1.3')->first();
+                    $jurnal_do_a->amount = $cogs;
+                    $jurnal_do_a->update();
+                // credit Persediaan Barang digudang
+                    $jurnal_do_b = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
+                    $jurnal_do_b->amount = $cogs;
+                    $jurnal_do_b->update();
+                                    
+            }
+        }
+    }
 }

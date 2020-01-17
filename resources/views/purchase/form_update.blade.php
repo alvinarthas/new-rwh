@@ -148,6 +148,7 @@ Form Update Purchasing #{{$purchase->id}}
                                         <th>Product Name</th>
                                         <th>Qty</th>
                                         <th>Unit</th>
+                                        <th>Avg Cost</th>
                                         <th>Harga Distributor</th>
                                         <th>Harga Modal</th>
                                         <th>Sub Total Distributor</th>
