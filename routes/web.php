@@ -194,6 +194,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::post('/pricebyproduct/manage/{id}', 'CustomerController@updateManagePriceProduct')->name('updateManagePriceProduct');
         Route::get('/cetakXlsProduct/{id}', 'CustomerController@exportProduct')->name('exportXlsProduct');
         Route::get('/cetakXlsCustomer/{id}', 'CustomerController@exportCustomer')->name('exportXlsCustomer');
+        Route::get('/customerstock', 'ProductController@customerStock')->name('customerStock');
 
     // Stock Controlling
         Route::get('/stockcontrolling','ProductController@controlling')->name('stockControlling');
@@ -243,6 +244,12 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('purchase','LaporanController@purchaseReport')->name('purchaseReport');
         // Sales
         Route::get('sales','LaporanController@salesReport')->name('salesReport');
+        // Laporan Keuangan
+        Route::get('finance','LaporanController@financeReport')->name('financeReport');
+        // Laporan Sisa Hutang
+        Route::get('sisahutang','LaporanController@sisaHutangReport')->name('sisaHutangReport');
+        // Laporan Sisa Piutang
+        Route::get('sisapiutang','LaporanController@sisaPiutangReport')->name('sisaPiutangReport');
     });
 
     Route::get('logout','HomeController@logout')->name('Logout');

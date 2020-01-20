@@ -16,7 +16,9 @@ use App\MenuMapping;
 use App\DeliveryDetail;
 use App\PurchaseDetail;
 use App\ReceiveDet;
+use App\Customer;
 use App\SalesDet;
+use App\Sales;
 
 class ProductController extends Controller
 {
@@ -449,6 +451,19 @@ class ProductController extends Controller
             $products = Product::all();
 
             return view('product.controlling.index',compact('products'));
+        }
+    }
+
+    public function customerStock(Request $request){
+        if($request->ajax()){
+            $customer = Customer::where('id',$request->customer)->select('apname','id')->first();
+            $stocks = Sales::customerStock($request->customer);
+
+            return response()->json(view('product.customer.view',compact('customer','stocks'))->render());
+        }else {
+            $customers = Customer::all();
+
+            return view('product.customer.index',compact('customers'));
         }
     }
 }
