@@ -183,7 +183,7 @@
                                 @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
                                     <td>{{$b->AccName}}</td>
                                 @endif
-                                <td>{{$b->total_bonus}}</td>
+                                <td>Rp {{ number_format($b->total_bonus, 2, ",", ".")}}</td>
                                 <td>
                                     @if($bonusapa=="perhitungan")
                                         @if (array_search("BMPBU",$page))
@@ -320,10 +320,11 @@
                                 <label class="col-2 col-form-label">Supplier</label>
                                 <div class="col-10">
                                     <select class="form-control select2" parsley-trigger="change" id="supplier" name="supplier">
-                                        @isset($bn->AccNo)
+                                        @isset($bn->supplier)
                                             @if($bn->supplier != 0)
                                                 <option value="{{ $bn->supplier }}">{{ Perusahaan::where('id', $bn->supplier)->first()->nama }}</option>
                                             @else
+                                                <option value="0" selected disabled>Pilih Supplier</option>
                                                 @foreach($supplier as $s)
                                                     @if($bn->supplier != $s->id)
                                                         <option value="{{ $s->id }}">{{ $s->nama }}</option>
@@ -331,7 +332,7 @@
                                                 @endforeach
                                             @endif
                                         @else
-                                            <option value="#" selected disabled>Pilih Supplier</option>
+                                            <option value="0" selected disabled>Pilih Supplier</option>
                                             @foreach($supplier as $s)
                                                 <option value="{{ $s->id }}">{{ $s->nama }}</option>
                                             @endforeach
@@ -410,8 +411,10 @@
                                             </div>
                                             <thead>
                                                 <th>No</th>
-                                                <th>Nama Bank</th>
-                                                <th>No Rekening</th>
+                                                @if($bn->AccNo != "1.1.1.1.000003")
+                                                    <th>Nama Bank</th>
+                                                    <th>No Rekening</th>
+                                                @endif
                                                 <th>Nama</th>
                                                 <th>Bonus</th>
                                                 <th>Action</th>
@@ -425,8 +428,12 @@
                                                 @foreach($bonus as $b)
                                                 <tr style="width:100%" id="trtd{{ $b->id_bonus }}" class="trow">
                                                     <td><input type="hidden" name="id_bonus[]" value="{{ $b->id_bonus }}">{{$i}}</td>
-                                                    <td><input type="hidden" name="namabank[]" value="{{ $b->namabank }}">{{$b->namabank}}</td>
-                                                    <td><input type="hidden" name="norekening[]" value="{{ $b->no_rek }}">{{$b->no_rek}}</td>
+                                                    @if($bn->AccNo != "1.1.1.1.000003")
+                                                        <td><input type="hidden" name="namabank[]" value="{{ $b->namabank }}">{{$b->namabank}}</td>
+                                                        <td><input type="hidden" name="norekening[]" value="{{ $b->no_rek }}">{{$b->no_rek}}</td>
+                                                    @else
+                                                        <input type="hidden" name="norekening[]" value="{{ $b->no_rek }}">
+                                                    @endif
                                                     <td><input type="hidden" name="nama[]" value="{{ $b->nama }}">{{$b->nama}}</td>
                                                     <td>
                                                         {{-- tampil semua data member perusahaan --}}
@@ -657,6 +664,7 @@
 
     function ajx_member(){
         var bid = $("#bank_id").val()
+        var AccNo = $("#rekening").val()
         console.log("bank id = "+bid)
         $("#search").select2({
             placeholder:'Masukan Kata Kunci',
@@ -668,11 +676,17 @@
                     return{
                         keyword:params.term,
                         bankid:bid,
+                        AccNo:AccNo,
                     };
                 },
                 processResults:function(data){
                     var item = $.map(data, (value)=>{ //map buat ngemap object data kyk foreach
-                        return { id: value.id, text: value.namabank+" "+value.norek+" - "+value.nama+" (KTP : "+value.ktp+")"};
+                        if(AccNo == "1.1.1.1.000003"){
+                            var text = value.nama+" (KTP : "+value.ktp+")";
+                        }else{
+                            var text = value.namabank+" "+value.norek+" - "+value.nama+" (KTP : "+value.ktp+")";
+                        }
+                        return { id: value.id, text: text};
                     });
                     return {
                         results: item
@@ -750,6 +764,7 @@
         var thn = $("#tahun").val();
         var bln = $("#bulan").val();
         var cnt = $("#ctr").val();
+        var AccNo = $("#rekening").val();
         $.ajax({
             url : "{{route('ajxAddRowPenerimaan')}}",
             type : "post",
@@ -760,6 +775,7 @@
                 bulan : bln,
                 count : cnt,
                 _token : token,
+                AccNo : AccNo,
             },
         }).done(function (data) {
             $('#table-body').append(data.append);
