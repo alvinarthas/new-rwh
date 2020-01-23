@@ -9,6 +9,7 @@ use App\Customer;
 use App\Coa;
 use App\Jurnal;
 use App\MenuMapping;
+use App\Log;
 
 class SaldoController extends Controller
 {
@@ -101,9 +102,10 @@ class SaldoController extends Controller
                     'creator'       => session('user_id')
                 ));
 
-                $saldo->save();
                 $debet->save();
                 $credit->save();
+                $saldo->save();
+                Log::setLog('PSDCC','Create '.$id_jurnal);
                 return redirect()->route('saldo.index')->with('status','Data berhasil disimpan');
             }catch(\Exception $e) {
                 return redirect()->back()->withErrors($e->getMessage());
@@ -188,9 +190,9 @@ class SaldoController extends Controller
 
                 $saldo->save();
 
-                
+
                 $ket = 'Deposit dari '.$namacust['apname'].'('.$request->tanggal.')';
-                
+
                 // Update Jurnal Debet
                 $jurnal1 = Jurnal::where('id_jurnal',$saldo->id_jurnal)->where('AccPos','Debet')->first();
                 $jurnal1->AccNo = $request->search;
@@ -207,6 +209,8 @@ class SaldoController extends Controller
                 $jurnal2->description = $ket;
                 $jurnal2->creator = session('user_id');
                 $jurnal2->update();
+
+                Log::setLog('PSDCU','Update '.$saldo->id_jurnal);
 
                 return redirect()->route('saldo.index')->with('status','Data berhasil diupdate');
             }catch(\Exception $e) {
@@ -231,6 +235,7 @@ class SaldoController extends Controller
             if ((file_exists(public_path('assets/images/saldo/topup/').$saldo->buktitf)) AND ($saldo->buktitf <> NULL)) {
                 unlink(public_path('assets/images/saldo/topup/').$saldo->buktitf);
             }
+            Log::setLog('PSDCD','Delete '.$$saldo['id_jurnal']);
             Jurnal::where('id_jurnal', $saldo['id_jurnal'])->delete();
             // $saldo->delete();
             return redirect()->back()->with('status','Data berhasil dihapus');

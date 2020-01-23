@@ -138,8 +138,9 @@
                                     $creator = Employee::where('id', $s->creator)->select('name')->first();
                                     $i++;
                                 @endphp
+                                {{-- number_format($s->amount,2,",",".") --}}
                                 <td>{{$coa['AccName']}}</td>
-                                <td>Rp <span class="divide">{{number_format($s->amount,2,",",".")}}</span></td>
+                                <td>Rp {{ number_format($s->amount,2,",",".") }}</td>
                                 <td>{{$s->keterangan}}</td>
                                 <td>{{$creator['name']}}</td>
                                 <td>
