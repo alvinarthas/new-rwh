@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class PurchaseDetail extends Model
 {
@@ -17,5 +18,9 @@ class PurchaseDetail extends Model
 
     public function purchase(){
         return $this->belongsTo('App\Purchase','trx_id');
+    }
+
+    public static function avgCost($product){
+        return PurchaseDetail::where('prod_id',$product)->avg('price');
     }
 }

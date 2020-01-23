@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Handler;
+use Illuminate\Support\Facades\DB;
 
 use App\Purchase;
 use App\PurchaseMap;
@@ -72,9 +73,9 @@ class PurchaseController extends Controller
         $month = $request->bulan;
         $year = $request->tahun;
 
-        $manage = ManageHarga::showProduct($product,$month,$year);
-        $sub_ttl_dist = $qty*$manage['harga_distributor'];
-        $sub_ttl_mod = $qty*$manage['harga_modal'];
+        $manage = Product::where('prod_id',$request->select_product)->first();
+        $sub_ttl_dist = $qty*$manage->harga_distributor;
+        $sub_ttl_mod = $qty*$manage->harga_modal;
 
         $append = '<tr style="width:100%" id="trow'.$count.'">
         <td>'.$count.'</td>
@@ -359,9 +360,14 @@ class PurchaseController extends Controller
     public function destroy($id)
     {
         $purchase = Purchase::where('id',$id)->first();
+        $prodarray = collect();
+        foreach (PurchaseDetail::where('trx_id',$id)->get() as $key) {
+            $prodarray->push($key->prod_id);
+        }
         Jurnal::where('id_jurnal',$purchase->jurnal_id)->delete();
         try {
             $purchase->delete();
+            Jurnal::refreshCogs($prodarray);
             Log::setLog('PUPUD','Delete PO.'.$id);
             return "true";
         } catch (\Exception $e) {

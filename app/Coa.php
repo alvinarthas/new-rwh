@@ -24,11 +24,14 @@ class Coa extends Model
 
     // NETT PROFIT
     public static function nettSales($start,$end){
-        $sales = Jurnal::where('AccNo','4.1.1');
+        $sales_debet = Jurnal::where('AccNo','4.1.1')->where('AccPos','Debet');
+        $sales_credit = Jurnal::where('AccNo','4.1.1')->where('AccPos','Credit');
         if($start <> NULL || $end <> NULL){
-            $sales->whereBetween('date',[$start,$end]);
+            $sales_debet->whereBetween('date',[$start,$end]);
+            $sales_credit->whereBetween('date',[$start,$end]);
         }
-        return $sales->sum('Amount');
+        $total = $sales_credit->sum('Amount')-$sales_debet->sum('Amount');
+        return $total;
     }
 
     public static function cogs($start,$end){
@@ -53,12 +56,14 @@ class Coa extends Model
             foreach (Coa::where('AccParent',$key->AccNo)->get() as $key2) {
 
                 $coa_collect = collect();
-                $sales = Jurnal::where('AccNo',$key2->AccNo);
+                $sales_debet = Jurnal::where('AccNo',$key2->AccNo)->where('AccPos','Debet');
+                $sales_credit = Jurnal::where('AccNo',$key2->AccNo)->where('AccPos','Credit');
                 if($start <> NULL || $end <> NULL){
-                    $sales->whereBetween('date',[$start,$end]);
+                    $sales_debet->whereBetween('date',[$start,$end]);
+                    $sales_credit->whereBetween('date',[$start,$end]);
                 }
 
-                $coasum = $sales->sum('Amount');
+                $coasum = $sales_credit->sum('Amount')-$sales_debet->sum('Amount');
                 $sub_sum+=$coasum;
 
                 $coa_collect->put('name',$key2->AccName);
@@ -86,13 +91,15 @@ class Coa extends Model
 
         foreach (Coa::where('AccNo','LIKE','7.3')->orwhere('AccNo','LIKE','7.4')->get() as $key) {
             $subsub = collect();
-            $sales = Jurnal::where('AccNo',$key->AccNo);
+            $sales_debet = Jurnal::where('AccNo',$key->AccNo)->where('AccPos','Debet');
+            $sales_credit = Jurnal::where('AccNo',$key->AccNo)->where('AccPos','Credit');
 
             if($start <> NULL || $end <> NULL){
-                $sales->whereBetween('date',[$start,$end]);
+                $sales_debet->whereBetween('date',[$start,$end]);
+                $sales_credit->whereBetween('date',[$start,$end]);
             }
 
-            $coasum = $sales->sum('Amount');
+            $coasum = $sales_credit->sum('Amount')-$sales_debet->sum('Amount');
 
             $subsub->put('name',$key->AccName);
             $subsub->put('amount',$coasum);
@@ -114,12 +121,14 @@ class Coa extends Model
             foreach (Coa::where('AccParent',$key->AccNo)->get() as $key2) {
 
                 $coa_collect = collect();
-                $sales = Jurnal::where('AccNo',$key2->AccNo);
+                $sales_debet = Jurnal::where('AccNo',$key2->AccNo)->where('AccPos','Debet');
+                $sales_credit = Jurnal::where('AccNo',$key2->AccNo)->where('AccPos','Credit');
                 if($start <> NULL || $end <> NULL){
-                    $sales->whereBetween('date',[$start,$end]);
+                    $sales_debet->whereBetween('date',[$start,$end]);
+                    $sales_credit->whereBetween('date',[$start,$end]);
                 }
 
-                $coasum = $sales->sum('Amount');
+                $coasum = $sales_credit->sum('Amount')-$sales_debet->sum('Amount');
                 
                 $sub_sum+=$coasum;
 
@@ -181,19 +190,23 @@ class Coa extends Model
     }
 
     public static function setoranModal($start,$end){
-        $sales = Jurnal::where('AccNo','3.3');
+        $sales_debet = Jurnal::where('AccNo','3.3')->where('AccPos','Debet');
+        $sales_credit = Jurnal::where('AccNo','3.3')->where('AccPos','Credit');
         if($start <> NULL || $end <> NULL){
-            $sales->whereBetween('date',[$start,$end]);
+            $sales_debet->whereBetween('date',[$start,$end]);
+            $sales_credit->whereBetween('date',[$start,$end]);
         }
-        return $sales->sum('Amount');
+        return $sales_credit->sum('Amount')-$sales_debet->sum('Amount');
     }
 
     public static function pengeluaranPribadi($start,$end){
-        $sales = Jurnal::where('AccNo','3.2');
+        $sales_debet = Jurnal::where('AccNo','3.2')->where('AccPos','Debet');
+        $sales_credit = Jurnal::where('AccNo','3.2')->where('AccPos','Credit');
         if($start <> NULL || $end <> NULL){
-            $sales->whereBetween('date',[$start,$end]);
+            $sales_debet->whereBetween('date',[$start,$end]);
+            $sales_credit->whereBetween('date',[$start,$end]);
         }
-        return $sales->sum('Amount');
+        return $sales_credit->sum('Amount')-$sales_debet->sum('Amount');
     }
 
     public static function modalAkhir($start,$end){
@@ -239,11 +252,18 @@ class Coa extends Model
                         $col5 = collect();
                         if($key5->StatusAccount == 'Detail'){
                             // Get Total Amount From Jurnal
-                            $sales5 = Jurnal::where('AccNo',$key5->AccNo);
+                            $sales5_debet = Jurnal::where('AccNo',$key5->AccNo)->where('AccPos','Debet');
+                            $sales5_credit = Jurnal::where('AccNo',$key5->AccNo)->where('AccPos','Credit');
                             if($date <> NULL){
-                                $sales5->where('date','<=',$date);
+                                $sales5_debet->where('date','<=',$date);
+                                $sales5_credit->where('date','<=',$date);
                             }
-                            $amount5 = $sales5->sum('Amount');
+                            if($no == 1){
+                                $amount5 = $sales5_debet->sum('Amount')-$sales5_credit->sum('Amount');
+                            }else {
+                                $amount5 = $sales5_credit->sum('Amount')-$sales5_debet->sum('Amount');
+                            }
+                           
 
                             // Incement
                             $sum4+=$amount5;
@@ -259,11 +279,17 @@ class Coa extends Model
                     // Cek if Detail or not
                     if($key4->StatusAccount == 'Detail'){
                         // Get Total Amount From Jurnal
-                        $sales4 = Jurnal::where('AccNo',$key4->AccNo);
+                        $sales4_debet = Jurnal::where('AccNo',$key4->AccNo)->where('AccPos','Debet');
+                        $sales4_credit = Jurnal::where('AccNo',$key4->AccNo)->where('AccPos','Credit');
                         if($date <> NULL){
-                            $sales4->where('date','<=',$date);
+                            $sales4_debet->where('date','<=',$date);
+                            $sales4_credit->where('date','<=',$date);
                         }
-                        $amount4 = $sales4->sum('Amount');
+                        if($no == 1){
+                            $amount4 = $sales4_debet->sum('Amount')-$sales4_credit->sum('Amount');
+                        }else {
+                            $amount4 = $sales4_credit->sum('Amount')-$sales4_debet->sum('Amount');
+                        }
 
                         // Incement
                         $sum3+=$amount4;
@@ -283,11 +309,17 @@ class Coa extends Model
                 // Cek if Detail or not
                 if($key3->StatusAccount == 'Detail'){
                     // Get Total Amount From Jurnal
-                    $sales3 = Jurnal::where('AccNo',$key3->AccNo);
+                    $sales3_debet = Jurnal::where('AccNo',$key3->AccNo)->where('AccPos','Debet');
+                    $sales3_credit = Jurnal::where('AccNo',$key3->AccNo)->where('AccPos','Credit');
                     if($date <> NULL){
-                        $sales3->where('date','<=',$date);
+                        $sales3_debet->where('date','<=',$date);
+                        $sales3_credit->where('date','<=',$date);
                     }
-                    $amount3 = $sales3->sum('Amount');
+                    if($no == 1){
+                        $amount3 = $sales3_debet->sum('Amount')-$sales3_credit->sum('Amount');
+                    }else {
+                        $amount3 = $sales3_credit->sum('Amount')-$sales3_debet->sum('Amount');
+                    }
 
                     // Incement
                     $sum2+=$amount3;
@@ -307,11 +339,17 @@ class Coa extends Model
             // Cek if Detail or not
             if($key2->StatusAccount == 'Detail'){
                 // Get Total Amount From Jurnal
-                $sales2 = Jurnal::where('AccNo',$sum2->AccNo);
+                $sales2_debet = Jurnal::where('AccNo',$key2->AccNo)->where('AccPos','Debet');
+                $sales2_credit = Jurnal::where('AccNo',$key2->AccNo)->where('AccPos','Credit');
                 if($date <> NULL){
-                    $sales2->where('date','<=',$date);
+                    $sales2_debet->where('date','<=',$date);
+                    $sales2_credit->where('date','<=',$date);
                 }
-                $amount2 = $sales2->sum('Amount');
+                if($no == 1){
+                    $amount2 = $sales2_debet->sum('Amount')-$sales2_credit->sum('Amount');
+                }else {
+                    $amount2 = $sales2_credit->sum('Amount')-$sales2_debet->sum('Amount');
+                }
 
                 // Incement
                 $sum+=$amount2;

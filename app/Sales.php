@@ -278,4 +278,32 @@ class Sales extends Model
         }
         return $data;
     }
+
+    public static function customerStock($customer){
+        $data = collect();
+        foreach(Sales::where('customer_id',$customer)->select('id')->get() as $key){
+            $sales = collect();
+            $data_sales = collect();
+            $ttl_selisih = 0;
+            foreach (SalesDet::where('trx_id',$key->id)->select('prod_id','qty')->get() as $key2) {
+                $detail = collect();
+                $do_det = DeliveryDetail::where('sales_id',$key->id)->where('product_id',$key2->prod_id)->sum('qty');
+
+                $selisih = $key2->qty - $do_det;
+                $ttl_selisih+=$selisih;
+                if($selisih > 0){
+                    $detail->put('product',$key2->product->name);
+                    $detail->put('product_id',$key2->prod_id);
+                    $detail->put('selisih',$selisih);
+                    $data_sales->push($detail);
+                }
+            }
+            if($ttl_selisih > 0){
+                $sales->put('id','SO.'.$key->id);
+                $sales->put('data',$data_sales);
+                $data->push($sales);
+            }
+        }
+        return $data;
+    }
 }

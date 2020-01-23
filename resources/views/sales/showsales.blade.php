@@ -77,6 +77,7 @@
                             <th>Product ID</th>
                             <th>Product Name</th>
                             <th>Price</th>
+                            <th>Avg Cost</th>
                             <th>Qty</th>
                             <th>Unit</th>
                             <th>Sub Total Price</th>

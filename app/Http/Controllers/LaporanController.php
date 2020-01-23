@@ -57,17 +57,18 @@ class LaporanController extends Controller
             $start = $request->start_date;
             $end = $request->end_date;
 
-            $nett_sales = Coa::nettSales($start,$end);
-            $cogs = Coa::cogs($start,$end);
-            $gross_profit = $nett_sales - $cogs;
-            $biayaa = Coa::biaya($start,$end);
-            $laba_operasional = $gross_profit - $biayaa['amount'];
-            $laba_bersih_non = Coa::laba_bersih_non($start,$end);
-            $laba_rugi = Coa::laba_rugi($start,$end);
+            // Profit Loss
+                $nett_sales = Coa::nettSales($start,$end);
+                $cogs = Coa::cogs($start,$end);
+                $gross_profit = $nett_sales - $cogs;
+                $biayaa = Coa::biaya($start,$end);
+                $laba_operasional = $gross_profit - $biayaa['amount'];
+                $laba_bersih_non = Coa::laba_bersih_non($start,$end);
+                $laba_rugi = Coa::laba_rugi($start,$end);
 
-            $nett_profit = $laba_operasional+$laba_bersih_non['amount']+$laba_rugi[0]['amount']+$laba_rugi[1]['amount'];
+                $nett_profit = $laba_operasional+$laba_bersih_non['amount']+$laba_rugi[0]['amount']+$laba_rugi[1]['amount'];
 
-            return response()->json(view('laporan.profit_loss.view',compact('start','end','nett_sales','cogs','gross_profit','biayaa','laba_bersih_non','laba_operasional','laba_rugi','nett_profit'))->render());
+                return response()->json(view('laporan.profit_loss.view',compact('start','end','nett_sales','cogs','gross_profit','biayaa','laba_bersih_non','laba_operasional','laba_rugi','nett_profit'))->render());
 
         }else{
             return view('laporan.profit_loss.index');
@@ -111,6 +112,68 @@ class LaporanController extends Controller
             return view('laporan.purchase.show',compact('report','start','end','count'));
         }else{
             return view('laporan.purchase.index');
+        }
+    }
+
+    // Laporan Keuangan
+    public function financeReport(Request $request){
+        // Contain of Profit Loss, General Ledger, Perubahan Modal, Neraca
+
+        if($request->ajax()){
+            $start = $request->start_date;
+            $end = $request->end_date;
+
+            // Profit Loss
+                $nett_sales = Coa::nettSales($start,$end);
+                $cogs = Coa::cogs($start,$end);
+                $gross_profit = $nett_sales - $cogs;
+                $biayaa = Coa::biaya($start,$end);
+                $laba_operasional = $gross_profit - $biayaa['amount'];
+                $laba_bersih_non = Coa::laba_bersih_non($start,$end);
+                $laba_rugi = Coa::laba_rugi($start,$end);
+
+                $nett_profit = $laba_operasional+$laba_bersih_non['amount']+$laba_rugi[0]['amount']+$laba_rugi[1]['amount'];
+            // Laporan Modal
+                $modal_awal = Coa::modalAwal($start,$end);
+                $set_modal = Coa::setoranModal($start,$end);
+                $prive = Coa::pengeluaranPribadi($start,$end);
+                $perubahan_modal = $set_modal-$prive+$nett_profit;
+                $modal_akhir = $modal_awal+$perubahan_modal;
+            // Neraca
+                $date = $request->end_date;
+                $start2 = '2019-10-01';
+
+                $assets = Coa::neraca($date,1);
+                $hutangs = Coa::neraca($date,2);
+                // $modal = Coa::modalAkhir($start2,$date);
+
+                return response()->json(view('laporan.keuangan.view',compact('start','end','modal_awal','set_modal','prive','nett_profit','modal_akhir','laba_operasional','perubahan_modal','nett_sales','cogs','gross_profit','biayaa','laba_bersih_non','laba_operasional','laba_rugi','assets','hutangs'))->render());
+        }else{
+            return view('laporan.keuangan.index');
+        }
+    }
+
+    // Laporan Hutang Piutang Customer
+    public function sisaHutangReport(Request $request){
+        if($request->ajax()){
+            $supplier = Perusahaan::where('id',$request->supplier)->first();
+            $detail = Perusahaan::sisaHutangDetail($request->supplier);
+
+            return response()->json(view('laporan.sisahutang.view',compact('supplier','detail'))->render());
+        }else{
+            $suppliers = Perusahaan::sisaHutang();
+            return view('laporan.sisahutang.index',compact('suppliers'));
+        }
+    }
+
+    public function sisaPiutangReport(Request $request){
+        if($request->ajax()){
+            $customer = Customer::where('id',$request->customer)->first();
+            $detail = Customer::sisaPiutangDetail($request->customer);
+            return response()->json(view('laporan.sisapiutang.view',compact('customer','detail'))->render());
+        }else{
+            $customers = Customer::sisaPiutang();
+            return view('laporan.sisapiutang.index',compact('customers'));
         }
     }
 }
