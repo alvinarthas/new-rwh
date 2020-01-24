@@ -699,7 +699,7 @@
             var selisih = parseInt($('#bonus_tertahan').val()) - totalharga;
         }
 
-        // console.log(totalharga)
+        // console.log(bonus)
         $('#total_bonus').val(totalharga);
         $('#selisih_bonus').val(selisih);
     }
