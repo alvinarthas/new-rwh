@@ -138,11 +138,8 @@ class Coa extends Model
 
                 $sub_coa_collect->push($coa_collect);
             }
-            if($key->AccNo == '6.3' || $key->AccNo == '6.4'){
-                $parent_sum-=$sub_sum;
-            }else{
-                $parent_sum+=$sub_sum;
-            }
+
+            $parent_sum+=$sub_sum;
             
             $subsub->put('name',$key->AccName);
             $subsub->put('no',$key->AccNo);
@@ -249,7 +246,38 @@ class Coa extends Model
                     // Get 5th Inheritance
                     $collect5 = collect();
                     foreach(Coa::where('AccParent',$key4->AccNo)->get() as $key5){
+                        $sum5 = 0;
                         $col5 = collect();
+
+                        // Get 6th Inheritance
+                        $collect6 = collect();
+                        foreach(Coa::where('AccParent',$key5->AccNo)->get() as $key6){
+                            $col6 = collect();
+                            if($key6->StatusAccount == 'Detail'){
+                                // Get Total Amount From Jurnal
+                                $sales6_debet = Jurnal::where('AccNo',$key5->AccNo)->where('AccPos','Debet');
+                                $sales6_credit = Jurnal::where('AccNo',$key5->AccNo)->where('AccPos','Credit');
+                                if($date <> NULL){
+                                    $sales6_debet->where('date','<=',$date);
+                                    $sales6_credit->where('date','<=',$date);
+                                }
+                                if($no == 1){
+                                    $amount6 = $sales5_debet->sum('Amount')-$sales5_credit->sum('Amount');
+                                }else {
+                                    $amount6 = $sales5_credit->sum('Amount')-$sales5_debet->sum('Amount');
+                                }
+                               
+    
+                                // Incement
+                                $sum5+=$amount6;
+                            }
+    
+                            $col6->put('name',$key6->AccName);
+                            $col6->put('no',$key6->AccNo);
+                            $col6->put('amount',$amount5);
+    
+                            $collect6->push($col6);
+                        }
                         if($key5->StatusAccount == 'Detail'){
                             // Get Total Amount From Jurnal
                             $sales5_debet = Jurnal::where('AccNo',$key5->AccNo)->where('AccPos','Debet');
@@ -267,11 +295,15 @@ class Coa extends Model
 
                             // Incement
                             $sum4+=$amount5;
+                        }else{
+                            $sum4+=$sum5;
+                            $amount5=$sum5;
                         }
 
                         $col5->put('name',$key5->AccName);
                         $col5->put('no',$key5->AccNo);
                         $col5->put('amount',$amount5);
+                        $col5->put('data',$collect6);
 
                         $collect5->push($col5);
                     }
@@ -295,7 +327,7 @@ class Coa extends Model
                         $sum3+=$amount4;
                     }else{
                         $sum3+=$sum4;
-                        $amount4=$sum3;
+                        $amount4=$sum4;
                     }
 
                     $col4->put('name',$key4->AccName);
@@ -325,7 +357,7 @@ class Coa extends Model
                     $sum2+=$amount3;
                 }else{
                     $sum2+=$sum3;
-                    $amount3=$sum2;
+                    $amount3=$sum3;
                 }
 
                 $col3->put('name',$key3->AccName);
@@ -355,7 +387,7 @@ class Coa extends Model
                 $sum+=$amount2;
             }else{
                 $sum+=$sum2;
-                $amount2=$sum;
+                $amount2=$sum2;
             }
             $col2->put('name',$key2->AccName);
             $col2->put('no',$key2->AccNo);

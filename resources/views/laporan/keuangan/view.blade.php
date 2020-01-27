@@ -14,19 +14,19 @@
                 <table id="responsive-datatable_profitloss" class="table dt-responsive nowrap">
                     <tbody>
                         <tr>
-                            <td>Nett Sales</td>
+                            <td><strong>Nett Sales</strong></td>
                             <td></td>
                             <td></td>
                             <td>Rp {{number_format($nett_sales,2,',','.')}}</td>
                         </tr>
                         <tr>
-                            <td>COGS</td>
+                            <td><strong>COGS</strong></td>
                             <td></td>
                             <td></td>
-                            <td>Rp ({{number_format($cogs,2,',','.')}})</td>
+                            <td>(Rp {{number_format($cogs,2,',','.')}})</td>
                         </tr>
                         <tr>
-                            <td>Gross Profit</td>
+                            <td><strong>Gross Profit</strong></td>
                             <td></td>
                             <td></td>
                             <td>Rp {{number_format($gross_profit,2,',','.')}}</td>
@@ -42,30 +42,52 @@
                             <tr>
                                 <td>&emsp;&emsp;{{$key1['name']}}</td>
                                 <td></td>
-                                <td>Rp {{number_format($key1['amount'],2,',','.')}}</td>
+                                <td></td>
                                 <td></td>
                             </tr>
                             @foreach ($key1['data'] as $key2)
                                 <tr>
                                     <td>&emsp;&emsp;&emsp;&emsp;{{$key2['name']}}</td>
+                                    @if ($key2['amount'] < 0)
+                                    <td>(Rp {{number_format($key2['amount']*-1,2,',','.')}})</td>
+                                    @else
                                     <td>Rp {{number_format($key2['amount'],2,',','.')}}</td>
+                                    @endif
                                     <td></td>
                                     <td></td>
                                 </tr>
                             @endforeach
+                            <tr>
+                                <td>&emsp;&emsp;<strong>Total {{$key1['name']}}</strong></td>
+                                <td></td>
+                                @if ($key1['amount'] < 0)
+                                <td>(Rp {{number_format($key1['amount']*-1,2,',','.')}})</td>
+                                @else
+                                <td>Rp {{number_format($key1['amount'],2,',','.')}}</td>
+                                @endif
+                                <td></td>
+                            </tr>
                         @endforeach
                         <tr>
-                            <td><strong>&emsp;&emsp;Total Biaya</strong></td>
+                            <td><strong>Total Biaya</strong></td>
                             <td></td>
                             <td></td>
-                            <td>(Rp {{number_format($biayaa['amount'],2,',','.')}})</td>
+                            @if ($biayaa['amount'] < 0)
+                            <td>(Rp {{number_format($biayaa['amount']*-1,2,',','.')}})</td>
+                            @else
+                            <td>Rp {{number_format($biayaa['amount'],2,',','.')}}</td>
+                            @endif
                         </tr>
 
                         <tr>
-                            <td>Laba/Rugi Bersih Operasional</td>
+                            <td><strong>Laba/Rugi Bersih Operasional</strong></td>
                             <td></td>
                             <td></td>
+                            @if ($laba_operasional < 0)
+                            <td>(Rp {{number_format($laba_operasional*-1,2,',','.')}})</td>
+                            @else
                             <td>Rp {{number_format($laba_operasional,2,',','.')}}</td>
+                            @endif
                         </tr>
 
                         <tr>
@@ -75,41 +97,53 @@
                             <td></td>
                         </tr>
                         @foreach ($laba_bersih_non['data'] as $item1)
-                            
                             <tr>
                                 <td>&emsp;&emsp;{{$item1['name']}}</td>
                                 <td></td>
-                                @if ($item1['no'] == '6.3' || $item1['no'] == '6.4')
-                                    <td>Rp ({{number_format($item1['amount'],2,',','.')}})</td>
-                                @else
-                                    <td>Rp {{number_format($item1['amount'],2,',','.')}}</td>
-                                @endif
-                                
+                                <td></td>
                                 <td></td>
                             </tr>
                             @foreach ($item1['data'] as $item2)
                                 <tr>
                                     <td>&emsp;&emsp;&emsp;&emsp;{{$item2['name']}}</td>
+                                    @if ($item2['amount'] < 0)
+                                    <td>(Rp {{number_format($item2['amount']*-1,2,',','.')}})</td>
+                                    @else
                                     <td>Rp {{number_format($item2['amount'],2,',','.')}}</td>
+                                    @endif
                                     <td></td>
                                     <td></td>
                                 </tr>
                             @endforeach
+                            <tr>
+                                <td>&emsp;&emsp;<strong>Total {{$item1['name']}}</strong></td>
+                                <td></td>
+                                @if ($item1['amount'] < 0)
+                                <td>(Rp {{number_format($item1['amount']*-1,2,',','.')}})</td>
+                                @else
+                                <td>Rp {{number_format($item1['amount'],2,',','.')}}</td>
+                                @endif
+                                <td></td>
+                            </tr>
                         @endforeach
                         <tr>
-                            <td><strong>&emsp;&emsp;Total Laba/Rugi Bersih Non Operasional</strong></td>
+                            <td><strong>Total Laba/Rugi Bersih Non Operasional</strong></td>
                             <td></td>
                             <td></td>
+                            @if ($laba_bersih_non['amount'] < 0)
+                            <td>(Rp {{number_format($laba_bersih_non['amount']*-1,2,',','.')}})</td>
+                            @else
                             <td>Rp {{number_format($laba_bersih_non['amount'],2,',','.')}}</td>
+                            @endif
                         </tr>
 
                         @foreach($laba_rugi as $laba)
                             <tr>
-                                <td>{{$laba['name']}}</td>
+                                <td><strong>{{$laba['name']}}</strong></td>
                                 <td></td>
                                 <td></td>
                                 @if ($laba['amount'] < 0)
-                                <td>(Rp {{number_format($laba['amount'],2,',','.')}})</td>
+                                <td>(Rp {{number_format($laba['amount']*-1,2,',','.')}})</td>
                                 @else
                                 <td>Rp {{number_format($laba['amount'],2,',','.')}}</td>
                                 @endif
@@ -123,10 +157,17 @@
                             <td></td>
                         </tr>
                         <tr>
-                            <td><strong>Nett Profit</strong></td>
-                            <td></td>
-                            <td></td>
-                            <td><strong>Rp {{number_format($nett_profit,2,',','.')}}</strong></td>
+                            @if ($nett_profit < 0)
+                                <td><strong>Nett Loss</strong></td>
+                                <td></td>
+                                <td></td>
+                                <td>(Rp {{number_format($nett_profit*-1,2,',','.')}})</td>
+                            @else
+                                <td><strong>Nett Profit</strong></td>
+                                <td></td>
+                                <td></td>
+                                <td>Rp {{number_format($nett_profit,2,',','.')}}</td>
+                            @endif
                         </tr>
                     </tbody>
                 </table>
@@ -146,40 +187,64 @@
                 <table id="responsive-datatable_modal" class="table dt-responsive nowrap">
                     <tbody>
                         <tr>
-                            <td>Modal Awal</td>
+                            <td><strong>Awal</strong></td>
                             <td></td>
                             <td></td>
+                            @if ($modal_awal < 0)
+                            <td>(Rp {{number_format($modal_awal*-1,2,',','.')}})</td>
+                            @else
                             <td>Rp {{number_format($modal_awal,2,',','.')}}</td>
+                            @endif
                         </tr>
                         <tr>
-                            <td>Setoran Modal</td>
+                            <td><strong>Setoran Modal</strong></td>
                             <td></td>
+                            @if ($set_modal < 0)
+                            <td>(Rp {{number_format($set_modal*-1,2,',','.')}})</td>
+                            @else
                             <td>Rp {{number_format($set_modal,2,',','.')}}</td>
+                            @endif
                             <td></td>
                         </tr>
                         <tr>
-                            <td>Prive/Pengeluaran Pribadi</td>
+                            <td><strong>Prive/Pengeluaran Pribadi</strong></td>
                             <td></td>
-                            <td>Rp ({{number_format($prive,2,',','.')}})</td>
+                            @if ($prive < 0)
+                            <td>(Rp {{number_format($prive*-1,2,',','.')}})</td>
+                            @else
+                            <td>Rp {{number_format($prive,2,',','.')}}</td>
+                            @endif
                             <td></td>
                         </tr>
                         <tr>
-                            <td>Nett Profit/Loss</td>
+                            <td><strong>Nett Profit/Loss</strong></td>
                             <td></td>
+                            @if ($nett_profit < 0)
+                            <td>(Rp {{number_format($nett_profit*-1,2,',','.')}})</td>
+                            @else
                             <td>Rp {{number_format($nett_profit,2,',','.')}}</td>
+                            @endif
                             <td></td>
                         </tr>
                         <tr>
-                            <td>Perubahan Modal</td>
+                            <td><strong>Perubahan Modal</strong></td>
                             <td></td>
                             <td></td>
+                            @if ($perubahan_modal < 0)
+                            <td>(Rp {{number_format($perubahan_modal*-1,2,',','.')}})</td>
+                            @else
                             <td>Rp {{number_format($perubahan_modal,2,',','.')}}</td>
+                            @endif
                         </tr>
                         <tr>
                             <td><strong>Modal Akhir</strong></td>
                             <td></td>
                             <td></td>
+                            @if ($modal_akhir < 0)
+                            <td>(Rp {{number_format($modal_akhir*-1,2,',','.')}})</td>
+                            @else
                             <td>Rp {{number_format($modal_akhir,2,',','.')}}</td>
+                            @endif
                         </tr>
                         
                     </tbody>
@@ -214,14 +279,18 @@
                                     <td>&emsp;&emsp;{{$asset2['no']}} {{$asset2['name']}}</td>
                                     <td></td>
                                     <td></td>
-                                    <td>Rp {{number_format($asset2['amount'],2,',','.')}}</td>
+                                    <td></td>
                                     <td></td>
                                 </tr>
                                 @foreach ($asset2['data'] as $asset3)
                                     <tr>
                                         <td>&emsp;&emsp;&emsp;&emsp;{{$asset3['no']}} {{$asset3['name']}}</td>
                                         <td></td>
-                                        <td>Rp {{number_format($asset3['amount'],2,',','.')}}</td>
+                                        @if(count($asset3['data']) > 0)
+                                            <td></td>
+                                        @else
+                                            <td>Rp {{number_format($asset3['amount'],2,',','.')}}</td>
+                                        @endif
                                         <td></td>
                                         <td></td>
                                     </tr>
@@ -229,21 +298,73 @@
                                         <tr>
                                             <td>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;{{$asset4['no']}} {{$asset4['name']}}</td>
                                             <td></td>
-                                            <td>Rp {{number_format($asset4['amount'],2,',','.')}}</td>
+                                            @if(count($asset4['data']) > 0)
+                                                <td></td>
+                                            @else
+                                                <td>Rp {{number_format($asset4['amount'],2,',','.')}}</td>
+                                            @endif
                                             <td></td>
                                             <td></td>
                                         </tr>
                                         @foreach ($asset4['data'] as $asset5)
                                             <tr>
                                                 <td>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;{{$asset5['no']}} {{$asset5['name']}}</td>
+                                                @if(count($asset5['data']) > 0)
+                                                <td></td>
+                                                @else
+                                                <td>Rp {{number_format($asset5['amount'],2,',','.')}}</td>
+                                                @endif
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                            @foreach ($asset5['data'] as $asset6)
+                                            <tr>
+                                                <td>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;{{$asset6['no']}} {{$asset6['name']}}</td>
+                                                <td>Rp {{number_format($asset6['amount'],2,',','.')}}</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                            @endforeach
+                                            @if(count($asset5['data']) > 0)
+                                            <tr>
+                                                <td>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<strong>Total {{$asset5['name']}}</strong></td>
                                                 <td>Rp {{number_format($asset5['amount'],2,',','.')}}</td>
                                                 <td></td>
                                                 <td></td>
                                                 <td></td>
                                             </tr>
+                                            @endif
+                                            
                                         @endforeach
+                                        @if(count($asset4['data']) > 0)
+                                        <tr>
+                                            <td>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<strong>Total {{$asset4['name']}}</strong></td>
+                                            <td></td>
+                                            <td>Rp {{number_format($asset4['amount'],2,',','.')}}</td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        @endif
                                     @endforeach
+                                    @if(count($asset3['data']) > 0)
+                                    <tr>
+                                        <td>&emsp;&emsp;&emsp;&emsp;<strong>Total {{$asset3['name']}}</strong></td>
+                                        <td></td>
+                                        <td>Rp {{number_format($asset3['amount'],2,',','.')}}</td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    @endif
                                 @endforeach
+                                <tr>
+                                    <td>&emsp;&emsp;<strong>Total {{$asset2['name']}}</strong></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>Rp {{number_format($asset2['amount'],2,',','.')}}</td>
+                                    <td></td>
+                                </tr>
                             @endforeach
                             <tr>
                                 <td><strong>Total {{$assets['name']}}</strong></td>
@@ -272,7 +393,7 @@
                                     <td>&emsp;&emsp;{{$hutang2['no']}} {{$hutang2['name']}}</td>
                                     <td></td>
                                     <td></td>
-                                    <td>Rp {{number_format($hutang2['amount'],2,',','.')}}</td>
+                                    <td></td>
                                     <td></td>
                                 </tr>
                                 @foreach ($hutang2['data'] as $hutang3)
@@ -284,6 +405,13 @@
                                         <td></td>
                                     </tr>
                                 @endforeach
+                                <tr>
+                                    <td>&emsp;&emsp;<strong> Total {{$hutang2['name']}}</strong></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>Rp {{number_format($hutang2['amount'],2,',','.')}}</td>
+                                    <td></td>
+                                </tr>
                             @endforeach       
                             <tr>
                                 <td><strong>Total {{$hutangs['name']}}</strong></td>
@@ -305,7 +433,11 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
+                                @if ($modal_akhir < 0)
+                                <td><strong>(Rp {{number_format($modal_akhir*-1,2,',','.')}})</strong></td>
+                                @else
                                 <td><strong>Rp {{number_format($modal_akhir,2,',','.')}}</strong></td>
+                                @endif
                             </tr>
                         </tbody>
                     </table>

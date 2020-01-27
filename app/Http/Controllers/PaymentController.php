@@ -124,9 +124,16 @@ class PaymentController extends Controller
 
     public function salesPayDestroy(Request $request){
         $payment = SalesPayment::where('id',$request->id)->first();
+        $ttl_payment_now = SalesPayment::where('trx_id',$payment->trx_id)->sum('payment_amount');
         $sales = Sales::where('id',$payment->trx_id)->first();
         $saldo = Saldo::where('id_jurnal',$payment->jurnal_id);
-        $sales->status = 0;
+        $rest = $ttl_payment_now - $payment->payment_amount;
+        if($rest < ($sales->ttl_harga + $sales->ongkir)){
+            $sales->status = 0;
+        }else{
+            $sales->status = 1;
+        }
+        
         $sales->save();
 
         $id_jurnal = $payment->jurnal_id;
@@ -225,7 +232,15 @@ class PaymentController extends Controller
     public function purchasePayDestroy(Request $request){
         $payment = PurchasePayment::where('id',$request->id)->first();
         $purchase = Purchase::where('id',$payment->trx_id)->first();
-        $purchase->status = 0;
+
+        $ttl_payment_now = PurchasePayment::where('trx_id',$payment->trx_id)->sum('payment_amount');
+        $rest = $ttl_payment_now - $payment->payment_amount;
+        if($purchase->total_harga_dist > $rest){
+            $purchase->status = 0;
+        }else{
+            $purchase->status = 1;
+        }
+
         $purchase->save();
 
         $id_jurnal = $payment->jurnal_id;

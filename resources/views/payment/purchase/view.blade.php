@@ -21,8 +21,10 @@
                     <td>{{$item['supplier']}}</td>
                     <td>Rp {{number_format($item['order'],2,",",".")}}</td>
                     <td>Rp {{number_format($item['paid'],2,",",".")}}</td>
-                    @if($item['status'] == 1)
+                    @if($item['paid'] == $item['order'])
                     <td><a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-md waves-danger m-b-5" >Lunas</a></td>
+                    @elseif($item['paid'] > $item['order'])
+                    <td><a href="javascript:;" disabled="disabled" class="btn btn-warning btn-rounded waves-effect w-md waves-danger m-b-5" >Kelebihan Bayar</a></td>
                     @else
                     <td><a href="javascript:;" disabled="disabled" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" >Belum Lunas</a></td>
                     @endif

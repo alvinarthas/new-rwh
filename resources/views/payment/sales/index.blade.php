@@ -17,93 +17,91 @@ Index Sales Payment
 @endsection
 
 @section('content')
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="card-box">
-                    <h4 class="m-t-0 header-title">Choose Transaction Date</h4>
-                    <div class="col-12">
-                        <div class="p-20">
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label">Start Date</label>
-                                <div class="col-10">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start_trx" id="start_trx"  data-date-format='yyyy-mm-dd' autocomplete="off">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class="ti-calendar"></i></span>
-                                        </div>
-                                    </div><!-- input-group -->
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label">End Date</label>
-                                <div class="col-10">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="end_trx" id="end_trx"  data-date-format='yyyy-mm-dd' autocomplete="off">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class="ti-calendar"></i></span>
-                                        </div>
-                                    </div><!-- input-group -->
-                                </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card-box">
+                <h4 class="m-t-0 header-title">Choose Transaction Date</h4>
+                <div class="col-12">
+                    <div class="p-20">
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">Start Date</label>
+                            <div class="col-10">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start_trx" id="start_trx"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                    </div>
+                                </div><!-- input-group -->
                             </div>
                         </div>
-                    </div>
-
-                    <h4 class="m-t-0 header-title">Choose Payment Date</h4>
-                    <div class="col-12">
-                        <div class="p-20">
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label">Start Date</label>
-                                <div class="col-10">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start_pay" id="start_pay"  data-date-format='yyyy-mm-dd' autocomplete="off">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class="ti-calendar"></i></span>
-                                        </div>
-                                    </div><!-- input-group -->
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label">End Date</label>
-                                <div class="col-10">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="end_pay" id="end_pay"  data-date-format='yyyy-mm-dd' autocomplete="off">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class="ti-calendar"></i></span>
-                                        </div>
-                                    </div><!-- input-group -->
-                                </div>
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">End Date</label>
+                            <div class="col-10">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="end_trx" id="end_trx"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                    </div>
+                                </div><!-- input-group -->
                             </div>
                         </div>
-                    </div>
-
-                    <h4 class="m-t-0 header-title">Choose Customer</h4>
-                    <div class="col-12">
-                        <div class="p-20">
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label">Pilih Customer</label>
-                                <div class="col-10">
-                                    <select class="form-control select2" parsley-trigger="change" name="customer" id="customer">
-                                        <option value="all" selected>All</option>
-                                        @foreach ($customers as $customer)
-                                            <option value="{{$customer->id}}">{{$customer->apname}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group text-left m-b-0">
-                        <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData()">Show Data</a>
-                        <a href="javascript:;" class="btn btn-purple btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData('all')">Show All</a>
                     </div>
                 </div>
 
-                <div id="sales-list" style="display:none">
-                    <section id="showsales">
-                    </section>
+                <h4 class="m-t-0 header-title">Choose Payment Date</h4>
+                <div class="col-12">
+                    <div class="p-20">
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">Start Date</label>
+                            <div class="col-10">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start_pay" id="start_pay"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                    </div>
+                                </div><!-- input-group -->
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">End Date</label>
+                            <div class="col-10">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="end_pay" id="end_pay"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                    </div>
+                                </div><!-- input-group -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <h4 class="m-t-0 header-title">Choose Customer</h4>
+                <div class="col-12">
+                    <div class="p-20">
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">Pilih Customer</label>
+                            <div class="col-10">
+                                <select class="form-control select2" parsley-trigger="change" name="customer" id="customer">
+                                    <option value="all" selected>All</option>
+                                    @foreach ($customers as $customer)
+                                        <option value="{{$customer->id}}">{{$customer->apname}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group text-left m-b-0">
+                    <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData()">Show Data</a>
+                    <a href="javascript:;" class="btn btn-purple btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData('all')">Show All</a>
+                </div>
+            </div>
+
+            <div id="sales-list" style="display:none">
+                <section id="showsales">
+                </section>
             </div>
         </div>
     </div>

@@ -1,3 +1,6 @@
+@php
+    use App\SalesPayment;
+@endphp
 <div class="card-box table-responsive">
     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
         <thead>
@@ -6,7 +9,8 @@
             <th>Transaction Date</th>
             <th>Customer</th>
             <th>Ongkir</th>
-            <th>Total</th>
+            <th>Total Transaksi</th>
+            <th>Total Bayar</th>
             <th>Status</th>
             <th>Option</th>
         </thead>
@@ -20,9 +24,18 @@
                     <td>{{$sale->trx_date}}</td>
                     <td>{{$sale->customer->apname}}</td>
                     <td>{{$sale->ongkir}}</td>
+                    <?php
+                        $total_sale = $sale->ttl_harga+$sale->ongkir;
+                        $ttlpayment = SalesPayment::where('trx_id',$sale->id)->sum('payment_amount');
+                    ?>
+
                     <td>Rp {{number_format($sale->ttl_harga+$sale->ongkir,2,",",".")}}</td>
-                    @if($sale->status == 1)
+                    <td>Rp {{number_format($ttlpayment,2,",",".")}}</td>
+                    
+                    @if($ttlpayment == $total_sale)
                     <td><a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-md waves-danger m-b-5" >Lunas</a></td>
+                    @elseif($ttlpayment > $total_sale)
+                    <td><a href="javascript:;" disabled="disabled" class="btn btn-warning btn-rounded waves-effect w-md waves-danger m-b-5" >Kelebihan Bayar</a></td>
                     @else
                     <td><a href="javascript:;" disabled="disabled" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" >Belum Lunas</a></td>
                     @endif

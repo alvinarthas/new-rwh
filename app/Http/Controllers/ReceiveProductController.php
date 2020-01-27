@@ -12,6 +12,7 @@ use App\Purchase;
 use App\PurchaseDetail;
 use App\Jurnal;
 use App\MenuMapping;
+use App\Log;
 
 class ReceiveProductController extends Controller
 {
@@ -86,7 +87,7 @@ class ReceiveProductController extends Controller
                 Jurnal::addJurnal($id_jurnal,$price,$request->receive_date,$desc,'1.1.4.1.1','Credit');
                 
                 $receive->save();
-                
+                Log::setLog('PURPC','Create Receive Product PO.'.$request->trx_id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
@@ -96,9 +97,11 @@ class ReceiveProductController extends Controller
 
     public function delete(Request $request){
         $receive = ReceiveDet::where('id',$request->id)->first();
-
+        $id_jurnal = $receive->id_jurnal;
+        $trx_id = $receive->trx_id;
         try {
             $jurnal = Jurnal::where('id_jurnal',$receive->id_jurnal)->delete();
+            Log::setLog('PURPD','Delete Receive Product ID:'.$request->id.' PO.'.$trx_id.' Jurnal ID: '.$id_jurnal);
             return redirect()->back()->with('status', 'Data berhasil dihapus');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors($e);
