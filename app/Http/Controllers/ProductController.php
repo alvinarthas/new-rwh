@@ -8,7 +8,6 @@ use Excel;
 use PDF;
 use App\Exports\StockControllingExport;
 use Carbon\Carbon;
-
 use App\Product;
 use App\Perusahaan;
 use App\Company;

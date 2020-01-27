@@ -27,6 +27,7 @@ use App\TopUpBonus;
 use App\PerusahaanMember;
 use App\Jurnal;
 use App\MenuMapping;
+use App\Log;
 
 class BonusController extends Controller
 {
@@ -237,6 +238,7 @@ class BonusController extends Controller
                         }
                     }
                 }
+                Log::setLog('BMPBC','Create Perhitungan Bonus '.$id_jurnal);
 
                 return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $e) {
@@ -247,6 +249,9 @@ class BonusController extends Controller
 
     public function storeBayar(Request $request)
     {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
         // Validate
         $validator = Validator::make($request->all(), [
             'tahun' => 'required',
@@ -263,7 +268,7 @@ class BonusController extends Controller
                 $bulan = $request->bulan;
                 $tahun = $request->tahun;
                 $tgl = $request->tgl;
-                $ctr = count($request->norekening);
+                $ctr = count($request->bonus);
                 $AccNo = $request->AccNo;
                 $supplier = $request->supplier;
                 $selisih = $request->selisih_bonus;
@@ -311,7 +316,13 @@ class BonusController extends Controller
                     $norek = $request->norekening[$i];
                     $bonus = $request->bonus[$i];
                     $bank = $request->namabank[$i];
-                    $ket = 'penerimaan bonus ke '.$AccNo.' untuk '.$norek.' - bulan '.$bulan.' '.$tahun;
+                    if($AccNo != "1.1.1.1.000003"){
+                        $ket = 'penerimaan bonus ke '.$AccNo.' untuk '.$norek.' - bulan '.$bulan.' '.$tahun;
+                    }else{
+                        $nama = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('norek', $norek)->first()->nama;
+                        $ket = 'penerimaan bonus ke Kas Bonus Morinda untuk '.$nama.' - bulan '.$bulan.' '.$tahun;
+                    }
+
 
                     $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun)->where('bulan', $bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
                     $num = $bonusbayar->count();
@@ -360,6 +371,7 @@ class BonusController extends Controller
                         }
                     }
                 }
+                Log::setLog('BMBBC','Create Penerimaan Bonus '.$id_jurnal);
 
                 return redirect()->route('bonus.penerimaan')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $e) {
@@ -450,6 +462,7 @@ class BonusController extends Controller
                             $jurnal->delete();
                             $data->update();
                         }
+                        Log::setLog('BMTUC','Create Top Up Bonus '.$id_jurnal);
                     }
                 }
                 return redirect()->route('bonus.topup')->with('status', 'Data berhasil disimpan');
@@ -503,8 +516,8 @@ class BonusController extends Controller
         $bonusapa = "pembayaran";
         $jenis = "edit";
         $page = MenuMapping::getMap(session('user_id'),"BMBB");
-        $bonus = BonusBayar::join('bankmember', 'tblbonusbayar.no_rek', 'bankmember.norek')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('tgl', $bn->tgl)->where('bulan', $bn->bulan)->where('tahun', $bn->tahun)->where('AccNo', $bn->AccNo)->where('tblbonusbayar.id_jurnal', $bn->id_jurnal)->select('bonus', 'tblbonusbayar.id_jurnal', 'tblbank.nama AS namabank', 'tblbonusbayar.no_rek', 'tblmember.nama', 'id_bonus')->get();
 
+        $bonus = BonusBayar::join('bankmember', 'tblbonusbayar.no_rek', 'bankmember.norek')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('tgl', $bn->tgl)->where('bulan', $bn->bulan)->where('tahun', $bn->tahun)->where('AccNo', $bn->AccNo)->where('tblbonusbayar.id_jurnal', $bn->id_jurnal)->select('bonus', 'tblbonusbayar.id_jurnal', 'tblbank.nama AS namabank', 'tblbonusbayar.no_rek', 'tblmember.nama', 'id_bonus')->get();
         $perhitunganbonus = Bonus::where('bulan', $bn->bulan)->where('tahun',$bn->tahun)->select('id_jurnal')->get();
         $bonus_tertahan = 0;
 
@@ -662,6 +675,7 @@ class BonusController extends Controller
                 $jurnal = Jurnal::where('id_jurnal', $id_jurnal_lama);
                 $jurnal->delete();
                 // die();
+                Log::setLog('BMPBU','Update Perhitungan Bonus '.$id_jurnal);
 
                 return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $e) {
@@ -672,6 +686,9 @@ class BonusController extends Controller
 
     public function updateBayar(Request $request, $id)
     {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
         // Validate
         $validator = Validator::make($request->all(), [
             'tahun' => 'required',
@@ -697,7 +714,7 @@ class BonusController extends Controller
                 $bonus_tertahan = $request->bonus_tertahan;
                 $ket = 'penerimaan bonus ke '.$AccNo.' - bulan '.$bulan.' '.$tahun;
                 $id_jurnal_lama = $request->id_jurnal_lama[0];
-                if($request->supplier != null){
+                if(isset($request->supplier)){
                     $supplier = $request->supplier;
                 }else{
                     $supplier = 0;
@@ -794,6 +811,7 @@ class BonusController extends Controller
                 }
                 $jurnal_lama = Jurnal::where('id_jurnal', $id_jurnal_lama);
                 $jurnal_lama->delete();
+                Log::setLog('BMBBU','Update Penerimaan Bonus '.$id_jurnal);
 
                 return redirect()->route('bonus.penerimaan')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $e) {
@@ -883,6 +901,8 @@ class BonusController extends Controller
                         ));
                         $data->save();
                     }
+                    Log::setLog('BMTUU','Update Top Up Bonus '.$id_jurnal);
+
                 }
 
                 return redirect()->route('bonus.topup')->with('status', 'Data berhasil disimpan');
@@ -904,6 +924,7 @@ class BonusController extends Controller
         try{
             Bonus::where('id_jurnal', $id)->delete();
             Jurnal::where('id_jurnal', $id)->delete();
+            Log::setLog('BMPBD','Delete Perhitungan Bonus '.$id);
             return redirect()->route('bonus.index')->with('status', 'Data berhasil dihapus');
         }catch(\Exception $e){
             return redirect()->back()->withErrors($e->getMessage());
@@ -916,6 +937,7 @@ class BonusController extends Controller
         try{
             BonusBayar::where('id_jurnal', $id)->delete();
             Jurnal::where('id_jurnal', $id)->delete();
+            Log::setLog('BMBBD','Delete Penerimaan Bonus '.$id);
             return redirect()->route('bonus.penerimaan')->with('status', 'Data berhasil dihapus');
         }catch(\Exception $e){
             return redirect()->back()->withErrors($e->getMessage());
@@ -929,6 +951,7 @@ class BonusController extends Controller
             $data = TopUpBonus::where('tgl', $id)->select('id_jurnal')->get();
             foreach($data as $t){
                 TopUpBonus::where('id_jurnal', $t->id_jurnal)->delete();
+                Log::setLog('BMTUD','Delete Top Up Bonus '.$t->id_jurnal);
                 Jurnal::where('id_jurnal', $t->id_jurnal)->delete();
             }
 
@@ -1018,7 +1041,7 @@ class BonusController extends Controller
         <td><input type="hidden" name="ktp[]" id="ktp'.$count.'" value="'.$perusahaanmember->ktp.'">'.$perusahaanmember->ktp.'</td>
         <td><input type="hidden" name="noid[]" id="noid'.$count.'" value="'.$perusahaanmember->noid.'">'.$perusahaanmember->noid.'</td>
         <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$member['member_id'].'">'.$member['nama'].'</td>
-        <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$count.'" value="'.$bonus.'"></td>
+        <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="'.$bonus.'"></td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
         </tr>';
 
@@ -1075,12 +1098,12 @@ class BonusController extends Controller
                     // array_push($datas, $member);
                     $ktp = PerusahaanMember::where('perusahaanmember.noid', $noid)->select('perusahaanmember.ktp')->first();
                     $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
-                    <td><input type="hidden" name="no[]" value="'.$r.'">'.$r.'</td>
-                    <td><input type="hidden" name="nama[]" id="nama'.$r.'" value="'.$nama.'">'.$nama.'</td>
-                    <td><input type="hidden" name="ktp[]" id="ktp'.$r.'" value="'.$ktp['ktp'].'">'.$ktp['ktp'].'</td>
-                    <td><input type="hidden" name="noid[]" id="noid'.$r.'" value="'.$noid.'">'.$noid.'</td>
-                    <td><input type="hidden" name="norekening[]" id="norekening'.$r.'" value="'.$norek.'">'.$norek.'</td>
-                    <td><input type="hidden" name="bonus[]" id="bonus'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    <td><input type="hidden" name="nogagal[]" value="'.$r.'">'.$r.'</td>
+                    <td><input type="hidden" name="namagagal[]" id="namagagal'.$r.'" value="'.$nama.'">'.$nama.'</td>
+                    <td><input type="hidden" name="ktpgagal[]" id="ktpgagal'.$r.'" value="'.$ktp['ktp'].'">'.$ktp['ktp'].'</td>
+                    <td><input type="hidden" name="noidgagal[]" id="noidgagal'.$r.'" value="'.$noid.'">'.$noid.'</td>
+                    <td><input type="hidden" name="norekeninggagal[]" id="norekeninggagal'.$r.'" value="'.$norek.'">'.$norek.'</td>
+                    <td><input type="hidden" name="bonusgagal[]" id="bonusgagal'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
                     </tr>';
 
                     $data = array(
@@ -1101,7 +1124,7 @@ class BonusController extends Controller
                     <td><input type="hidden" name="ktp[]" id="ktp'.$row.'" value="'.$ktp['ktp'].'">'.$ktp['ktp'].'</td>
                     <td><input type="hidden" name="noid[]" id="noid'.$row.'" value="'.$noid.'">'.$noid.'</td>
                     <td><input type="hidden" name="nama[]" id="nama'.$row.'" value="'.$nama.'">'.$nama.'</td>
-                    <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$row.'" value="'.$bonus.'"></td>
+                    <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$row.'" value="'.$bonus.'"></td>
                     <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$row.')" >Delete</a></td>
                     </tr>';
 
@@ -1124,98 +1147,6 @@ class BonusController extends Controller
         // }
 
         return response()->json($result);
-    }
-
-    // upload EXCEL lama (tidak dipakai)
-    public function uploadBonusPerhitungan(Request $request)
-    {
-        $perusahaan_id = $request->perusahaan;
-        $this->validate($request, ['file'  => 'required|mimes:xls,xlsx']);
-        $path = $request->file('file')->getRealPath();
-        // $path = $request->file('file');
-        // $data = Excel::load($path)->get();
-        $array = Excel::toArray(new BonusImport, $path);
-        // echo '<pre>';
-        // print_r($array);
-        Carbon::setLocale('id');
-        $tgl = date('Y-m-d', strtotime(Carbon::today()));
-        $perusahaan = Perusahaan::where('id',$perusahaan_id)->select('nama')->first();
-        $ket = 'perhitungan bonus via upload excel'.$perusahaan['nama'].' - bulan '.$request->bulan.' '.$request->tahun;
-        $total_bonus = 0;
-        $estimasi_bonus = $request->estimasi_bonus;
-        $id_jurnal = Jurnal::getJurnalID('BP');
-
-        $count = count($array[0]);
-        $xls = array_chunk($array[0],$count);
-        for ($i=1; $i < $count ; $i++) {
-            if($xls[0][$i][2] <> ''){
-                $num_member = PerusahaanMember::select('perusahaanmember.noid')->join('tblmember','perusahaanmember.ktp','=','tblmember.ktp')->where('tblmember.ktp',$xls[0][$i][1])->where('tblmember.nama',"LIKE", $xls[0][$i][3])->where('perusahaanmember.perusahaan_id',$perusahaan_id)->count();
-                // $num_member= $perusahaan['perusahaanmember.noid']->count();
-                if($num_member==0){
-                    $bonusgagal = new BonusGagal;
-                    $bonusgagal->ktp = $xls[0][$i][1];
-                    $bonusgagal->member_id = $xls[0][$i][2];
-                    $bonusgagal->nama = $xls[0][$i][3];
-                    $bonusgagal->tahun = $request->tahun;
-                    $bonusgagal->bulan = $request->bulan;
-                    $bonusgagal->bonus = $xls[0][$i][4];
-                    $bonusgagal->creator = session('user_id');
-                    $bonusgagal->perusahaan = $request->perusahaan;
-                    $bonusgagal->save();
-                }else{
-                    $pm = PerusahaanMember::where('ktp', $xls[0][$i][1])->where('perusahaan_id', $perusahaan_id)->select('noid')->first();
-                    $num_bonus = Bonus::where('member_id', $pm['noid'])->where('tahun', $request->tahun)->where('bulan', $request->bulan)->count();
-                    $total_bonus = $total_bonus + $xls[0][$i][4];
-
-                    if($num_bonus==0){
-                        $bonus = new Bonus;
-                        $bonus->member_id = $pm['noid'];
-                        $bonus->tahun = $request->tahun;
-                        $bonus->bulan = $request->bulan;
-                        $bonus->bonus = $xls[0][$i][4];
-                        $bonus->id_jurnal = $id_jurnal;
-                        $bonus->creator = session('user_id');
-                        $bonus->save();
-                    }else{
-                        $bonus = Bonus::where('member_id', $pm['noid'])->where('tahun',$request->tahun)->where('bulan',$request->bulan)->select('bonus','id_jurnal','creator')->first();
-                        $jurnal = Jurnal::where('id_jurnal', $bonus['id_jurnal']);
-                        $bonus->bonus = $xls[0][$i][4];
-                        $bonus->id_jurnal = $id_jurnal;
-                        $bonus->creator = session('user_id');
-                        $jurnal->delete();
-                        $bonus->update();
-                    }
-                }
-            }
-        }
-
-        // debet Piutang Bonus
-        $debet = new Jurnal(array(
-            'id_jurnal'     => $id_jurnal,
-            'AccNo'         => "1.1.3.5",
-            'AccPos'        => "Debet",
-            'Amount'        => $total_bonus,
-            'company_id'    => 1,
-            'date'          => $tgl,
-            'description'   => $ket,
-            'creator'       => session('user_id')
-        ));
-        // credit Estimasi Bonus
-        $credit = new Jurnal(array(
-            'id_jurnal'     => $id_jurnal,
-            'AccNo'         => "1.1.3.4",
-            'AccPos'        => "Credit",
-            'Amount'        => $estimasi_bonus,
-            'company_id'    => 1,
-            'date'          => $tgl,
-            'description'   => $ket,
-            'creator'       => session('user_id')
-        ));
-
-        $debet->save();
-        $credit->save();
-
-        return redirect()->route('bonus.index')->with('status', 'Data berhasil disimpan');
     }
 
     public function deleteRowPerhitungan(Request $request)
@@ -1289,6 +1220,7 @@ class BonusController extends Controller
         $tahun = $request->tahun;
         $bulan = $request->bulan;
         $count = $request->count;
+        $AccNo = $request->AccNo;
 
         $bankmember = BankMember::where('id',$id_member)->first();
         $norek = $bankmember->norek;
@@ -1303,14 +1235,24 @@ class BonusController extends Controller
 
         $sub_ttl = $bonus;
 
-        $append = '<tr style="width:100%" id="trow'.$count.'" class="trow">
-        <td>'.$count.'</td>
-        <td><input type="hidden" name="namabank[]" id="namabank'.$count.'" value="'.$bankmember->bank_id.'">'.$namabank.'</td>
-        <td><input type="hidden" name="norekening[]" id="norekening'.$count.'" value="'.$norek.'">'.$norek.'</td>
-        <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$nama.'">'.$nama.'</td>
-        <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$count.'" value="'.$bonus.'"></td>
-        <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
-        </tr>';
+        if($AccNo != "1.1.1.1.000003"){
+            $append = '<tr style="width:100%" id="trow'.$count.'" class="trow">
+            <td>'.$count.'</td>
+            <td><input type="hidden" name="namabank[]" id="namabank'.$count.'" value="'.$bankmember->bank_id.'">'.$namabank.'</td>
+            <td><input type="hidden" name="norekening[]" id="norekening'.$count.'" value="'.$norek.'">'.$norek.'</td>
+            <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$nama.'">'.$nama.'</td>
+            <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="'.$bonus.'"></td>
+            <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
+            </tr>';
+        }else{
+            $append = '<tr style="width:100%" id="trow'.$count.'" class="trow">
+            <td>'.$count.'</td>
+            <input type="hidden" name="norekening[]" id="norekening'.$count.'" value="'.$norek.'">'.$norek.'
+            <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$nama.'">'.$nama.'</td>
+            <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="'.$bonus.'"></td>
+            <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
+            </tr>';
+        }
 
         $data = array(
             'append' => $append,
@@ -1363,10 +1305,10 @@ class BonusController extends Controller
                     $member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek', $norek)->select('tblmember.ktp AS ktp')->first();
                     $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
                     <td><input type="hidden" name="no[]" value="'.$r.'">'.$r.'</td>
-                    <td><input type="hidden" name="nama[]" id="nama'.$r.'" value="'.$nama.'">'.$nama.'</td>
-                    <td><input type="hidden" name="ktp[]" id="ktp'.$r.'" value="'.$member['ktp'].'">'.$member['ktp'].'</td>
-                    <td><input type="hidden" name="norekening[]" id="norekening'.$r.'" value="'.$norek.'">'.$norek.'</td>
-                    <td><input type="hidden" name="bonus[]" id="bonus'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    <td><input type="hidden" name="namagagal[]" id="namagagal'.$r.'" value="'.$nama.'">'.$nama.'</td>
+                    <td><input type="hidden" name="ktpgagal[]" id="ktpgagal'.$r.'" value="'.$member['ktp'].'">'.$member['ktp'].'</td>
+                    <td><input type="hidden" name="norekeninggagal[]" id="norekeninggagal'.$r.'" value="'.$norek.'">'.$norek.'</td>
+                    <td><input type="hidden" name="bonusgagal[]" id="bonusgagal'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
                     </tr>';
 
                     $data = array(
@@ -1386,7 +1328,7 @@ class BonusController extends Controller
                     <td><input type="hidden" name="namabank[]" id="namabank'.$row.'" value="'.$namabank['nama'].'">'.$namabank['nama'].'</td>
                     <td><input type="hidden" name="norekening[]" id="norekening'.$row.'" value="'.$norek.'">'.$norek.'</td>
                     <td><input type="hidden" name="nama[]" id="nama'.$row.'" value="'.$nama.'">'.$nama.'</td>
-                    <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$row.'" value="'.$bonus.'"></td>
+                    <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$row.'" value="'.$bonus.'"></td>
                     <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$row.')" >Delete</a></td>
                     </tr>';
 
@@ -1408,90 +1350,6 @@ class BonusController extends Controller
         //     response()->download(public_path('download/'.$namafile));
         // }
         return response()->json($result);
-    }
-
-    // upload EXCEL pembayaran bonus lama (tidak dipakai)
-    public function uploadBonusPembayaran(Request $request)
-    {
-        $tgl = $request->tgl2;
-        $tahun = $request->tahun;
-        $bulan = $request->bulan;
-        $AccNo = $request->AccNo2;
-        $this->validate($request, ['file'  => 'required|mimes:xls,xlsx']);
-        $path = $request->file('file')->getRealPath();
-        $path = $request->file('file');
-        echo "<pre>";
-        print_r($path);
-        die();
-        // $data = Excel::load($path)->get();
-        $array = Excel::toArray(new BonusBayarImport, $path);
-        // echo '<pre>';
-        // print_r($array);
-        $count = count($array[0]);
-        $xls = array_chunk($array[0],$count);
-        for ($i=1; $i < $count ; $i++) {
-            $ket='pembayaran bonus via upload excel '.$xls[0][$i][1].' - bulan'.$bulan.' '.$tahun;
-            $bonusbayar = BonusBayar::where('no_rek',$xls[0][$i][1])->where('tahun', $request->tahun)->where('bulan',$request->bulan)->where('tgl',$request->tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
-            $num = $bonusbayar->count();
-            $id_jurnal = Jurnal::getJurnalID('BB');
-            if($xls[0][$i][2] <> ''){
-                if($num==0){
-                    if($xls[0][$i][3] != 0){
-                        // Pembayaran Bonus
-                        $data = new BonusBayar(array(
-                            'no_rek'    => $xls[0][$i][1],
-                            'tgl'       => $tgl,
-                            'bulan'     => $bulan,
-                            'tahun'     => $tahun,
-                            'bonus'     => $xls[0][$i][3],
-                            'creator'   => session('user_id'),
-                            'AccNo'   => $AccNo,
-                            'id_jurnal' => $id_jurnal,
-                        ));
-
-                        $data->save();
-                    }
-                }else{
-                    $jurnal_lama = Jurnal::where('id_jurnal', $bonusbayar['id_jurnal']);
-
-                    $data = BonusBayar::where('no_rek',$xls[0][$i][1])->where('tahun', $request->tahun)->where('bulan',$request->bulan)->where('tgl',$request->tgl)->where('AccNo',$AccNo)->first();
-                    $data->bonus = $xls[0][$i][3];
-                    $data->id_jurnal = $id_jurnal;
-                    $data->creator = session('user_id');
-
-                    $jurnal_lama->delete();
-                    $data->update();
-                }
-
-                // debet kas/bank
-                $debet = new Jurnal(array(
-                    'id_jurnal'     => $id_jurnal,
-                    'AccNo'         => $AccNo,
-                    'AccPos'        => "Debet",
-                    'Amount'        => $xls[0][$i][3],
-                    'company_id'    => 1,
-                    'date'          => $tgl,
-                    'description'   => $ket,
-                    'creator'       => session('user_id')
-                ));
-                // credit piutang bonus tertahan
-                $credit = new Jurnal(array(
-                    'id_jurnal'     => $id_jurnal,
-                    'AccNo'         => "1.1.3.5",
-                    'AccPos'        => "Credit",
-                    'Amount'        => $xls[0][$i][3],
-                    'company_id'    => 1,
-                    'date'          => $tgl,
-                    'description'   => $ket,
-                    'creator'       => session('user_id')
-                ));
-
-                $debet->save();
-                $credit->save();
-            }
-        }
-        return redirect()->route('bonus.penerimaan')->with('status', 'Data berhasil disimpan');
-
     }
 
     public function deleteRowPenerimaan(Request $request)
@@ -1575,10 +1433,10 @@ class BonusController extends Controller
                     $member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek', $norek)->select('tblmember.ktp AS ktp')->first();
                     $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
                     <td><input type="hidden" name="no[]" value="'.$r.'">'.$r.'</td>
-                    <td><input type="hidden" name="nama[]" id="nama'.$r.'" value="'.$nama.'">'.$nama.'</td>
-                    <td><input type="hidden" name="ktp[]" id="ktp'.$r.'" value="'.$member['ktp'].'">'.$member['ktp'].'</td>
-                    <td><input type="hidden" name="norekening[]" id="norekening'.$r.'" value="'.$norek.'">'.$norek.'</td>
-                    <td><input type="hidden" name="bonus[]" id="bonus'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    <td><input type="hidden" name="namagagal[]" id="namagagal'.$r.'" value="'.$nama.'">'.$nama.'</td>
+                    <td><input type="hidden" name="ktpgagal[]" id="ktpgagal'.$r.'" value="'.$member['ktp'].'">'.$member['ktp'].'</td>
+                    <td><input type="hidden" name="norekeninggagal[]" id="norekeninggagal'.$r.'" value="'.$norek.'">'.$norek.'</td>
+                    <td><input type="hidden" name="bonusgagal[]" id="bonusgagal'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
                     </tr>';
 
                     $data = array(
@@ -1598,7 +1456,7 @@ class BonusController extends Controller
                     <td><input type="hidden" name="namabank[]" id="namabank'.$row.'" value="'.$namabank['nama'].'">'.$namabank['nama'].'</td>
                     <td><input type="hidden" name="norekening[]" id="norekening'.$row.'" value="'.$norek.'">'.$norek.'</td>
                     <td><input type="hidden" name="nama[]" id="nama'.$row.'" value="'.$nama.'">'.$nama.'</td>
-                    <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$row.'" value="'.$bonus.'"></td>
+                    <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$row.'" value="'.$bonus.'"></td>
                     <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$row.')" >Delete</a></td>
                     </tr>';
                     $data = array(
@@ -1644,7 +1502,7 @@ class BonusController extends Controller
         <td><input type="hidden" name="namabank[]" id="namabank'.$count.'" value="'.$bankmember->bank_id.'">'.$namabank.'</td>
         <td><input type="hidden" name="norekening[]" id="norekening'.$count.'" value="'.$norek.'">'.$norek.'</td>
         <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$nama.'">'.$nama.'</td>
-        <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkBonus()" id="bonus'.$count.'" value="'.$bonus.'"></td>
+        <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="'.$bonus.'"></td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
         </tr>';
 
@@ -1712,21 +1570,30 @@ class BonusController extends Controller
     public function ajxBonusOrder(Request $request){
         $keyword = strip_tags(trim($request->keyword));
         $key = $keyword.'%';
+        $data = array();
         // $bankmember = BankMember::where('bank_id',$request->bankid);
         // $search = $bankmember->join('tblmember','bankmember.ktp','=','tblmember.ktp')->orWhere('norek','LIKE', $key)->orWhere('tblmember.nama','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
 
         // $bankmember = BankMember::where('bank_id',$request->bankid);
-        $search = BankMember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->orWhere('tblmember.nama','LIKE', $key)->orWhere('norek','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp', 'tblbank.nama AS namabank')->limit(5)->get();
-        // $search = DB::raw("SELECT m.nama, b.norek, b.id AS id, m.ktp AS ktp FROM bankmember b INNER JOIN tblmember m ON b.ktp = m.ktp WHERE b.bank_id = $request->bankid AND b.norek LIKE $key OR m.nama LIKE $key OR m.ktp LIKE $key limit 5");
-        // $search = BankMember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->where('bank_id', $request->bankid)->where('tblmember.nama','LIKE', $key)->orWhere(function($q, $key){ $q->where('bankmember.norek','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key);})->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
-        // echo $search;
-        $data = array();
-        $array = json_decode( json_encode($search), true);
-        foreach ($array as $key) {
-            $arrayName = array('id' =>$key['id'],'norek' => $key['norek'], 'nama' => $key['nama'], 'ktp' => $key['ktp'], 'namabank' => $key['namabank']);
-            // $arrayName = array('id' => $key['id'],'text' => $key['norek']);
-            array_push($data,$arrayName);
+        if($request->AccNo == "1.1.1.1.000003"){
+            $search = Member::join('bankmember', 'tblmember.ktp', 'bankmember.ktp')->where('tblmember.nama', 'LIKE', $key)->orWhere('tblmember.ktp', 'LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp')->limit(5)->get();
+            $array = json_decode( json_encode($search), true);
+            foreach ($array as $key) {
+                $arrayName = array('id' =>$key['id'],'norek' => $key['norek'], 'nama' => $key['nama'], 'ktp' => $key['ktp']);
+                // $arrayName = array('id' => $key['id'],'text' => $key['norek']);
+                array_push($data,$arrayName);
+            }
+        }else{
+            $search = BankMember::join('tblmember','bankmember.ktp','=','tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->orWhere('tblmember.nama','LIKE', $key)->orWhere('norek','LIKE', $key)->orWhere('tblmember.ktp','LIKE', $key)->select('tblmember.nama', 'bankmember.norek', 'bankmember.id AS id', 'tblmember.ktp AS ktp', 'tblbank.nama AS namabank')->limit(5)->get();
+            $array = json_decode( json_encode($search), true);
+            foreach ($array as $key) {
+                $arrayName = array('id' =>$key['id'],'norek' => $key['norek'], 'nama' => $key['nama'], 'ktp' => $key['ktp'], 'namabank' => $key['namabank']);
+                // $arrayName = array('id' => $key['id'],'text' => $key['norek']);
+                array_push($data,$arrayName);
+            }
         }
+
+
         echo json_encode($data, JSON_FORCE_OBJECT);
     }
 
@@ -1776,12 +1643,12 @@ class BonusController extends Controller
         $data = array();
         // $filename="Bonus Gagal Upload";
 
-        $count = count($request->norekening);
+        $count = count($request->norekeninggagal);
         for($i=0; $i<$count; $i++){
-            $nama = $request->nama[$i];
-            $ktp = $request->ktp[$i];
-            $norek = $request->norekening[$i];
-            $bonus = $request->bonus[$i];
+            $nama = $request->namagagal[$i];
+            $ktp = $request->ktpgagal[$i];
+            $norek = $request->norekeninggagal[$i];
+            $bonus = $request->bonusgagal[$i];
             $no = $i+1;
             if($bonusapa=="perhitungan"){
                 $array = array(
@@ -1789,7 +1656,7 @@ class BonusController extends Controller
                     'No' => $no,
                     'Nama' => $nama,
                     'No KTP' => $ktp,
-                    'No ID' => $request->noid[$i],
+                    'No ID' => $request->noidgagal[$i],
                     'No Rekening' => $norek,
                     'Bonus' => $bonus,
                 );

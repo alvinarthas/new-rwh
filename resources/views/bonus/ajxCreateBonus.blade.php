@@ -56,6 +56,9 @@
         <form method="post" action="{{ route('uploadBonusPembayaran') }}" enctype="multipart/form-data">
         {{ csrf_field() }}
     @endif --}}
+@if($bonusapa == "pembayaran" AND $AccNo=="1.1.1.1.000003")
+<br>
+@else
     <div class="row">
         <div class="col-12">
             <div class="card-box table-responsive">
@@ -102,6 +105,7 @@
             </div>
         </div>
     </div>
+@endif
 {{-- @if($bonusapa=="pembayaran")
     </form>
 @endif
@@ -119,11 +123,15 @@
         <div class="col-12">
             <div class="card-box table-responsive">
                 <h4 class="m-t-0 header-title">Detail Bonus Member</h4>
+                @if($bonusapa == "pembayaran" AND $AccNo=="1.1.1.1.000003")
+                    <br>
+                @else
                 <div class="form-group text-left m-b-0">
                     <a class="btn btn-warning waves-effect waves-light" data-toggle="modal" data-target=".bs-example-modal-lg">
                         Gagal Upload
                     </a>
                 </div>
+                @endif
 
                     @php
                         $i = 1;
@@ -205,8 +213,10 @@
                         <thead>
                             <tr>
                             <th width="7%">No</th>
-                            <th width="13%">Nama Bank</th>
-                            <th width="13%">No Rekening</th>
+                            @if($AccNo != "1.1.1.1.000003")
+                                <th width="13%">Nama Bank</th>
+                                <th width="13%">No Rekening</th>
+                            @endif
                             <th width="17%">Nama</th>
                             <th width="27%">Bonus</th>
                             <th>Action</th>
@@ -297,7 +307,8 @@
 
     function ajx_member(){
         var bid = $("#bank_id").val()
-        console.log("bank id = "+bid)
+        var AccNo = $("#AccNo").val()
+        console.log("bank id = "+bid+" "+AccNo)
         $("#search").select2({
             placeholder:'Masukan Kata Kunci',
             ajax:{
@@ -308,11 +319,17 @@
                     return{
                         keyword:params.term,
                         bankid:bid,
+                        AccNo:AccNo,
                     };
                 },
                 processResults:function(data){
                     var item = $.map(data, (value)=>{ //map buat ngemap object data kyk foreach
-                        return { id: value.id, text: value.namabank+" "+value.norek+" - "+value.nama+" (KTP : "+value.ktp+")"};
+                        if(AccNo == "1.1.1.1.000003"){
+                            var text = value.nama+" (KTP : "+value.ktp+")";
+                        }else{
+                            var text = value.namabank+" "+value.norek+" - "+value.nama+" (KTP : "+value.ktp+")";
+                        }
+                        return { id: value.id, text: text};
                     });
                     return {
                         results: item
@@ -509,6 +526,7 @@
         var thn = $("#tahun").val();
         var bln = $("#bulan").val();
         var cnt = $("#ctr").val();
+        var AccNo = $("#AccNo").val();
         $.ajax({
             url : "{{route('ajxAddRowPenerimaan')}}",
             type : "post",
@@ -519,6 +537,7 @@
                 bulan : bln,
                 count : cnt,
                 _token : token,
+                AccNo : AccNo,
             },
         }).done(function (data) {
             $('#table-body').append(data.append);
@@ -680,7 +699,7 @@
             var selisih = parseInt($('#bonus_tertahan').val()) - totalharga;
         }
 
-        // console.log(totalharga)
+        // console.log(bonus)
         $('#total_bonus').val(totalharga);
         $('#selisih_bonus').val(selisih);
     }
