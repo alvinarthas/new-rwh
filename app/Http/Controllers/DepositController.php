@@ -11,6 +11,7 @@ use App\Perusahaan;
 use App\MenuMapping;
 use App\Coa;
 use App\Jurnal;
+use App\Log;
 
 class DepositController extends Controller
 {
@@ -91,8 +92,7 @@ class DepositController extends Controller
                 $data->save();
 
                 $desc = "Top Up Deposit Pembelian, id=".$data->id;
-
-               
+                Log::setLog('PUDPC','Create Deposit Pembelian Supplier: '.$request->supplier.' Jurnal ID: '.$id_jurnal);
 
                 return redirect()->route('deposit.index')->with('status', 'Data berhasil ditambah');
             }catch(\Exception $e) {
@@ -149,8 +149,11 @@ class DepositController extends Controller
     public function destroy($id)
     {
         $deposit = Deposit::where('id',$id)->first();
+        $id_jurnal = $deposit->jurnal_id; 
+        $supplier = $deposit->supplier_id;
         try{
             $jurnal = Jurnal::where('id_jurnal',$deposit->jurnal_id)->delete();
+            Log::setLog('PUDPD','Delete Deposit Pembelian Supplier: '.$supplier.' Jurnal ID: '.$id_jurnal);
             return "true";
         // fail
         }catch (\Exception $e) {

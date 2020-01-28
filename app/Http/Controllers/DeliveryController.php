@@ -17,6 +17,7 @@ use App\MenuMapping;
 use App\DeliveryOrder;
 use App\DeliveryDetail;
 use App\PurchaseDetail;
+use App\Log;
 
 class DeliveryController extends Controller
 {
@@ -130,7 +131,7 @@ class DeliveryController extends Controller
 
                     $dodet->save();
                 }
-
+                Log::setLog('PSDOC','Create Delivery Order SO.'.$request->sales_id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data DO berhasil dibuat');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->errorInfo);
@@ -140,11 +141,12 @@ class DeliveryController extends Controller
 
     public function delete(Request $request){
         $do_id = $request->id;
-        $do = DeliveryOrder::where('id',$do_id)->select('jurnal_id')->first();
-        
+        $do = DeliveryOrder::where('id',$do_id)->select('jurnal_id','sales_id')->first();
+        $sales_id = $do->sales_id;
+        $id_jurnal = $do->jurnal_id;
         try {
             $jurnal = Jurnal::where('id_jurnal',$do->jurnal_id)->delete();
-
+            Log::setLog('PSDOD','Delete Delivery Order SO.'.$sales_id.' Jurnal ID: '.$id_jurnal);
             return "true";
         } catch (\Exception $e) {
             return response()->json($e);

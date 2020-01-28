@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Perusahaan;
 use App\MenuMapping;
+use App\Log;
 
 class PerusahaanController extends Controller
 {
@@ -41,9 +42,6 @@ class PerusahaanController extends Controller
      */
     public function store(Request $request)
     {
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
         // Validate
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string',
@@ -67,6 +65,7 @@ class PerusahaanController extends Controller
             ));
             // success
             if($perusahaan->save()){
+                // Log::setLog('PRPDC','Create Product ID: '.$request->prod_id);
                 return redirect()->route('perusahaan.index')->with('status', 'Data berhasil dibuat');
             // fail
             }else{

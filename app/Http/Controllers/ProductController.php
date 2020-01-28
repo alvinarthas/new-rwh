@@ -18,6 +18,7 @@ use App\ReceiveDet;
 use App\Customer;
 use App\SalesDet;
 use App\Sales;
+use App\Log;
 
 class ProductController extends Controller
 {
@@ -78,6 +79,7 @@ class ProductController extends Controller
             ));
             // success
             if($product->save()){
+                Log::setLog('PRPDC','Create Product ID: '.$request->prod_id);
                 return redirect()->route('product.index')->with('status', 'Data berhasil dibuat');
             // fail
             }else{
@@ -146,6 +148,7 @@ class ProductController extends Controller
             $product->prod_id_new = $request->prod_id_new;
             // success
             if($product->update()){
+                Log::setLog('PRPDU','Update Product ID: '.$request->prod_id);
                 return redirect()->route('product.index')->with('status', 'Data berhasil disimpan');
             // fail
             }else{
@@ -164,6 +167,7 @@ class ProductController extends Controller
     {
         $product = Product::find($id);
         if($product->delete()){
+            Log::setLog('PRPDD','Delete Product ID: '.$id);
             return redirect()->route('product.index')->with('status', 'Data berhasil dihapus');
         // fail
         }else{
