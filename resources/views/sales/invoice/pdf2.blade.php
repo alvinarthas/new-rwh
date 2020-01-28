@@ -51,11 +51,11 @@
                             <address>
                                 <h3><strong>Customer Name: </strong> {{$transaksi->customer->apname}}</h3>
                                 <h4>{{$transaksi->customer->apadd}}</h4>
-                                <h4>Telepon: {{$transaksi->customer->apphone}}</h4>
+                                <h4>Phone: {{$transaksi->customer->apphone}}</h4>
                             </address>
                         </div>
                         <div class="pull-right m-t-30">
-                            <h3><strong>Transaction Date: </strong> {{$transaksi->trx_date}}</h3>
+                            <h3><strong>Transaction Date: </strong> {{ date('d M Y',strtotime($transaksi->trx_date))}}</h3>
                             <h3 class="m-t-10"><strong>Transaction ID: </strong> #{{$transaksi->id}}</h3>
                         </div>
                     </div><!-- end col -->
@@ -114,7 +114,7 @@
                     </div>
                     <div class="col-xl-6 col-6">
                         <h3 class="text-right"><b>Sub-total:</b> Rp {{number_format($transaksi->ttl_harga, 2, ",", ".")}}</h3>
-                        <h3 class="text-right">Ongkir: Rp {{number_format($transaksi->ongkir, 2, ",", ".")}}</h3>
+                        <h3 class="text-right">Delivery Fee: Rp {{number_format($transaksi->ongkir, 2, ",", ".")}}</h3>
                         <hr>
                         <h2 class="text-right">Rp. {{number_format($transaksi->ongkir+$transaksi->ttl_harga, 2, ",", ".")}}</h2>
                     </div>

@@ -73,7 +73,7 @@ class Coa extends Model
             }
 
             $parent_sum+=$sub_sum;
-            
+
             $subsub->put('name',$key->AccName);
             $subsub->put('amount',$sub_sum);
             $subsub->put('data',$sub_coa_collect);
@@ -108,7 +108,7 @@ class Coa extends Model
 
         return $subparent;
     }
-    
+
     public static function laba_bersih_non($start,$end){
         $data_parent = collect();
         $subparent = collect();
@@ -129,7 +129,7 @@ class Coa extends Model
                 }
 
                 $coasum = $sales_credit->sum('Amount')-$sales_debet->sum('Amount');
-                
+
                 $sub_sum+=$coasum;
 
                 $coa_collect->put('name',$key2->AccName);
@@ -140,7 +140,7 @@ class Coa extends Model
             }
 
             $parent_sum+=$sub_sum;
-            
+
             $subsub->put('name',$key->AccName);
             $subsub->put('no',$key->AccNo);
             $subsub->put('amount',$sub_sum);
@@ -155,7 +155,7 @@ class Coa extends Model
     }
 
     // Perubahan Modal
-    
+
     public static function nettProfit($start,$end){
         $nett_sales = Coa::nettSales($start,$end);
         $cogs = Coa::cogs($start,$end);
@@ -177,12 +177,12 @@ class Coa extends Model
             $set_modal = Coa::setoranModal($start,$end);
             $prive = Coa::pengeluaranPribadi($start,$end);
             $nett_profit = Coa::nettProfit($start,$end);
-            
+
             $modal_awal = $set_modal-$prive+$nett_profit;
         }else{
             $modal_awal = 0;
         }
-        
+
         return $modal_awal;
     }
 
@@ -255,27 +255,27 @@ class Coa extends Model
                             $col6 = collect();
                             if($key6->StatusAccount == 'Detail'){
                                 // Get Total Amount From Jurnal
-                                $sales6_debet = Jurnal::where('AccNo',$key5->AccNo)->where('AccPos','Debet');
-                                $sales6_credit = Jurnal::where('AccNo',$key5->AccNo)->where('AccPos','Credit');
+                                $sales6_debet = Jurnal::where('AccNo',$key6->AccNo)->where('AccPos','Debet');
+                                $sales6_credit = Jurnal::where('AccNo',$key6->AccNo)->where('AccPos','Credit');
                                 if($date <> NULL){
                                     $sales6_debet->where('date','<=',$date);
                                     $sales6_credit->where('date','<=',$date);
                                 }
                                 if($no == 1){
-                                    $amount6 = $sales5_debet->sum('Amount')-$sales5_credit->sum('Amount');
+                                    $amount6 = $sales6_debet->sum('Amount') - $sales6_credit->sum('Amount');
                                 }else {
-                                    $amount6 = $sales5_credit->sum('Amount')-$sales5_debet->sum('Amount');
+                                    $amount6 = $sales6_credit->sum('Amount') - $sales6_debet->sum('Amount');
                                 }
-                               
-    
+
+
                                 // Incement
                                 $sum5+=$amount6;
                             }
-    
+
                             $col6->put('name',$key6->AccName);
                             $col6->put('no',$key6->AccNo);
-                            $col6->put('amount',$amount5);
-    
+                            $col6->put('amount',$amount6);
+
                             $collect6->push($col6);
                         }
                         if($key5->StatusAccount == 'Detail'){
@@ -291,7 +291,7 @@ class Coa extends Model
                             }else {
                                 $amount5 = $sales5_credit->sum('Amount')-$sales5_debet->sum('Amount');
                             }
-                           
+
 
                             // Incement
                             $sum4+=$amount5;

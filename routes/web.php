@@ -296,6 +296,9 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('jurnaladd','JurnalController@addJurnal')->name('addJurnal');
     Route::get('jurnaldetaildestroy','JurnalController@detailJuralDestroy')->name('detailJuralDestroy');
 
+    // Bonus Helper
+    Route::post('repairEstimasibonus', 'BonusController@RepairEstimasi')->name('repairEstimasiBonus');
+
 });
 
 // Fingerprint System
