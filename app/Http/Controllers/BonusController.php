@@ -6,14 +6,18 @@ use Illuminate\Http\Request;
 use App\Imports\BonusImport;
 use App\Imports\BonusBayarImport;
 use App\Imports\BonusTopupImport;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+
 use Excel;
 use PDF;
+
 use App\Exports\BonusGagalUploadExport1;
 use App\Exports\BonusGagalUploadExport2;
 use Carbon\Carbon;
+
 use App\Bonus;
 use App\BonusGagal;
 use App\PurchaseDetail;
@@ -292,7 +296,7 @@ class BonusController extends Controller
                         'Amount'        => $selisih,
                         'company_id'    => 1,
                         'date'          => $tgl,
-                        'description'   => $ket,
+                        'description'   => "Selisih ".$ket,
                         'creator'       => session('user_id')
                     ));
                     $debet2->save();
@@ -324,8 +328,8 @@ class BonusController extends Controller
                     }
 
 
-                    $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun)->where('bulan', $bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
-                    $num = $bonusbayar->count();
+                    // $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun)->where('bulan', $bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
+                    // $num = $bonusbayar->count();
 
                     if($bonus != 0){
                         // debet kas/bank
@@ -342,7 +346,7 @@ class BonusController extends Controller
 
                         $debet->save();
 
-                        if($num==0){
+                        // if($num==0){
                             // bonus bayar
                             $data = new BonusBayar(array(
                                 'no_rek'    => $norek,
@@ -357,18 +361,19 @@ class BonusController extends Controller
                             ));
 
                             $data->save();
-                        }else{
-                            $jurnal_lama = Jurnal::where('id_jurnal', $bonusbayar['id_jurnal']);
+                        // }else{
 
-                            // bonus bayar
-                            $data = BonusBayar::where('no_rek',$norek)->where('tahun',$tahun)->where('bulan',$bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->first();
-                            $data->bonus = $bonus;
-                            $data->id_jurnal = $id_jurnal;
-                            $data->creator = session('user_id');
+                        //     $jurnal_lama = Jurnal::where('id_jurnal', $bonusbayar['id_jurnal']);
 
-                            $jurnal_lama->delete();
-                            $data->update();
-                        }
+                        //     // bonus bayar
+                        //     $data = BonusBayar::where('no_rek',$norek)->where('tahun',$tahun)->where('bulan',$bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->first();
+                        //     $data->bonus = $bonus;
+                        //     $data->id_jurnal = $id_jurnal;
+                        //     $data->creator = session('user_id');
+
+                        //     $data->update();
+                        //     $jurnal_lama->delete();
+                        // }
                     }
                 }
                 Log::setLog('BMBBC','Create Penerimaan Bonus '.$id_jurnal);
@@ -493,17 +498,26 @@ class BonusController extends Controller
     public function edit($id)
     {
         $bn = Bonus::where('id_bonus', $id)->select('bulan', 'tahun', 'perusahaan_id', 'tgl', 'id_jurnal', 'id_bonus')->first();
+        $bulan = $bn->bulan;
+        $tahun = $bn->tahun;
+        $id_jurnal = $bn->id_jurnal;
+        $perusahaan = $bn->perusahaan_id;
         $perusahaans = Perusahaan::all();
         $bonusapa = "perhitungan";
         $jenis = "edit";
         $page = MenuMapping::getMap(session('user_id'),"BMPB");
         $bonus = Bonus::join('perusahaanmember', 'tblbonus.noid', 'perusahaanmember.noid')->join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('tgl', $bn->tgl)->where('bulan', $bn->bulan)->where('tahun', $bn->tahun)->where('tblbonus.perusahaan_id', $bn->perusahaan_id)->where('id_jurnal', $bn->id_jurnal)->select('bonus', 'id_jurnal', 'perusahaanmember.ktp', 'tblbonus.noid', 'tblmember.nama', 'tblmember.member_id','id_bonus')->get();
 
-        $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$bn->bulan)->where('tblpotrx.year',$bn->tahun)->where('tblpotrx.supplier',$bn->perusahaan_id)->select('qty', 'price', 'price_dist')->get();
-        $estimasi_bonus = 0;
-        foreach($purchase as $p){
-            $estimasi_bonus = $estimasi_bonus + (($p['price_dist'] - $p['price']) * $p['qty']);
-        }
+        // $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$bn->bulan)->where('tblpotrx.year',$bn->tahun)->where('tblpotrx.supplier',$bn->perusahaan_id)->select('qty', 'price', 'price_dist')->get();
+        // $estimasi_bonus = 0;
+        // foreach($purchase as $p){
+        //     $estimasi_bonus = $estimasi_bonus + (($p['price_dist'] - $p['price']) * $p['qty']);
+        // }
+
+        $estimasi_bonus = Jurnal::where('id_jurnal', $bn->id_jurnal)->where('AccNo', "1.1.3.4")->first()->Amount;
+        // $estimasi = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$bulan)->where('tblpotrx.year',$tahun)->where('tblpotrx.supplier',$perusahaan)->sum(DB::Raw('(tblpotrxdet.price_dist - tblpotrxdet.price)* tblpotrxdet.qty'));
+        // $piutang_bonus = Bonus::where('bulan', $bulan)->where('tahun', $tahun)->where('perusahaan_id', $perusahaan)->sum('bonus');
+        // $estimasi_bonus = $estimasi - $piutang_bonus;
 
         return view('bonus.index', compact('perusahaans', 'jenis', 'bonusapa','page', 'bonus' ,'bn', 'estimasi_bonus'));
     }
@@ -521,14 +535,16 @@ class BonusController extends Controller
         $perhitunganbonus = Bonus::where('bulan', $bn->bulan)->where('tahun',$bn->tahun)->select('id_jurnal')->get();
         $bonus_tertahan = 0;
 
-        foreach($perhitunganbonus as $b){
-            $jurnal  = Jurnal::where('id_jurnal', $b['id_jurnal'])->where('AccNo', "1.1.3.5")->select('Amount','AccPos')->first();
-            if($jurnal['AccPos'] == "Debet"){
-                $bonus_tertahan = $bonus_tertahan + $jurnal['Amount'];
-            }elseif($jurnal['AccPos'] == "Credit"){
-                $bonus_tertahan = $bonus_tertahan - $jurnal['Amount'];
-            }
-        }
+        // foreach($perhitunganbonus as $b){
+        //     $jurnal  = Jurnal::where('id_jurnal', $b['id_jurnal'])->where('AccNo', "1.1.3.5")->select('Amount','AccPos')->first();
+        //     if($jurnal['AccPos'] == "Debet"){
+        //         $bonus_tertahan = $bonus_tertahan + $jurnal['Amount'];
+        //     }elseif($jurnal['AccPos'] == "Credit"){
+        //         $bonus_tertahan = $bonus_tertahan - $jurnal['Amount'];
+        //     }
+        // }
+
+        $bonus_tertahan = Jurnal::where('id_jurnal', $bn->id_jurnal)->where('AccNo', "1.1.3.5")->first()->Amount;
 
         return view('bonus.index', compact('rekening', 'supplier', 'jenis', 'bonusapa', 'page', 'bonus' ,'bn', 'bonus_tertahan'));
     }
@@ -1010,11 +1026,15 @@ class BonusController extends Controller
         $bulan = $request->bulan;
         $bonusapa = "perhitungan";
         $bonus = Bonus::where('tahun',$tahun)->where('bulan',$bulan)->get();
-        $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$bulan)->where('tblpotrx.year',$tahun)->where('tblpotrx.supplier',$perusahaan)->select('qty', 'price', 'price_dist')->get();
-        $estimasi_bonus = 0;
-        foreach($purchase as $p){
-            $estimasi_bonus = $estimasi_bonus + (($p['price_dist'] - $p['price']) * $p['qty']);
-        }
+        // $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$bulan)->where('tblpotrx.year',$tahun)->where('tblpotrx.supplier',$perusahaan)->select('qty', 'price', 'price_dist')->get();
+        // $estimasi_bonus = 0;
+        // foreach($purchase as $p){
+        //     $estimasi_bonus = $estimasi_bonus + (($p['price_dist'] - $p['price']) * $p['qty']);
+        // }
+        $estimasi = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$bulan)->where('tblpotrx.year',$tahun)->where('tblpotrx.supplier',$perusahaan)->sum(DB::Raw('(tblpotrxdet.price_dist - tblpotrxdet.price)* tblpotrxdet.qty'));
+        $piutang_bonus = Bonus::where('bulan', $bulan)->where('tahun', $tahun)->where('perusahaan_id', $perusahaan)->sum('bonus');
+        $estimasi_bonus = $estimasi - $piutang_bonus;
+
         return view('bonus.ajxCreateBonus', compact('perusahaanmember', 'bonus','tahun','bulan','tgl','perusahaan','bonusapa', 'estimasi_bonus'));
     }
 
@@ -1201,16 +1221,24 @@ class BonusController extends Controller
         $bulan = $request->bulan;
         $bonusapa = "pembayaran";
         $perhitunganbonus = Bonus::where('bulan', $bulan)->where('tahun',$tahun)->select('id_jurnal')->get();
-        $bonus_tertahan = 0;
+        $piutang_bonus = 0;
 
         foreach($perhitunganbonus as $b){
             $jurnal  = Jurnal::where('id_jurnal', $b['id_jurnal'])->where('AccNo', "1.1.3.5")->select('Amount','AccPos')->first();
+            // echo $jurnal['Amount'];
             if($jurnal['AccPos'] == "Debet"){
-                $bonus_tertahan = $bonus_tertahan + $jurnal['Amount'];
+                $piutang_bonus = $piutang_bonus + $jurnal['Amount'];
             }elseif($jurnal['AccPos'] == "Credit"){
-                $bonus_tertahan = $bonus_tertahan - $jurnal['Amount'];
+                $piutang_bonus = $piutang_bonus - $jurnal['Amount'];
             }
         }
+
+        $pembayaranbonus = BonusBayar::where('bulan', $bulan)->where('tahun', $tahun)->sum('bonus');
+        $bonus_tertahan = $piutang_bonus - $pembayaranbonus;
+
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
 
         return view('bonus.ajxCreateBonus', compact('tahun','bulan','bonusapa','bank','AccNo', 'tgl', 'bonus_tertahan', 'supplier'));
     }
@@ -1226,14 +1254,14 @@ class BonusController extends Controller
         $norek = $bankmember->norek;
         $namabank = Bank::where('id', $bankmember->bank_id)->first()->nama;
         $nama = Member::where('ktp', $bankmember->ktp)->first()->nama;
-        $bonus = BonusBayar::where('no_rek',$norek)->where('tahun', $tahun)->where('bulan',$bulan)->first();
-        if (!$bonus){
-            $bonus = 0;
-        }else{
-            $bonus = $bonus->bonus;
-        }
+        // $bonus = BonusBayar::where('no_rek',$norek)->where('tahun', $tahun)->where('bulan',$bulan)->first();
+        // if (!$bonus){
+        //     $bonus = 0;
+        // }else{
+        //     $bonus = $bonus->bonus;
+        // }
 
-        $sub_ttl = $bonus;
+        // $sub_ttl = $bonus;
 
         if($AccNo != "1.1.1.1.000003"){
             $append = '<tr style="width:100%" id="trow'.$count.'" class="trow">
@@ -1241,7 +1269,7 @@ class BonusController extends Controller
             <td><input type="hidden" name="namabank[]" id="namabank'.$count.'" value="'.$bankmember->bank_id.'">'.$namabank.'</td>
             <td><input type="hidden" name="norekening[]" id="norekening'.$count.'" value="'.$norek.'">'.$norek.'</td>
             <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$nama.'">'.$nama.'</td>
-            <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="'.$bonus.'"></td>
+            <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="0"></td>
             <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
             </tr>';
         }else{
@@ -1249,7 +1277,7 @@ class BonusController extends Controller
             <td>'.$count.'</td>
             <input type="hidden" name="norekening[]" id="norekening'.$count.'" value="'.$norek.'">'.$norek.'
             <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$nama.'">'.$nama.'</td>
-            <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="'.$bonus.'"></td>
+            <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="0"></td>
             <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
             </tr>';
         }
@@ -1257,7 +1285,6 @@ class BonusController extends Controller
         $data = array(
             'append' => $append,
             'count' => $count,
-            'sub_ttl' => $sub_ttl,
         );
 
         return response()->json($data);
@@ -1709,11 +1736,55 @@ class BonusController extends Controller
     }
 
     public function checkEstimasiBonus(Request $request){
-        $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$request->bulan)->where('tblpotrx.year',$request->tahun)->where('tblpotrx.supplier',$request->perusahaan_id)->select('qty', 'price', 'price_dist')->get();
-        $estimasi_bonus = 0;
-        foreach($purchase as $p){
-            $estimasi_bonus = $estimasi_bonus + (($p['price_dist'] - $p['price']) * $p['qty']);
+        // $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$request->bulan)->where('tblpotrx.year',$request->tahun)->where('tblpotrx.supplier',$request->perusahaan_id)->select('qty', 'price', 'price_dist')->get();
+        // $estimasi_bonus = 0;
+        // foreach($purchase as $p){
+        //     $estimasi_bonus = $estimasi_bonus + (($p['price_dist'] - $p['price']) * $p['qty']);
+        // }
+        // echo "<pre>";
+        // print_r($request->all());
+        if($request->bonusapa == "edit"){
+            // $estimasi_bonus = Jurnal::where('id_jurnal', $request->id_jurnal_lama)->where('AccNo', "1.1.3.4")->first()->Amount;
+            $estimasi_bonus = $request->all();
         }
+
+        // $estimasi = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$bulan)->where('tblpotrx.year',$tahun)->where('tblpotrx.supplier',$perusahaan)->sum(DB::Raw('(tblpotrxdet.price_dist - tblpotrxdet.price)* tblpotrxdet.qty'));
+
         return response()->json($estimasi_bonus);
+    }
+
+    public function RepairEstimasi()
+    {
+        $perhitunganbonus = Bonus::where('bulan', 12)->where('tahun', 2019)->select('id_jurnal')->get();
+        $piutang_bonus = 0;
+        $pembayaranbonus = BonusBayar::where('bulan', 12)->where('tahun', 2019)->get();
+
+        foreach($perhitunganbonus as $b){
+            $jurnal  = Jurnal::where('id_jurnal', $b['id_jurnal'])->where('AccNo', "1.1.3.5")->select('Amount','AccPos')->first();
+            // echo $jurnal['Amount'];
+            if($jurnal['AccPos'] == "Debet"){
+                $piutang_bonus = $piutang_bonus + $jurnal['Amount'];
+            }elseif($jurnal['AccPos'] == "Credit"){
+                $piutang_bonus = $piutang_bonus - $jurnal['Amount'];
+            }
+        }
+        $bonus_tertahan = $piutang_bonus - $pembayaranbonus->sum('bonus');
+
+        foreach($pembayaranbonus as $p){
+            $data = Jurnal::where('id_jurnal', $p->id_jurnal)->get();
+            foreach($data as $d){
+                $total_bonus = BonusBayar::where('bulan', 12)->where('tahun', 2019)->where('id_jurnal', $p->id_jurnal)->sum('bonus');
+                if($d->AccNo == "1.1.3.5"){
+                    $d->Amount = $bonus_tertahan - $total_bonus;
+                    $d->update();
+                }elseif($d->AccNo == "7.2"){
+                    $total = $bonus_tertahan - $total_bonus;
+                    if($total != 0){
+                        $d->Amount = $total;
+                        $d->update();
+                    }
+                }
+            }
+        }
     }
 }

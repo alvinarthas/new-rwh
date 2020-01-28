@@ -381,7 +381,7 @@
                                                         {{-- tampil semua data member perusahaan --}}
                                                         <input class="form-control" value="{{ $b['bonus'] }}" type="text" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()">
                                                         <input value="{{ $b['bonus'] }}" type="hidden" name="bonus_lama[]">
-                                                        <input value="{{ $b['id_jurnal'] }}" type="hidden" name="id_jurnal_lama[]">
+                                                        <input value="{{ $b['id_jurnal'] }}" type="hidden" name="id_jurnal_lama[]" id="id_jurnal_lama">
                                                         {{-- hanya yang bonus !=0 --}}
                                                         {{-- <input class="form-control number" value="{{ number_format($prm['bonus'],0) }}" type="text" name="bonus{{ $i }}"> --}}
                                                     </td>
@@ -1024,6 +1024,7 @@
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
         var rekening = $("#coa").val()
+        console.log(thn);
         if(tgl=="" || bln=="" || thn=="" || rekening==null){
             alert('Pastikan isi field Bulan, Tahun, Tanggal Transaksi, dan Rekening Bank Tujuan');
         }else{
@@ -1184,25 +1185,31 @@
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
         var perusahaan = $("#perusahaan").val()
-        console.log(bln,thn,perusahaan);
-        $.ajax({
-            url         :   "{{route('checkEstimasiBonus')}}",
-            data        :   {
-                tahun : thn,
-                bulan : bln,
-                perusahaan_id : perusahaan,
-            },
-            type		:	"GET",
-            dataType    :   "json",
-            success		:	function(data){
-                console.log(data)
-                $("#estimasi_bonus").val(data);
-                checkTotal();
-            },
-            error       :   function(data){
-                document.getElementById('tahun').value = '2018';
-            }
-        });
+        var id_jurnal = $("#id_jurnal_lama").val()
+        var bonusapa = $("#bonusapa").val()
+        // console.log(bln,thn,perusahaan);
+        if(bonusapa=="edit"){
+            $.ajax({
+                url         :   "{{route('checkEstimasiBonus')}}",
+                data        :   {
+                    tahun : thn,
+                    bulan : bln,
+                    perusahaan_id : perusahaan,
+                    id_jurnal : id_jurnal,
+                    bonusapa : bonusapa,
+                },
+                type		:	"GET",
+                dataType    :   "json",
+                success		:	function(data){
+                    console.log(data)
+                    $("#estimasi_bonus").val(data);
+                    checkTotal();
+                },
+                error       :   function(data){
+                    document.getElementById('tahun').value = '2018';
+                }
+            });
+        }
     }
 </script>
 @endsection
