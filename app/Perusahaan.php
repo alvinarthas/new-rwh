@@ -43,7 +43,7 @@ class Perusahaan extends Model
             $selisih = $key->total_harga_dist - $payment;
 
             if($selisih < 0 || $selisih > 0){
-                $data_hutang->put('id',"PO.".$key->id);
+                $data_hutang->put('id',$key->id);
                 $data_hutang->put('sisa',$selisih);
 
                 $data->push($data_hutang);

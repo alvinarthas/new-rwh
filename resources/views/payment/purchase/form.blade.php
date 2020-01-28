@@ -98,7 +98,7 @@ Form Purchase Payment
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Payment Status</label>
                             <div class="col-10">
-                                <input type="text" class="form-control" parsley-trigger="change" value="@if($ttl_pay == $purchase->total_harga_dist)Lunas @elseif($ttl_pay > $purchase->total_harga_dist) Kelebihan Bayar @else() Belum Lunas @endif" readonly>
+                                <input type="text" class="form-control" parsley-trigger="change" value="@if($ttl_pay == $ttl_order)Lunas @elseif($ttl_pay > $ttl_order) Kelebihan Bayar @else() Belum Lunas @endif" readonly>
                             </div>
                         </div>
                     </div>
@@ -192,7 +192,7 @@ Form Purchase Payment
                                     </div><!-- input-group -->
                                 </div>
                             </div>
-                            @if ($purchase->status == 0)
+                            @if($ttl_pay < $ttl_order)
                             <div class="form-group text-right m-b-0">
                                 <button class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Simpan Purchase Payment</a>
                             </div>

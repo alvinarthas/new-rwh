@@ -15,6 +15,7 @@ use App\Purchase;
 use App\BonusPegawai;
 use App\BonusPegawaiDet;
 use App\Sales;
+use App\Log;
 
 use Carbon\Carbon;
 
@@ -105,7 +106,7 @@ class SalaryController extends Controller
                     ));
                     
                     $poin->save();
-        
+                    Log::setLog('EMEPC','Insert Poin to Employee: '.$request->employee);
                     return redirect()->back()->with('status', 'Data Poin berhasil dibuat');
                 } catch (\Exception $e) {
                     return redirect()->back()->withErrors($e->getMessage());
@@ -118,6 +119,7 @@ class SalaryController extends Controller
     public function delPoin(Request $request){
         try{
             RecordPoin::where('id',$request->id)->delete();
+            Log::setLog('EMEPC','Delete Poin id:'.$request->id);
             return "true";
         // fail
         }catch (\Exception $e) {
@@ -416,6 +418,7 @@ class SalaryController extends Controller
                 $saldet->take_home_pay = $tot_takehome;
                 $saldet->save();
             }
+            Log::setLog('EMPGC','Create Gaji Bulan:'.$request->bulan.' Tahun: '.$request->tahun);
                 // Check Bonus Manager
                 // count gaji yg > 5.6jt
                 // if diatas 3 orang, semua manager dapet 10% bv
@@ -428,6 +431,7 @@ class SalaryController extends Controller
     public function deletePerhitunganGaji(Request $request){
         try {
             Salary::where('id',$request->id)->delete();
+            Log::setLog('EMPGC','Delete Gaji ID:'.$request->id);
             return "true";
         } catch (\Exception $e) {
             return response()->json($e);
