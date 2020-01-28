@@ -107,6 +107,10 @@
                             <p class="text-muted font-14 m-b-30">
                                 <a href="{{ route('bonus.createPenerimaan') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Penerimaan Bonus</a>
                             </p>
+                            <form class="form-horizontal" role="form" action="{{ route('repairEstimasiBonus') }}" enctype="multipart/form-data" method="POST">
+                                @csrf
+                                <button class="btn btn-danger">repair</button>
+                            </form>
                         @endif
                     @elseif($bonusapa=="topup")
                         @if (array_search("BMTUC",$page))

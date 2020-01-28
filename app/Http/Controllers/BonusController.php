@@ -53,7 +53,7 @@ class BonusController extends Controller
     public function indexBayar(Request $request)
     {
         $page = MenuMapping::getMap(session('user_id'),"BMBB");
-        $bonus = BonusBayar::join('tblcoa', 'tblbonusbayar.AccNo', 'tblcoa.AccNo')->groupBy('id_jurnal')->select('id_bonus','bulan', 'tahun', 'tgl', 'AccName', DB::raw('SUM(bonus) as total_bonus'), 'id_jurnal')->orderBy('tgl', 'desc')->get();
+        $bonus = BonusBayar::join('tblcoa', 'tblbonusbayar.AccNo', 'tblcoa.AccNo')->groupBy('id_jurnal')->select('id_bonus','bulan', 'tahun', 'tgl', 'AccName', DB::raw('SUM(bonus) as total_bonus'), 'id_jurnal')->orderBy('id_jurnal', 'asc')->get();
         $bonusapa = "pembayaran";
         $jenis = "index";
         return view('bonus.index', compact('bonusapa','jenis', 'page', 'bonus'));
@@ -1744,8 +1744,8 @@ class BonusController extends Controller
         // echo "<pre>";
         // print_r($request->all());
         if($request->bonusapa == "edit"){
-            // $estimasi_bonus = Jurnal::where('id_jurnal', $request->id_jurnal_lama)->where('AccNo', "1.1.3.4")->first()->Amount;
-            $estimasi_bonus = $request->all();
+            $estimasi_bonus = Jurnal::where('id_jurnal', $request->id_jurnal_lama)->where('AccNo', "1.1.3.4")->first()->Amount;
+            // $estimasi_bonus = $request->all();
         }
 
         // $estimasi = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->where('tblpotrx.month',$bulan)->where('tblpotrx.year',$tahun)->where('tblpotrx.supplier',$perusahaan)->sum(DB::Raw('(tblpotrxdet.price_dist - tblpotrxdet.price)* tblpotrxdet.qty'));
@@ -1755,9 +1755,9 @@ class BonusController extends Controller
 
     public function RepairEstimasi()
     {
-        $perhitunganbonus = Bonus::where('bulan', 12)->where('tahun', 2019)->select('id_jurnal')->get();
+        $perhitunganbonus = Bonus::where('bulan', 12)->where('tahun', 2019)->select('id_jurnal')->orderBy('id_bonus')->groupBy('id_jurnal')->get();
         $piutang_bonus = 0;
-        $pembayaranbonus = BonusBayar::where('bulan', 12)->where('tahun', 2019)->get();
+        $pembayaranbonus = BonusBayar::where('bulan', 12)->where('tahun', 2019)->orderBy('id_bonus')->groupBy('id_jurnal')->get();
 
         foreach($perhitunganbonus as $b){
             $jurnal  = Jurnal::where('id_jurnal', $b['id_jurnal'])->where('AccNo', "1.1.3.5")->select('Amount','AccPos')->first();
@@ -1768,23 +1768,24 @@ class BonusController extends Controller
                 $piutang_bonus = $piutang_bonus - $jurnal['Amount'];
             }
         }
-        $bonus_tertahan = $piutang_bonus - $pembayaranbonus->sum('bonus');
 
         foreach($pembayaranbonus as $p){
             $data = Jurnal::where('id_jurnal', $p->id_jurnal)->get();
+
             foreach($data as $d){
                 $total_bonus = BonusBayar::where('bulan', 12)->where('tahun', 2019)->where('id_jurnal', $p->id_jurnal)->sum('bonus');
                 if($d->AccNo == "1.1.3.5"){
-                    $d->Amount = $bonus_tertahan - $total_bonus;
-                    $d->update();
+                    $d->Amount = $piutang_bonus - $total_bonus;
+                    // $d->update();
                 }elseif($d->AccNo == "7.2"){
                     $total = $bonus_tertahan - $total_bonus;
                     if($total != 0){
                         $d->Amount = $total;
-                        $d->update();
+                        // $d->update();
                     }
                 }
             }
         }
+        die();
     }
 }
