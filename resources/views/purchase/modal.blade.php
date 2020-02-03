@@ -78,4 +78,10 @@
             <input type="text" class="form-control" name="ttl_harga_modal" id="ttl_harga_modal" parsley-trigger="change" value="Rp {{number_format($purchase->total_harga_modal,2,",",".")}}" readonly>
         </div>
     </div>
+    <div class="form-group row">
+        <label class="col-2 col-form-label">Total sudah dibayar</label>
+        <div class="col-10">
+            <input type="text" class="form-control" name="ttl_harga_modal" id="ttl_harga_modal" parsley-trigger="change" value="Rp {{number_format($purchasepay,2,",",".")}}" readonly>
+        </div>
+    </div>
 </div>

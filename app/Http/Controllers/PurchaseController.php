@@ -11,6 +11,7 @@ use App\Purchase;
 use App\PurchaseMap;
 use App\PurchaseDetail;
 use App\Perusahaan;
+use App\PurchasePayment;
 use App\ManageHarga;
 use App\Jurnal;
 use App\MenuMapping;
@@ -225,7 +226,8 @@ class PurchaseController extends Controller
         if ($request->ajax()) {
             $purchase = Purchase::where('id',$request->id)->first();
             $purchasedet = PurchaseDetail::where('trx_id',$request->id)->get();
-            return response()->json(view('purchase.modal',compact('purchase','purchasedet'))->render());
+            $purchasepay = PurchasePayment::where('trx_id',$request->id)->sum('payment_amount');
+            return response()->json(view('purchase.modal',compact('purchase','purchasedet','purchasepay'))->render());
         }
     }
 

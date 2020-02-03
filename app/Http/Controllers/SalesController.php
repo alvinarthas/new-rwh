@@ -10,6 +10,7 @@ use App\Customer;
 use App\Product;
 use App\PriceDet;
 use App\Sales;
+use App\SalesPayment;
 use App\SalesDet;
 use App\PurchaseDetail;
 use App\Jurnal;
@@ -186,7 +187,8 @@ class SalesController extends Controller
         if ($request->ajax()) {
             $sales = Sales::where('id',$request->id)->first();
             $salesdet = SalesDet::where('trx_id',$request->id)->get();
-            return response()->json(view('sales.modal',compact('sales','salesdet'))->render());
+            $salespay = SalesPayment::where('trx_id',$request->id)->sum('payment_amount');
+            return response()->json(view('sales.modal',compact('sales','salesdet','salespay'))->render());
         }
     }
 

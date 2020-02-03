@@ -46,7 +46,11 @@
 <script type="text/javascript">
     $(document).ready(function () {
         // Responsive Datatable
-        $('#datatable').DataTable();
+        $('#datatable').DataTable({
+            columnDefs: [
+            {targets: '_all', type: 'natural'}
+            ]
+        } );
     });
 
     function getDetailOrder(id2){

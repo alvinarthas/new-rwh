@@ -58,6 +58,7 @@
     <!-- Required datatable js -->
     <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/datatables/natural.js') }}"></script>
 
     <!-- Responsive examples -->
     <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>

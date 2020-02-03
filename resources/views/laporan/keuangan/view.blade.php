@@ -289,7 +289,11 @@
                                         @if(count($asset3['data']) > 0)
                                             <td></td>
                                         @else
+                                            @if ($asset3['amount'] < 0)
+                                            <td>(Rp {{number_format($asset3['amount']*-1,2,',','.')}})</td>
+                                            @else
                                             <td>Rp {{number_format($asset3['amount'],2,',','.')}}</td>
+                                            @endif
                                         @endif
                                         <td></td>
                                         <td></td>
@@ -301,7 +305,11 @@
                                             @if(count($asset4['data']) > 0)
                                                 <td></td>
                                             @else
-                                                <td>Rp {{number_format($asset4['amount'],2,',','.')}}</td>
+                                            @if ($asset4['amount'] < 0)
+                                            <td>(Rp {{number_format($asset4['amount']*-1,2,',','.')}})</td>
+                                            @else
+                                            <td>Rp {{number_format($asset4['amount'],2,',','.')}}</td>
+                                            @endif
                                             @endif
                                             <td></td>
                                             <td></td>
@@ -312,7 +320,11 @@
                                                 @if(count($asset5['data']) > 0)
                                                 <td></td>
                                                 @else
-                                                <td>Rp {{number_format($asset5['amount'],2,',','.')}}</td>
+                                                    @if ($asset5['amount'] < 0)
+                                                    <td>(Rp {{number_format($asset5['amount']*-1,2,',','.')}})</td>
+                                                    @else
+                                                    <td>Rp {{number_format($asset5['amount'],2,',','.')}}</td>
+                                                    @endif
                                                 @endif
                                                 <td></td>
                                                 <td></td>
@@ -321,7 +333,11 @@
                                             @foreach ($asset5['data'] as $asset6)
                                             <tr>
                                                 <td>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;{{$asset6['no']}} {{$asset6['name']}}</td>
+                                                @if ($asset6['amount'] < 0)
+                                                <td>(Rp {{number_format($asset6['amount']*-1,2,',','.')}})</td>
+                                                @else
                                                 <td>Rp {{number_format($asset6['amount'],2,',','.')}}</td>
+                                                @endif
                                                 <td></td>
                                                 <td></td>
                                                 <td></td>
@@ -330,7 +346,11 @@
                                             @if(count($asset5['data']) > 0)
                                             <tr>
                                                 <td>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<strong>Total {{$asset5['name']}}</strong></td>
+                                                @if ($asset5['amount'] < 0)
+                                                <td>(Rp {{number_format($asset5['amount']*-1,2,',','.')}})</td>
+                                                @else
                                                 <td>Rp {{number_format($asset5['amount'],2,',','.')}}</td>
+                                                @endif
                                                 <td></td>
                                                 <td></td>
                                                 <td></td>
@@ -342,7 +362,11 @@
                                         <tr>
                                             <td>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<strong>Total {{$asset4['name']}}</strong></td>
                                             <td></td>
+                                            @if ($asset4['amount'] < 0)
+                                            <td>(Rp {{number_format($asset4['amount']*-1,2,',','.')}})</td>
+                                            @else
                                             <td>Rp {{number_format($asset4['amount'],2,',','.')}}</td>
+                                            @endif
                                             <td></td>
                                             <td></td>
                                         </tr>
@@ -352,7 +376,11 @@
                                     <tr>
                                         <td>&emsp;&emsp;&emsp;&emsp;<strong>Total {{$asset3['name']}}</strong></td>
                                         <td></td>
-                                        <td>Rp {{number_format($asset3['amount'],2,',','.')}}</td>
+                                        @if ($asset3['amount'] < 0)
+                                            <td>(Rp {{number_format($asset3['amount']*-1,2,',','.')}})</td>
+                                        @else
+                                            <td>Rp {{number_format($asset3['amount'],2,',','.')}}</td>
+                                        @endif
                                         <td></td>
                                         <td></td>
                                     </tr>
@@ -362,7 +390,11 @@
                                     <td>&emsp;&emsp;<strong>Total {{$asset2['name']}}</strong></td>
                                     <td></td>
                                     <td></td>
+                                    @if ($asset2['amount'] < 0)
+                                    <td>(Rp {{number_format($asset2['amount']*-1,2,',','.')}})</td>
+                                    @else
                                     <td>Rp {{number_format($asset2['amount'],2,',','.')}}</td>
+                                    @endif
                                     <td></td>
                                 </tr>
                             @endforeach
@@ -371,7 +403,11 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
+                                @if ($assets['amount'] < 0)
+                                <td><strong>(Rp {{number_format($assets['amount']*-1,2,',','.')}})</strong></td>
+                                @else
                                 <td><strong>Rp {{number_format($assets['amount'],2,',','.')}}</strong></td>
+                                @endif
                             </tr>      
                         </tbody>
                     </table>
@@ -400,7 +436,11 @@
                                     <tr>
                                         <td>&emsp;&emsp;&emsp;&emsp;{{$hutang3['no']}} {{$hutang3['name']}}</td>
                                         <td></td>
+                                        @if ($hutang3['amount'] < 0)
+                                        <td>(Rp {{number_format($hutang3['amount']*-1,2,',','.')}})</td>
+                                        @else
                                         <td>Rp {{number_format($hutang3['amount'],2,',','.')}}</td>
+                                        @endif
                                         <td></td>
                                         <td></td>
                                     </tr>
@@ -409,7 +449,11 @@
                                     <td>&emsp;&emsp;<strong> Total {{$hutang2['name']}}</strong></td>
                                     <td></td>
                                     <td></td>
+                                    @if ($hutang2['amount'] < 0)
+                                    <td>(Rp {{number_format($hutang2['amount']*-1,2,',','.')}})</td>
+                                    @else
                                     <td>Rp {{number_format($hutang2['amount'],2,',','.')}}</td>
+                                    @endif
                                     <td></td>
                                 </tr>
                             @endforeach       
@@ -418,7 +462,11 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
+                                @if ($hutangs['amount'] < 0)
+                                <td><strong>(Rp {{number_format($hutangs['amount']*-1,2,',','.')}})</strong></td>
+                                @else
                                 <td><strong>Rp {{number_format($hutangs['amount'],2,',','.')}}</strong></td>
+                                @endif
                             </tr>       
                         </tbody>
                     </table>

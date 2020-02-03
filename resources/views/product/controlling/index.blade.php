@@ -2,6 +2,7 @@
 @php
     use App\Perusahaan;
     use App\Product;
+    use App\PurchaseDetail;
 @endphp
 
 @section('css')
@@ -42,14 +43,14 @@
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                     <thead>
                         <th style="width:5%">No</th>
-                        {{-- <th>Supplier</th> --}}
+                        <th>Supplier</th>
                         <th>Product ID</th>
                         <th>Product Name</th>
                         <th>Indent</th>
                         <th>di Gudang</th>
                         <th>milik Customer</th>
                         <th>Nett</th>
-                        {{-- <th>Detail Stock</th> --}}
+                        <th>Avg Cost</th>
                     </thead>
 
                     <tbody>
@@ -59,7 +60,7 @@
                         @foreach($products as $prd)
                             <tr>
                                 <td>{{$i}}</td>
-                                {{-- <td>{{$prd->supplier()->first()->nama}}</td> --}}
+                                <td>{{$prd->supplier()->first()->nama}}</td>
                                 <td>{{$prd->prod_id}}</td>
                                 <td>{{$prd->name}}</td>
                                     @php
@@ -68,14 +69,13 @@
                                         $gudang = Product::getGudang($prd->prod_id);
                                         $brgcust = Product::getBrgCust($prd->prod_id);
                                         $nett = $indent + $gudang - $brgcust;
+                                        $avcost = PurchaseDetail::where('prod_id',$prd->prod_id)->avg('price');
                                     @endphp
                                 <td><a href="javascript:;" onclick="getIndent('{{ $prd->id }}')" disabled="disabled"><strong>{{ $indent }}</strong></a></td>
                                 <td><a href="javascript:;" onclick="getGudang('{{ $prd->id }}')" disabled="disabled"><strong>{{ $gudang }}</strong></a></td>
                                 <td><a href="javascript:;" onclick="getBrgCust('{{ $prd->id }}')" disabled="disabled"><strong>{{ $brgcust }}</strong></a></td>
                                 <td><strong>{{ $nett }}</strong></td>
-                                {{-- <td>
-                                    <a href="javascript:;" onclick="getDetail('{{$prd->prod_id}}')" class="btn btn-primary btn-rounded waves-effect waves-light w-md m-b-5" disabled="disabled">Show Detail</a>
-                                </td> --}}
+                                <td><strong>Rp {{ number_format($avcost,2,",",".") }}</strong></td>
                             </tr>
                         @endforeach
                     </tbody>

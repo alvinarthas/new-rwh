@@ -13,7 +13,10 @@ class HomeController extends Controller
 {
     public function index(Request $request){
         if ($request->session()->has('isLoggedIn')) {
-            return view('welcome.welcome');
+            // Get User Profile
+            $user = Employee::where('id',session('user_id'))->first();
+            // Get Poin Sementara
+            return view('welcome.welcome',compact('user'));
         }else{
             return view('login.login');
         }
