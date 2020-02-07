@@ -169,7 +169,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('invoice/view','InvoiceController@view')->name('invoiceView');
         Route::get('invoice/print','InvoiceController@print')->name('invoicePrint');
 
-    //Retur
+    // Retur
         Route::get('/showpembelian', 'ReturController@showReturPembelian')->name('showReturPembelian');
         Route::get('/retur/penjualan/index', 'ReturController@indexpj')->name('retur.indexpj');
         Route::get('/retur/penjualan/create', 'ReturController@createpj')->name('retur.createpj');
@@ -177,7 +177,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::put('/retur/penjualan/edit/{id}', 'ReturController@updatepj')->name('retur.updatepj');
         Route::get('/showpenjualan', 'ReturController@showReturPenjualan')->name('showReturPenjualan');
 
-    //Security
+    // Security
         Route::get('/security', 'SecurityController@index')->name('security.index');
         Route::get('/security/getATM', 'SecurityController@getATM')->name('security.getatm');
 
@@ -269,6 +269,9 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('perhitungan/create','SalaryController@createPerhitunganGaji')->name('createPerhitunganGaji');
         Route::post('perhitungan/store','SalaryController@storePerhitunganGaji')->name('storePerhitunganGaji');
         Route::delete('perhitungan/delete','SalaryController@deletePerhitunganGaji')->name('deletePerhitunganGaji');
+        Route::post('perhitungan/saveaspdf', 'SalaryController@saveAsPdf')->name('saveAsPdf');
+        Route::post('perhitungan/exportGaji', 'SalaryController@export')->name('exportGaji');
+
     });
 
     // ------------------------ HELPER -------------------------------------------------

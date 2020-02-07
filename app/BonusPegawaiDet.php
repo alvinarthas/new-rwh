@@ -10,4 +10,8 @@ class BonusPegawaiDet extends Model
     protected $fillable = [
         'bonus_pegawai_id', 'poin_internal','persen_internal','poin_logistik','persen_logistik','poin_kendali','persen_kendali','poin_top3','persen_top3','tunjangan_persen','total_persen'
     ];
+
+    public function employee(){
+        return $this->belongsTo('App\Employee');
+    }
 }

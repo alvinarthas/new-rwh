@@ -51,15 +51,19 @@ Tambah Data Coa
                                 <label class="col-2 col-form-label">Posisi Saldo Normal</label>
                                 <div class="col-10">
                                     <select class="form-control select2" parsley-trigger="change" name="saldo_normal">
-                                        @if ($coa->SaldoNormal == 'Db')
-                                        <option value="Db" selected>Debet</option>
-                                        <option value="Cr">Kredit</option>
+                                        @isset($coa->SaldoNormal)
+                                            @if ($coa->SaldoNormal == 'Db')
+                                            <option value="Db" selected>Debet</option>
+                                            <option value="Cr">Kredit</option>
+                                            @else
+                                            <option value="Db">Debet</option>
+                                            <option value="Cr"selected>Kredit</option>
+                                            @endif
                                         @else
-                                        <option value="Db">Debet</option> 
-                                        <option value="Cr"selected>Kredit</option>
-                                        @endif
-                                        
-                                        
+                                            <option value="#" disabled selected>Pilih Saldo Normal</option>
+                                            <option value="Db">Debet</option>
+                                            <option value="Cr">Kredit</option>
+                                        @endisset
                                     </select>
                                 </div>
                             </div>
@@ -67,14 +71,19 @@ Tambah Data Coa
                                 <label class="col-2 col-form-label">Status Account</label>
                                 <div class="col-10">
                                     <select class="form-control select2" parsley-trigger="change" name="status_account">
-                                        @if ($coa->StatusAccount == 'Grup')
-                                        <option value="Grup" selected>Grup</option>
-                                        <option value="Detail">Detail</option>
+                                        @isset($coa->StatusAccount)
+                                            @if ($coa->StatusAccount == 'Grup')
+                                            <option value="Grup" selected>Grup</option>
+                                            <option value="Detail">Detail</option>
+                                            @else
+                                            <option value="Grup">Grup</option>
+                                            <option value="Detail" selected>Detail</option>
+                                            @endif
                                         @else
-                                        <option value="Grup">Grup</option>
-                                        <option value="Detail" selected>Detail</option>
-                                        @endif
-                                        
+                                            <option value="#" disabled selected>Pilih Status Account</option>
+                                            <option value="Grup">Grup</option>
+                                            <option value="Detail">Detail</option>
+                                        @endisset
                                     </select>
                                 </div>
                             </div>
@@ -137,7 +146,7 @@ Tambah Data Coa
             placeholder:"Pilih Coa Parent",
             ajax:{
                 url: "{{route('ajxCoa')}}",
-                dataType:'json',    
+                dataType:'json',
                 delay:250,
                 data:function(params){
                     return{

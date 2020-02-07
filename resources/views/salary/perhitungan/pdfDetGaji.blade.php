@@ -1,35 +1,62 @@
-<div class="text-right">
-    <input type="hidden" id="route{{$saldet->employee->id}}" value="{{route('detGajiPegawai',['employee' => $saldet->employee->id, 'bulan' =>$bulan,'tahun' => $tahun])}}">
-    <a href="javascript:;" class="btn btn-danger btn-trans btn-rounded waves-effect w-md waves-danger m-b-5" onclick="printPdf({{$saldet->employee->id}})"><i class="fa fa-file-pdf-o"></i> Print Detail Gaji</a>
-</div>
-<div class="container">
-    <div class="row">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Detail Gaji</title>
+    <!-- App css -->
+    <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/css/icons.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<style type="text/css">
+    img {
+    border-radius: 50%;
+    }
+
+    th, td {
+        border: 2px solid black;
+        text-align: left;
+        padding: 10px;
+    }
+
+    table{
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
         <div class="card-box">
             <div class="row">
-                <div class="form-group col-sm-2">
-                    <img src="{{ asset('assets/images/employee/foto/'.$saldet->employee->scanfoto) }}"  alt="user-img" title="{{ $saldet->employee->name }}" class="rounded-circle img-thumbnail img-responsive photo">
+                <div class="form-group col-sm-4">
+                    <img src="{{ asset('assets/images/employee/foto/'.$saldet->employee->scanfoto) }}" alt="logo" width="200px">
                 </div>
-                <div class="form-group col-sm-8">
-                    <h2 class="text-dark">{{$saldet->employee->name}}</h2>
-                    <h2 class="text-dark">{{$saldet->employee->nip}}</h2>
-                    <h2 class="text-dark">Take Home Pay: <strong> Rp {{number_format($saldet->take_home_pay,2,",",".")}}</strong> <h2>
-                    <h2 class="text-dark">Total Bonus: <strong> Rp {{number_format($saldet->bonus,2,",",".")}}</strong> <h2>
+                <div class="form-group col-sm-4">
+                    <h2>{{$saldet->employee->name}}</h2>
+                    <h2>{{$saldet->employee->nip}}</h2>
+                    <h4>Take Home Pay: <strong> Rp {{number_format($saldet->take_home_pay,2,",",".")}}</strong></h4>
+                    <h4>Total Bonus: <strong> Rp {{number_format($saldet->bonus,2,",",".")}}</strong> </h4>
                 </div>
             </div>
         </div>
     </div>
+    <div class="col-md-2"></div>
 
     <hr>
 
-    <div class="row">
-        <div class="col-sm-6">
+    {{-- <div class="row"> --}}
+        <div class="col-md-2"></div>
+        <div class="col-md-4">
             <div class="card-box">
                 <h4 class="card-title">Bonus Pegawai</h4>
                 <ul class="list-group m-b-0 user-list">
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/internal.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/internal.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Tugas Internal</strong></span>
@@ -40,7 +67,7 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/logistic.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/logistic.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Logistik</strong></span>
@@ -51,7 +78,7 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/company.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/company.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Kendali Perusahaan</strong></span>
@@ -62,7 +89,7 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/top3.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/top3.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Top 3 Posting</strong></span>
@@ -73,7 +100,7 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/eom.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/eom.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Employee Of the Month</strong></span>
@@ -84,7 +111,7 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/bonus.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/bonus.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Bonus Divisi</strong></span>
@@ -94,16 +121,15 @@
                     </li>
                 </ul>
             </div>
-
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-4">
             <div class="card-box">
                 <h4 class="card-title">Detail Bonus Pegawai</h4>
                 <ul class="list-group m-b-0 user-list">
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/internal.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/internal.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Poin Internal</strong></span>
@@ -114,7 +140,7 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/logistic.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/logistic.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Poin Logistik</strong></span>
@@ -125,7 +151,7 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/company.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/company.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Poin Kendali Perusahaan</strong></span>
@@ -136,7 +162,7 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/top3.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/top3.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Poin Top 3 Posting</strong></span>
@@ -147,7 +173,7 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/discount.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/discount.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Tunjangan Presentase</strong></span>
@@ -158,7 +184,7 @@
                     <li class="list-group-item">
                         <div class="user-list-item">
                             <div class="avatar">
-                                <img src="{{ asset('assets/images/flaticon/discount2.png') }}" alt="">
+                                <img src="{{ asset('assets/images/flaticon/small-icon/discount2.png') }}" alt="logo" width="30px">
                             </div>
                             <div class="user-desc">
                                 <span class="name"><strong>Total Presentase</strong></span>
@@ -169,16 +195,8 @@
                 </ul>
             </div>
         </div>
-    </div>
+        <div class="col-md-2"></div>
+    {{-- </div> --}}
 </div>
-
-<script type="text/javascript">
-    function printPdf(id){
-        windowUrl = $('#route'+id).val();
-        // console.log(windowUrl)
-        windowName = "Print Gaji";
-        var printWindow = window.open(windowUrl, windowName, 'left=50000,top=50000,width=0,height=0');
-        printWindow.focus();
-        printWindow.print();
-    }
-</script>
+</body>
+</html>
