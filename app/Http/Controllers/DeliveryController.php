@@ -112,7 +112,7 @@ class DeliveryController extends Controller
                     Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'2.1.3','Debet');
                     //insert credit Persediaan Barang digudang
                     Jurnal::addJurnal($id_jurnal,$price,$request->do_date,$desc,'1.1.4.1.2','Credit');
-                    
+
                 $do->save();
 
                 $desc = "Delivery Order ID=".$do->id." SO.".$request->sales_id;

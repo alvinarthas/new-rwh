@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use App\Exceptions\Handler;
+
+use PDF;
 
 use App\Employee;
 use App\RecordPoin;
@@ -44,7 +47,7 @@ class SalaryController extends Controller
             $page = MenuMapping::getMap(session('user_id'),"EMEP");
             return view('salary.poin.index',compact('page'));
         }
-        
+
     }
 
     public function detailPoin(Request $request){
@@ -89,7 +92,7 @@ class SalaryController extends Controller
         }else{
             $date = Carbon::createFromFormat('Y-m-d H:i:s',$request->date.'00:00:00');
             $today = Carbon::now();
-            
+
             $interval = date_diff($today, $date);
 
             if($interval->days > 2){
@@ -103,15 +106,15 @@ class SalaryController extends Controller
                         'jenis' => $request->jenis,
                         'creator' => session('user_id'),
                     ));
-                    
+
                     $poin->save();
-        
+
                     return redirect()->back()->with('status', 'Data Poin berhasil dibuat');
                 } catch (\Exception $e) {
                     return redirect()->back()->withErrors($e->getMessage());
                 }
             }
-            
+
         }
     }
 
@@ -143,12 +146,19 @@ class SalaryController extends Controller
     }
 
     public function detGajiPegawai(Request $request){
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
         $saldet = SalaryDet::join('tbl_salary as sd','sd.id','=','tbl_salary_detail.salary_id')->where('sd.month',$request->bulan)->where('sd.year',$request->tahun)->where('employee_id',$request->employee)->select('tbl_salary_detail.*')->first();
         $bonpeg = BonusPegawai::where('month',$request->bulan)->where('year',$request->tahun)->where('employee_id',$request->employee)->first();
         $bonpegdet = BonusPegawaiDet::where('bonus_pegawai_id',$bonpeg->id)->first();
+        $bulan = $request->bulan;
+        $tahun = $request->tahun;
 
         if ($request->ajax()) {
-            return response()->json(view('salary.perhitungan.detail',compact('bonpeg','bonpegdet','saldet'))->render());
+            return response()->json(view('salary.perhitungan.detail',compact('bonpeg','bonpegdet','saldet', 'bulan', 'tahun'))->render());
+        }else{
+            return view('salary.perhitungan.pdfDetGaji',compact('bonpeg','bonpegdet','saldet', 'bulan', 'tahun'));
         }
     }
 
@@ -159,14 +169,14 @@ class SalaryController extends Controller
             }else{
                 return Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','Supervisor')->orWhere('r.role_name','LIKE','Staff%')->where('tblemployee.id',$request->employee)->select('tblemployee.id','tblemployee.name','r.role_name')->first();
             }
-            
+
         }else{
             $bv = Sales::getBV(date('m'),date('Y'));
             $employees = Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','Supervisor')->orWhere('r.role_name','LIKE','Staff%')->select('tblemployee.id','tblemployee.name','tblemployee.scanfoto')->get();
 
             return view('salary.perhitungan.form',compact('bv','employees'));
         }
-        
+
     }
 
     public function storePerhitunganGaji(Request $request){
@@ -232,7 +242,7 @@ class SalaryController extends Controller
             }
 
             $pegawai = Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','NOT LIKE','Superadmin')->where('r.role_name','NOT LIKE','Direktur Utama')->select('tblemployee.id','tblemployee.username','r.gaji_pokok','r.tunjangan_jabatan','r.id as role_id')->get();
-            
+
             // Hitung Bonus tiap pegawai
             foreach ($pegawai as $peg) {
                 $eomcollect = collect();
@@ -248,7 +258,7 @@ class SalaryController extends Controller
                 }else{
                     $persen_internal = ($poin_internal/$ttl_poin_internal)*100;
                 }
-                
+
                 $value_internal = $poin_internal*$value_share_internal;
 
                 // Share Logistik
@@ -268,7 +278,7 @@ class SalaryController extends Controller
                     $persen_kendali_perusahaan = (($poin_kendali_perusahaan/$ttl_poin_kendali_perusahaan)*100)/2;
                 }
                 $value_kendali_perusahaan = $poin_kendali_perusahaan*$value_share_kendali_perusahaan;
-                
+
                 // Share Top 3
 
                 if (in_array($peg->id, (array) $arr_top3)){
@@ -276,13 +286,13 @@ class SalaryController extends Controller
                 }else{
                     $poin_top3 = 0;
                 }
-                
+
                 if($ttl_poin_top3 == 0){
                     $persen_top3 = 0;
                 }else{
                     $persen_top3 = (($poin_top3/$ttl_poin_top3)*100)/2;
                 }
-                
+
                 $value_top3 = $poin_top3*$value_share_top3;
 
                 // Employee of The Month Sementara
@@ -297,7 +307,7 @@ class SalaryController extends Controller
                     }else{
                         $tunjangan_persentase = ((($bonus_divisi/$value_share_internal)/$ttl_poin_internal))/2;
                     }
-                    
+
                 }
 
                 // Bonus Jabatan Sementara
@@ -362,7 +372,7 @@ class SalaryController extends Controller
 
             // Tentukan EOM
             $sorted = $collectionEom->sortByDesc('value');
-            
+
             if($bv >= 15000000){
                 // get pegawai yg dapat eom
                 $choseneom = $sorted->values()->all();
@@ -372,7 +382,7 @@ class SalaryController extends Controller
                     }else{
                         $value_eom = $bv*0.03;
                     }
-                    
+
                     if(isset($choseneom[$i]['id'])){
                         // Insert to DB Bonus Pegawai
                         $bonpeg = BonusPegawai::where('employee_id',$choseneom[$i]['id'])->where('month',$month)->where('year',$year)->latest()->first();
@@ -389,11 +399,11 @@ class SalaryController extends Controller
                         $saldet->bonus = $totbon;
                         $saldet->take_home_pay = $tot_takehome;
                     }
-                    
+
                 }
             }else{
                 // get pegawai yg dapat eom
-                
+
                 // 5.1
                 $choseneom = $sorted->values()->first();
 
@@ -409,7 +419,7 @@ class SalaryController extends Controller
 
                 // Insert to Salary Det
                 $saldet = SalaryDet::where('id',$bonpeg->salary_det_id)->first();
-                
+
                 $tot_takehome = $totbon+$saldet->take_home_pay;
 
                 $saldet->bonus = $totbon;
@@ -431,6 +441,42 @@ class SalaryController extends Controller
             return "true";
         } catch (\Exception $e) {
             return response()->json($e);
+        }
+    }
+
+    public function saveAsPdf(Request $request){
+        try{
+            $saldet = SalaryDet::join('tbl_salary as sd','sd.id','=','tbl_salary_detail.salary_id')->where('sd.month',$request->bulan)->where('sd.year',$request->tahun)->select('tbl_salary_detail.*')->get();
+            $bonpeg = BonusPegawai::where('month',$request->bulan)->where('year',$request->tahun)->get();
+            $bonpegdet = BonusPegawaiDet::join('tbl_bonus_pegawai', 'tbl_bonus_pegawai_detail.bonus_pegawai_id', 'tbl_bonus_pegawai.id')->where('month', $request->bulan)->where('year',$request->tahun)->get();
+            $salary = Salary::where('month', $request->bulan)->where('year', $request->tahun)->first();
+
+            $sub_saldet = SalaryDet::join('tbl_salary as sd','sd.id','=','tbl_salary_detail.salary_id')->where('sd.month',$request->bulan)->where('sd.year',$request->tahun)->select(DB::raw('SUM(bonus) as total_bonus'), DB::raw('SUM(gaji_pokok) as total_gaji_pokok'), DB::raw('SUM(tunjangan_jabatan) as total_tunjangan_jabatan'), DB::raw('SUM(gaji_pokok + tunjangan_jabatan) as total_temp_take_home_pay'), DB::raw('SUM(bonus_divisi) as total_bonus_divisi'), DB::raw('SUM(bonus_jabatan) as total_bonus_jabatan'), DB::raw('SUM(take_home_pay) as total_take_home_pay'))->first();
+            $sub_bonpeg = BonusPegawai::where('month',$request->bulan)->where('year',$request->tahun)->select(DB::raw('SUM(tugas_internal) as total_tugas_internal'), DB::raw('SUM(logistik) as total_logistik'), DB::raw('SUM(kendali_perusahaan) as total_kendali_perusahaan'), DB::raw('SUM(top3) as total_top3'), DB::raw('SUM(eom) as total_eom'), DB::raw('SUM(total_bonus) as total_total_bonus'))->first();
+            $sub_bonpegdet = BonusPegawaiDet::join('tbl_bonus_pegawai', 'tbl_bonus_pegawai_detail.bonus_pegawai_id', 'tbl_bonus_pegawai.id')->where('month', $request->bulan)->where('year',$request->tahun)->select(DB::raw('SUM(poin_internal) as total_poin_internal'), DB::raw('SUM(persen_internal) as total_persen_internal'), DB::raw('SUM(poin_logistik) as total_poin_logistik'), DB::raw('SUM(persen_logistik) as total_persen_logistik'), DB::raw('SUM(poin_kendali) as total_poin_kendali'), DB::raw('SUM(persen_kendali) as total_persen_kendali'), DB::raw('SUM(poin_top3) as total_poin_top3'), DB::raw('SUM(persen_top3) as total_persen_top3'), DB::raw('SUM(tunjangan_persen) as total_tunjangan_persen'), DB::raw('SUM(total_persen) as total_total_persen'))->first();
+
+            $bulan = $request->bulan;
+            $tahun = $request->tahun;
+            $filename = "Gaji Karyawan ".$bulan." ".$tahun;
+
+            $datas = [
+                'saldet'        =>$saldet,
+                'sub_saldet'    =>$sub_saldet,
+                'bonpeg'        =>$bonpeg,
+                'sub_bonpeg'    =>$sub_bonpeg,
+                'bonpegdet'     =>$bonpegdet,
+                'sub_bonpegdet' =>$sub_bonpegdet,
+                'salary'        =>$salary,
+                'bulan'         =>$bulan,
+                'tahun'         =>$tahun
+            ];
+
+            $pdf = PDF::loadview('salary.perhitungan.pdfGajiAll', $datas)->setPaper('a4', 'landscape');
+
+            $pdf->save(public_path('download/'.$filename.'.pdf'));
+            return $pdf->download($filename.'.pdf');
+        }catch(\Exception $e){
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 }

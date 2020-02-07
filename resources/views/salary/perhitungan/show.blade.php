@@ -6,7 +6,6 @@
             @if (array_search("EMPGD",$page) && $salary)
                 <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5" onclick="deleteGaji({{$salary->id}})">Delete Data Gaji</a>
             @endif
-            <hr><br>
             <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                 <thead>
                     <th>No</th>
@@ -40,6 +39,17 @@
                     @endforeach
                 </tbody>
             </table>
+            <hr>
+            <div class="text-right">
+            @if (array_search("EMPGC",$page) && $salary)
+                <form class="form-horizontal" role="form" action="{{ route('saveAsPdf') }}" enctype="multipart/form-data" method="POST">
+                    @csrf
+                    <input type="hidden" name="bulan" value="{{$bulan}}">
+                    <input type="hidden" name="tahun" value="{{$tahun}}">
+                    <button class="btn btn-danger btn-trans btn-rounded waves-effect waves-light w-md m-b-5"><i class="fa fa-file-pdf-o"></i> Export as PDF</button>
+                </form>
+            @endif
+            </div>
         </div>
     </div>
 </div> <!-- end row -->
@@ -115,7 +125,7 @@
                     'error'
                 )
             });
-            
+
         }, function (dismiss) {
             // dismiss can be 'cancel', 'overlay',
             // 'close', and 'timer'
@@ -128,5 +138,5 @@
             }
         })
     }
-    
+
 </script>

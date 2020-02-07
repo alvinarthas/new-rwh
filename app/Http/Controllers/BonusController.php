@@ -146,7 +146,7 @@ class BonusController extends Controller
                 Carbon::setLocale('id');
                 // $tgl = date('Y-m-d', strtotime(Carbon::today()));
                 $tgl = $request->tgl;
-                $ctr = count($request->ktp);
+                $ctr = count($request->noid);
                 $bulan = $request->bulan;
                 $tahun = $request->tahun;
                 $perusahaan_id = $request->perusahaan_id;
@@ -228,16 +228,10 @@ class BonusController extends Controller
                             ));
                             $data->save();
                         }else{
-                            $bonushitung = Bonus::where('tgl', $tgl)->where('noid', $noid)->where('tahun', $tahun)->where('bulan', $bulan)->select('id_bonus','id_jurnal')->first();
-                            $jurnal = Jurnal::where('id_jurnal', $bonushitung['id_jurnal']);
-
                             // bonus hitung
-                            $data = Bonus::where('id_bonus', $bonushitung['id_bonus'])->first();
+                            $data = Bonus::where('tgl', $tgl)->where('noid', $noid)->where('tahun', $tahun)->where('bulan', $bulan)->first();
                             $data->bonus = $bonus;
-                            $data->id_jurnal = $id_jurnal;
                             $data->creator = session('user_id');
-
-                            $jurnal->delete();
                             $data->update();
                         }
                     }
@@ -318,7 +312,6 @@ class BonusController extends Controller
                 for($i=0;$i<$ctr;$i++){
                     $norek = $request->norekening[$i];
                     $bonus = $request->bonus[$i];
-                    $bank = $request->namabank[$i];
                     if($AccNo != "1.1.1.1.000003"){
                         $ket = 'penerimaan bonus ke '.$AccNo.' untuk '.$norek.' - bulan '.$bulan.' '.$tahun;
                     }else{
@@ -407,7 +400,6 @@ class BonusController extends Controller
                     $norek = $request->norekening[$i];
                     $bonus = $request->bonus[$i];
                     $tgl = $request->tgl;
-                    $bank = $request->namabank[$i];
                     $AccNo = $request->AccNo;
                     $ket = 'top up bonus '.$norek.' - '.$tgl;
 
@@ -417,17 +409,6 @@ class BonusController extends Controller
                     $id_jurnal = Jurnal::getJurnalID('BT');
 
                     if($bonus != 0){
-                        // debet estimasi bonus
-                        $debet = new Jurnal(array(
-                            'id_jurnal'     => $id_jurnal,
-                            'AccNo'         => "1.1.3.4",
-                            'AccPos'        => "Debet",
-                            'Amount'        => $bonus,
-                            'company_id'    => 1,
-                            'date'          => $tgl,
-                            'description'   => $ket,
-                            'creator'       => session('user_id')
-                        ));
                         // credit kas/bank
                         $credit = new Jurnal(array(
                             'id_jurnal'     => $id_jurnal,
@@ -440,10 +421,23 @@ class BonusController extends Controller
                             'creator'       => session('user_id')
                         ));
 
-                        $debet->save();
                         $credit->save();
 
                         if($num==0){
+                            // debet estimasi bonus
+                            $debet = new Jurnal(array(
+                                'id_jurnal'     => $id_jurnal,
+                                'AccNo'         => "1.1.3.4",
+                                'AccPos'        => "Debet",
+                                'Amount'        => $bonus,
+                                'company_id'    => 1,
+                                'date'          => $tgl,
+                                'description'   => $ket,
+                                'creator'       => session('user_id')
+                            ));
+                            $debet->save();
+
+
                             // Top Up Bonus
                             $data = new TopUpBonus(array(
                                 'no_rek'    => $norek,
@@ -455,15 +449,18 @@ class BonusController extends Controller
                             ));
                             $data->save();
                         }else{
-                            $jurnal = Jurnal::where('id_jurnal', $topup['id_jurnal']);
+                            $data = TopUpBonus::where('no_rek',$norek)->where('tgl',$tgl)->where('AccNo',$AccNo)->first();
+                            // debet estimasi bonus
+                            $debet = Jurnal::where('id_jurnal', $data->id_jurnal)->where('AccNo', "1.1.3.4")->where('AccPos', "Debet")->where('description', $ket)->first();
+                            $debet->Amount      = $bonus;
+                            $debet->date        = $tgl;
+                            $debet->creator     = session('user_id');
+                            $debet->update();
 
                             // topup
-                            $data = TopUpBonus::where('no_rek',$norek)->where('tgl',$tgl)->where('AccNo',$AccNo)->first();
                             $data->bonus = $bonus;
                             $data->creator = session('user_id');
-                            $data->id_jurnal = $id_jurnal;
 
-                            $jurnal->delete();
                             $data->update();
                         }
                         Log::setLog('BMTUC','Create Top Up Bonus '.$id_jurnal);
@@ -573,9 +570,6 @@ class BonusController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
         // Validate
         $validator = Validator::make($request->all(), [
             'tahun' => 'required',
@@ -602,7 +596,7 @@ class BonusController extends Controller
                 $estimasi_bonus = $request->estimasi_bonus;
                 $selisih = $request->selisih_bonus;
                 // $id_jurnal = Jurnal::getJurnalID('BP');
-                $id_jurnal_lama = $request->id_jurnal_lama[0];
+                $id_jurnal_lama = $request->id_jurnal_lama;
 
                 // debet Piutang Bonus
                 $debet = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', "1.1.3.5")->where('AccPos', "Debet")->first();
@@ -663,7 +657,7 @@ class BonusController extends Controller
                         $data->update();
                     }else{
                     // elseif(empty(Bonus::where('noid', $noid)->where('tgl', $tgl)->where('bulan', $bulan)->where('tahun', $tahun)->where('perusahaan_id', $perusahaan_id)->first())){
-                        // echo "new".$tgl." ".$id_bonus[$i]." ".$bonus;
+                        // echo "new".$tgl." ".$bonus;
                         // die();
                         $data = new Bonus(array(
                             'tgl' => $tgl,
@@ -719,7 +713,7 @@ class BonusController extends Controller
                 $selisih = $request->selisih_bonus;
                 $bonus_tertahan = $request->bonus_tertahan;
                 $ket = 'penerimaan bonus ke '.$AccNo.' - bulan '.$bulan.' '.$tahun;
-                $id_jurnal_lama = $request->id_jurnal_lama[0];
+                $id_jurnal_lama = $request->id_jurnal_lama;
                 if(isset($request->supplier)){
                     $supplier = $request->supplier;
                 }else{
@@ -764,7 +758,6 @@ class BonusController extends Controller
                 for($i=0;$i<$ctr;$i++){
                     $norek = $request->norekening[$i];
                     $bonus = $request->bonus[$i];
-                    $bank = $request->namabank[$i];
                     $ket = 'penerimaan bonus ke '.$AccNo.' untuk '.$norek.' - bulan '.$bulan.' '.$tahun;
 
                     $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun)->where('bulan', $bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
@@ -855,10 +848,10 @@ class BonusController extends Controller
                 $AccNo = $request->rekening;
 
                 for($i=0;$i<$ctr;$i++){
-                    $id_jurnal_lama = $request->id_jurnal_lama[$i];
+                    $id_bonus = $request->id_bonus[$i];
                     $norek = $request->norekening[$i];
                     $bonus = $request->bonus[$i];
-                    $bank = $request->namabank[$i];
+                    $id_jurnal_lama = TopUpBonus::where('id_bonus', $id_bonus)->first()->id_jurnal;
                     $ket = 'top up bonus '.$norek.' - '.$tgl;
 
                     $topup = TopUpBonus::where('no_rek', $norek)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
@@ -883,7 +876,6 @@ class BonusController extends Controller
                     $credit->update();
 
                     if(isset($request->bonus_lama[$i])){
-                        $id_bonus = $request->id_bonus[$i];
                         $data = TopUpBonus::where('id_bonus', $id_bonus)->first();
                         $data->tgl = $tgl;
                         $data->bonus = $bonus;
@@ -1054,9 +1046,9 @@ class BonusController extends Controller
 
         $append = '<tr style="width:100%" id="trow'.$count.'" class="trow">
         <td>'.$count.'</td>
-        <td><input type="hidden" name="ktp[]" id="ktp'.$count.'" value="'.$perusahaanmember->ktp.'">'.$perusahaanmember->ktp.'</td>
+        <td>'.$perusahaanmember->ktp.'</td>
         <td><input type="hidden" name="noid[]" id="noid'.$count.'" value="'.$perusahaanmember->noid.'">'.$perusahaanmember->noid.'</td>
-        <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$member['member_id'].'">'.$member['nama'].'</td>
+        <td>'.$member['nama'].'</td>
         <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="'.$bonus.'"></td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
         </tr>';

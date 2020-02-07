@@ -156,12 +156,12 @@
                                                     $perusahaan = $p->nama;
                                                     $data_bonus = Bonus::where('bulan', $bulan)->where('tahun', $tahun)->where('noid', $p->noid)->sum('bonus');
                                                 @endphp
-                                                    {{ $no }}. {{ $perusahaan }} {{ $p->noid}}<br><b>Bonus :{{ $data_bonus }}</b><br>
+                                                    {{ $no }}. {{ $perusahaan }} {{ $p->noid}}<br><b>Bonus : Rp {{ number_format($data_bonus, 2, ",", ".") }}</b><br>
                                                 @php
                                                     $no++;
                                                 @endphp
                                             @endforeach
-                                            <br><b>Total : {{ $total_perhitungan }}</b>
+                                            <br><b>Total : Rp {{ number_format($total_perhitungan, 2, ",", ".") }}</b>
                                         </td>
                                         <td>
                                             @foreach ($bm as $b)
@@ -171,19 +171,19 @@
                                                     $d_tgl = $bb['tgl'];
                                                     $bank = $b->nama;
                                                 @endphp
-                                                {{ $no }}. {{ $bank }} {{ $b->norek }}<br><b>Bonus : {{ $d_bonus }}</b><br>Tgl : {{ $d_tgl }}<br>
+                                                {{ $no }}. {{ $bank }} {{ $b->norek }}<br><b>Bonus : Rp {{ number_format($d_bonus, 2, ",", ".") }}</b><br>Tgl : {{ $d_tgl }}<br>
                                                 @php
                                                     $no++;
                                                 @endphp
                                             @endforeach
-                                            <br><b>Total : {{ $total_realisasi }}</b>
+                                            <br><b>Total : Rp {{ number_format($total_realisasi, 2, ",", ".") }}</b>
                                         </td>
                                         @if($selisih != 0)
                                             <td class="table-danger">
                                         @else
                                             <td class="table-success">
                                         @endif
-                                            {{ $selisih }}
+                                            Rp {{ number_format($selisih, 2, ",", ".") }}
                                         </td>
                                         @php
                                             $i++;

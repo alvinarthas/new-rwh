@@ -374,14 +374,13 @@
                                                 @foreach($bonus as $b)
                                                 <tr style="width:100%" id="trsd{{ $b->id_bonus }}" class="trow">
                                                     <td><input type="hidden" name="id_bonus[]" value="{{ $b->id_bonus }}">{{$i}}</td>
-                                                    <td><input type="hidden" name="ktp[]" value="{{ $b->ktp }}">{{$b->ktp}}</td>
+                                                    <td>{{$b->ktp}}</td>
                                                     <td><input type="hidden" name="noid[]" value="{{ $b->noid }}">{{$b->noid}}</td>
-                                                    <td><input type="hidden" name="nama[]" value="{{ $b->member_id }}">{{$b->nama}}</td>
+                                                    <td>{{$b->nama}}</td>
                                                     <td>
                                                         {{-- tampil semua data member perusahaan --}}
                                                         <input class="form-control" value="{{ $b['bonus'] }}" type="text" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()">
                                                         <input value="{{ $b['bonus'] }}" type="hidden" name="bonus_lama[]">
-                                                        <input value="{{ $b['id_jurnal'] }}" type="hidden" name="id_jurnal_lama[]" id="id_jurnal_lama">
                                                         {{-- hanya yang bonus !=0 --}}
                                                         {{-- <input class="form-control number" value="{{ number_format($prm['bonus'],0) }}" type="text" name="bonus{{ $i }}"> --}}
                                                     </td>
@@ -395,6 +394,7 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
+                                        <input value="{{ $bonus[0]['id_jurnal'] }}" type="hidden" name="id_jurnal_lama" id="id_jurnal_lama">
                                     @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
                                         <table id="editable-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                                             <div class="form-group row">
@@ -429,7 +429,7 @@
                                                 <tr style="width:100%" id="trtd{{ $b->id_bonus }}" class="trow">
                                                     <td><input type="hidden" name="id_bonus[]" value="{{ $b->id_bonus }}">{{$i}}</td>
                                                     @if($bn->AccNo != "1.1.1.1.000003")
-                                                        <td><input type="hidden" name="namabank[]" value="{{ $b->namabank }}">{{$b->namabank}}</td>
+                                                        <td>{{$b->namabank}}</td>
                                                         <td><input type="hidden" name="norekening[]" value="{{ $b->no_rek }}">{{$b->no_rek}}</td>
                                                     @else
                                                         <input type="hidden" name="norekening[]" value="{{ $b->no_rek }}">
@@ -439,7 +439,6 @@
                                                         {{-- tampil semua data member perusahaan --}}
                                                         <input class="form-control" value="{{ $b['bonus'] }}" type="text" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()">
                                                         <input value="{{ $b['bonus'] }}" type="hidden" name="bonus_lama[]">
-                                                        <input value="{{ $b['id_jurnal'] }}" type="hidden" name="id_jurnal_lama[]">
                                                         {{-- hanya yang bonus !=0 --}}
                                                         {{-- <input class="form-control number" value="{{ number_format($prm['bonus'],0) }}" type="text" name="bonus{{ $i }}"> --}}
                                                     </td>
@@ -457,6 +456,7 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
+                                        <input value="{{ $bonus[0]['id_jurnal'] }}" type="hidden" name="id_jurnal_lama">
                                     @endif
                                     <input type="hidden" name="ctr" id="ctr" value="{{ $i }}">
                                     <div class="form-group row">
