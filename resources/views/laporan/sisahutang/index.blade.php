@@ -21,7 +21,6 @@
                     <th>No</th>
                     <th>Nama Perusahaan</th>
                     <th>Sisa Hutang</th>
-                    <th>Action</th>
                 </thead>
 
                 <tbody>
@@ -30,8 +29,7 @@
                         <tr>
                             <td>{{$i}}</td>
                             <td>{{$sup['nama']}}</td>
-                            <td>Rp {{number_format($sup['sisa'],2,',','.')}}</td>
-                            <td><a href="javascript:;" type="button" class="btn btn-custom btn-trans waves-effect waves-danger m-b-5" onclick="getDetail({{ $sup['id'] }})" >Click</a></td>
+                            <td><a href="javascript:;" type="button" class="btn btn-custom btn-round waves-effect waves-danger m-b-5" onclick="getDetail({{ $sup['id'] }})" >Rp {{number_format($sup['sisa'],2,',','.')}}</a></td>
                         </tr>
                         @php($i++)
                     @endforeach
@@ -60,6 +58,7 @@
     <!-- Required datatable js -->
     <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/datatables/natural.js') }}"></script>
 
     <!-- Responsive examples -->
     <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>

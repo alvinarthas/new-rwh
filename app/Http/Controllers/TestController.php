@@ -34,34 +34,61 @@ use Carbon\Carbon;
 class TestController extends Controller
 {
     public function index(){
-        $content = file_get_contents('https://www.royalcontrolling.com/api/do/print/19');
-        $decode = json_decode($content);
+        $total_credit = 0;
+        $total_debet = 0;
+        foreach (Purchase::all() as $key) {
+            $total_tertahan = PurchaseDetail::where('trx_id',$key->id)->sum(DB::Raw('(price_dist - price)* qty'));
 
-        $file =  'DO-19.txt';  # nama file temporary yang akan dicetak
-        $handle = fopen($file, 'w');
-        $Data = "=========================\r\n";
-        $Data .= "|       RWH HERBAL    |\r\n";
-        $Data .= "|    DELIVERY ORDER   |\r\n";
-        $Data .= "========================\r\n";
-        $Data .= "TRXID : ".$decode->data[0]->trx_id."\r\n";
-        $Data .= "DATE : ".$decode->data[0]->trx_date."\r\n";
-        $Data .= "MARKETING : ".strtoupper($decode->data[0]->customer_name)."\r\n";
-        $Data .= "==========================\r\n";
-        $no = 1;
-        foreach($decode->data as $key){
-            $Data .= $no.". ".$key->product_name."\r\n";
-            $Data .= "Qty : ".$key->qty." ".$key->unit."\r\n";
-            $Data .= "\r\n";
-            $no++;
+            if($total_tertahan < 0){
+                $total_tertahan = $total_tertahan *-1;
+                $total_credit+=$total_tertahan;
+                $jurnal2 = Jurnal::where('id_jurnal',$key->jurnal_id)->where('AccNo','1.1.3.4')->first();
+                $jurnal2->AccPos = "Credit";
+                $jurnal2->Amount = $total_tertahan;
+                $jurnal2->update();
+            }else{
+                $total_debet+=$total_tertahan;
+                $jurnal2 = Jurnal::where('id_jurnal',$key->jurnal_id)->where('AccNo','1.1.3.4')->first();
+                $jurnal2->AccPos = "Debet";
+                $jurnal2->Amount = $total_tertahan;
+                $jurnal2->update();
+            }
         }
-        $Data .= "Approved By\r\nInventory Officer\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
-        Storage::put($file, $Data);
-        file_put_contents($file, $Data);
-        fwrite($handle, $Data);
-        fclose($handle);
-        copy($file, "//localhost/POS-80C");
-        unlink($file);
+
+        echo $total_credit."<br>";
+        echo $total_debet."<br>";
+        echo $total_credit-$total_debet."<br>";
     }
+
+    // public function index(){
+    //     $content = file_get_contents('https://www.royalcontrolling.com/api/do/print/19');
+    //     $decode = json_decode($content);
+
+    //     $file =  'DO-19.txt';  # nama file temporary yang akan dicetak
+    //     $handle = fopen($file, 'w');
+    //     $Data = "=========================\r\n";
+    //     $Data .= "|       RWH HERBAL    |\r\n";
+    //     $Data .= "|    DELIVERY ORDER   |\r\n";
+    //     $Data .= "========================\r\n";
+    //     $Data .= "TRXID : ".$decode->data[0]->trx_id."\r\n";
+    //     $Data .= "DATE : ".$decode->data[0]->trx_date."\r\n";
+    //     $Data .= "MARKETING : ".strtoupper($decode->data[0]->customer_name)."\r\n";
+    //     $Data .= "==========================\r\n";
+    //     $no = 1;
+    //     foreach($decode->data as $key){
+    //         $Data .= $no.". ".$key->product_name."\r\n";
+    //         $Data .= "Qty : ".$key->qty." ".$key->unit."\r\n";
+    //         $Data .= "\r\n";
+    //         $no++;
+    //     }
+    //     $Data .= "Approved By\r\nInventory Officer\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
+    //     Storage::put($file, $Data);
+    //     file_put_contents($file, $Data);
+    //     fwrite($handle, $Data);
+    //     fclose($handle);
+    //     copy($file, "//localhost/POS-80C");
+    //     unlink($file);
+    // }
     // public function index(){
     //     // dd(SalesDet::where('trx_id',21)->select('prod_id')->pluck('prod_id')->toArray());
     //     $prodarray = collect();

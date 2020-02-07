@@ -13,6 +13,7 @@ use App\Bank;
 use App\DemoUser;
 use Carbon\Carbon;
 use App\MenuMapping;
+use App\Log;
 
 class EmployeeController extends Controller
 {
@@ -150,6 +151,9 @@ class EmployeeController extends Controller
                 ));
 
                 $fingeruser->save();
+
+                Log::setLog('EMEMC','Create Employee: '.$request->nama);
+
                 return redirect()->route('employee.index')->with('status', 'Data berhasil dibuat');
             // fail
             }else{
@@ -313,6 +317,8 @@ class EmployeeController extends Controller
 
             $employee->save();
 
+            Log::setLog('EMEMU','Update Employee: '.$request->nama);
+
             return redirect()->route('employee.index')->with('status', 'Data berhasil dirubah');;
         } catch (\Exception $e) {
             return redirect()->back()->withErrors($e->errorInfo);
@@ -323,6 +329,7 @@ class EmployeeController extends Controller
 
     public function destroy($id){
         $employee = Employee::where('id',$id)->first();
+        $name = $employee->name;
         if($employee->scanfoto != "noimage.jpg"){
             unlink(public_path('assets/images/employee/foto/').$employee->scanfoto);
         }
@@ -346,7 +353,7 @@ class EmployeeController extends Controller
         }
 
         $employee->delete();
-
+        Log::setLog('EMEMD','Delete Employee: '.$name);
         return "true";
     }
 

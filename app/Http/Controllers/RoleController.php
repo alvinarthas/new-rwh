@@ -8,6 +8,7 @@ use App\Exceptions\Handler;
 
 use App\Role;
 use App\MenuMapping;
+use App\Log;
 
 class RoleController extends Controller
 {
@@ -63,6 +64,7 @@ class RoleController extends Controller
             ));
             try {
                 $role->save();
+                Log::setLog('EMROC','Create Role:'.$request->role_name);
                 return redirect()->route('role.index')->with('status','Role berhasil ditambahkan');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
@@ -123,6 +125,7 @@ class RoleController extends Controller
 
             try {
                 $role->save();
+                Log::setLog('EMROU','Update Role:'.$request->role_name);
                 return redirect()->route('role.index')->with('status','Role berhasil diubah');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
@@ -141,6 +144,7 @@ class RoleController extends Controller
     {
         try{
             Role::where('id',$id)->delete();
+            Log::setLog('EMROD','Delete Role:'.$id);
             return "true";
         // fail
         }catch (\Exception $e) {

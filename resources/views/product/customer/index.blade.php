@@ -23,7 +23,7 @@
                     <th>Nama Customer</th>
                     <th>Personal Phone</th>
                     <th>Company Name</th>
-                    <th>Company Phone</th>
+                    {{-- <th>Company Phone</th> --}}
                     <th width="200px">Lihat sisa barang</th>
                 </thead>
 
@@ -36,7 +36,7 @@
                             <td>{{$cus->apname}}</td>
                             <td>{{$cus->apphone}}</td>
                             <td>{{$cus->cicn}}</td>
-                            <td>{{$cus->ciphone}}</td>
+                            {{-- <td>{{$cus->ciphone}}</td> --}}
                             <td><a href="javascript:;" type="button" class="btn btn-custom btn-trans waves-effect waves-danger m-b-5" onclick="getDetail({{ $cus->id }})" >Click</a></td>
                         </tr>
                         @php($i++)

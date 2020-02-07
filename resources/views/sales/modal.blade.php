@@ -69,4 +69,10 @@
             <input type="text" class="form-control" id="ongkir" value="{{$sales->ongkir}}" readonly>
         </div>
     </div>
+    <div class="form-group-row">
+        <div class="form-group col-md-12">
+            <label for="salesid" class="col-form-label">Total yang sudah dibayar</label>
+            <input type="text" class="form-control" id="ongkir" value="{{$salespay}}" readonly>
+        </div>
+    </div>
 </div>

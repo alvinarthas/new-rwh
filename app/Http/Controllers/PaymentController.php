@@ -48,7 +48,7 @@ class PaymentController extends Controller
         $details = SalesDet::where('trx_id',$id)->get();
         $payment = SalesPayment::where('trx_id',$id)->get();
         $ttl_pay = SalesPayment::where('trx_id',$id)->sum('payment_amount');
-        $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo','LIKE','1.10.%')->orWhere('AccNo','LIKE','1.1.1.1.000003')->orderBy('AccName','asc')->get();
+        $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo','LIKE','1.10.%')->orWhere('AccNo','LIKE','1.1.1.1.000003')->orWhere('AccNo','LIKE','1.1.1.1.000001')->orderBy('AccName','asc')->get();
         $page = MenuMapping::getMap(session('user_id'),"PSSP");
         return view('payment.sales.form',compact('sales','payment','coas','details','ttl_pay','page'));
     }

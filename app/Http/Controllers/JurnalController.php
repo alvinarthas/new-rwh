@@ -92,10 +92,10 @@ class JurnalController extends Controller
     {
         // Validate
         $validator = Validator::make($request->all(), [
-            'ttl_credit' => 'required|integer',
+            'ttl_debet' => 'required',
             'trx_date' => 'required|date',
             'count' => 'required|integer',
-            'ttl_credit' => 'required|integer',
+            'ttl_credit' => 'required',
             'accno' => 'required|array',
         ]);
         // IF Validation fail
@@ -170,10 +170,10 @@ class JurnalController extends Controller
     {
         // Validate
         $validator = Validator::make($request->all(), [
-            'ttl_credit' => 'required|integer',
+            'ttl_debet' => 'required',
             'trx_date' => 'required|date',
             'count' => 'required|integer',
-            'ttl_credit' => 'required|integer',
+            'ttl_credit' => 'required',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -197,6 +197,8 @@ class JurnalController extends Controller
                         $jurnal->save();
                     }
                 }
+
+                $raw_update = Jurnal::where('id_jurnal',$id)->update(['date' => $request->trx_date]);
                 return redirect()->back()->with('status', 'Data berhasil diubah');
             }catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->errorInfo);

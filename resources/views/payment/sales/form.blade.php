@@ -190,7 +190,7 @@ Form Sales Payment
                                     </div><!-- input-group -->
                                 </div>
                             </div>
-                            @if ($sales->status == 0)
+                            @if($ttl_pay < ($sales->ttl_harga+$sales->ongkir))
                             <div class="form-group text-right m-b-0">
                                 <button onsubmit="checkPay()" class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Simpan Sales Payment</a>
                             </div>

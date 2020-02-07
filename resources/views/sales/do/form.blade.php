@@ -94,7 +94,7 @@ Form Sales Order
                                 <tbody>
                                     @foreach ($dos as $do)
                                         <tr>
-                                            <td><a href="javascript:;" onclick="getDetail({{$do->id}})" class="btn btn-purple btn-rounded waves-effect w-xs waves-danger m-b-5">DO.{{$do->id}}</a></td>
+                                            <td><a href="javascript:;" onclick="getDetail({{$do->id}})" class="btn btn-purple btn-rounded waves-effect w-xs waves-danger m-b-5">{{$do->jurnal_id}}</a></td>
                                             <td>{{$do->date}}</td>
                                             <td>{{$do->petugas()->first()->name}}</td>
                                             <td>

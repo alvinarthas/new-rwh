@@ -83,6 +83,7 @@ class DepositController extends Controller
             ));
 
             try{
+                $desc = "Top Up Deposit Pembelian, id=".$data->id;
                 // Jurnal Debet Deposit Pembelian
                 Jurnal::addJurnal($id_jurnal,$request->amount,$request->tanggal,$desc,'1.1.3.3','Debet');
 
@@ -91,12 +92,12 @@ class DepositController extends Controller
 
                 $data->save();
 
-                $desc = "Top Up Deposit Pembelian, id=".$data->id;
+                
                 Log::setLog('PUDPC','Create Deposit Pembelian Supplier: '.$request->supplier.' Jurnal ID: '.$id_jurnal);
 
                 return redirect()->route('deposit.index')->with('status', 'Data berhasil ditambah');
             }catch(\Exception $e) {
-                return redirect()->back()->withErrors($e->errorInfo);
+                return redirect()->back()->withErrors($e->getMessage());
             }
         }
     }

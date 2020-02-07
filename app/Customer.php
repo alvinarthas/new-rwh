@@ -40,7 +40,7 @@ class Customer extends Model
             $selisih = ($key->ttl_harga+$key->ongkir) - $payment;
 
             if($selisih < 0 || $selisih > 0){
-                $data_hutang->put('id',"SO.".$key->id);
+                $data_hutang->put('id',$key->id);
                 $data_hutang->put('sisa',$selisih);
 
                 $data->push($data_hutang);
