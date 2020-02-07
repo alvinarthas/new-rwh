@@ -276,13 +276,12 @@ Form Sales Order
     }
 
     function printdo(id){
-        //console.log("print");
         $.ajax({
-            url : "http://rwhserver:8060/new-rwh/do/print/19",
+            url : "{{route('printDo')}}",
             type : "get",
-            dataType : 'json',
+            dataType: 'json',
             data:{
-                
+                id:id,
             },
         }).done(function (data) {
 

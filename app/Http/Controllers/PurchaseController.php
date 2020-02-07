@@ -309,8 +309,8 @@ class PurchaseController extends Controller
                     $temp_purchase->notes = $request->notes;
                     $temp_purchase->creator = session('user_id');
                     $temp_purchase->tgl = $request->po_date;
-                    $temp_purchase->total_harga_modal = $request->ttl_harga_distributor;
-                    $temp_purchase->total_harga_dist = $request->ttl_harga_modal;
+                    $temp_purchase->total_harga_modal = $request->ttl_harga_modal;
+                    $temp_purchase->total_harga_dist = $request->ttl_harga_distributor;
 
                     $temp_purchase->update();
                     // Delete Temp Detail

@@ -60,7 +60,7 @@ Tambah Data Member
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Telepon</label>
                                 <div class="col-10">
-                                    <input type="number" class="form-control" parsley-trigger="change" required name="telp" id="telp" value="@isset($member->telp){{$member->telp}}@endisset">
+                                    <input type="text" class="form-control" parsley-trigger="change" required name="telp" id="telp" value="@isset($member->telp){{$member->telp}}@endisset">
                                 </div>
                             </div>
                             <div class="form-group row">

@@ -153,24 +153,24 @@ class DeliveryController extends Controller
         }
     }
 
-    public function print($id){
-        $content = file_get_contents('https://www.royalcontrolling.com/api/do/print/'.$id);
-        $decode = json_decode($content);
-
-        $file =  'DO-'.$decode->data[0]->trx_id.'.txt';  # nama file temporary yang akan dicetak
+    public function print(Request $request){
+        $delivery = DeliveryOrder::where('id',$request->id)->select('sales_id','date')->first();
+        
+        $file =  'DO-'.$request->id.'.txt';  # nama file temporary yang akan dicetak
         $handle = fopen($file, 'w');
         $Data = "=========================\r\n";
         $Data .= "|       RWH HERBAL    |\r\n";
         $Data .= "|    DELIVERY ORDER   |\r\n";
         $Data .= "========================\r\n";
-        $Data .= "TRXID : ".$decode->data[0]->trx_id."\r\n";
-        $Data .= "DATE : ".$decode->data[0]->trx_date."\r\n";
-        $Data .= "MARKETING : ".strtoupper($decode->data[0]->customer_name)."\r\n";
+        $Data .= "TRXID : SO.".$delivery->sales->id."\r\n";
+        $Data .= "DATE : ".$delivery->date."\r\n";
+        $Data .= "MARKETING : ".strtoupper($delivery->sales->customer->apname)."\r\n";
         $Data .= "==========================\r\n";
         $no = 1;
-        foreach($decode->data as $key){
-            $Data .= $no.". ".$key->product_name."\r\n";
-            $Data .= "Qty : ".$key->qty." ".$key->unit."\r\n";
+        foreach(DeliveryDetail::where('do_id',$request->id)->get() as $key){
+            $unit = SalesDet::where('trx_id',$delivery->sales_id)->where('prod_id',$key->product_id)->select('unit')->first()->unit;
+            $Data .= $no.". ".$key->product->name."\r\n";
+            $Data .= "Qty : ".$key->qty." ".$unit."\r\n";
             $Data .= "\r\n";
             $no++;
         }
@@ -179,7 +179,7 @@ class DeliveryController extends Controller
         file_put_contents($file, $Data);
         fwrite($handle, $Data);
         fclose($handle);
-        copy($file, "//localhost/POS-80C");
+        copy($file, "//192.168.100.4/POS-80C");
         unlink($file);
     }
 
