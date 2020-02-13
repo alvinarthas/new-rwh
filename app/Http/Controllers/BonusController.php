@@ -214,7 +214,7 @@ class BonusController extends Controller
                     // $num = $bonusperhitungan->count();
 
                     if($bonus != 0){
-                        if($bonusperhitungan==0){
+                        // if($bonusperhitungan==0){
                             // bonus
                             $data = new Bonus(array(
                                 'noid'      => $noid,
@@ -227,13 +227,13 @@ class BonusController extends Controller
                                 'id_jurnal' => $id_jurnal,
                             ));
                             $data->save();
-                        }else{
-                            // bonus hitung
-                            $data = Bonus::where('tgl', $tgl)->where('noid', $noid)->where('tahun', $tahun)->where('bulan', $bulan)->first();
-                            $data->bonus = $bonus;
-                            $data->creator = session('user_id');
-                            $data->update();
-                        }
+                        // }else{
+                        //     // bonus hitung
+                        //     $data = Bonus::where('tgl', $tgl)->where('noid', $noid)->where('tahun', $tahun)->where('bulan', $bulan)->first();
+                        //     $data->bonus = $bonus;
+                        //     $data->creator = session('user_id');
+                        //     $data->update();
+                        // }
                     }
                 }
                 Log::setLog('BMPBC','Create Perhitungan Bonus '.$id_jurnal);
@@ -582,9 +582,6 @@ class BonusController extends Controller
         }else{
             // success
             try{
-                // echo "<pre>";
-                // print_r($request->all());
-                // die();
                 $tgl = $request->tgl_transaksi;
                 $ctr = count($request->bonus);
                 $bulan = $request->bulan;
@@ -1566,7 +1563,7 @@ class BonusController extends Controller
         $bulan = $request->bulan;
         $member = Member::select('ktp','nama')->orderBy('nama','asc')->get();
         $bonusapa = "laporan";
-        $bonus = Bonus::where('tahun',$tahun)->where('bulan',$bulan)->get();
+        $bonus = Bonus::join('perusahaanmember', 'tblbonus.noid', 'perusahaanmember.noid')->join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('tblbonus.tahun',$tahun)->where('tblbonus.bulan',$bulan)->select('tblmember.nama', 'tblmember.ktp')->groupBy('tblmember.ktp')->get();
         // $bonusbayar = BonusBayar::where('tahun', $tahun)->where('bulan', $bulan)->get();
 
         return view('bonus.ajxShowBonus', compact('member', 'tahun','bulan','bonusapa', 'bonus'));
