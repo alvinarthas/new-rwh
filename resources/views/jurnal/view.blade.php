@@ -36,14 +36,14 @@
                     @php($id = substr($jurnal->id_jurnal,0,2))
                     @if ($param == "umum")
                     <td>
-                        
+
                         @if(array_search("FIJUE",$page))
                         <a href="{{route('jurnal.edit',['id'=>$jurnal->id_jurnal])}}" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" >Update</a>
                         @endif
                         @if(array_search("FIJUD",$page))
                         <a href="javascript:;" onclick="jurnalDelete('{{$jurnal->id_jurnal}}')" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5">Delete</a>
                         @endif
-                        
+
                     </td>
                     @endif
                 </tr>
@@ -66,7 +66,7 @@
                     @else
                         <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($jurnals['ttl_debet'],2,',','.')}}" readonly>
                     @endif
-                    
+
                 </div>
             </div>
             <div class="form-group row">
@@ -77,13 +77,13 @@
                     @else
                         <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($jurnals['ttl_credit'],2,',','.')}}" readonly>
                     @endif
-                    
+
                 </div>
             </div>
         </div>
     </div>
 </div>
-    
+
 <script>
 // Responsive Datatable
 $('#responsive-datatable').DataTable({
@@ -96,12 +96,12 @@ function jurnalDelete(id){
     var token = $("meta[name='csrf-token']").attr("content");
 
     swal({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: 'Apa kamu yakin akan menghapus semua data '+id+'?',
+        text: "Kamu tidak akan dapat mengembalikan data yang sudah terhapus!",
         type: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'No, cancel!',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Tidak, Batalkan!',
         confirmButtonClass: 'btn btn-success',
         cancelButtonClass: 'btn btn-danger m-l-10',
         buttonsStyling: false
@@ -127,7 +127,7 @@ function jurnalDelete(id){
                 'error'
             )
         });
-        
+
     }, function (dismiss) {
         // dismiss can be 'cancel', 'overlay',
         // 'close', and 'timer'
@@ -141,4 +141,3 @@ function jurnalDelete(id){
     })
 }
 </script>
-    
