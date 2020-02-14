@@ -14,6 +14,7 @@ use App\Log;
 use App\TempSales;
 use App\TempSalesDet;
 use App\Customer;
+use App\Purchase;
 
 class Sales extends Model
 {
@@ -153,7 +154,9 @@ class Sales extends Model
 
         $modal = 0;
         foreach (SalesDet::where('trx_id',$id)->get() as $key) {
-            $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->where('created_at','<=',$sales->created_at)->avg('price');
+            // $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->where('created_at','<=',$sales->created_at)->avg('price');
+
+            $avcharga = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->avg('tblpotrxdet.price');
 
             $modal += ($key->qty * $avcharga);
         }
@@ -205,7 +208,8 @@ class Sales extends Model
             
             $salesdet->save();
 
-            $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->where('created_at','<=',$sales->created_at)->avg('price');
+            // $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->where('created_at','<=',$sales->created_at)->avg('price');
+            $avcharga = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->avg('tblpotrxdet.price');
             $modal += ($key->qty * $avcharga);
         }
 

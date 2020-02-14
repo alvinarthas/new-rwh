@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Handler;
 use Illuminate\Support\Facades\Storage;
 
+use PDF;
+
 use App\Customer;
 use App\Product;
 use App\Jurnal;
@@ -17,6 +19,7 @@ use App\MenuMapping;
 use App\DeliveryOrder;
 use App\DeliveryDetail;
 use App\PurchaseDetail;
+use App\Purchase;
 use App\Log;
 
 class DeliveryController extends Controller
@@ -101,7 +104,8 @@ class DeliveryController extends Controller
                 for ($i=0; $i < $request->count ; $i++) {
                     $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price;
 
-                    $avcharga = PurchaseDetail::where('prod_id',$request->prod_id[$i])->where('created_at','<=',$sales->created_at)->avg('price');
+                    // $avcharga = PurchaseDetail::where('prod_id',$request->prod_id[$i])->where('created_at','<=',$sales->created_at)->avg('price');
+                    $avcharga = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$request->prod_id[$i])->where('tblpotrx.tgl','<=',$sales->trx_date)->avg('tblpotrxdet.price');
 
                     $price = $avcharga * $request->qty[$i];
                 }
@@ -154,129 +158,36 @@ class DeliveryController extends Controller
     }
 
     public function print(Request $request){
-        $delivery = DeliveryOrder::where('id',$request->id)->select('sales_id','date')->first();
+        try{
+            $delivery = DeliveryOrder::where('id',$request->id)->select('sales_id','date')->first();
         
-        $file =  'DO-'.$request->id.'.txt';  # nama file temporary yang akan dicetak
-        $handle = fopen($file, 'w');
-        $Data = "=========================\r\n";
-        $Data .= "|       RWH HERBAL    |\r\n";
-        $Data .= "|    DELIVERY ORDER   |\r\n";
-        $Data .= "========================\r\n";
-        $Data .= "TRXID : SO.".$delivery->sales->id."\r\n";
-        $Data .= "DATE : ".$delivery->date."\r\n";
-        $Data .= "MARKETING : ".strtoupper($delivery->sales->customer->apname)."\r\n";
-        $Data .= "==========================\r\n";
-        $no = 1;
-        foreach(DeliveryDetail::where('do_id',$request->id)->get() as $key){
-            $unit = SalesDet::where('trx_id',$delivery->sales_id)->where('prod_id',$key->product_id)->select('unit')->first()->unit;
-            $Data .= $no.". ".$key->product->name."\r\n";
-            $Data .= "Qty : ".$key->qty." ".$unit."\r\n";
-            $Data .= "\r\n";
-            $no++;
+            $data = collect();
+            $datdet = collect();
+            $filename = "DO-".$request->id;
+            $data->put('do_id',$request->id);
+            $data->put('trx_id',$delivery->sales->id);
+            $data->put('date',$delivery->date);
+            $data->put('customer',$delivery->sales->customer->apname);
+            $no = 1;
+            foreach(DeliveryDetail::where('do_id',$request->id)->get() as $key){
+                $unit = SalesDet::where('trx_id',$delivery->sales_id)->where('prod_id',$key->product_id)->select('unit')->first()->unit;
+
+                $det = collect();
+                $det->put('product',$key->product->name);
+                $det->put('unit',$unit);
+                $det->put('qty',$key->qty);
+                $det->put('no',$no);
+
+                $no++;
+                $datdet->push($det);
+            }
+
+            $data->put('data',$datdet);
+            $pdf = PDF::loadview('sales.do.pdf',$data)->setPaper('a4','portrait');
+            $pdf->save(public_path('download/'.$filename.'.pdf'));
+            return $pdf->download($filename.'.pdf');
+        }catch(\Exception $e){
+            return redirect()->back()->withErrors($e->getMessage());
         }
-        $Data .= "Approved By\r\nInventory Officer\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
-        Storage::put($file, $Data);
-        file_put_contents($file, $Data);
-        fwrite($handle, $Data);
-        fclose($handle);
-        copy($file, "//192.168.100.4/POS-80C");
-        unlink($file);
-    }
-
-    public function getDO(Request $request){
-        $trx_id = $request->trx_id;
-        $transaksi = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->join('tblproduct', 'delivery_detail.product_id', 'tblproduct.prod_id')->where('do_id',$trx_id)->select('delivery_order.sales_id', 'date', 'do_id', 'qty', 'tblproduct.name', 'delivery_detail.product_id')->get();
-        $deliveries = array();
-        foreach($transaksi as $t){
-            $do_id = 'DO-'.$t->do_id;
-            $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', 'tblproducttrxdet.trx_id')->join('tblcustomer', 'tblproducttrx.customer_id', 'tblcustomer.id')->where('tblproducttrx.id', $t->sales_id)->where('tblproducttrxdet.prod_id', $t->product_id)->select('apname','unit')->first();
-            $result = array(
-                'trx_id' => $do_id,
-                'trx_date' => $t->date,
-                'customer_name' => $sales->apname,
-                'product_name' => $t->name,
-                'qty' => $t->qty,
-                'unit' => $sales->unit,
-            );
-            array_push($deliveries, $result);
-        }
-
-        $statusCode = 200;
-        $data = array(
-            'code' => '200',
-            'status' => 'success',
-            'message' => 'Data customer telah ditemukan',
-            'data' => $deliveries
-        );
-        return response()->json($data,$statusCode);
-    }
-
-    // OLD CODE
-
-    public function old_print(Request $request){
-        $trx_id = $request->trx_id;
-        $transaksi = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->join('tblproduct', 'delivery_detail.product_id', 'tblproduct.prod_id')->where('do_id',$trx_id)->select('delivery_order.sales_id', 'date', 'do_id', 'qty', 'tblproduct.name', 'delivery_detail.product_id')->get();
-        $data = array();
-        foreach($transaksi as $t){
-            $do_id = 'DO-'.$t->do_id;
-            $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', 'tblproducttrxdet.trx_id')->join('tblcustomer', 'tblproducttrx.customer_id', 'tblcustomer.id')->where('tblproducttrx.id', $t->sales_id)->where('tblproducttrxdet.prod_id', $t->product_id)->select('apname','unit')->first();
-            $result = array(
-                'trx_id' => $do_id,
-                'trx_date' => $t->date,
-                'customer_name' => $sales->apname,
-                'product_name' => $t->name,
-                'qty' => $t->qty,
-                'unit' => $sales->unit,
-            );
-            array_push($data, $result);
-        }
-        return response()->json($data);
-    }
-
-    public function old_printing($trx_id, Request $request){
-        echo "<pre>";
-        print_r("tes");
-        die();
-    }
-
-    public function old_printtunggal(Request $request){
-        $trx_id = $request->trx_id;
-        $transaksi = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('do_id',$trx_id)->first();
-        $do_id = 'DO-'.$transaksi->do_id;
-        $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', 'tblproducttrxdet.trx_id')->join('tblcustomer', 'tblproducttrx.customer_id', 'tblcustomer.id')->where('tblproducttrx.id', $transaksi->sales_id)->select('apname','unit')->first();
-        $product = Product::where('prod_id', $transaksi->product_id)->select('name')->first();
-
-        $data = array(
-            'trx_id' => $do_id,
-            'trx_date' => $transaksi->date,
-            'customer_name' => $sales->apname,
-            'product_name' => $product->name,
-            'qty' => $transaksi->qty,
-            'unit' => $sales->unit,
-        );
-        // array_push($data, $result);
-
-        return response()->json($data);
-
-        // $file =  'DO-'.$trx_id.'.txt';  # nama file temporary yang akan dicetak
-        // $handle = fopen($file, 'w');
-        // $Data = "=========================\r\n";
-        // $Data .= "|       RWH HERBAL    |\r\n";
-        // $Data .= "|    DELIVERY ORDER   |\r\n";
-        // $Data .= "========================\r\n";
-        // $Data .= "TRXID : ".$transaksi->trx->trx_id."\r\n";
-        // $Data .= "DATE : ".$transaksi->trx->trx_date."\r\n";
-        // $Data .= "MARKETING : ".strtoupper($transaksi->trx->customer->apname)."\r\n";
-        // $Data .= "==========================\r\n";
-        // $Data .= $transaksi->product->name."\r\n";
-        // $Data .= "Qty : ".$transaksi->qty." ".$transaksi->unit."\r\n";
-        // $Data .= "\r\n";
-        // $Data .= "Approved By\r\nInventory Officer\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n";
-        // Storage::put($file, $Data);
-        // file_put_contents($file, $Data);
-        // fwrite($handle, $Data);
-        // fclose($handle);
-        // copy($file, "//localhost/POS-80C");
-        // unlink($file);
     }
 }

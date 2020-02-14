@@ -125,11 +125,11 @@ class Jurnal extends Model
     public static function refreshCogs($data){
         $getTrxId = SalesDet::whereIn('prod_id',$data)->select('trx_id')->groupBy('trx_id')->orderBy('trx_id')->get();
         foreach ($getTrxId as $key) {
+            // SALES
             $sales_jurnal = $key->trx->jurnal_id;
-            $do_jurnal = DeliveryOrder::where('sales_id',$key->trx_id)->select('jurnal_id')->first();
             $cogs = 0;
             foreach (SalesDet::where('trx_id',$key->trx_id)->select('price','qty','prod_id')->get() as $key2) {
-                $avcost = PurchaseDetail::where('prod_id',$key2->prod_id)->where('created_at','<=',$key->trx->created_at)->avg('price');
+                $avcost = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx->trx_date)->avg('tblpotrxdet.price');
                 $cogs +=  $avcost * $key2->qty;
             }
             // Update Jurnal Sales
@@ -143,17 +143,25 @@ class Jurnal extends Model
                     $jurnal_sales_b->amount = $cogs;
                     $jurnal_sales_b->update();
             }
-            if($do_jurnal){
-            // Update Jurnal DO
-                // debet Persediaan Barang milik Customer
-                    $jurnal_do_a = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','2.1.3')->first();
-                    $jurnal_do_a->amount = $cogs;
-                    $jurnal_do_a->update();
-                // credit Persediaan Barang digudang
-                    $jurnal_do_b = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
-                    $jurnal_do_b->amount = $cogs;
-                    $jurnal_do_b->update();
-                                    
+
+            // DO
+            foreach(DeliveryOrder::where('sales_id',$key->trx_id)->select('id','jurnal_id')->get() as $dokey){
+                $do_sum = 0;
+               
+                foreach(DeliveryDetail::where('do_id',$dokey->id)->get() as $dodet){
+                    $do_avcost = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$dodet->sales->trx_date)->avg('tblpotrxdet.price');
+                    $price = $do_avcost * $dodet->qty;
+                    $do_sum+=$price;
+                }
+                // Update Jurnal DO
+                    // debet Persediaan Barang milik Customer
+                        $jurnal_do_a = Jurnal::where('id_jurnal',$dokey->jurnal_id)->where('AccNo','2.1.3')->first();
+                        $jurnal_do_a->amount = $do_sum;
+                        $jurnal_do_a->update();
+                    // credit Persediaan Barang digudang
+                        $jurnal_do_b = Jurnal::where('id_jurnal',$dokey->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
+                        $jurnal_do_b->amount = $do_sum;
+                        $jurnal_do_b->update();
             }
         }
     }

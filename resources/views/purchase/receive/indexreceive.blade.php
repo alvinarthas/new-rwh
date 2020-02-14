@@ -28,6 +28,8 @@
                                 <td><a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
                             @elseif(($list->qtyrec-$list->qty) < 0 )
                                 <td><a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                            @elseif(($list->qtyrec-$list->qty) > 0 )
+                                <td><a href="javascrip:;" class="btn btn-custom btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
                             @else
                                 <td><a href="javascrip:;" class="btn btn-info btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
                             @endif

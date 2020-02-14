@@ -18,48 +18,46 @@ List Receive Product
 @endsection
 
 @section('content')
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="card-box">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="p-20">
-                                <div class="form-group row">
-                                    <label class="col-2 col-form-label">Start Date</label>
-                                    <div class="col-10">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start" id="start"  data-date-format='yyyy-mm-dd' autocomplete="off">
-                                            <div class="input-group-append">
-                                                <span class="input-group-text"><i class="ti-calendar"></i></span>
-                                            </div>
-                                        </div><!-- input-group -->
-                                    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card-box">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="p-20">
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Start Date</label>
+                                <div class="col-10">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start" id="start"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                        </div>
+                                    </div><!-- input-group -->
                                 </div>
-                                <div class="form-group row">
-                                    <label class="col-2 col-form-label">End Date</label>
-                                    <div class="col-10">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="end" id="end"  data-date-format='yyyy-mm-dd' autocomplete="off">
-                                            <div class="input-group-append">
-                                                <span class="input-group-text"><i class="ti-calendar"></i></span>
-                                            </div>
-                                        </div><!-- input-group -->
-                                    </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">End Date</label>
+                                <div class="col-10">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="end" id="end"  data-date-format='yyyy-mm-dd' autocomplete="off">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                        </div>
+                                    </div><!-- input-group -->
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group text-left m-b-0">
-                        <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase()">Show Data</a>
-                        <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase('all')">Show ALL Data</a>
-                    </div>
                 </div>
+                <div class="form-group text-left m-b-0">
+                    <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase()">Show Data</a>
+                    <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="choosePurchase('all')">Show ALL Data</a>
+                </div>
+            </div>
 
-                <div id="receive-list" style="display:none">
-                    <section id="showreceive">
-                    </section>
-                </div>
+            <div id="receive-list" style="display:none">
+                <section id="showreceive">
+                </section>
             </div>
         </div>
     </div>

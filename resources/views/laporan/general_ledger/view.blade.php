@@ -20,6 +20,7 @@
 <div class="card-box table-responsive">
     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
         <thead>
+            <th>No</th>
             <th>Jurnal ID</th>
             <th>Transaction Date</th>
             <th>Notes</th>
@@ -29,9 +30,13 @@
             <th>Balance</th>
         </thead>
         <tbody>
-            @php($balance = 0)
+            @php
+                $balance = 0;
+                $i = 1;
+            @endphp
             @foreach ($jurnals['data'] as $jurnal)
                 <tr>
+                    <td>{{$i}}</td>
                     <td>{{$jurnal->id_jurnal}}</td>
                     <td>{{$jurnal->date}}</td>
                     <td>{{$jurnal->notes_item}}</td>
@@ -46,6 +51,7 @@
                     @else <td></td> @endif
                     <td>Rp {{number_format($balance,2,",",".")}}</td>
                 </tr>
+                @php($i++)
             @endforeach
         </tbody>
     </table>
@@ -71,19 +77,19 @@
             <div class="form-group row">
                 <label class="col-2 col-form-label">Current Balance</label>
                 <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($balance,2,',','.')}}" readonly>
+                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format(($jurnals['ttl_debet']-$jurnals['ttl_credit']),2,',','.')}}" readonly>
                 </div>
             </div>
         </div>
     </div>
 </div>
     
-{{-- <script>
+<script>
 // Responsive Datatable
 $('#responsive-datatable').DataTable({
      columnDefs: [
        {targets: '_all', type: 'natural'}
      ]
-  } );
+  });
 </script>
-     --}}
+    
