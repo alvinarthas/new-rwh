@@ -59,7 +59,7 @@ class PurchaseController extends Controller
         }else{
             $purchases = Purchase::where('month',$request->bulan)->where('year',$request->tahun)->orderBy('created_at','desc')->get();
         }
-        
+
         $page = MenuMapping::getMap(session('user_id'),"PUPU");
         if ($request->ajax()) {
             return response()->json(view('purchase.indexpurchase',compact('purchases','page'))->render());
@@ -82,7 +82,7 @@ class PurchaseController extends Controller
         <td>'.$count.'</td>
         <input type="hidden" name="detail[]" id="detail'.$count.'" value="baru">
         <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$product.'">'.$product.'</td>
-        <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$manage['prod_name'].'">'.$manage['prod_name'].'</td>
+        <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$manage['name'].'">'.$manage['name'].'</td>
         <td><input type="number" name="qty[]" value="'.$qty.'" id="qty'.$count.'" onchange="changeTotal('.$count.')" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="hidden" name="unit[]" value="'.$unit.'" id="unit'.$count.'">'.$unit.'</td>
         <td><input type="number" name="harga_dist[]" value="'.$manage['harga_distributor'].'" id="harga_dist'.$count.'" onkeyup="changeTotal('.$count.')"></td>
@@ -100,7 +100,7 @@ class PurchaseController extends Controller
         );
 
         return response()->json($data);
-    } 
+    }
 
     public function destroyPurchaseDetail(Request $request){
         if($request->status == 1){
@@ -136,7 +136,7 @@ class PurchaseController extends Controller
         }else{
             $suppliers = PurchaseMap::where('employee_id',session('user_id'))->get();
         }
-        
+
         return view('purchase.form', compact('jenis','suppliers'));
     }
 
@@ -246,14 +246,14 @@ class PurchaseController extends Controller
             $status = 1;
             $purchase = TempPO::where('purchase_id',$id)->first();
             $details = TempPODet::where('temp_id',$purchase->id)->get();
-    
+
             $ttl_harga_modal = 0;
             $ttl_harga_dist = 0;
             foreach ($details as $key) {
                 $ttl_harga_modal += ($key->price*$key->qty);
                 $ttl_harga_dist += ($key->price_dist*$key->qty);
             }
-    
+
             $month = $purchase->month;
             $year = $purchase->year;
             $products = Product::where('supplier',$purchase->supplier()->first()->id)->get();
@@ -261,19 +261,19 @@ class PurchaseController extends Controller
             $status = 0;
             $purchase = Purchase::where('id',$id)->first();
             $details = PurchaseDetail::where('trx_id',$id)->get();
-    
+
             $ttl_harga_modal = 0;
             $ttl_harga_dist = 0;
             foreach ($details as $key) {
                 $ttl_harga_modal += ($key->price*$key->qty);
                 $ttl_harga_dist += ($key->price_dist*$key->qty);
             }
-    
+
             $month = $purchase->month;
             $year = $purchase->year;
             $products = Product::where('supplier',$purchase->supplier()->first()->id)->get();
         }
-        
+
 
         return view('purchase.form_update', compact('details','purchase','products','ttl_harga_modal','ttl_harga_dist','status','page'));
     }

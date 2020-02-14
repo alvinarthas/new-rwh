@@ -67,13 +67,13 @@ Form Sales Payment
                             <div class="p-20">
                                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                                     <thead>
-                                        <th>No</th>
-                                        <th>Account Number</th>
-                                        <th>Account Name</th>
-                                        <th>Position</th>
-                                        <th>Amount</th>
-                                        <th>Notes</th>
-                                        <th>Option</th>
+                                        <th style="width:5%">No</th>
+                                        <th style="width:15%">Account Number</th>
+                                        <th style="width:20%">Account Name</th>
+                                        <th style="width:15%">Position</th>
+                                        <th style="width:15%">Amount</th>
+                                        <th style="width:20%">Notes</th>
+                                        <th style="width:10%">Option</th>
                                     </thead>
                                     <tbody id="jurnal-list-body">
                                         <input type="hidden" name="count" id="count" value="@isset($count_edit){{$count_edit}}@endisset">
@@ -81,12 +81,23 @@ Form Sales Payment
                                             @php($i=1)
                                             @foreach ($jurnals as $item)
                                                 <tr style="width:100%" id="trow{{$i}}">
-                                                    <td>{{$i}}</td>
-                                                    <td>{{$item->AccNo}}</td>
+                                                    <td><input type="hidden" name="id[]" id="id{{ $i }}" value="{{ $item->id }}">{{ $i }}</td>
+                                                    <td><input type="hidden" name="AccNo[]" id="AccNo{{$i}}" value="{{ $item->AccNo  }}">{{ $item->AccNo  }}</td>
                                                     <td>{{$item->coa->AccName}}</td>
-                                                    <td><input type="hidden" value="{{$item->AccPos}}" id="position{{$i}}">{{$item->AccPos}}</td>
-                                                    <td><input type="hidden" value="{{$item->Amount}}" id="amount{{$i}}">Rp {{number_format($item->Amount,2,",",".")}}</td>
-                                                    <td>{{$item->notes_item}}</td>
+                                                    {{-- <td><input type="hidden" value="{{$item->AccPos}}" id="position{{$i}}">{{$item->AccPos}}</td> --}}
+                                                    <td>
+                                                        <select class="form-control" parsley-trigger="change" name="position[]" id="position{{$i}}" required>
+                                                            @if($item->AccPos == "Debet")
+                                                                <option value="Debet" selected>Debet</option>
+                                                                <option value="Credit">Credit</option>
+                                                            @else
+                                                                <option value="Debet">Debet</option>
+                                                                <option value="Credit" selected>Credit</option>
+                                                            @endif
+                                                        </select>
+                                                    </td>
+                                                    <td><input type="text" class="form-control" value="{{$item->Amount}}" name="amount[]" id="amount{{$i}}"></td>
+                                                    <td><input type="text" class="form-control" value="{{$item->notes_item}}" name="notes[]" id="notes{{$i}}"></td>
                                                     <td>
                                                         <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItemJurnal({{$i}},{{$item->id}})" >Delete</a>
                                                     </td>
@@ -104,7 +115,7 @@ Form Sales Payment
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Jurnal ID</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" value="{{$id}}" readonly>
+                                    <input type="text" class="form-control" name="id_jurnal" id="id_jurnal" value="{{$id}}" readonly>
                                 </div>
                             </div>
                         @endif
@@ -162,7 +173,7 @@ Form Sales Payment
 <script>
     // Select2
     $(".select2").select2();
-    
+
     $("#form").submit(function(e){
         ttl_debet = parseInt($('#ttl_debet').val());
         ttl_credit = parseInt($('#ttl_credit').val());
@@ -275,7 +286,7 @@ Form Sales Payment
                     'error'
                 )
             });
-            
+
         }, function (dismiss) {
             // dismiss can be 'cancel', 'overlay',
             // 'close', and 'timer'

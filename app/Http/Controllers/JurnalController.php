@@ -50,11 +50,19 @@ class JurnalController extends Controller
 
         $append = '<tr style="width:100%" id="trow'.$count.'">
         <td>'.$count.'</td>
-        <td><input type="hidden" name="accno[]" id="accno'.$count.'" value="'.$coa.'">'.$coa.'</td>
+        <td><input type="hidden" name="AccNo[]" id="AccNo'.$count.'" value="'.$coa.'">'.$coa.'</td>
         <td><input type="hidden" name="accname[]" id="accname'.$count.'" value="'.$accname.'">'.$accname.'</td>
-        <td><input type="hidden" name="position[]" value="'.$position.'" id="position'.$count.'">'.$position.'</td>
-        <td><input type="hidden" name="amount[]" value="'.$amount.'" id="amount'.$count.'">Rp. '.number_format($amount).'</td>
-        <td><input type="hidden" name="notes[]" value="'.$notes.'" id="notes'.$count.'">'.$notes.'</td>
+        <td><select class="form-control" parsley-trigger="change" name="position[]" id="position'.$count.'" required>';
+        if($position == "Debet"){
+            $append .= '<option value="Debet" selected>Debet</option>
+                <option value="Credit">Credit</option>';
+        }else{
+            $append .= '<option value="Debet">Debet</option>
+            <option value="Credit" selected>Credit</option>';
+        }
+        $append .= '</select></td>
+        <td><input type="text" class="form-control" name="amount[]" value="'.$amount.'" id="amount'.$count.'"></td>
+        <td><input type="text" class="form-control" name="notes[]" value="'.$notes.'" id="notes'.$count.'"></td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
         </tr>';
 
@@ -96,7 +104,7 @@ class JurnalController extends Controller
             'trx_date' => 'required|date',
             'count' => 'required|integer',
             'ttl_credit' => 'required',
-            'accno' => 'required|array',
+            'AccNo' => 'required|array',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -105,10 +113,11 @@ class JurnalController extends Controller
         }else{
             $id_jurnal = Jurnal::getJurnalID('JN');
             try{
-                for ($i=0; $i < $request->count ; $i++) {
+                $count = count($request->AccNo);
+                for ($i=0; $i < $count ; $i++) {
                     $jurnal = new Jurnal(array(
                         'id_jurnal' => $id_jurnal,
-                        'AccNo' => $request->accno[$i],
+                        'AccNo' => $request->AccNo[$i],
                         'AccPos' => $request->position[$i],
                         'Amount' => $request->amount[$i],
                         'company_id' => 1,
@@ -168,6 +177,9 @@ class JurnalController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
         // Validate
         $validator = Validator::make($request->all(), [
             'ttl_debet' => 'required',
@@ -181,11 +193,22 @@ class JurnalController extends Controller
         // Validation success
         }else{
             try{
-                for ($i=0; $i < $request->count ; $i++) {
-                    if(isset($request->accno[$i])){
+                $count = count($request->AccNo);
+                for ($i=0; $i < $count ; $i++) {
+                    if(isset($request->id[$i])){
+                        $data = Jurnal::where('id', $request->id[$i])->first();
+                        $data->AccPos = $request->position[$i];
+                        $data->Amount = $request->amount[$i];
+                        $data->company_id = 1;
+                        $data->date = $request->trx_date;
+                        $data->notes_item = $request->notes[$i];
+                        $data->description = $request->deskripsi;
+                        $data->creator = session('user_id');
+                        $data->update();
+                    }else{
                         $jurnal = new Jurnal(array(
                             'id_jurnal' => $id,
-                            'AccNo' => $request->accno[$i],
+                            'AccNo' => $request->AccNo[$i],
                             'AccPos' => $request->position[$i],
                             'Amount' => $request->amount[$i],
                             'company_id' => 1,
@@ -198,10 +221,10 @@ class JurnalController extends Controller
                     }
                 }
 
-                $raw_update = Jurnal::where('id_jurnal',$id)->update(['date' => $request->trx_date]);
+                // $raw_update = Jurnal::where('id_jurnal',$id)->update(['date' => $request->trx_date]);
                 return redirect()->back()->with('status', 'Data berhasil diubah');
             }catch (\Exception $e) {
-                return redirect()->back()->withErrors($e->errorInfo);
+                return redirect()->back()->withErrors($e->getMessage());
             }
         }
     }
