@@ -102,10 +102,15 @@ class DeliveryController extends Controller
 
             try {
                 for ($i=0; $i < $request->count ; $i++) {
-                    $pricedet = SalesDet::where('trx_id',$request->sales_id)->where('prod_id',$request->prod_id[$i])->first()->price;
+                    $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$request->prod_id[$i])->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
 
-                    // $avcharga = PurchaseDetail::where('prod_id',$request->prod_id[$i])->where('created_at','<=',$sales->created_at)->avg('price');
-                    $avcharga = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$request->prod_id[$i])->where('tblpotrx.tgl','<=',$sales->trx_date)->avg('tblpotrxdet.price');
+                    $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$request->prod_id[$i])->where('tblpotrx.tgl','<=',$sales->trx_date)->sum('tblpotrxdet.qty');
+
+                    if($sumprice <> 0 && $sumqty <> 0){
+                        $avcharga = $sumprice/$sumqty;
+                    }else{
+                        $avcharga = 0;
+                    }
 
                     $price = $avcharga * $request->qty[$i];
                 }

@@ -129,7 +129,16 @@ class Jurnal extends Model
             $sales_jurnal = $key->trx->jurnal_id;
             $cogs = 0;
             foreach (SalesDet::where('trx_id',$key->trx_id)->select('price','qty','prod_id')->get() as $key2) {
-                $avcost = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx->trx_date)->avg('tblpotrxdet.price');
+                $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
+
+                $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum('tblpotrxdet.qty');
+                
+                if($sumprice <> 0 && $sumqty <> 0){
+                    $avcost = $sumprice/$sumqty;
+                }else{
+                    $avcost = 0;
+                }
+
                 $cogs +=  $avcost * $key2->qty;
             }
             // Update Jurnal Sales
@@ -145,11 +154,20 @@ class Jurnal extends Model
             }
 
             // DO
-            foreach(DeliveryOrder::where('sales_id',$key->trx_id)->select('id','jurnal_id')->get() as $dokey){
+            foreach(DeliveryOrder::where('sales_id',$key->id)->select('id','jurnal_id')->get() as $dokey){
                 $do_sum = 0;
-               
-                foreach(DeliveryDetail::where('do_id',$dokey->id)->get() as $dodet){
-                    $do_avcost = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$dodet->sales->trx_date)->avg('tblpotrxdet.price');
+
+                foreach(DeliveryDetail::where('do_id',$dokey->id)->select('qty','product_id')->get() as $dodet){
+                    $do_sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
+
+                    $do_sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum('tblpotrxdet.qty');
+
+                    if($do_sumprice <> 0 && $do_sumqty <> 0){
+                        $do_avcost = $do_sumprice/$do_sumqty;
+                    }else{
+                        $do_avcost = 0;
+                    }
+                    
                     $price = $do_avcost * $dodet->qty;
                     $do_sum+=$price;
                 }

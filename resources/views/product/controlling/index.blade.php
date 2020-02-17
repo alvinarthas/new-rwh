@@ -3,6 +3,7 @@
     use App\Perusahaan;
     use App\Product;
     use App\PurchaseDetail;
+    use App\Purchase;
 @endphp
 
 @section('css')
@@ -69,7 +70,15 @@
                                         $gudang = Product::getGudang($prd->prod_id);
                                         $brgcust = Product::getBrgCust($prd->prod_id);
                                         $nett = $indent + $gudang - $brgcust;
-                                        $avcost = PurchaseDetail::where('prod_id',$prd->prod_id)->avg('price');
+                                        $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$prd->prod_id)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
+
+                                        $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$prd->prod_id)->sum('tblpotrxdet.qty');
+                                        
+                                        if($sumprice <> 0 && $sumqty <> 0){
+                                            $avcost = $sumprice/$sumqty;
+                                        }else{
+                                            $avcost = 0;
+                                        }
                                     @endphp
                                 <td><a href="javascript:;" onclick="getIndent('{{ $prd->id }}')" disabled="disabled"><strong>{{ $indent }}</strong></a></td>
                                 <td><a href="javascript:;" onclick="getGudang('{{ $prd->id }}')" disabled="disabled"><strong>{{ $gudang }}</strong></a></td>

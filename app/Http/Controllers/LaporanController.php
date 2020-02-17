@@ -11,6 +11,7 @@ use App\Purchase;
 use App\Sales;
 use App\Customer;
 use App\Perusahaan;
+use App\Product;
 
 class LaporanController extends Controller
 {
@@ -115,5 +116,11 @@ class LaporanController extends Controller
             $customers = Customer::sisaPiutang();
             return view('laporan.sisapiutang.index',compact('customers'));
         }
+    }
+
+    public function kendaliBarang(){
+        $products = Product::all();
+
+        return view('laporan.kendali.index',compact('products'));
     }
 }
