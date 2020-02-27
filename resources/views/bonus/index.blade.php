@@ -40,9 +40,13 @@
                     <h3 class="m-t-0 header-title">Penerimaan Bonus Member</h3>
                 @elseif($bonusapa=="topup")
                     <h3 class="m-t-0 header-title">Top Up Bonus Member</h3>
-                @elseif($bonusapa=="laporan" OR $bonusapa=="bonusgagal")
-                    @if($bonusapa=="laporan")
-                        <h3 class="m-t-0 header-title">Laporan Realisasi Bonus Member</h3>
+                @elseif($bonusapa=="laporan" OR $bonusapa=="bonusgagal" OR $bonusapa=="estimasi")
+                    @if($bonusapa=="laporan" OR $bonusapa=="estimasi")
+                        @if($bonusapa=="laporan")
+                            <h3 class="m-t-0 header-title">Laporan Realisasi Bonus Member</h3>
+                        @elseif($bonusapa=="estimasi")
+                            <h3 class="m-t-0 header-title">Laporan Realisasi Estimasi & Perhitungan Bonus Member</h3>
+                        @endif
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Bulan & Tahun Bonus</label>
                             <div class="col-5">
@@ -554,6 +558,12 @@
         @elseif($bonusapa=="laporan")
             @if($jenis=="index")
                 <button class="btn btn-primary waves-effect waves-light" onclick="showLaporanBonus()" type="submit">
+                    Show Bonus
+                </button>
+            @endif
+        @elseif($bonusapa=="estimasi")
+            @if($jenis=="index")
+                <button class="btn btn-primary waves-effect waves-light" onclick="showEstimasiBonus()" type="submit">
                     Show Bonus
                 </button>
             @endif
@@ -1128,6 +1138,26 @@
                 bulan : bln,
                 tahun : thn,
                 prshn : perusahaan,
+            },
+            type		:	"GET",
+            dataType    :   "html",
+            success		:	function(data){
+                $("#tblBonus").html(data);
+            },
+            error       :   function(data){
+                document.getElementById('tahun').value = '2018';
+            }
+        });
+    }
+
+    function showEstimasiBonus(){
+        var bln = $("#bulan").val()
+        var thn = $("#tahun").val()
+        $.ajax({
+            url         :   "{{route('showEstimasiBonus')}}",
+            data        :   {
+                bulan : bln,
+                tahun : thn,
             },
             type		:	"GET",
             dataType    :   "html",

@@ -37,8 +37,8 @@ class Jurnal extends Model
         return $id_jurnal;
     }
 
-    public static function viewJurnal($start,$end,$coa,$position,$param){
-
+    public static function viewJurnal($start,$end,$coa,$position,$param)
+    {
         if ($param == "umum") {
             $jurnal = Jurnal::where('id_jurnal','LIKE','JN%');
             $jurdebet = Jurnal::where('id_jurnal','LIKE','JN%');
@@ -71,10 +71,44 @@ class Jurnal extends Model
         $ttl_credit = $jurcredit->where('AccPos','Credit')->sum('Amount');
         $jurnal = $jurnal->orderBy('date','asc')->get();
 
+        $collect = array();
+        $no = 1;
+        foreach($jurnal as $jn){
+            $action = "<a href='/jurnal/".$jn->id_jurnal."/edit' class='btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5'>Update</a>";
+            $action .= "<a href='javascript:;' onclick='jurnalDelete('{{".$jn->id_jurnal."}}')' class='btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5'>Delete</a>";
+            if($jn->AccPos == "Debet"){
+                $array = array(
+                    "no"          => $no,
+                    "id_jurnal"   => $jn->id_jurnal,
+                    "date"        => $jn->date,
+                    "AccNo"       => $jn->AccNo,
+                    "AccName"     => $jn->coa->AccName,
+                    "debet"       => $jn->Amount,
+                    "credit"      => "",
+                    "notes_item"  => $jn->notes_item,
+                    "description" => $jn->description,
+                );
+            }elseif($jn->AccPos == "Credit"){
+                $array = array(
+                    "no"          => $no,
+                    "id_jurnal"   => $jn->id_jurnal,
+                    "date"        => $jn->date,
+                    "AccNo"       => $jn->AccNo,
+                    "AccName"     => $jn->coa->AccName,
+                    "debet"       => "",
+                    "credit"      => $jn->Amount,
+                    "notes_item"  => $jn->notes_item,
+                    "description" => $jn->description,
+                );
+            }
+            array_push($collect, $array);
+            $no++;
+        }
+
         $data = collect();
-        $data->put('data',$jurnal);
-        $data->put('ttl_debet',$ttl_debet);
-        $data->put('ttl_credit',$ttl_credit);
+        $data->put('data',$collect);
+        // $data->put('ttl_debet',$ttl_debet);
+        // $data->put('ttl_credit',$ttl_credit);
         return $data;
     }
 
@@ -125,20 +159,11 @@ class Jurnal extends Model
     public static function refreshCogs($data){
         $getTrxId = SalesDet::whereIn('prod_id',$data)->select('trx_id')->groupBy('trx_id')->orderBy('trx_id')->get();
         foreach ($getTrxId as $key) {
-            // SALES
             $sales_jurnal = $key->trx->jurnal_id;
+            $do_jurnal = DeliveryOrder::where('sales_id',$key->trx_id)->select('jurnal_id')->first();
             $cogs = 0;
             foreach (SalesDet::where('trx_id',$key->trx_id)->select('price','qty','prod_id')->get() as $key2) {
-                $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
-
-                $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum('tblpotrxdet.qty');
-                
-                if($sumprice <> 0 && $sumqty <> 0){
-                    $avcost = $sumprice/$sumqty;
-                }else{
-                    $avcost = 0;
-                }
-
+                $avcost = PurchaseDetail::where('prod_id',$key2->prod_id)->where('created_at','<=',$key->trx->created_at)->avg('price');
                 $cogs +=  $avcost * $key2->qty;
             }
             // Update Jurnal Sales
@@ -152,34 +177,17 @@ class Jurnal extends Model
                     $jurnal_sales_b->amount = $cogs;
                     $jurnal_sales_b->update();
             }
+            if($do_jurnal){
+            // Update Jurnal DO
+                // debet Persediaan Barang milik Customer
+                    $jurnal_do_a = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','2.1.3')->first();
+                    $jurnal_do_a->amount = $cogs;
+                    $jurnal_do_a->update();
+                // credit Persediaan Barang digudang
+                    $jurnal_do_b = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
+                    $jurnal_do_b->amount = $cogs;
+                    $jurnal_do_b->update();
 
-            // DO
-            foreach(DeliveryOrder::where('sales_id',$key->id)->select('id','jurnal_id')->get() as $dokey){
-                $do_sum = 0;
-
-                foreach(DeliveryDetail::where('do_id',$dokey->id)->select('qty','product_id')->get() as $dodet){
-                    $do_sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
-
-                    $do_sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum('tblpotrxdet.qty');
-
-                    if($do_sumprice <> 0 && $do_sumqty <> 0){
-                        $do_avcost = $do_sumprice/$do_sumqty;
-                    }else{
-                        $do_avcost = 0;
-                    }
-                    
-                    $price = $do_avcost * $dodet->qty;
-                    $do_sum+=$price;
-                }
-                // Update Jurnal DO
-                    // debet Persediaan Barang milik Customer
-                        $jurnal_do_a = Jurnal::where('id_jurnal',$dokey->jurnal_id)->where('AccNo','2.1.3')->first();
-                        $jurnal_do_a->amount = $do_sum;
-                        $jurnal_do_a->update();
-                    // credit Persediaan Barang digudang
-                        $jurnal_do_b = Jurnal::where('id_jurnal',$dokey->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
-                        $jurnal_do_b->amount = $do_sum;
-                        $jurnal_do_b->update();
             }
         }
     }

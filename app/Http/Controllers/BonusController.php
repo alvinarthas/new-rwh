@@ -18,6 +18,7 @@ use App\Exports\BonusGagalUploadExport1;
 use App\Exports\BonusGagalUploadExport2;
 use Carbon\Carbon;
 
+use App\Purchase;
 use App\Bonus;
 use App\BonusGagal;
 use App\PurchaseDetail;
@@ -85,6 +86,14 @@ class BonusController extends Controller
         $bonusgagal = BonusGagal::all();
 
         return view('bonus.index', compact('bonusapa','jenis','perusahaans', 'page', 'bonusgagal'));
+    }
+
+    public function indexEstimasi(Request $request)
+    {
+        $page = MenuMapping::getMap(session('user_id'),"BMRE");
+        $bonusapa = "estimasi";
+        $jenis = "index";
+        return view('bonus.index', compact('bonusapa','jenis', 'page'));
     }
 
     /**
@@ -755,7 +764,13 @@ class BonusController extends Controller
                 for($i=0;$i<$ctr;$i++){
                     $norek = $request->norekening[$i];
                     $bonus = $request->bonus[$i];
-                    $ket = 'penerimaan bonus ke '.$AccNo.' untuk '.$norek.' - bulan '.$bulan.' '.$tahun;
+
+                    if($AccNo != "1.1.1.1.000003"){
+                        $ket = 'penerimaan bonus ke '.$AccNo.' untuk '.$norek.' - bulan '.$bulan.' '.$tahun;
+                    }else{
+                        $nama = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('norek', $norek)->first()->nama;
+                        $ket = 'penerimaan bonus ke Kas Bonus Morinda untuk '.$nama.' - bulan '.$bulan.' '.$tahun;
+                    }
 
                     $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun)->where('bulan', $bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
                     $num = $bonusbayar->count();
@@ -1369,6 +1384,17 @@ class BonusController extends Controller
         try{
             $data = BonusBayar::where('id_bonus', $request->id)->first();
             $data->delete();
+            if($data->AccNo != "1.1.1.1.000003"){
+                $ket = 'penerimaan bonus ke '.$data->AccNo.' untuk '.$data->no_rek.' - bulan '.$data->bulan.' '.$data->tahun;
+            }else{
+                $nama = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('norek', $data->no_rek)->first()->nama;
+                $ket = 'penerimaan bonus ke Kas Bonus Morinda untuk '.$nama.' - bulan '.$data->bulan.' '.$data->tahun;
+            }
+            $credit = Jurnal::where('id_jurnal', $data->id_jurnal)->where('AccNo', "1.1.3.5")->where('AccPos', "Credit")->first();
+            $debet = Jurnal::where('id_jurnal', $data->id_jurnal)->where('AccNo', $data->AccNo)->where('AccPos', "Debet")->where('description',"LIKE", $ket)->first();
+            $credit->Amount = $credit->Amount - $debet->Amount;
+            $credit->update();
+            $debet->delete();
             return response()->json($data);
         }catch(\Exception $e) {
             return redirect()->back()->withErrors($e->getMessage());
@@ -1538,6 +1564,7 @@ class BonusController extends Controller
             );
 
             $topup->delete();
+            Jurnal::where('id_jurnal', $topup->id_jurnal)->delete();
             return response()->json($data);
         }catch(\Exception $e) {
             // return redirect()->back()->withErrors($e->getMessage());
@@ -1577,6 +1604,16 @@ class BonusController extends Controller
         $bonusapa = "bonusgagal";
         $bonusgagal = BonusGagal::where('tahun',$tahun)->where('bulan',$bulan)->where('perusahaan',$perusahaan)->orderBy('nama','asc')->get();
         return view('bonus.ajxShowBonus', compact('bonusgagal','tahun','bulan','bonusapa'));
+    }
+
+    public function showEstimasiBonus(Request $request)
+    {
+        $tahun = $request->tahun;
+        $bulan = $request->bulan;
+        $data = Purchase::join('tblperusahaan', 'tblpotrx.supplier', 'tblperusahaan.id')->where('tblpotrx.month', $bulan)->where('tblpotrx.year', $tahun)->select('tblperusahaan.nama', 'tblpotrx.month', 'tblpotrx.year', 'tblpotrx.supplier')->groupBy('tblpotrx.supplier')->get();
+        $bonusapa = "estimasi";
+
+        return view('bonus.ajxShowBonus', compact('data', 'tahun','bulan','bonusapa'));
     }
 
     public function ajxBonusOrder(Request $request){

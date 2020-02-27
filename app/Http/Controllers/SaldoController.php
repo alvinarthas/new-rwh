@@ -235,7 +235,7 @@ class SaldoController extends Controller
             if ((file_exists(public_path('assets/images/saldo/topup/').$saldo->buktitf)) AND ($saldo->buktitf <> NULL)) {
                 unlink(public_path('assets/images/saldo/topup/').$saldo->buktitf);
             }
-            Log::setLog('PSDCD','Delete '.$$saldo['id_jurnal']);
+            Log::setLog('PSDCD','Delete '.$saldo['id_jurnal']);
             Jurnal::where('id_jurnal', $saldo['id_jurnal'])->delete();
             // $saldo->delete();
             return redirect()->back()->with('status','Data berhasil dihapus');
