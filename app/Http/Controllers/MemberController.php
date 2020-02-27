@@ -292,14 +292,18 @@ class MemberController extends Controller
         $perusahaan = $request->perusahaanid;
         $bank = $request->bankid;
         $jenis = $request->jenis;
-        if($jenis == 0){
-            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->where('perusahaanmember.perusahaan_id',$perusahaan)->where('tblmember.nama','LIKE',$key.'%')->orWhere('tblmember.ktp','LIKE',$key.'%')->orderBy('tblmember.nama')->limit(5)->get();
-        }elseif ($jenis == 1) {
-            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->whereNotIn('tblmember.ktp',DB::raw("SELECT m.ktp FROM perusahaanmember p INNER JOIN tblmember m ON m.ktp = p.ktp WHERE p.id = $perusahaan"))->where('tblmember.nama','LIKE',$key.'%')->orWhere('tblmember.ktp','LIKE',$key.'%')->orderBy('tblmember.nama')->limit(5)->get();
-        }elseif($jenis==2){
-            $datas = Member::select('id','ktp','nama')->where('tblmember.nama','LIKE',$key.'%')->orWhere('tblmember.ktp','LIKE',$key.'%')->orderBy('tblmember.nama')->limit(5)->get();
-        }elseif ($jenis == 3) {
-            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama')->join('bankmember','tblmember.ktp','=','bankmember.ktp')->where('bankmember.bank_id',$bank)->where('tblmember.nama','LIKE',$key.'%')->orWhere('tblmember.ktp','LIKE',$key.'%')->orderBy('tblmember.nama')->limit(5)->get();
+
+        if($jenis == 1){
+            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->where('perusahaanmember.perusahaan_id',$perusahaan)->where('tblmember.nama','LIKE',$key)->orWhere('tblmember.ktp','LIKE',$key)->orderBy('tblmember.nama')->distinct()->limit(5)->get();
+        }elseif ($jenis == 2) {
+            $dd = DB::select("SELECT m.ktp FROM perusahaanmember p INNER JOIN tblmember m ON m.ktp = p.ktp WHERE p.id = $perusahaan");
+            $dd = json_decode(json_encode($dd), true);
+
+            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->whereNotIn('tblmember.ktp',$dd)->where('tblmember.nama','LIKE',$key)->orWhere('tblmember.ktp','LIKE',$key)->orderBy('tblmember.nama')->distinct()->limit(5)->get();
+        }elseif($jenis==3){
+            $datas = Member::select('id','ktp','nama','scanktp','cetak')->where('tblmember.nama','LIKE',$key)->orWhere('tblmember.ktp','LIKE',$key)->orderBy('tblmember.nama')->distinct()->limit(5)->get();
+        }elseif ($jenis == 4) {
+            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('bankmember','tblmember.ktp','=','bankmember.ktp')->where('bankmember.bank_id',$bank)->where('tblmember.nama','LIKE',$key.'%')->orWhere('tblmember.ktp','LIKE',$key.'%')->orderBy('tblmember.nama')->distinct()->limit(5)->get();
         }
 
         $data = array();
@@ -349,13 +353,13 @@ class MemberController extends Controller
         $exportTo = $request['xto'];
 
         if($menu==0){
-            if($jenis == 0){
+            if($jenis == 1){
                 $datas = PerusahaanMember::where('perusahaan_id', $perusahaan)->join('tblmember','tblmember.ktp', '=', 'perusahaanmember.ktp')->leftJoin('tblkoordinator', 'tblkoordinator.id', '=', 'tblmember.koordinator')->leftJoin('tblsubkoordinator', 'tblsubkoordinator.id', '=', 'tblmember.subkoor')->select('tblmember.member_id','tblmember.ktp','tblmember.nama as namaMember','tblmember.alamat','tblmember.tempat_lahir', 'tblmember.tgl_lahir', 'tblkoordinator.nama AS namaKoor', 'tblsubkoordinator.nama AS namaSubkoor')->orderBy('tblmember.nama')->get();
-            }elseif ($jenis == 1) {
+            }elseif ($jenis == 2) {
                 $datas = PerusahaanMember::where('perusahaan_id', '!=', $perusahaan)->join('tblmember','tblmember.ktp', '=', 'perusahaanmember.ktp')->leftJoin('tblkoordinator', 'tblkoordinator.id', '=', 'tblmember.koordinator')->leftJoin('tblsubkoordinator', 'tblsubkoordinator.id', '=', 'tblmember.subkoor')->select('tblmember.member_id','tblmember.ktp','tblmember.nama as namaMember','tblmember.alamat','tblmember.tempat_lahir', 'tblmember.tgl_lahir', 'tblkoordinator.nama AS namaKoor', 'tblsubkoordinator.nama AS namaSubkoor')->orderBy('tblmember.nama')->get();
-            }elseif($jenis == 2){
+            }elseif($jenis == 3){
                 $datas = Member::leftJoin('tblkoordinator', 'tblkoordinator.id', '=', 'tblmember.koordinator')->leftJoin('tblsubkoordinator', 'tblsubkoordinator.id', '=', 'tblmember.subkoor')->select('tblmember.member_id','tblmember.ktp','tblmember.nama as namaMember','tblmember.alamat','tblmember.tempat_lahir', 'tblmember.tgl_lahir', 'tblkoordinator.nama AS namaKoor', 'tblsubkoordinator.nama AS namaSubkoor')->orderBy('tblmember.nama')->get();
-            }elseif ($jenis == 3) {
+            }elseif ($jenis == 4) {
                 $datas = BankMember::where('bank_id', $bank)->join('tblmember', 'tblmember.ktp', '=', 'bankmember.ktp')->leftJoin('tblkoordinator', 'tblkoordinator.id', '=', 'tblmember.koordinator')->leftJoin('tblsubkoordinator', 'tblsubkoordinator.id', '=', 'tblmember.subkoor')->select('tblmember.member_id','tblmember.ktp','tblmember.nama as namaMember','tblmember.alamat','tblmember.tempat_lahir', 'tblmember.tgl_lahir', 'tblkoordinator.nama AS namaKoor', 'tblsubkoordinator.nama AS namaSubkoor')->orderBy('tblmember.nama')->get();
             }
         }

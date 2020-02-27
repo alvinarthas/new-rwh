@@ -94,6 +94,9 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/bonus/laporan','BonusController@indexLaporan')->name('bonus.laporan');
     Route::get('/showBonusLaporan', 'BonusController@showLaporanBonus')->name('showLaporanBonus');
 
+    Route::get('/bonus/estimasi', 'BonusController@indexEstimasi')->name('bonus.estimasi');
+    Route::get('/showEstimasiBonus', 'BonusController@showEstimasiBonus')->name('showEstimasiBonus');
+
     Route::get('/bonus/bonusgagal','BonusController@indexBonusGagal')->name('bonus.bonusgagal');
     Route::delete('/bonus/bonusgagal/{id}/delete', 'BonusController@destroyGagalBonus')->name('bonus.deletegagalbonus');
     Route::get('/showBonusLaporanGagal', 'BonusController@showLaporanBonusGagal')->name('showLaporanBonusGagal');
@@ -299,6 +302,7 @@ Route::middleware(['checkUser'])->group(function () {
 
     // Jurnal Helper
     Route::get('jurnaladd','JurnalController@addJurnal')->name('addJurnal');
+    Route::get('jurnalshow2', 'JurnalController@show2')->name('jurnal.show2');
     Route::get('jurnaldetaildestroy','JurnalController@detailJuralDestroy')->name('detailJuralDestroy');
 
     // Bonus Helper
