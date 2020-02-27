@@ -42,18 +42,27 @@ class MemberController extends Controller
         $jenis = $request->get('jenis');
         $perusahaan = $request->get('perusahaan');
         $bank = $request->get('bank');
-        if($jenis == 0){
-            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->where('perusahaanmember.perusahaan_id',$perusahaan)->where('tblmember.nama','LIKE',$keyword.'%')->orWhere('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->distinct()->paginate(10);
-        }elseif ($jenis == 1) {
-            $dd = DB::select("SELECT m.ktp FROM perusahaanmember p INNER JOIN tblmember m ON m.ktp = p.ktp WHERE p.id = $perusahaan");
-            $dd = json_decode(json_encode($dd), true);
+        if($jenis == 1){
+            $array = array_values(array_column(DB::select("SELECT ktp FROM perusahaanmember WHERE perusahaan_id = $perusahaan"),'ktp'));
 
-            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('perusahaanmember','tblmember.ktp','=','perusahaanmember.ktp')->whereNotIn('tblmember.ktp',$dd)->where('tblmember.nama','LIKE',$keyword.'%')->orWhere('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->distinct()->paginate(10);
-        }elseif($jenis==2){
-            $datas = Member::select('id','ktp','nama','scanktp','cetak')->where('tblmember.nama','LIKE',$keyword.'%')->orWhere('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->paginate(10);
-        }elseif ($jenis == 3) {
-            $datas = Member::select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak')->join('bankmember','tblmember.ktp','=','bankmember.ktp')->where('bankmember.bank_id',$bank)->where('tblmember.nama','LIKE',$keyword.'%')->orWhere('tblmember.ktp','LIKE',$keyword.'%')->orderBy('tblmember.nama')->distinct()->paginate(10);
+            $datas = Member::whereIn('ktp',$array)->select('id','ktp','nama','scanktp','cetak');
+        }elseif ($jenis == 2) {
+            $array = array_values(array_column(DB::select("SELECT ktp FROM perusahaanmember WHERE perusahaan_id = $perusahaan"),'ktp'));
+
+            $datas = Member::whereNotIn('ktp',$array)->select('id','ktp','nama','scanktp','cetak');
+        }elseif($jenis==3 || $jenis==null){
+            $datas = Member::select('id','ktp','nama','scanktp','cetak');
+        }elseif ($jenis == 4) {
+            $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember WHERE bank_id =$bank"),'ktp'));
+
+            $datas = Member::whereIn('ktp',$array)->select('id','ktp','nama','scanktp','cetak');
         }
+
+        if($keyword <> ''){
+            $datas = $datas->where('nama','LIKE',$keyword.'%')->OrWhere('ktp','LIKE',$keyword.'%');
+        }
+
+        $datas = $datas->orderBy('nama')->paginate(10);
 
         $datas->withPath('yourPath');
         $datas->appends($request->all());

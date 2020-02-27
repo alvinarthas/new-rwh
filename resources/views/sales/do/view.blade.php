@@ -28,3 +28,7 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    $('#responsive-datatable').DataTable();
+</script>

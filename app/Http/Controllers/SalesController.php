@@ -46,7 +46,7 @@ class SalesController extends Controller
         $product_id = $request->select_product;
 
         $product = PriceDet::where('customer_id',$customer)->where('prod_id',$product_id)->first();
-        $avcost = PurchaseDetail::where('prod_id',$product_id)->avg('price');
+        $avcost = PurchaseDetail::avgCost($product_id);
 
         if(isset($product)){
             $sub_ttl_price = $qty*$product->price;

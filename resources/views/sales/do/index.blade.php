@@ -74,6 +74,7 @@ Index Delivery Order
 
 @section('script-js')
 <script>
+    $('#responsive-datatable').DataTable();
     // Date Picker
     jQuery('#trx_start').datepicker({
         todayHighlight: true,

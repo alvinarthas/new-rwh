@@ -13,71 +13,68 @@
 @endsection
 @section('content')
 <!-- sample modal content -->
-    <!--  Modal content for the above example -->
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="card-box" >
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="p-20">
+    <div class="row">
+        <div class="col-12">
+            <div class="card-box" >
+                <div class="row">
+                    <div class="col-12">
+                        <div class="p-20">
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Jenis Member</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="jenis" id="jenis" required>
+                                        <option value="#" selected disabled>Pilih Jenis Member</option>
+                                        <option value="1">Terdaftar di Perusahaan</option>
+                                        <option value="2">Tidak terdaftar di perusahaan</option>
+                                        <option value="3">Semua Member</option>
+                                        <option value="4">Berdasarkan Bank</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="company_show" style="display:none">
                                 <div class="form-group row">
-                                    <label class="col-2 col-form-label">Jenis Member</label>
+                                    <label class="col-2 col-form-label">Jenis Perusahaan</label>
                                     <div class="col-10">
-                                        <select class="form-control select2" parsley-trigger="change" name="jenis" id="jenis" required>
-                                            <option value="#" selected disabled>Pilih Jenis Member</option>
-                                            <option value="0">Terdaftar di Perusahaan</option>
-                                            <option value="1">Tidak terdaftar di perusahaan</option>
-                                            <option value="2">Semua Member</option>
-                                            <option value="3">Berdasarkan Bank</option>
+                                        <select class="form-control select2" parsley-trigger="change" name="perusahaan" id="perusahaan">
+                                            <option value="#" selected disabled>Pilih Perusahaan</option>
+                                            @foreach ($perusahaan as $per)
+                                                <option value="{{$per->id}}">{{$per->nama}}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                 </div>
-                                <div id="company_show" style="display:none">
-                                    <div class="form-group row">
-                                        <label class="col-2 col-form-label">Jenis Perusahaan</label>
-                                        <div class="col-10">
-                                            <select class="form-control select2" parsley-trigger="change" name="perusahaan" id="perusahaan">
-                                                <option value="#" selected disabled>Pilih Perusahaan</option>
-                                                @foreach ($perusahaan as $per)
-                                                    <option value="{{$per->id}}">{{$per->nama}}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
+                            </div>
 
-                                <div id="bank_show" style="display:none">
-                                    <div class="form-group row">
-                                        <label class="col-2 col-form-label">Nama Bank</label>
-                                        <div class="col-10">
-                                            <select class="form-control select2" parsley-trigger="change" name="bank" id="bank">
-                                                <option value="#" disabled selected>Pilih Bank</option>
-                                                @foreach ($bank as $ba)
-                                                        <option value="{{$ba->id}}" data-image="{{asset('assets/images/bank/'.$ba->icon)}}">{{$ba->nama}}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
+                            <div id="bank_show" style="display:none">
+                                <div class="form-group row">
+                                    <label class="col-2 col-form-label">Nama Bank</label>
+                                    <div class="col-10">
+                                        <select class="form-control select2" parsley-trigger="change" name="bank" id="bank">
+                                            <option value="#" disabled selected>Pilih Bank</option>
+                                            @foreach ($bank as $ba)
+                                                    <option value="{{$ba->id}}" data-image="{{asset('assets/images/bank/'.$ba->icon)}}">{{$ba->nama}}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group text-left m-b-0">
-                        <a href="{{route('member.create')}}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Member</a>
-                        <a href="javascript:;" class="btn btn-primary btn-rounded w-md waves-effect waves-light m-b-5" onclick="showMember()">Show Data</a>
+                </div>
+                <div class="form-group text-left m-b-0">
+                    <a href="{{route('member.create')}}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Member</a>
+                    <a href="javascript:;" class="btn btn-primary btn-rounded w-md waves-effect waves-light m-b-5" onclick="showMember()">Show Data</a>
+                </div>
+            </div>
+            <div class="card-box" id="member-list" style="display:none">
+                <div class="row">
+                    <div class="col-12">
+                        @csrf
+                        <input type="text" class="form-control" name="search" id="search" value="{{ $keyword }}" placeholder="Search..">
                     </div>
                 </div>
-                <div class="card-box" id="member-list" style="display:none">
-                    <div class="row">
-                        <div class="col-12">
-                            @csrf
-                            <input type="text" class="form-control" name="search" id="search" value="{{ $keyword }}" placeholder="Search..">
-                        </div>
-                    </div>
-                    <section class="datas" id="ajxlist">
-                    </section>
-                </div>
+                <section class="datas" id="ajxlist">
+                </section>
             </div>
         </div>
     </div>
@@ -85,7 +82,7 @@
 
 @section('js')
     {{-- Select2 --}}
-    <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
+        <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
 
     <!-- Required datatable js -->
     <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
@@ -111,34 +108,15 @@
         });
     });
 
-    $(".select2").select2({
-        templateResult: formatState,
-        templateSelection: formatState
-    });
-    function formatState (opt) {
-        if (!opt.id) {
-            return opt.text.toUpperCase();
-        }
-
-        var optimage = $(opt.element).attr('data-image');
-        console.log(optimage)
-        if(!optimage){
-        return opt.text.toUpperCase();
-        } else {
-            var $opt = $(
-            '<span><img src="' + optimage + '" width="60px" /> ' + opt.text.toUpperCase() + '</span>'
-            );
-            return $opt;
-        }
-    };
+    $(".select2").select2();
 
     $('#jenis').on('change', function () {
         id = $('#jenis').val();
         console.log(id)
-        if(id == 2){
+        if(id == 3){
             document.getElementById("company_show").style.display = 'none';
             document.getElementById("bank_show").style.display = 'none';
-        }else if(id == 3){
+        }else if(id == 4){
             document.getElementById("company_show").style.display = 'none';
             document.getElementById("bank_show").style.display = 'block';
         }else{
@@ -214,7 +192,7 @@
         var jenis = $('#jenis').val();
         var perusahaan = $('#perusahaan').val();
         var bank = $('#bank').val();
-        console.log(perusahaan, bank)
+        console.log(jenis,perusahaan, bank)
         $.ajax({
             url : 'ajxmember',
             type : "get",
