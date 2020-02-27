@@ -16,6 +16,7 @@ use App\Purchase;
 use App\PurchasePayment;
 use App\PurchaseDetail;
 use App\Saldo;
+use App\Deposit;
 use App\SaldoHistory;
 use App\Jurnal;
 use App\MenuMapping;
@@ -187,11 +188,11 @@ class PaymentController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
+            // dd($request->all());
             $rest = $request->paid - $request->payment_amount;
             // Jurnal
             $jurnal_desc = "PO.".$request->trx_id;
             $id_jurnal = Jurnal::getJurnalID('PP');
-            
             $payment = new PurchasePayment(array(
                 'trx_id' => $request->trx_id,
                 'payment_date' => $request->payment_date,
@@ -219,6 +220,21 @@ class PaymentController extends Controller
                     $purchase->status = 1;
 
                     $purchase->save();
+                }
+
+                if($request->payment_method == "1.1.3.3"){
+                    $deposit = new Deposit(array(
+                        'supplier_id' => $payment->purchase->supplier,
+                        'status' => 0,
+                        'amount' => $request->payment_amount,
+                        'keterangan' => $request->payment_description,
+                        'creator' => session('user_id'),
+                        'date' => $request->payment_date,
+                        'jurnal_id' => $id_jurnal,
+                        'AccNo' => $request->payment_method,
+                    ));
+
+                    $deposit->save();
                 }
                 
                 Log::setLog('PUPPC','Create Purchase Payment PO.'.$request->trx_id.' Jurnal ID: '.$id_jurnal);

@@ -73,7 +73,7 @@ Informasi Data Member
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Telepon</label>
                                     <div class="col-10">
-                                        <input type="number" class="form-control" parsley-trigger="change" required name="telp" id="telp" value="@isset($member->telp){{$member->telp}}@endisset">
+                                        <input type="text" class="form-control" parsley-trigger="change" required name="telp" id="telp" value="@isset($member->telp){{$member->telp}}@endisset">
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -167,7 +167,13 @@ Informasi Data Member
                                 <div class="form-group row">
                                     <label class="col-2 col-form-label">Upload Foto KTP</label>
                                     <div class="col-10">
-                                        <input type="file" class="dropify" data-height="100" name="scanktp" id="scanktp" data-default-file="@isset($member->scanktp){{ asset('assets/images/member/ktp/'.$member->scanktp) }}@endisset"/>
+                                        @isset($member->scanktp)
+                                            <a href="{{ asset('assets/images/member/ktp/'.$member->scanktp) }}" class="image-popup" title="{{$member->scanktp}}">
+                                                <img src="{{ asset('assets/images/member/ktp/'.$member->scanktp) }}"  alt="user-img" title="{{$member->scanktp}}" class="img-responsive photo" style="width:25%">
+                                            </a>
+                                        @endisset
+                                            <input type="file" class="dropify" data-height="100" name="scanktp" id="scanktp" data-default-file="@isset($member->scanktp){{ asset('assets/images/member/ktp/'.$member->scanktp) }}@endisset"/>
+                                        
                                     </div>
                                 </div>
                             </div>

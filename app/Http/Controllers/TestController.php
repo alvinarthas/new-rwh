@@ -27,38 +27,73 @@ use App\Purchase;
 use App\Customer;
 use App\SalesDet;
 use App\DeliveryOrder;
+use App\DeliveryDetail;
+use App\ReceiveDet;
 use GuzzleHttp\Client;
 
 use Carbon\Carbon;
 
 class TestController extends Controller
 {
-    public function index(){
-        $total_credit = 0;
-        $total_debet = 0;
-        foreach (Purchase::all() as $key) {
-            $total_tertahan = PurchaseDetail::where('trx_id',$key->id)->sum(DB::Raw('(price_dist - price)* qty'));
+    public function index_receive(){
+        $sum = 0;
+        foreach (ReceiveDet::all() as $key) {
+            $pricedet = PurchaseDetail::where('trx_id',$key->trx_id)->where('prod_id',$key->prod_id)->first()->price;
+            $price = $pricedet * $key->qty;
+            
+            $jurnal_receive_a = Jurnal::where('id_jurnal',$key->id_jurnal)->where('AccNo','1.1.4.1.2')->first();
+            $jurnal_receive_a->amount = $price;
+            $jurnal_receive_a->update();
 
-            if($total_tertahan < 0){
-                $total_tertahan = $total_tertahan *-1;
-                $total_credit+=$total_tertahan;
-                $jurnal2 = Jurnal::where('id_jurnal',$key->jurnal_id)->where('AccNo','1.1.3.4')->first();
-                $jurnal2->AccPos = "Credit";
-                $jurnal2->Amount = $total_tertahan;
-                $jurnal2->update();
-            }else{
-                $total_debet+=$total_tertahan;
-                $jurnal2 = Jurnal::where('id_jurnal',$key->jurnal_id)->where('AccNo','1.1.3.4')->first();
-                $jurnal2->AccPos = "Debet";
-                $jurnal2->Amount = $total_tertahan;
-                $jurnal2->update();
-            }
+            $jurnal_receive_b = Jurnal::where('id_jurnal',$key->id_jurnal)->where('AccNo','1.1.4.1.1')->first();
+            $jurnal_receive_b->amount = $price;
+            $jurnal_receive_b->update();
         }
-
-        echo $total_credit."<br>";
-        echo $total_debet."<br>";
-        echo $total_credit-$total_debet."<br>";
     }
+    // public function index(){
+    //     $parent = Coa::where('AccNo',1)->select('AccNo','AccName')->first();
+    //     echo $parent->AccNo." - ".$parent->AccName."<br>";
+    //     $sub = Coa::where('AccParent',$parent->AccNo)->where('AccNo','NOT LIKE',$parent->AccNo)->get();
+    //     TestController::test($sub);
+    // }
+
+    // public function test($parent){
+    //     $sum = 0;
+    //     foreach($parent as $key2){
+    //         echo $key2->AccNo." - ".$key2->AccName."<br>";
+    //         $check = Coa::where('AccParent',$key2->AccNo)->where('AccNo','NOT LIKE',$key2->AccNo)->count();
+    //         if($check > 0){
+    //             $sub = Coa::where('AccParent',$key2->AccNo)->where('AccNo','NOT LIKE',$key2->AccNo)->get();
+    //             TestController::test($sub);
+    //         }
+    //     }
+    // }
+    // public function index(){
+    //     $total_credit = 0;
+    //     $total_debet = 0;
+    //     foreach (Purchase::all() as $key) {
+    //         $total_tertahan = PurchaseDetail::where('trx_id',$key->id)->sum(DB::Raw('(price_dist - price)* qty'));
+
+    //         if($total_tertahan < 0){
+    //             $total_tertahan = $total_tertahan *-1;
+    //             $total_credit+=$total_tertahan;
+    //             $jurnal2 = Jurnal::where('id_jurnal',$key->jurnal_id)->where('AccNo','1.1.3.4')->first();
+    //             $jurnal2->AccPos = "Credit";
+    //             $jurnal2->Amount = $total_tertahan;
+    //             $jurnal2->update();
+    //         }else{
+    //             $total_debet+=$total_tertahan;
+    //             $jurnal2 = Jurnal::where('id_jurnal',$key->jurnal_id)->where('AccNo','1.1.3.4')->first();
+    //             $jurnal2->AccPos = "Debet";
+    //             $jurnal2->Amount = $total_tertahan;
+    //             $jurnal2->update();
+    //         }
+    //     }
+
+    //     echo $total_credit."<br>";
+    //     echo $total_debet."<br>";
+    //     echo $total_credit-$total_debet."<br>";
+    // }
 
     // public function index(){
     //     $content = file_get_contents('https://www.royalcontrolling.com/api/do/print/19');
@@ -97,47 +132,119 @@ class TestController extends Controller
     //     }
     //     dd($prodarray);
     // }
-    // public function index(){
-    //     // $prodarray = collect();
-    //     // foreach (PurchaseDetail::where('trx_id',18)->get() as $key) {
-    //     //     $prodarray->push($key->prod_id);
-    //     // }
-    //     // $getTrxId = SalesDet::whereIn('prod_id',$prodarray)->select('trx_id')->groupBy('trx_id')->orderBy('trx_id')->get();
-    //     // $getTrxId = SalesDet::whereIn('prod_id',['GHB01','GHB02','MHPAR01'])->select('trx_id')->groupBy('trx_id')->orderBy('trx_id')->get();
-    //     $getTrxId = SalesDet::select('trx_id','prod_id')->groupBy('trx_id')->orderBy('trx_id')->get();
-    //     foreach ($getTrxId as $key) {
-    //         $sales_jurnal = $key->trx->jurnal_id;
-    //         $do_jurnal = DeliveryOrder::where('sales_id',$key->trx_id)->select('jurnal_id')->first();
-    //         $cogs = 0;
-    //         foreach (SalesDet::where('trx_id',$key->trx_id)->select('price','qty','prod_id')->get() as $key2) {
-    //             $avcost = PurchaseDetail::where('prod_id',$key2->prod_id)->where('created_at','<=',$key->trx->created_at)->avg('price');
-    //             $cogs +=  $avcost * $key2->qty;
-    //         }
-    //         // Update Jurnal Sales
-    //         if($sales_jurnal <> 0){
-    //             // debet COGS
-    //                 $jurnal_sales_a = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','5.1')->first();
-    //                 $jurnal_sales_a->amount = $cogs;
-    //                 $jurnal_sales_a->update();
-    //             // Credit Persediaan Barang milik customer
-    //                 $jurnal_sales_b = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','2.1.3')->first();
-    //                 $jurnal_sales_b->amount = $cogs;
-    //                 $jurnal_sales_b->update();
-    //         }
-    //         if($do_jurnal){
-    //         // Update Jurnal DO
-    //             // debet Persediaan Barang milik Customer
-    //                 $jurnal_do_a = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','2.1.3')->first();
-    //                 $jurnal_do_a->amount = $cogs;
-    //                 $jurnal_do_a->update();
-    //             // credit Persediaan Barang digudang
-    //                 $jurnal_do_b = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
-    //                 $jurnal_do_b->amount = $cogs;
-    //                 $jurnal_do_b->update();
-                                    
-    //         }
-    //     }
-    // }
+    public function indexs(){
+        $sum = 0;
+
+        foreach (Sales::all() as $key) {
+            // SALES
+            $cogs = 0;
+            foreach (SalesDet::where('trx_id',$key->id)->select('price','qty','prod_id')->get() as $key2) {
+                $avcost = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx_date)->avg('tblpotrxdet.price');
+                $cogs +=  ($avcost * $key2->qty);
+            }
+            $sum+=$cogs;
+            echo $key->jurnal_id." - ".$cogs."<br>";
+        }
+        echo "<strong>".$sum."</strong>";
+    }
+
+    public function indexa(){
+        $sum = 0;
+
+        foreach (Sales::all() as $key) {
+            foreach(DeliveryOrder::where('sales_id',$key->id)->select('id','jurnal_id')->get() as $dokey){
+                $do_sum = 0;
+               
+                foreach(DeliveryDetail::where('do_id',$dokey->id)->get() as $dodet){
+                    $do_avcost = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->trx_date)->avg('tblpotrxdet.price');
+                    $price = $do_avcost * $dodet->qty;
+                    $do_sum+=$price;
+                }
+                echo $dokey->jurnal_id." - ".$do_sum."<br>";
+                $sum+=$do_sum;
+            }
+        }
+        echo "<strong>".$sum."</strong>";
+    }
+
+    public function index(){
+        // $prodarray = collect();
+        // foreach (PurchaseDetail::where('trx_id',18)->get() as $key) {
+        //     $prodarray->push($key->prod_id);
+        // }
+        // $getTrxId = SalesDet::whereIn('prod_id',$prodarray)->select('trx_id')->groupBy('trx_id')->orderBy('trx_id')->get();
+        // $getTrxId = SalesDet::whereIn('prod_id',['GHB01','GHB02','MHPAR01'])->select('trx_id')->groupBy('trx_id')->orderBy('trx_id')->get();
+        // $getTrxId = SalesDet::select('trx_id','prod_id')->groupBy('trx_id')->orderBy('trx_id')->get();
+        foreach (Sales::all() as $key) {
+            echo "<strong>SO.".$key->id."</strong><br>";
+            // SALES
+            $sales_jurnal = $key->jurnal_id;
+            $cogs = 0;
+            foreach (SalesDet::where('trx_id',$key->id)->select('price','qty','prod_id')->get() as $key2) {
+                echo "&nbsp;Product: ".$key2->prod_id."&nbsp; Qty: ".$key2."<br>";
+                $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
+
+                $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum('tblpotrxdet.qty');
+                
+                if($sumprice <> 0 && $sumqty <> 0){
+                    $avcost = $sumprice/$sumqty;
+                }else{
+                    $avcost = 0;
+                }
+                echo "&nbsp;&nbsp; AVG Cost: ".$avcost."<br>";
+
+                $cogs += $avcost * $key2->qty;
+            }
+            echo "&nbsp;COGS: ".$cogs."<br><p>";
+            // Update Jurnal Sales
+            if($sales_jurnal <> 0){
+                // debet COGS
+                    $jurnal_sales_a = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','5.1')->first();
+                    $jurnal_sales_a->amount = $cogs;
+                    $jurnal_sales_a->update();
+                // Credit Persediaan Barang milik customer
+                    $jurnal_sales_b = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','2.1.3')->first();
+                    $jurnal_sales_b->amount = $cogs;
+                    $jurnal_sales_b->update();
+            }
+
+            // DO
+            foreach(DeliveryOrder::where('sales_id',$key->id)->select('id','jurnal_id')->get() as $dokey){
+                echo "&nbsp;<strong>DO.".$dokey->id."</strong><br>";
+                $do_sum = 0;
+                // echo "DO.".$dokey->id."<br>";
+                foreach(DeliveryDetail::where('do_id',$dokey->id)->select('qty','product_id')->get() as $dodet){
+                    echo "&nbsp;&nbsp;Product: ".$dodet->product_id."&nbsp; detail: ".$dodet."<br>";
+                    $do_sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
+
+                    $do_sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum('tblpotrxdet.qty');
+
+                    // echo "&nbsp;".$dodet->prod_id."<br>";
+                    // echo "&nbsp; SUMPRICE: ".$do_sumprice."<br>";
+                    // echo "&nbsp; SUMQTY: ".$do_sumprice."<br>";
+                    if($do_sumprice <> 0 && $do_sumqty <> 0){
+                        $do_avcost = $do_sumprice/$do_sumqty;
+                    }else{
+                        $do_avcost = 0;
+                    }
+                    echo "&nbsp;&nbsp;&nbsp; AVG Cost: ".$do_avcost."<br>";
+                    $price = $do_avcost * $dodet->qty;
+                    $do_sum+=$price;
+                }
+                echo "&nbsp;&nbsp; DO SUM: ".$do_sum."<br>";
+                // Update Jurnal DO
+                    // debet Persediaan Barang milik Customer
+                        $jurnal_do_a = Jurnal::where('id_jurnal',$dokey->jurnal_id)->where('AccNo','2.1.3')->first();
+                        $jurnal_do_a->amount = $do_sum;
+                        $jurnal_do_a->update();
+                    // credit Persediaan Barang digudang
+                        $jurnal_do_b = Jurnal::where('id_jurnal',$dokey->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
+                        $jurnal_do_b->amount = $do_sum;
+                        $jurnal_do_b->update();
+            }
+            echo "<hr>";
+        }
+    }
     // public function index(){
     //     $date = '2020-02-01';
     //     // GET Parent Account  = ASSET

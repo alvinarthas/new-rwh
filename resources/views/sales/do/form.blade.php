@@ -101,7 +101,7 @@ Form Sales Order
                                                 @if (array_search("PSDOD",$page))
                                                     <a href="javascript:;" onclick="deleteDO({{ $do->id}})" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5">Delete DO</a>
                                                 @endif
-                                                <a href="javascript:;" onclick="printdo({{$do->id}})" class="btn btn-success btn-rounded waves-effect w-xs waves-success m-b-5">Print DO</a>
+                                                <a href="{{route('printDo',['id'=>$do->id])}}" target="_blank" class="btn btn-success btn-rounded waves-effect w-xs waves-success m-b-5">Print DO</a>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -276,16 +276,15 @@ Form Sales Order
     }
 
     function printdo(id){
-        //console.log("print");
         $.ajax({
-            url : "http://rwhserver:8060/new-rwh/do/print/19",
+            url : "{{route('printDo')}}",
             type : "get",
-            dataType : 'json',
+            dataType: 'json',
             data:{
-                
+                id:id,
             },
         }).done(function (data) {
-
+            console.log(data)
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.'+msg);
         });

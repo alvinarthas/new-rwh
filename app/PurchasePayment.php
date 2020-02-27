@@ -14,4 +14,8 @@ class PurchasePayment extends Model
     public function payment(){
         return $this->belongsTo('App\Coa','payment_method','AccNo');
     }
+
+    public function purchase(){
+        return $this->belongsTo('App\Purchase','trx_id','id');
+    }
 }
