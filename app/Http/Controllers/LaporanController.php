@@ -123,4 +123,79 @@ class LaporanController extends Controller
 
         return view('laporan.kendali.index',compact('products'));
     }
+
+    public function checkGrossProfit(Request $request){
+        if($request->ajax()){
+            $jenis = $request->jenis;
+            $start = $request->start;
+            $end = $request->end;
+
+            $sum = 0;
+            $data = collect();
+            // Based on Product
+            if($jenis == 1){
+                foreach(Product::all() as $item){
+                    $total = 0;
+                    $sales = Sales::join('tblproducttrxdet','tblproducttrxdet.trx_id','=','tblproducttrx.id')->where('prod_id',$item->prod_id);
+
+                    if($start <> NULL && $end <> NULL){
+                        $sales = $sales->whereBetween('tblproducttrx.trx_date',[$start,$end]);
+                    }
+
+                    $sales = $sales->select('tblproducttrxdet.*','tblproducttrx.trx_date')->get();
+                    
+                    $collects = collect();
+                    foreach($sales as $item2){
+                        // AVG COST
+                        $avg_cost = PurchaseDetail::avgCost($item->prod_id,$item2->trx_date);
+                        // SELISIH
+                        $selisih = $item2->price - $avg_cost;
+                        // Result
+                        $value = $selisih*$item2->qty;
+                        $total+=$value;
+                    }
+                    $sum+=$total;
+                    $collects->put('id',$item->prod_id);
+                    $collects->put('name',$item->name);
+                    $collects->put('value',$total);
+
+                    $data->push($collects);
+                }
+                $count = Product::count();
+            // Based on Customer
+            }elseif($jenis == 2){
+                foreach(Customer::all() as $item){
+                    $collects = collect();
+                    $sales = Sales::join('tblproducttrxdet','tblproducttrxdet.trx_id','=','tblproducttrx.id')->where('customer_id',$item->id);
+
+                    if($start <> NULL && $end <> NULL){
+                        $sales = $sales->whereBetween('tblproducttrx.trx_date',[$start,$end]);
+                    }
+
+                    $sales = $sales->select('tblproducttrxdet.*','tblproducttrx.trx_date')->get();
+
+                    foreach($sales as $item2){
+                        // AVG COST
+                        $avg_cost = PurchaseDetail::avgCost($item2->prod_id,$item2->trx_date);
+                        // SELISIH
+                        $selisih = $item2->price - $avg_cost;
+                        // Result
+                        $value = $selisih*$item2->qty;
+                        $total+=$value;
+                    }
+                    $sum+=$total;
+                    $collects->put('id',$item->id);
+                    $collects->put('name',$item->apname);
+                    $collects->put('value',$total);
+
+                    $data->push($collects);
+                }
+                $count = Customer::count();
+            }
+
+            return view('laporan.checkGrossProfit.show',compact('data','start','end','sum','count'));
+        }else{
+            return view('laporan.checkGrossProfit.index');
+        }
+    }
 }

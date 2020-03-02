@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\DB;
 use App\User;
 use App\BankMember;
 use App\BankMember_copy;
-use App\PerusahaanMember_copy;
-use App\Member_copy;
+use App\PerusahaanMember;
+use App\Member;
 use App\Product;
 use App\Coa;
 use App\Jurnal;
@@ -35,6 +35,36 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
+    public function index(){
+        foreach(Customer::all() as $item){
+            echo $item->apname."<br>";
+            $sales = Sales::join('tblproducttrxdet','tblproducttrxdet.trx_id','=','tblproducttrx.id')->where('customer_id',$item->id)->select('tblproducttrxdet.*','tblproducttrx.trx_date')->get();
+            $total = 0;
+
+            foreach($sales as $item2){
+                // AVG COST
+                $avg_cost = PurchaseDetail::avgCost($item2->prod_id,$item2->trx_date);
+                // SELISIH
+                $selisih = $item2->price - $avg_cost;
+                // Result
+                $value = $selisih*$item2->qty;
+                $total+=$value;
+                echo "&nbsp; SO.".$item2->trx_id." - ".$item2->prod_id.": ".$value."<br>";
+            }
+            echo $total."<hr>";
+        }
+    }
+
+    public function indexMember(){
+        $keyword = 'A Dani';
+        $array = array_values(array_column(DB::select('SELECT ktp FROM perusahaanmember WHERE perusahaan_id = 1'),'ktp'));
+
+        $test = Member::whereIn('ktp',$array)->select('id','ktp','nama','scanktp','cetak')->where('nama','LIKE',$keyword.'%')->OrWhere('ktp','LIKE',$keyword.'%')->orderBy('nama')->paginate(10);
+        echo "<pre>";
+        print_r($test);
+        die();
+    }
+
     public function index_receive(){
         $sum = 0;
         foreach (ReceiveDet::all() as $key) {
@@ -167,7 +197,7 @@ class TestController extends Controller
         echo "<strong>".$sum."</strong>";
     }
 
-    public function index(){
+    public function index_avvg(){
         // $prodarray = collect();
         // foreach (PurchaseDetail::where('trx_id',18)->get() as $key) {
         //     $prodarray->push($key->prod_id);
