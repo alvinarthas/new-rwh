@@ -13,7 +13,7 @@ use App\Member;
 use App\BankMember;
 use App\BonusBayar;
 
-class Jurnal extends Model
+class Jurnal_draft extends Model
 {
     protected $table ='tbljurnal';
     protected $fillable = [
@@ -25,7 +25,7 @@ class Jurnal extends Model
     }
 
     public static function getJurnalID($jenis){
-        $jurnal = Jurnal::where('id_jurnal','LIKE',$jenis.'%')->orderBy(DB::raw('CAST(SUBSTRING(id_jurnal, 4, 10) AS INT)'),'desc')->select('id_jurnal')->distinct('id_jurnal');
+        $jurnal = Jurnal_draft::where('id_jurnal','LIKE',$jenis.'%')->orderBy(DB::raw('CAST(SUBSTRING(id_jurnal, 4, 10) AS INT)'),'desc')->select('id_jurnal')->distinct('id_jurnal');
         $count_jurnal = $jurnal->count();
         if($count_jurnal == 0){
             $id_jurnal = $jenis.".1";
@@ -40,13 +40,13 @@ class Jurnal extends Model
     public static function viewJurnal($start,$end,$coa,$position,$param)
     {
         if ($param == "umum") {
-            $jurnal = Jurnal::where('id_jurnal','LIKE','JN%');
-            $jurdebet = Jurnal::where('id_jurnal','LIKE','JN%');
-            $jurcredit = Jurnal::where('id_jurnal','LIKE','JN%');
+            $jurnal = Jurnal_draft::where('id_jurnal','LIKE','JN%');
+            $jurdebet = Jurnal_draft::where('id_jurnal','LIKE','JN%');
+            $jurcredit = Jurnal_draft::where('id_jurnal','LIKE','JN%');
         }elseif ($param == "mutasi") {
-            $jurnal = Jurnal::where('id_jurnal','LIKE','%%');
-            $jurdebet = Jurnal::where('id_jurnal','LIKE','%%');
-            $jurcredit = Jurnal::where('id_jurnal','LIKE','%%');
+            $jurnal = Jurnal_draft::where('id_jurnal','LIKE','%%');
+            $jurdebet = Jurnal_draft::where('id_jurnal','LIKE','%%');
+            $jurcredit = Jurnal_draft::where('id_jurnal','LIKE','%%');
         }
 
         if($coa <> "all"){
@@ -114,9 +114,9 @@ class Jurnal extends Model
 
     public static function generalLedger($start,$end,$coa){
 
-        $jurnal = Jurnal::where('AccNo',$coa);
-        $jurdebet = Jurnal::where('AccNo',$coa);
-        $jurcredit = Jurnal::where('AccNo',$coa);
+        $jurnal = Jurnal_draft::where('AccNo',$coa);
+        $jurdebet = Jurnal_draft::where('AccNo',$coa);
+        $jurcredit = Jurnal_draft::where('AccNo',$coa);
 
         if($start <> NULL && $end <> NULL){
             $jurnal->whereBetween('date',[$start,$end]);
@@ -142,7 +142,7 @@ class Jurnal extends Model
             $user = session('user_id');
         }
 
-        $jurnal = new Jurnal(array(
+        $jurnal = new Jurnal_draft(array(
             'id_jurnal' => $id_jurnal,
             'AccNo' => $coa,
             'AccPos' => $position,
@@ -169,22 +169,22 @@ class Jurnal extends Model
             // Update Jurnal Sales
             if($sales_jurnal <> 0){
                 // debet COGS
-                    $jurnal_sales_a = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','5.1')->first();
+                    $jurnal_sales_a = Jurnal_draft::where('id_jurnal',$sales_jurnal)->where('AccNo','5.1')->first();
                     $jurnal_sales_a->amount = $cogs;
                     $jurnal_sales_a->update();
                 // Credit Persediaan Barang milik customer
-                    $jurnal_sales_b = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','2.1.3')->first();
+                    $jurnal_sales_b = Jurnal_draft::where('id_jurnal',$sales_jurnal)->where('AccNo','2.1.3')->first();
                     $jurnal_sales_b->amount = $cogs;
                     $jurnal_sales_b->update();
             }
             if($do_jurnal){
-            // Update Jurnal DO
+            // Update Jurnal_draft DO
                 // debet Persediaan Barang milik Customer
-                    $jurnal_do_a = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','2.1.3')->first();
+                    $jurnal_do_a = Jurnal_draft::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','2.1.3')->first();
                     $jurnal_do_a->amount = $cogs;
                     $jurnal_do_a->update();
                 // credit Persediaan Barang digudang
-                    $jurnal_do_b = Jurnal::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
+                    $jurnal_do_b = Jurnal_draft::where('id_jurnal',$do_jurnal->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
                     $jurnal_do_b->amount = $cogs;
                     $jurnal_do_b->update();
 

@@ -489,9 +489,27 @@ class BonusController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Request $request,$id)
     {
-        //
+        if($request->bonusapa=="perhitungan"){
+            $bonusapa = $request->bonusapa;
+            $details = Bonus::join('perusahaanmember', 'tblbonus.noid', 'perusahaanmember.noid')->join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where("tblbonus.id_jurnal", $request->id_jurnal)->select('perusahaanmember.ktp', 'tblbonus.noid', 'tblmember.nama', 'tblbonus.bonus', 'tblbonus.id_jurnal')->get();
+            $bonus = Bonus::join("tblperusahaan", "tblbonus.perusahaan_id", "tblperusahaan.id")->where("id_jurnal", $request->id_jurnal)->select('tblbonus.tgl', 'tblperusahaan.nama', 'tblbonus.id_jurnal')->first();
+            $id_jurnal = $bonus['id_jurnal'];
+            $supplier = $bonus['nama'];
+            $tgl_transaksi = $bonus['tgl'];
+            $total_bonus = Bonus::where("id_jurnal", $request->id_jurnal)->sum('bonus');
+            return response()->json(view('bonus.modal',compact('bonusapa','supplier','tgl_transaksi','id_jurnal','details','total_bonus'))->render());
+        }elseif($request->bonusapa=="pembayaran"){
+            $bonusapa = $request->bonusapa;
+            $details = BonusBayar::join('bankmember', 'tblbonusbayar.no_rek', 'bankmember.norek')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where("tblbonusbayar.id_jurnal", $request->id_jurnal)->select('tblbank.nama AS namabank', 'tblbonusbayar.no_rek', 'tblmember.nama', 'tblbonusbayar.bonus', 'tblbonusbayar.id_jurnal', 'tblbonusbayar.AccNo')->get();
+            $bonus = BonusBayar::join("tblcoa", "tblbonusbayar.AccNo", "tblcoa.AccNo")->where("tblbonusbayar.id_jurnal", $request->id_jurnal)->select('tblbonusbayar.tgl', 'tblcoa.AccName', 'tblbonusbayar.id_jurnal')->first();
+            $id_jurnal = $bonus['id_jurnal'];
+            $rekening = $bonus['AccName'];
+            $tgl_transaksi = $bonus['tgl'];
+            $total_bonus = BonusBayar::where("id_jurnal", $request->id_jurnal)->sum('bonus');
+            return response()->json(view('bonus.modal',compact('bonusapa','rekening','tgl_transaksi','id_jurnal','details','total_bonus'))->render());
+        }
     }
 
     /**
@@ -1173,6 +1191,15 @@ class BonusController extends Controller
     {
         try{
             $data = Bonus::where('id_bonus', $request->id)->first();
+            $jurnal = Jurnal::where('id_jurnal', $data->id_jurnal)->get();
+            foreach($jurnal as $key){
+                $key->Amount -= $data->bonus;
+                if($key->Amount != 0){
+                    $key->update();
+                }else{
+                    $key->delete();
+                }
+            }
             $data->delete();
             return response()->json($data);
         }catch(\Exception $e) {
@@ -1562,9 +1589,8 @@ class BonusController extends Controller
                 'tgl' => $topup->tgl,
                 'bonus' => $topup->bonus,
             );
-
-            $topup->delete();
             Jurnal::where('id_jurnal', $topup->id_jurnal)->delete();
+            $topup->delete();
             return response()->json($data);
         }catch(\Exception $e) {
             // return redirect()->back()->withErrors($e->getMessage());
