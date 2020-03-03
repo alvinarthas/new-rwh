@@ -6,11 +6,11 @@ use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Handler;
 use Illuminate\Http\Request;
 
-use App\Jurnal;
+use App\Jurnal_draft;
 use App\Coa;
 use App\MenuMapping;
 
-class JurnalController extends Controller
+class JurnalController_draft extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -20,11 +20,11 @@ class JurnalController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $jurnals = Jurnal::viewJurnal($request->start_date, $request->end_date, $request->coa, $request->position, $request->param);
+            $jurnals = Jurnal_draft::viewJurnal($request->start_date, $request->end_date, $request->coa, $request->position, $request->param);
 
             $param = $request->param;
             $page = MenuMapping::getMap(session('user_id'),"FIJU");
-            return response()->json(view('jurnal.view',compact('jurnals','page','param'))->render());
+            return response()->json(view('jurnal.view_draft',compact('jurnals','page','param'))->render());
             // return response()->json(view('jurnal.view',compact('page','param'))->render());
         }else{
             $coas = Coa::where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
@@ -165,7 +165,7 @@ class JurnalController extends Controller
         // return datatables()->collection($query)->toJson();;
         if(request()->ajax())
         {
-            return datatables()->of(Jurnal::viewJurnal(NULL, NULL, "all", "all", "umum"))->addColumn('action', function($data){
+            return datatables()->of(Jurnal_draft::viewJurnal(NULL, NULL, "all", "all", "umum"))->addColumn('action', function($data){
                 $button = "<a href='/jurnal/".$data->id_jurnal."/edit' class='btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5'>Update</a>";
                 $button .= "&nbsp;&nbsp;";
                 $button .= "<a href='javascript:;' onclick='jurnalDelete('{{".$data->id_jurnal."}}')' class='btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5'>Delete</a>";

@@ -112,11 +112,11 @@
 @endif --}}
 
 @if($bonusapa=="perhitungan")
-    <form class="form-horizontal" role="form" action="{{ route('bonus.store') }}" enctype="multipart/form-data" method="POST">
+    <form class="form-horizontal" role="form" action="{{ route('bonus.store') }}" enctype="multipart/form-data" method="POST" onsubmit="return checkNull();">
 @elseif($bonusapa=="pembayaran")
-    <form class="form-horizontal" role="form" action="{{ route('bonus.storePenerimaan') }}" enctype="multipart/form-data" method="POST">
+    <form class="form-horizontal" role="form" action="{{ route('bonus.storePenerimaan') }}" enctype="multipart/form-data" method="POST" onsubmit="return checkNull();">
 @elseif($bonusapa=="topup")
-    <form class="form-horizontal" role="form" action="{{ route('bonus.storetopup') }}" enctype="multipart/form-data" method="POST">
+    <form class="form-horizontal" role="form" action="{{ route('bonus.storetopup') }}" enctype="multipart/form-data" method="POST" onsubmit="return checkNull();">
 @endif
     @csrf
     <div class="row">
@@ -710,5 +710,42 @@
 
     function cetakPdf(){
         $('#xto').val("1");
+    }
+
+    function checkNull(){
+        var bonusapa = $("#bonusapa").val()
+        var tgl = $("#tgl").val()
+        var rows= $('#table tbody tr.trow').length;
+
+        if(bonusapa == "perhitungan"){
+            var bln = $("#bulan").val()
+            var thn = $("#tahun").val()
+            var perusahaan = $("#perusahaan").val()
+
+            if(tgl == "" || bln == null || thn == null || perusahaan == null || rows == 0){
+                alert('Pastikan isi field Bulan, Tahun, Tanggal Transaksi, Nama Perusahaan, dan Isi tabel Bonus Member');
+                return false;
+            }
+            return true;
+
+        }else if(bonusapa == "pembayaran"){
+            var bln = $("#bulan").val()
+            var thn = $("#tahun").val()
+            var rekening = $("#coa").val()
+
+            if(tgl == "" || bln == null || thn == null || rekening == null || rows == 0){
+                alert('Pastikan isi field Bulan, Tahun, Tanggal Transaksi, dan Rekening Bank Tujuan');
+                return false
+            }
+            return true
+        }else if(bonusapa == "topup"){
+            var rekening = $("#rekening").val()
+
+            if(tgl == "" || rekening == null || rows == 0){
+                alert('Pastikan isi field Tanggal Transaksi dan Sumber Rekening');
+                return false
+            }
+            return true
+        }
     }
 </script>

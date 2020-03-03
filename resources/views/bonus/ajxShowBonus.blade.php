@@ -114,7 +114,7 @@
                                                     $d_tgl = $bb['tgl'];
                                                     $bank = $m->nama;
                                                 @endphp
-                                                {{ $no }}. {{ $bank }} {{ $b->norek }}<br><b>Bonus : Rp {{ number_format($d_bonus, 2, ",", ".") }}</b><br>Tgl : {{ $d_tgl }}<br>
+                                                {{ $no }}. {{ $bank }} {{ $m->norek }}<br><b>Bonus : Rp {{ number_format($d_bonus, 2, ",", ".") }}</b><br>Tgl : {{ $d_tgl }}<br>
                                                 @php
                                                     $no++;
                                                     $total_realisasi += $d_bonus;

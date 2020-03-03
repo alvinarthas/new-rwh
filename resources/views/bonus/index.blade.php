@@ -122,17 +122,25 @@
                 @endif
                 @if($jenis == "edit")
                     @if($bonusapa == "perhitungan")
-                        <form class="form-horizontal" role="form" action="{{ route('bonus.update', ['id' => $bn->id_bonus]) }}" enctype="multipart/form-data" method="POST">
+                        <form class="form-horizontal" role="form" action="{{ route('bonus.update', ['id' => $bn->id_bonus]) }}" enctype="multipart/form-data" method="POST" onsubmit="return checkNull();">
                     @elseif($bonusapa == "pembayaran")
-                        <form class="form-horizontal" role="form" action="{{ route('bonus.updatePenerimaan', ['id' => $bn->id_bonus]) }}" enctype="multipart/form-data" method="POST">
+                        <form class="form-horizontal" role="form" action="{{ route('bonus.updatePenerimaan', ['id' => $bn->id_bonus]) }}" enctype="multipart/form-data" method="POST" onsubmit="return checkNull();">
                     @elseif($bonusapa == "topup")
-                        <form class="form-horizontal" role="form" action="{{ route('bonus.updatetopup', ['id' => $bn->id_bonus]) }}" enctype="multipart/form-data" method="POST">
+                        <form class="form-horizontal" role="form" action="{{ route('bonus.updatetopup', ['id' => $bn->id_bonus]) }}" enctype="multipart/form-data" method="POST" onsubmit="return checkNull();">
                     @endif
                     {{ csrf_field() }}
                     {{ method_field('PUT') }}
                 @endif
                 @if($bonusapa != "laporan" OR $bonusapa != "bonusgagal")
                     @if($jenis == "create" OR $jenis == "edit")
+                        @if($jenis=="edit")
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">ID Jurnal</label>
+                                <div class="col-10">
+                                    <input value="{{ $bonus[0]['id_jurnal'] }}" type="text" class="form-control" name="id_jurnal_lama" id="id_jurnal_lama" readonly>
+                                </div>
+                            </div>
+                        @endif
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Tanggal Transaksi</label>
                             <div class="col-10">
@@ -151,7 +159,9 @@
                     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                         <thead>
                             <th>No</th>
-                            <th>ID Jurnal</th>
+                            @if($bonusapa!="topup")
+                                <th>ID Jurnal</th>
+                            @endif
                             <th>Tanggal Transaksi</th>
                             @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
                                 <th>Bulan</th>
@@ -176,7 +186,9 @@
                             @foreach($bonus as $b)
                             <tr>
                                 <td>{{$i}}</td>
-                                <td>{{$b->id_jurnal}}</td>
+                                @if($bonusapa!="topup")
+                                    <td><a href="javascript:;" onclick="getDetail('{{$b->id_jurnal}}', '{{$bonusapa}}')" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">{{$b->id_jurnal}}</a></td>
+                                @endif
                                 <td>{{$b->tgl}}</td>
                                 @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
                                     <td>{{$b->bulan}}</td>
@@ -215,13 +227,13 @@
                                         @if (array_search("BMTUU",$page))
                                             <a href="{{route('bonus.edittopup',['id'=>$b->id_bonus])}}" class="btn btn-info btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
                                         @endif
-                                        @if (array_search("BMTUD",$page))
+                                        {{-- @if (array_search("BMTUD",$page))
                                             <form class="" action="{{ route('bonus.deletetopup', ['id' => $b->tgl]) }}" method="post">
                                                 {{ csrf_field() }}
                                                 {{ method_field('delete') }}
                                                 <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
                                             </form>
-                                        @endif
+                                        @endif --}}
                                     @endif
                                 </td>
                             </tr>
@@ -234,6 +246,7 @@
                     @endif
                 @elseif($jenis == "create" OR $jenis == "edit")
                     <input type="hidden" name="bonusapa" id="bonusapa" value="{{ $bonusapa }}">
+
                     @if($bonusapa=="perhitungan" OR $bonusapa=="bonusgagal")
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Nama Perusahaan</label>
@@ -398,7 +411,7 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
-                                        <input value="{{ $bonus[0]['id_jurnal'] }}" type="hidden" name="id_jurnal_lama" id="id_jurnal_lama">
+                                        {{-- <input value="{{ $bonus[0]['id_jurnal'] }}" type="hidden" name="id_jurnal_lama" id="id_jurnal_lama"> --}}
                                     @elseif($bonusapa=="pembayaran" OR $bonusapa=="topup")
                                         <table id="editable-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                                             <div class="form-group row">
@@ -415,6 +428,9 @@
                                             </div>
                                             <thead>
                                                 <th>No</th>
+                                                @if($bonusapa=="topup")
+                                                    <th>ID Jurnal</th>
+                                                @endif
                                                 @if($bn->AccNo != "1.1.1.1.000003")
                                                     <th>Nama Bank</th>
                                                     <th>No Rekening</th>
@@ -432,6 +448,9 @@
                                                 @foreach($bonus as $b)
                                                 <tr style="width:100%" id="trtd{{ $b->id_bonus }}" class="trow">
                                                     <td><input type="hidden" name="id_bonus[]" value="{{ $b->id_bonus }}">{{$i}}</td>
+                                                    @if($bonusapa=="topup")
+                                                        <td>{{$b->id_jurnal}}</td>
+                                                    @endif
                                                     @if($bn->AccNo != "1.1.1.1.000003")
                                                         <td>{{$b->namabank}}</td>
                                                         <td><input type="hidden" name="norekening[]" value="{{ $b->no_rek }}">{{$b->no_rek}}</td>
@@ -450,7 +469,9 @@
                                                         @if($bonusapa=="pembayaran")
                                                             <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteRowPenerimaan({{ $b->id_bonus}})">Delete</a>
                                                         @elseif($bonusapa=="topup")
-                                                            <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteRowTopup({{ $b->id_bonus}})">Delete</a>
+                                                            @if (array_search("BMTUD",$page))
+                                                                <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteRowTopup({{ $b->id_bonus}})">Delete</a>
+                                                            @endif
                                                         @endif
                                                     </td>
                                                 </tr>
@@ -460,7 +481,7 @@
                                                 @endforeach
                                             </tbody>
                                         </table>
-                                        <input value="{{ $bonus[0]['id_jurnal'] }}" type="hidden" name="id_jurnal_lama">
+                                        {{-- <input value="{{ $bonus[0]['id_jurnal'] }}" type="hidden" name="id_jurnal_lama"> --}}
                                     @endif
                                     <input type="hidden" name="ctr" id="ctr" value="{{ $i }}">
                                     <div class="form-group row">
@@ -572,6 +593,19 @@
     <div id="tblBonus">
 
     </div> <!-- end row -->
+    <!--  Modal content for the above example -->
+    <div class="modal fade bs-example-modal-lg" id="modalLarge" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog modal-lg" id="do-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myLargeModalLabel">Detail Deposit Pembelian</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
+                </div>
+                <div class="modal-body" id="modalView">
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 @endsection
 
 @section('js')
@@ -974,7 +1008,8 @@
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
         var perusahaan = $("#perusahaan").val()
-        if(tgl=="" || bln=="" || thn=="" || perusahaan==""){
+        console.log(tgl, bln, thn, perusahaan)
+        if(tgl=="" || bln==null || thn==null || perusahaan==null){
             alert('Pastikan isi field bulan, tahun, tanggal transaksi, dan perusahaan');
         }else{
             $.ajax({
@@ -989,6 +1024,10 @@
                 dataType    :   "html",
                 success		:	function(data){
                     $("#tblBonus").html(data);
+                    $('#tgl_transaksi').attr('disabled','true');
+                    $('#bulan').attr('disabled','true');
+                    $('#tahun').attr('disabled','true');
+                    $('#perusahaan').attr('disabled','true');
                 },
                 error       :   function(data){
                     document.getElementById('tahun').value = '2016';
@@ -1034,8 +1073,10 @@
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
         var rekening = $("#coa").val()
-        console.log(thn);
-        if(tgl=="" || bln=="" || thn=="" || rekening==null){
+        var rek = $("#rekening").val()
+
+        // console.log(thn);
+        if(tgl=="" || bln==null || thn==null || rek==null){
             alert('Pastikan isi field Bulan, Tahun, Tanggal Transaksi, dan Rekening Bank Tujuan');
         }else{
             if(rekening == '1.1.3.3'){
@@ -1056,6 +1097,11 @@
                 dataType    :   "html",
                 success		:	function(data){
                     $("#tblBonus").html(data);
+                    $('#tgl_transaksi').attr('disabled','true');
+                    $('#bulan').attr('disabled','true');
+                    $('#tahun').attr('disabled','true');
+                    $('#rekening').attr('disabled','true');
+                    $('#supplier').attr('disabled','true');
                 },
                 error       :   function(data){
                     document.getElementById('tgl_transaksi').value = '1945-08-17';
@@ -1100,6 +1146,8 @@
                 dataType    :   "html",
                 success		:	function(data){
                     $("#tblBonus").html(data);
+                    $('#tgl_transaksi').attr('disabled','true');
+                    $('#rekening').attr('disabled','true');
                 },
                 error       :   function(data){
                     document.getElementById('tgl_transaksi').value = '1945-08-17';
@@ -1240,6 +1288,61 @@
                 }
             });
         }
+    }
+
+    function checkNull(){
+        var bonusapa = $("#bonusapa").val()
+        var tgl = $("#tgl_transaksi").val()
+        var rows= $('#editable-datatable tbody tr.trow').length;
+
+        if(bonusapa == "perhitungan"){
+            var bln = $("#bulan").val()
+            var thn = $("#tahun").val()
+            var perusahaan = $("#perusahaan").val()
+
+            if(tgl=="" || bln==null || thn==null || perusahaan==null || rows == 0){
+                alert('Pastikan isi field Bulan, Tahun, Tanggal Transaksi, Nama Perusahaan, dan Isi tabel Bonus Member');
+                return false;
+            }
+            return true;
+
+        }else if(bonusapa == "pembayaran"){
+            var bln = $("#bulan").val()
+            var thn = $("#tahun").val()
+            var rekening = $("#coa").val()
+
+            if(tgl=="" || bln==null || thn==null || rekening==null || rows == 0){
+                alert('Pastikan isi field Bulan, Tahun, Tanggal Transaksi, dan Rekening Bank Tujuan');
+                return false
+            }
+            return true
+        }else if(bonusapa == "topup"){
+            var rekening = $("#rekening").val()
+
+            if(tgl=="" || rekening== null || rows == 0){
+                alert('Pastikan isi field Tanggal Transaksi dan Sumber Rekening');
+                return false
+            }
+            return true
+        }
+    }
+
+    function getDetail(id, bonusapa){
+        console.log(id+bonusapa)
+        $.ajax({
+            url : "{{ route('bonus.show', ['id'=>1]) }}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                id_jurnal: id,
+                bonusapa: bonusapa,
+            },
+        }).done(function (data) {
+            $('#modalView').html(data);
+            $('#modalLarge').modal("show");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
     }
 </script>
 @endsection
