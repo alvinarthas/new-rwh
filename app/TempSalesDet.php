@@ -15,4 +15,8 @@ class TempSalesDet extends Model
     public function product(){
         return $this->belongsTo('App\Product','prod_id','prod_id');
     }
+
+    public function temp(){
+        return $this->belongsTo('App\TempSales');
+    }
 }

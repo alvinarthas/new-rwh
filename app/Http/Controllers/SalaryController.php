@@ -169,7 +169,7 @@ class SalaryController extends Controller
             if($request->jenis == 'bv'){
                 return Sales::getBV($request->bulan,$request->tahun);
             }else{
-                return Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','Supervisor')->orWhere('r.role_name','LIKE','Staff%')->where('tblemployee.id',$request->employee)->select('tblemployee.id','tblemployee.name','r.role_name')->first();
+                return Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('tblemployee.id',$request->employee)->select('tblemployee.id','tblemployee.name','r.role_name')->first();
             }
 
         }else{
@@ -206,14 +206,14 @@ class SalaryController extends Controller
             // Total Poin
             $ttl_poin_internal = RecordPoin::totalPoin($month,$year,1);
             $ttl_poin_logistik = RecordPoin::totalPoin($month,$year,0);
-            $ttl_poin_kendali_perusahaan = 0;
-            $ttl_poin_top3 = 3;
+            $ttl_poin_kendali_perusahaan = Purchase::countPost($month,$year);
+            $ttl_poin_top3 = 0;
 
             // Anggaran Bonus
-            $anggaran_internal = $bv*0.35;
-            $anggaran_logistik = $bv*0.15;
+            $anggaran_internal = $bv*0.3;
+            $anggaran_logistik = $bv*0.25;
             $anggaran_kendali_perusahaan = $bv*0.1;
-            $anggaran_top3 = $bv*0.05;
+            $anggaran_top3 = 0;
             $anggaran_eom = $bv*0.1;
 
             $arr_top3 = Purchase::getTop3($month,$year);
@@ -243,8 +243,8 @@ class SalaryController extends Controller
                 $value_share_top3 = $anggaran_top3/$ttl_poin_top3;
             }
 
-            $pegawai = Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','NOT LIKE','Superadmin')->where('r.role_name','NOT LIKE','Direktur Utama')->select('tblemployee.id','tblemployee.username','r.gaji_pokok','r.tunjangan_jabatan','r.id as role_id')->get();
-
+            $pegawai = Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','NOT LIKE','Superadmin')->where('r.role_name','NOT LIKE','Direktur Utama')->select('tblemployee.id','tblemployee.username','r.gaji_pokok','r.tunjangan_jabatan','r.id as role_id','r.role_name')->get();
+            $tall  = 0;
             // Hitung Bonus tiap pegawai
             foreach ($pegawai as $peg) {
                 $eomcollect = collect();
@@ -262,7 +262,6 @@ class SalaryController extends Controller
                 }
 
                 $value_internal = $poin_internal*$value_share_internal;
-
                 // Share Logistik
                 $poin_logistik = RecordPoin::sumPoin2($peg->id,$month,$year,0);
                 if($ttl_poin_logistik == 0){
@@ -274,6 +273,9 @@ class SalaryController extends Controller
 
                 // Share Kendali Perusahaan
                 $poin_kendali_perusahaan = Purchase::sharePost($month,$year,$peg->id);
+                if(substr($peg->role_name,0,7) == "Manager" || substr($peg->role_name,0,7) == "General"){
+                    $poin_kendali_perusahaan = 0;
+                }
                 if($ttl_poin_kendali_perusahaan == 0){
                     $persen_kendali_perusahaan = 0;
                 }else{
@@ -371,14 +373,14 @@ class SalaryController extends Controller
                 ));
                 $bonus_pegawai_detail->save();
             }
-
+            
             // Tentukan EOM
             $sorted = $collectionEom->sortByDesc('value');
 
             if($bv >= 15000000){
                 // get pegawai yg dapat eom
                 $choseneom = $sorted->values()->all();
-                for ($i=0; $i < 2 ; $i++) {
+                for ($i=0; $i < 1 ; $i++) {
                     if($i == 0){
                         $value_eom = $bv*0.07;
                     }else{
@@ -401,7 +403,6 @@ class SalaryController extends Controller
                         $saldet->bonus = $totbon;
                         $saldet->take_home_pay = $tot_takehome;
                     }
-
                 }
             }else{
                 // get pegawai yg dapat eom
@@ -428,10 +429,23 @@ class SalaryController extends Controller
                 $saldet->take_home_pay = $tot_takehome;
                 $saldet->save();
             }
-            Log::setLog('EMPGC','Create Gaji Bulan:'.$request->bulan.' Tahun: '.$request->tahun);
+            
                 // Check Bonus Manager
                 // count gaji yg > 5.6jt
+                $checkcount = SalaryDet::countGajiLebih($salary->id);
                 // if diatas 3 orang, semua manager dapet 10% bv
+                if($checkcount >= 3){
+                    $bonus_manager = $bv*0.1;
+
+                    if($bonus_manager >= 1000000){
+                        $bonus_manager = 1000000;
+                    }
+
+                    // Save Bonus Manager 
+                    SalaryDet::saveGajiManager($bonus_manager,$month,$year);
+                }
+
+                Log::setLog('EMPGC','Create Gaji Bulan:'.$request->bulan.' Tahun: '.$request->tahun);
                 return redirect()->route('indexPerhitunganGaji')->with('status', 'Data Gaji berhasil dibuat');
         }else{
                 return redirect()->back()->withErrors('Data Jurnal sudah data, silahkan hapus dulu jika ingin membuat di periode yang sama');

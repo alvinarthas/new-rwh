@@ -14,4 +14,12 @@ class TempSales extends Model
     public function customer(){
         return $this->belongsTo('App\Customer');
     }
+
+    public function creator(){
+        return $this->belongsTo('App\Employee','creator','id');
+    }
+
+    public function trx(){
+        return $this->belongsTo('App\Sales');
+    }
 }

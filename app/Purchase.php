@@ -32,7 +32,7 @@ class Purchase extends Model
     }
 
     public static function sharePost($month,$year,$creator){
-        return Purchase::where('month',$month)->where('year',$year)->where('creator',$creator)->groupBy('supplier')->count('supplier');
+        return Purchase::where('month',$month)->where('year',$year)->where('creator',$creator)->distinct()->count('supplier');
     }
 
     public static function getOrderPayment($bulan,$tahun,$param){
@@ -223,5 +223,16 @@ class Purchase extends Model
             $data->push($temp);
         }
         return $data;
+    }
+
+    public static function countPost($month,$year){
+        $d = array_values(array_column(DB::select("SELECT e.id FROM tblemployee as e
+        INNER JOIN tblemployeerole as rl on e.username = rl.username
+        INNER JOIN tblrole as r ON r.id = rl.role_id
+        WHERE r.role_name REGEXP 'Manager|General|Superadmin|Direktur|security'"),'id'));
+
+        $count = Purchase::where('month',$month)->where('year',$year)->whereNotIn('creator',$d)->distinct()->count('supplier');
+
+        return $count;
     }
 }

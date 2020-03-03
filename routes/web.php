@@ -255,6 +255,8 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('sisapiutang','LaporanController@sisaPiutangReport')->name('sisaPiutangReport');
         // Laporan Kendali Barang
         Route::get('kendalibarang','LaporanController@kendaliBarang')->name('kendaliBarang');
+        // Laporan Gross Profit
+        Route::get('checkgrossprofit','LaporanController@checkGrossProfit')->name('checkGrossProfit');
     });
 
     Route::get('logout','HomeController@logout')->name('Logout');
