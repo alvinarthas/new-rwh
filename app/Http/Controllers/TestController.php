@@ -17,6 +17,7 @@ use App\Product;
 use App\Coa;
 use App\Jurnal;
 use App\Salary;
+use App\SalaryDet;
 use App\Employee;
 use App\Sales;
 use App\Koordinator;
@@ -28,6 +29,7 @@ use App\Customer;
 use App\SalesDet;
 use App\DeliveryOrder;
 use App\DeliveryDetail;
+use App\Role;
 use App\ReceiveDet;
 use GuzzleHttp\Client;
 
@@ -35,7 +37,15 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
+    public function indexreqe(){
+        dd(Purchase::where('month',2)->where('year',2020)->distinct()->count('supplier'));
+    }
+
     public function index(){
+        dd(Purchase::countPost(2,2020));
+    }
+
+    public function index_cust(){
         foreach(Customer::all() as $item){
             echo $item->apname."<br>";
             $sales = Sales::join('tblproducttrxdet','tblproducttrxdet.trx_id','=','tblproducttrx.id')->where('customer_id',$item->id)->select('tblproducttrxdet.*','tblproducttrx.trx_date')->get();

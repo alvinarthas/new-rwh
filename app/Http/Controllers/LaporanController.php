@@ -8,6 +8,7 @@ use App\Coa;
 use App\CoaGrup;
 use App\Jurnal;
 use App\Purchase;
+use App\PurchaseDetail;
 use App\Sales;
 use App\Customer;
 use App\Perusahaan;
@@ -165,6 +166,7 @@ class LaporanController extends Controller
             // Based on Customer
             }elseif($jenis == 2){
                 foreach(Customer::all() as $item){
+                    $total = 0;
                     $collects = collect();
                     $sales = Sales::join('tblproducttrxdet','tblproducttrxdet.trx_id','=','tblproducttrx.id')->where('customer_id',$item->id);
 
@@ -192,8 +194,7 @@ class LaporanController extends Controller
                 }
                 $count = Customer::count();
             }
-
-            return view('laporan.checkGrossProfit.show',compact('data','start','end','sum','count'));
+            return view('laporan.checkGrossProfit.show',compact('data','start','end','sum','count','jenis'));
         }else{
             return view('laporan.checkGrossProfit.index');
         }

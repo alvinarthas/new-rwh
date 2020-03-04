@@ -166,7 +166,7 @@ Form Update Sales Order #{{$sales->id}}
                                                 <td><input type="hidden" name="prod_id[]" id="prod_id{{$i}}" value="{{$detail->prod_id}}">{{$detail->prod_id}}</td>
                                                 <td><input type="hidden" name="prod_name[]" id="prod_name{{$i}}" value="{{$detail->product->name}}">{{$detail->product->name}}</td>
                                                 <td><input type="text" name="price[]" id="price{{$i}}" value="{{$detail->price}}" onkeyup="changeTotal({{$i}})"></td>
-                                                <td>Rp&nbsp;{{number_format(PurchaseDetail::avgCost($detail->prod_id,$detail->trx->trx_date),2,",",".")}}</td>
+                                                <td>Rp&nbsp;{{number_format(PurchaseDetail::avgCost($detail->prod_id),2,",",".")}}</td>
                                                 <td><input type="text" name="qty[]" id="qty{{$i}}" value="{{$detail->qty}}" onkeyup="changeTotal({{$i}})"></td>
                                                 <td><input type="hidden" name="unit[]" id="unit{{$i}}" value="{{$detail->unit}}">{{$detail->unit}}</td>
                                                 <td><input type="text" name="sub_ttl_price[]" id="sub_ttl_price{{$i}}" value="{{$detail->sub_ttl}}" readonly></td>

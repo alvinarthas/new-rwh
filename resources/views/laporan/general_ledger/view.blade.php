@@ -86,10 +86,6 @@
     
 <script>
 // Responsive Datatable
-$('#responsive-datatable').DataTable({
-     columnDefs: [
-       {targets: '_all', type: 'natural'}
-     ]
-  });
+$('#responsive-datatable').DataTable();
 </script>
     

@@ -125,9 +125,9 @@
                                 <th>No Induk Karyawan</th>
                                 <th>Nama Karyawan</th>
                                 <th style="word-wrap: break-word;">Tugas Internal 30%</th>
-                                <th>Logistik 20%</th>
+                                <th>Logistik 25%</th>
                                 <th style="word-wrap: break-word;">Perusahaan yang Posting 10%</th>
-                                <th style="word-wrap: break-word;">3 Perusahaan Posting Besar 5%</th>
+                                <th style="word-wrap: break-word;">3 Perusahaan Posting Besar 0%</th>
                                 <th style="text-align: center;">EOM</th>
                                 <th style="text-align: center;">Total Bonus</th>
                                 </tr>

@@ -60,7 +60,7 @@ Tambah Data Gaji Pokok Pegawai
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Total BV</label>
                                 <div class="col-10">
-                                    <input type="number" class="form-control" parsley-trigger="change" required name="bv" id="bv" value="{{$bv}}">
+                                    <input type="number" class="form-control" step="0.01" parsley-trigger="change" required name="bv" id="bv" value="{{$bv}}">
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -136,7 +136,6 @@ Tambah Data Gaji Pokok Pegawai
         function getBV(param,emp=null) {
             bulan = $('#bulan').val();
             tahun = $('#tahun').val();
-
             $.ajax({
                 url : "{{route('createPerhitunganGaji')}}",
                 type : "get",
@@ -170,7 +169,6 @@ Tambah Data Gaji Pokok Pegawai
             }
 
             var optimage = $(opt.element).attr('data-image');
-            console.log(optimage)
             if(!optimage){
                 return opt.text.toUpperCase();
             } else {
