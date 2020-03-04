@@ -6,21 +6,21 @@ use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
-class StockControllingExport implements FromArray, WithHeadings, ShouldAutoSize
+class SOExport implements FromArray, WithHeadings, ShouldAutoSize
 {
     /**
     * @return \Illuminate\Support\Collection
     */
-    protected $stock;
+    protected $sales;
 
-    public function __construct(array $stock)
+    public function __construct(array $sales)
     {
-        $this->stock = $stock;
+        $this->sales = $sales;
     }
 
     public function array(): array
     {
-        return $this->stock;
+        return $this->sales;
     }
 
     public function startCell()
@@ -30,16 +30,20 @@ class StockControllingExport implements FromArray, WithHeadings, ShouldAutoSize
 
     public function headings(): array
     {
-        // Penerimaan Bonus & Top Up Bonus
+        // Sales Detail
         return [
             'No',
-            'Supplier',
+            'Transaction ID',
+            'Transaction Date',
+            'Customer Name',
             'Product ID',
-            'Nama Produk',
-            'Indent',
-            'di Gudang',
-            'milik Customer',
-            'Nett',
+            'Product Name',
+            'Price',
+            'Qty',
+            'Unit',
+            'Sub Total',
+            'BV per Product',
+            'Total BV',
         ];
     }
 }

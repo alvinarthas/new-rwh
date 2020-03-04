@@ -152,4 +152,15 @@ class PerusahaanController extends Controller
             return redirect()->back()->withErrors($e);
         }
     }
+
+    public function getSupplier(Request $request){
+        $supplier = Perusahaan::where('id', $request->id)->first();
+        $data = array(
+            'id' => $supplier->id,
+            'alamat' => $supplier->alamat,
+            'telp' => $supplier->telp,
+        );
+
+        return response()->json($data);
+    }
 }

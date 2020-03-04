@@ -2,69 +2,81 @@
     use App\TempPO;
     use App\TempPODet;
 @endphp
-<div class="row">
-    <div class="col-12">
-        <div class="card-box table-responsive">
-            <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
-                <thead>
-                    <th>No</th>
-                    <th>Transaction ID</th>
-                    <th>Posting Period</th>
-                    <th>Supplier</th>
-                    <th>PO Date</th>
-                    <th>Creator</th>
-                    <th>Option</th>
-                </thead>
-                <tbody>
-                    @csrf
-                    @php($i=1)
-                    @foreach ($purchases as $purchase)
-                        <tr>
-                            <td>{{$i}}</td>
-                            <td><a href="javascript:;" onclick="getDetail({{$purchase->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">PO.{{$purchase->id}}</a></td>
-                            <td>{{date("F", mktime(0, 0, 0, $purchase->month, 10))}} {{$purchase->year}}</td>
-                            <td>{{$purchase->supplier()->first()->nama}}</td>
-                            <td>{{$purchase->tgl}}</td>
-                            <td>{{$purchase->creator()->first()->name}}</td>
-                            <td>
-                                @if (array_search("PUPUU",$page))
-                                <a href="{{route('purchase.edit',['id'=>$purchase->id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
-                                @endif
-                                @if (array_search("PUPUD",$page))
-                                <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$purchase->id}})">Delete</a>
-                                @endif
-                                @if ($purchase->approve == 0)
-                                <?php
-                                    $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id,'role'=>session('role')]));
-                                ?>
-                                    @if (array_search("PUPUA",$page))
-                                    <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase</a>
+<form class="form-horizontal" role="form" action="{{ route('exportPO') }}" enctype="multipart/form-data" method="POST">
+    @csrf
+    <div class="row">
+        <div class="col-12">
+            <div class="card-box table-responsive">
+                <div class="form-group text-right m-b-0">
+                    <button class="btn btn-success btn-trans btn-rounded waves-effect waves-light w-xs m-b-5">
+                        <span class="mdi mdi-file-excel">
+                            Cetak Excel
+                        </span>
+                    </button>
+                    <input type="hidden" name="bulan" value="{{$bulan}}">
+                    <input type="hidden" name="tahun" value="{{$tahun}}">
+                </div>
+                <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                    <thead>
+                        <th>No</th>
+                        <th>Transaction ID</th>
+                        <th>Posting Period</th>
+                        <th>Supplier</th>
+                        <th>PO Date</th>
+                        <th>Creator</th>
+                        <th>Option</th>
+                    </thead>
+                    <tbody>
+                        @csrf
+                        @php($i=1)
+                        @foreach ($purchases as $purchase)
+                            <tr>
+                                <td>{{$i}}</td>
+                                <td><a href="javascript:;" onclick="getDetail({{$purchase->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">PO.{{$purchase->id}}</a></td>
+                                <td>{{date("F", mktime(0, 0, 0, $purchase->month, 10))}} {{$purchase->year}}</td>
+                                <td>{{$purchase->supplier()->first()->nama}}</td>
+                                <td>{{$purchase->tgl}}</td>
+                                <td>{{$purchase->creator()->first()->name}}</td>
+                                <td>
+                                    @if (array_search("PUPUU",$page))
+                                    <a href="{{route('purchase.edit',['id'=>$purchase->id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
                                     @endif
-                                @else
+                                    @if (array_search("PUPUD",$page))
+                                    <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$purchase->id}})">Delete</a>
+                                    @endif
+                                    @if ($purchase->approve == 0)
                                     <?php
-                                        $count_temp = TempPO::where('purchase_id',$purchase->id)->count('purchase_id');
-                                        $status_temp = TempPO::where('purchase_id',$purchase->id)->where('status',1)->count('purchase_id');
+                                        $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id,'role'=>session('role')]));
                                     ?>
-                                    @if($count_temp > 0 && $status_temp == 1)
-                                        <?php
-                                            $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id,'role'=>session('role')]));
-                                        ?>
                                         @if (array_search("PUPUA",$page))
-                                        <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase yang sudah diupdate</a>
+                                        <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase</a>
                                         @endif
                                     @else
-                                        <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Purchase sudah di approve</a>
+                                        <?php
+                                            $count_temp = TempPO::where('purchase_id',$purchase->id)->count('purchase_id');
+                                            $status_temp = TempPO::where('purchase_id',$purchase->id)->where('status',1)->count('purchase_id');
+                                        ?>
+                                        @if($count_temp > 0 && $status_temp == 1)
+                                            <?php
+                                                $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$purchase->id,'role'=>session('role')]));
+                                            ?>
+                                            @if (array_search("PUPUA",$page))
+                                            <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase yang sudah diupdate</a>
+                                            @endif
+                                        @else
+                                            <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Purchase sudah di approve</a>
+                                        @endif
                                     @endif
-                                @endif
-                            </td>
-                        </tr>
-                    @php($i++)
-                    @endforeach
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                        @php($i++)
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
+</form>
 
 <!--  Modal content for the above example -->
 <div class="modal fade bs-example-modal-lg" id="modalLarge" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
@@ -123,7 +135,7 @@ function deletePurchase(id){
                 'error'
             )
         });
-        
+
     }, function (dismiss) {
         // dismiss can be 'cancel', 'overlay',
         // 'close', and 'timer'

@@ -80,13 +80,13 @@ Form Sales Payment
                                         @if ($jenis == "edit")
                                             @php($i=1)
                                             @foreach ($jurnals as $item)
-                                                <tr style="width:100%" id="trow{{$i}}">
+                                                <tr style="width:100%" id="trow{{$i}}" class="trow">
                                                     <td><input type="hidden" name="id[]" id="id{{ $i }}" value="{{ $item->id }}">{{ $i }}</td>
                                                     <td><input type="hidden" name="AccNo[]" id="AccNo{{$i}}" value="{{ $item->AccNo  }}">{{ $item->AccNo  }}</td>
                                                     <td>{{$item->coa->AccName}}</td>
                                                     {{-- <td><input type="hidden" value="{{$item->AccPos}}" id="position{{$i}}">{{$item->AccPos}}</td> --}}
                                                     <td>
-                                                        <select class="form-control" parsley-trigger="change" name="position[]" id="position{{$i}}" required>
+                                                        <select class="form-control" parsley-trigger="change" name="position[]" id="position{{$i}}" onchange="check()" required>
                                                             @if($item->AccPos == "Debet")
                                                                 <option value="Debet" selected>Debet</option>
                                                                 <option value="Credit">Credit</option>
@@ -96,7 +96,7 @@ Form Sales Payment
                                                             @endif
                                                         </select>
                                                     </td>
-                                                    <td><input type="text" class="form-control" value="{{$item->Amount}}" name="amount[]" id="amount{{$i}}"></td>
+                                                    <td><input type="text" class="form-control" value="{{$item->Amount}}" name="amount[]" id="amount{{$i}}" parsley-trigger="keyup" onkeyup="check()"></td>
                                                     <td><input type="text" class="form-control" value="{{$item->notes_item}}" name="notes[]" id="notes{{$i}}"></td>
                                                     <td>
                                                         <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItemJurnal({{$i}},{{$item->id}})" >Delete</a>
@@ -231,6 +231,28 @@ Form Sales Payment
         ttl_credit = parseInt($('#ttl_credit').val());
         $('#ttl_debet').val(ttl_debet+parseInt(ttl_debet_add))
         $('#ttl_credit').val(ttl_credit+parseInt(ttl_credit_add))
+    }
+
+    function check(){
+        var rows= $('#responsive-datatable tbody tr.trow').length;
+        var totaldebet = 0;
+        var totalcredit = 0;
+        var pos = $("select[name='position[]']").map(function(){return $(this).val();}).get();
+        var amount = $("input[name='amount[]']").map(function(){return $(this).val();}).get();
+
+        for(i=0;i<rows;i++){
+            b = amount[i];
+            p = pos[i];
+
+            if(p == "Debet"){
+                totaldebet += parseInt(b);
+            }else{
+                totalcredit += parseInt(b);
+            }
+        }
+        $('#ttl_debet').val(totaldebet);
+        $('#ttl_credit').val(totalcredit);
+
     }
 
     function deleteItem(id){

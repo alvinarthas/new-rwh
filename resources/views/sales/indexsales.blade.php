@@ -2,77 +2,90 @@
     use App\TempSales;
     use App\TempSalesDet;
 @endphp
-<div class="row">
-    <div class="col-12">
-        <div class="card-box table-responsive">
-            <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
-                <thead>
-                    <th>No</th>
-                    <th>Transaction ID</th>
-                    <th>Transaction Date</th>
-                    <th>Customer</th>
-                    <th>Creator</th>
-                    <th>Total</th>
-                    <th>Option</th>
-                </thead>
-                <tbody>
-                    @csrf
-                    @php($i=1)
-                    @foreach ($sales as $sale)
-                        <tr>
-                            <td>{{$i}}</td>
-                            <td><a href="javascript:;" onclick="getDetail({{$sale->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">SO.{{$sale->id}}</a></td>
-                            <td>{{$sale->trx_date}}</td>
-                            <td>{{$sale->customer->apname}}</td>
-                            <td>{{$sale->creator()->first()->name}}</td>
-                            <td>Rp {{number_format($sale->ttl_harga+$sale->ongkir,2,",",".")}}</td>
-                            <td>
-                                @if (array_search("PSSLU",$page))
-                                <a href="{{route('sales.edit',['id'=>$sale->id])}}" class="btn btn-purple btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
-                                @endif
-                                @if (array_search("PSSLD",$page))
-                                <a href="javascript:;" class="btn btn-pink btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$sale->id}})">Delete</a>
-                                @endif
-                                @if ($sale->approve == 0)
-                                <?php
-                                    $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sale->id,'role'=>session('role')]));
-                                ?>
-                                    @if (array_search("PSSLA",$page))
-                                    <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales</a>
+
+<form class="form-horizontal" role="form" action="{{ route('exportSO') }}" enctype="multipart/form-data" method="POST">
+    @csrf
+    <div class="row">
+        <div class="col-12">
+            <div class="card-box table-responsive">
+                <div class="form-group text-right m-b-0">
+                    <button class="btn btn-success btn-trans btn-rounded waves-effect waves-light w-xs m-b-5">
+                        <span class="mdi mdi-file-excel">
+                            Cetak Excel
+                        </span>
+                    </button>
+                    <input type="hidden" name="start" value="{{$transaksi['start']}}">
+                    <input type="hidden" name="end" value="{{$transaksi['end']}}">
+                </div>
+                <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                    <thead>
+                        <th>No</th>
+                        <th>Transaction ID</th>
+                        <th>Transaction Date</th>
+                        <th>Customer</th>
+                        <th>Creator</th>
+                        <th>Total</th>
+                        <th>Option</th>
+                    </thead>
+                    <tbody>
+                        @csrf
+                        @php($i=1)
+                        @foreach ($sales as $sale)
+                            <tr>
+                                <td>{{$i}}</td>
+                                <td><a href="javascript:;" onclick="getDetail({{$sale->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">SO.{{$sale->id}}</a></td>
+                                <td>{{$sale->trx_date}}</td>
+                                <td>{{$sale->customer->apname}}</td>
+                                <td>{{$sale->creator()->first()->name}}</td>
+                                <td>Rp {{number_format($sale->ttl_harga+$sale->ongkir,2,",",".")}}</td>
+                                <td>
+                                    @if (array_search("PSSLU",$page))
+                                    <a href="{{route('sales.edit',['id'=>$sale->id])}}" class="btn btn-purple btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
                                     @endif
-                                @else
+                                    @if (array_search("PSSLD",$page))
+                                    <a href="javascript:;" class="btn btn-pink btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase({{$sale->id}})">Delete</a>
+                                    @endif
+                                    @if ($sale->approve == 0)
                                     <?php
-                                        $count_temp = TempSales::where('trx_id',$sale->id)->count('trx_id');
-                                        $status_temp = TempSales::where('trx_id',$sale->id)->where('status',1)->count('trx_id');
+                                        $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sale->id,'role'=>session('role')]));
                                     ?>
-                                    @if($count_temp > 0 && $status_temp == 1)
-                                        <?php
-                                            $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sale->id,'role'=>session('role')]));
-                                        ?>
                                         @if (array_search("PSSLA",$page))
-                                        <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales yang sudah diupdate</a>
+                                        <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales</a>
                                         @endif
                                     @else
-                                        <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Sales sudah di approve</a>
+                                        <?php
+                                            $count_temp = TempSales::where('trx_id',$sale->id)->count('trx_id');
+                                            $status_temp = TempSales::where('trx_id',$sale->id)->where('status',1)->count('trx_id');
+                                        ?>
+                                        @if($count_temp > 0 && $status_temp == 1)
+                                            <?php
+                                                $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$sale->id,'role'=>session('role')]));
+                                            ?>
+                                            @if (array_search("PSSLA",$page))
+                                            <a href="finspot:FingerspotVer;<?=$url_register?>" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales yang sudah diupdate</a>
+                                            @endif
+                                        @else
+                                            <a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Sales sudah di approve</a>
+                                        @endif
                                     @endif
-                                @endif
-                                @if (array_search("PSSLN",$page))
-                                <a href="javascript:;" class="btn btn-info btn-trans waves-effect w-md waves-danger m-b-5" onclick="previewInvoice({{$sale->id}})"><i class="fa fa-file-pdf-o"></i> Preview Invoice</a>
-                                @endif
-                                @if (array_search("PSSLP",$page))
-                                    @php($jenis = "print")
-                                <input type="hidden" id="route{{$sale->id}}" value="{{route('invoicePrint',['jenis' =>$jenis,'trx_id' => $sale->id])}}">
-                                <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="printPdf({{$sale->id}})"><i class="fa fa-file-pdf-o"></i> Print Invoice</a>
-                                @endif
-                            </td>
-                        </tr>
-                    @php($i++)
-                    @endforeach
-                </tbody>
-            </table>
+                                    @if (array_search("PSSLN",$page))
+                                    <a href="javascript:;" class="btn btn-info btn-trans waves-effect w-md waves-danger m-b-5" onclick="previewInvoice({{$sale->id}})"><i class="fa fa-file-pdf-o"></i> Preview Invoice</a>
+                                    @endif
+                                    @if (array_search("PSSLP",$page))
+                                        @php($jenis = "print")
+                                    <input type="hidden" id="route{{$sale->id}}" value="{{route('invoicePrint',['jenis' =>$jenis,'trx_id' => $sale->id])}}">
+                                    <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="printPdf({{$sale->id}})"><i class="fa fa-file-pdf-o"></i> Print Invoice</a>
+                                    @endif
+                                </td>
+                            </tr>
+                        @php($i++)
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
+</form>
 
 <div class="card-box">
     <h4 class="m-t-0 header-title">Transaksi Detail</h4>
@@ -175,7 +188,7 @@ function deletePurchase(id){
                 'error'
             )
         });
-        
+
     }, function (dismiss) {
         // dismiss can be 'cancel', 'overlay',
         // 'close', and 'timer'

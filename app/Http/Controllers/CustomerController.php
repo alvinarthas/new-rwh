@@ -400,4 +400,16 @@ class CustomerController extends Controller
         return Excel::download($export, 'Pricelist '.$prod['name'].' by Customer('.$dateFormat.').xlsx');
         // return Excel::download($export, 'Price & BV.xlsx');
     }
+
+    public function getCustomer(Request $request){
+        $customer = Customer::where('id', $request->id)->first();
+        $data = array(
+            'id' => $customer->id,
+            'phone' => $customer->apphone,
+            'cname' => $customer->cicn,
+            'cphone' => $customer->ciphone,
+        );
+
+        return response()->json($data);
+    }
 }
