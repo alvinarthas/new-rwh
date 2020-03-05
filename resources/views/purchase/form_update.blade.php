@@ -51,19 +51,9 @@ Form Update Purchasing #{{$purchase->id}}
                                 <tbody>
                                     <tr>
                                         <td>1</td>
-                                        <td>
-                                            <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" onchange="changeSupplier(this.value)" required>
-                                                @foreach($supplier as $s)
-                                                    @if($s->id == $purchase->supplier()->first()->id)
-                                                        <option value="{{$s->id}}" selected>{{$s->nama}}</option>
-                                                    @else
-                                                        <option value="{{$s->id}}">{{$s->nama}}</option>
-                                                    @endif
-                                                @endforeach
-                                            </select>
-                                        </td>
-                                        <td id="sup_alamat">{{$purchase->supplier()->first()->alamat}}</td>
-                                        <td id="sup_telp">{{$purchase->supplier()->first()->telp}}</td>
+                                        <td>{{$purchase->supplier()->first()->nama}}</td>
+                                        <td>{{$purchase->supplier()->first()->alamat}}</td>
+                                        <td>{{$purchase->supplier()->first()->telp}}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -101,7 +91,6 @@ Form Update Purchasing #{{$purchase->id}}
                             @else
                                 @php($purchase_id = $purchase->id)
                             @endif
-
                                 <input type="hidden" name="status" id="status" value="{{$status}}">
                         </div>
                     </div>
@@ -489,24 +478,6 @@ function changeBulan(bulan){
 
 function changeTahun(tahun){
     $("#tahunpost").val(tahun);
-}
-
-function changeSupplier(id){
-    $.ajax({
-        url : "{{route('getSupplier')}}",
-        type : "get",
-        dataType: 'json',
-        data:{
-            id : id,
-        },
-    }).done(function (data) {
-        // console.log(data);
-        $('#sup_alamat').html(data.alamat);
-        $('#sup_telp').html(data.telp);
-        $("#supplierpost").val(data.id);
-    }).fail(function (msg) {
-        alert('Gagal menampilkan data, silahkan refresh halaman.');
-    });
 }
 </script>
 @endsection

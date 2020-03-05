@@ -233,7 +233,16 @@ class PurchaseController extends Controller
             $purchase = Purchase::where('id',$request->id)->first();
             $purchasedet = PurchaseDetail::where('trx_id',$request->id)->get();
             $purchasepay = PurchasePayment::where('trx_id',$request->id)->sum('payment_amount');
-            return response()->json(view('purchase.modal',compact('purchase','purchasedet','purchasepay'))->render());
+
+            $count = TempPO::where('purchase_id', $request->id)->count();
+
+            if($count != 0){
+                $temp_PO = TempPO::where('purchase_id', $request->id)->first();
+                $temp_POdet = TempPODet::where('temp_id', $temp_PO->id)->get();
+                return response()->json(view('purchase.modal',compact('purchase','purchasedet','purchasepay', 'temp_PO', 'temp_POdet'))->render());
+            }else{
+                return response()->json(view('purchase.modal',compact('purchase','purchasedet','purchasepay'))->render());
+            }
         }
     }
 
@@ -294,6 +303,9 @@ class PurchaseController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
         // Validate
         $validator = Validator::make($request->all(), [
             'bulanpost' => 'required',
@@ -313,6 +325,9 @@ class PurchaseController extends Controller
                 if($check > 0){
                     $temp_purchase = TempPO::where('purchase_id',$id)->first();
                     // Update and tranfer to Purchase Orginal
+                    $temp_purchase->month = $request->bulanpost;
+                    $temp_purchase->year = $request->tahunpost;
+                    $temp_purchase->supplier = $request->supplierpost;
                     $temp_purchase->notes = $request->notes;
                     $temp_purchase->creator = session('user_id');
                     $temp_purchase->tgl = $request->po_date;

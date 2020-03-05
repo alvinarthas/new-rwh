@@ -191,7 +191,18 @@ class SalesController extends Controller
             $sales = Sales::where('id',$request->id)->first();
             $salesdet = SalesDet::where('trx_id',$request->id)->get();
             $salespay = SalesPayment::where('trx_id',$request->id)->sum('payment_amount');
-            return response()->json(view('sales.modal',compact('sales','salesdet','salespay'))->render());
+
+            $count = TempSales::where('trx_id', $request->id)->count();
+
+            if($count != 0){
+                $temp_sales = TempSales::where('trx_id', $request->id)->first();
+                $temp_salesdet = TempSalesDet::where('temp_id', $temp_sales->id)->get();
+                $jenis = "double";
+                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'temp_sales', 'temp_salesdet', 'jenis'))->render());
+            }else{
+                $jenis = "double";
+                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'jenis'))->render());
+            }
         }
     }
 
