@@ -25,7 +25,7 @@ class CustomerController extends Controller
         $page = MenuMapping::getMap(session('user_id'),"MDCS");
         $jenis = "customer";
         $customers = Customer::select('id', 'apname', 'cid' ,'apphone', 'cicn' , 'ciphone')->get();
-        return view('customer.index', compact('customers', 'jenis', 'page'));
+        return view('customer.index2', compact('customers', 'jenis', 'page'));
     }
 
     /**
@@ -287,7 +287,7 @@ class CustomerController extends Controller
     {
         $products = Product::join('tblperusahaan','tblproduct.supplier', 'tblperusahaan.id')->select('tblproduct.id AS pid', 'tblproduct.name','tblperusahaan.nama AS namasupplier', 'prod_id', 'category')->get();
         $jenis = "pricebyproduct";
-        return view('customer.index', compact('jenis', 'products', 'page'));
+        return view('customer.index2', compact('jenis', 'products', 'page'));
     }
 
     public function managePriceByProduct($id)

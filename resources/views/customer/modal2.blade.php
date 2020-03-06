@@ -1,6 +1,6 @@
 <div class="card-box table-responsive">
     <div class="form-group row">
-        <label class="col-2 col-form-label">Supplier</label>
+        <label class="col-2 col-form-label">Customer</label>
         <div class="col-10">
             <input type="text" class="form-control" name="ttl_harga_distributor" id="ttl_harga_distributor" parsley-trigger="change" value="{{$name}}" readonly>
         </div>
@@ -18,6 +18,8 @@
                 <thead>
                     <th>No</th>
                     <th>Jumlah</th>
+                    <th>Tanggal</th>
+                    <th>Rekening Penerima</th>
                     <th>Status</th>
                     <th>Creator</th>
                     <th>Keterangan</th>
@@ -30,19 +32,28 @@
                         <tr>
                             <td>{{$i}}</td>
                             <td>Rp {{number_format($key->amount,2,",",".")}}</td>
+                            <td>{{$key->tanggal}}</td>
+                            <td>{{$key->accNo}}</td>
                             <td>
                                 @if ($key->status == 1)
-                                    <a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-md waves-danger m-b-5" >Masuk</a>
+                                    <a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5" >Masuk</a>
                                 @else
-                                    <a href="javascript:;" disabled="disabled" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" >Keluar</a>
+                                    <a href="javascript:;" disabled="disabled" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5" >Keluar</a>
                                 @endif
                             </td>
                             <td>{{$key->creator()->first()->name}}</td>
                             <td>{{$key->keterangan}}</td>
-                            <td><a href="javascript:;" disabled="disabled" class="btn btn-custom btn-rounded waves-effect w-md waves-danger m-b-5" >{{$key->jurnal_id}}</a></td>
+                            <td><a href="javascript:;" disabled="disabled" class="btn btn-custom btn-rounded waves-effect w-xs waves-danger m-b-5" >{{$key->id_jurnal}}</a></td>
                             <td>
-                                @if (array_search("PUDPS",$page))
-                                    <a href="javascript:;" onclick="destory({{$key->id}})" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5">Hapus</a>
+                                @if (array_search("PSDCU",$page))
+                                    <a href="{{route('saldo.edit',['id'=>$key->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-sm m-b-5">Update</a>
+                                @endif
+                                @if (array_search("PSDCD",$page))
+                                    <form class="" action="{{ route('saldo.destroy', ['id' => $key->id]) }}" method="post">
+                                        {{ csrf_field() }}
+                                        {{ method_field('delete') }}
+                                        <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-sm m-b-5">Hapus </button>
+                                    </form>
                                 @endif
                             </td>
                         </tr>
@@ -55,6 +66,10 @@
 </div>
 
 <script>
+    $(document).ready(function () {
+        // Responsive Datatable
+        $('#responsive-datatable').DataTable();
+    })
     function destory(id){
         var token = $("meta[name='csrf-token']").attr("content");
 
@@ -90,7 +105,7 @@
                     'error'
                 )
             });
-            
+
         }, function (dismiss) {
             // dismiss can be 'cancel', 'overlay',
             // 'close', and 'timer'
