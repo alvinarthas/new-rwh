@@ -244,7 +244,6 @@ class SalaryController extends Controller
             }
 
             $pegawai = Employee::join('tblemployeerole as er','er.username','=','tblemployee.username')->join('tblrole as r','r.id','er.role_id')->where('r.role_name','NOT LIKE','Superadmin')->where('r.role_name','NOT LIKE','Direktur Utama')->select('tblemployee.id','tblemployee.username','r.gaji_pokok','r.tunjangan_jabatan','r.id as role_id','r.role_name')->get();
-            $tall  = 0;
             // Hitung Bonus tiap pegawai
             foreach ($pegawai as $peg) {
                 $eomcollect = collect();
