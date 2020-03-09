@@ -48,7 +48,7 @@ Tambah Data Modul
                                 <label class="col-2 col-form-label">Metode Deposit</label>
                                 <div class="col-10">
                                     <select class="form-control select2" parsley-trigger="change" name="method" required>
-                                        <option value="#" disabled>Pilih Method</option>
+                                        <option value="#" disabled selected>Pilih Method</option>
                                         @foreach ($coas as $coa)
                                             <option value="{{$coa->AccNo}}">{{$coa->AccName}}</option>
                                         @endforeach

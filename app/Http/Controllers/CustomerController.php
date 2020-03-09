@@ -25,7 +25,7 @@ class CustomerController extends Controller
         $page = MenuMapping::getMap(session('user_id'),"MDCS");
         $jenis = "customer";
         $customers = Customer::select('id', 'apname', 'cid' ,'apphone', 'cicn' , 'ciphone')->get();
-        return view('customer.index', compact('customers', 'jenis', 'page'));
+        return view('customer.index2', compact('customers', 'jenis', 'page'));
     }
 
     /**
@@ -287,7 +287,7 @@ class CustomerController extends Controller
     {
         $products = Product::join('tblperusahaan','tblproduct.supplier', 'tblperusahaan.id')->select('tblproduct.id AS pid', 'tblproduct.name','tblperusahaan.nama AS namasupplier', 'prod_id', 'category')->get();
         $jenis = "pricebyproduct";
-        return view('customer.index', compact('jenis', 'products', 'page'));
+        return view('customer.index2', compact('jenis', 'products', 'page'));
     }
 
     public function managePriceByProduct($id)
@@ -399,5 +399,17 @@ class CustomerController extends Controller
         $export = new PriceDetExport2($data);
         return Excel::download($export, 'Pricelist '.$prod['name'].' by Customer('.$dateFormat.').xlsx');
         // return Excel::download($export, 'Price & BV.xlsx');
+    }
+
+    public function getCustomer(Request $request){
+        $customer = Customer::where('id', $request->id)->first();
+        $data = array(
+            'id' => $customer->id,
+            'phone' => $customer->apphone,
+            'cname' => $customer->cicn,
+            'cphone' => $customer->ciphone,
+        );
+
+        return response()->json($data);
     }
 }

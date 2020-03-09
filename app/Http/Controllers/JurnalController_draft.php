@@ -54,7 +54,7 @@ class JurnalController_draft extends Controller
         <td>'.$count.'</td>
         <td><input type="hidden" name="AccNo[]" id="AccNo'.$count.'" value="'.$coa.'">'.$coa.'</td>
         <td><input type="hidden" name="accname[]" id="accname'.$count.'" value="'.$accname.'">'.$accname.'</td>
-        <td><select class="form-control" parsley-trigger="change" name="position[]" id="position'.$count.'" required>';
+        <td><select class="form-control" parsley-trigger="change" name="position[]" id="position'.$count.'" onchange="check()" required>';
         if($position == "Debet"){
             $append .= '<option value="Debet" selected>Debet</option>
                 <option value="Credit">Credit</option>';
@@ -63,7 +63,7 @@ class JurnalController_draft extends Controller
             <option value="Credit" selected>Credit</option>';
         }
         $append .= '</select></td>
-        <td><input type="text" class="form-control" name="amount[]" value="'.$amount.'" id="amount'.$count.'"></td>
+        <td><input type="text" class="form-control" name="amount[]" value="'.$amount.'" id="amount'.$count.'" onchange="check()"></td>
         <td><input type="text" class="form-control" name="notes[]" value="'.$notes.'" id="notes'.$count.'"></td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
         </tr>';

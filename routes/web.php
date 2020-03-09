@@ -198,6 +198,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('/cetakXlsProduct/{id}', 'CustomerController@exportProduct')->name('exportXlsProduct');
         Route::get('/cetakXlsCustomer/{id}', 'CustomerController@exportCustomer')->name('exportXlsCustomer');
         Route::get('/customerstock', 'ProductController@customerStock')->name('customerStock');
+        Route::get('getCustomer', 'CustomerController@getCustomer')->name('getCustomer');
 
     // Stock Controlling
         Route::get('/stockcontrolling','ProductController@controlling')->name('stockControlling');
@@ -285,18 +286,21 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
     Route::get('/datacoa','HelperController@ajxCoa')->name('ajxCoa');
     Route::get('coatable','CoaController@coaTable')->name('coaTable');
+    Route::get('supplier', 'PerusahaanController@getSupplier')->name('getSupplier');
 
     // purchase helper
     Route::get('/showpurchase','PurchaseController@showPurchase')->name('showPurchase');
     Route::get('/addpurchase','PurchaseController@addPurchase')->name('addPurchase');
     Route::get('/showindexpurchase','PurchaseController@showIndexPurchase')->name('showIndexPurchase');
     Route::get('/destroydetailpurchase','PurchaseController@destroyPurchaseDetail')->name('destroyPurchaseDetail');
+    Route::post('/purchase/export/', 'PurchaseController@export')->name('exportPO');
 
     // sales helper
     Route::get('/showsales','SalesController@showSales')->name('showSales');
     Route::get('/addsales','SalesController@addSales')->name('addSales');
     Route::get('/showindexsales','SalesController@showIndexSales')->name('showIndexSales');
     Route::get('/destroydetailsales','SalesController@destroySalesDetail')->name('destroySalesDetail');
+    Route::post('/sales/export/', 'SalesController@export')->name('exportSO');
 
     // Saldo Helper
     Route::get('checksaldo','HelperController@checkSaldo')->name('checkSaldo');

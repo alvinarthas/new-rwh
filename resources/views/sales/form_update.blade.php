@@ -53,10 +53,20 @@ Form Update Sales Order #{{$sales->id}}
                                 <tbody>
                                     <tr>
                                         <td>1</td>
-                                        <td>{{$sales->customer->apname}}</td>
-                                        <td>{{$sales->customer->apphone}}</td>
-                                        <td>{{$sales->customer->cicn}}</td>
-                                        <td>{{$sales->customer->ciphone}}</td>
+                                        <td>
+                                            <select class="form-control select2" parsley-trigger="change" name="cust" id="cust" onchange="changeCustomer(this.value)" required>
+                                                @foreach($customer as $c)
+                                                    @if($c->id == $sales->customer->id)
+                                                        <option value="{{$c->id}}" selected>{{$c->apname}}</option>
+                                                    @else
+                                                        <option value="{{$c->id}}">{{$c->apname}}</option>
+                                                    @endif
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td id="cphone">{{$sales->customer->apphone}}</td>
+                                        <td id="comname">{{$sales->customer->cicn}}</td>
+                                        <td id="comphone">{{$sales->customer->ciphone}}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -125,7 +135,7 @@ Form Update Sales Order #{{$sales->id}}
             <form class="form-horizontal" role="form" action="{{ route('sales.update',['id'=>$sales_id]) }}" enctype="multipart/form-data" method="POST">
                 {{ method_field('PUT') }}
                 @csrf
-                
+
                 <input type="hidden" name="customer" id="customer" value="{{$sales->customer_id}}">
                 <div class="card-box">
                     <div class="row">
@@ -369,7 +379,7 @@ function changeTotal(i,param=null){
 
         $('#sub_ttl_price'+i).val(ttl_price);
         $('#sub_ttl_bv'+i).val(ttl_bv)
-        
+
         changeTotalHarga();
     }, 1000);
 }
@@ -388,7 +398,7 @@ $input.on('keyup', function () {
     typingTimer = setTimeout(ongkosKirim, doneTypingInterval);
 });
 
-//on keydown, clear the countdown 
+//on keydown, clear the countdown
 $input.on('keydown', function () {
     clearTimeout(typingTimer);
     typingTimer = setTimeout(ongkosKirim, doneTypingInterval);
@@ -443,7 +453,7 @@ function deleteItemOld(id,purdet){
                 'error'
             )
         });
-        
+
     }, function (dismiss) {
         // dismiss can be 'cancel', 'overlay',
         // 'close', and 'timer'
@@ -471,6 +481,26 @@ function getDetail(id){
         $('#modalLarge').modal("show");
     }).fail(function (msg) {
         alert('Gagal menampilkan data, silahkan refresh halaman.');
+    });
+}
+
+function changeCustomer(id){
+    // console.log(id);
+    $.ajax({
+        url : "{{route('getCustomer')}}",
+        type : "get",
+        dataType: 'json',
+        data:{
+            id : id,
+        },
+    }).done(function (data) {
+        console.log(data);
+        $("#cphone").html(data.phone);
+        $("#comname").html(data.cname);
+        $("#comphone").html(data.cphone);
+        $("#customer").val(data.id);
+    }).fail(function (msg) {
+        alert('Gagal menampilkan data, silahkan refresh halaman.'+msg);
     });
 }
 </script>

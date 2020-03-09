@@ -43,7 +43,7 @@ class Purchase extends Model
         }elseif($param == NULL){
             $purchase = Purchase::where('month',$bulan)->where('year',$tahun)->where('approve',1);
         }
-        
+
         $ttl_trx = $purchase->count('id');
         $ttl_order = 0;
         $ttl_pay = 0;
@@ -98,7 +98,7 @@ class Purchase extends Model
         }else{
             Jurnal::addJurnal($id_jurnal,$total_tertahan,$purchase->tgl,$jurnal_desc,'1.1.3.4','Debet',$user_id);
         }
-        
+
         //insert credit hutang Dagang
         Jurnal::addJurnal($id_jurnal,$total_distributor,$purchase->tgl,$jurnal_desc,'2.1.1','Credit',$user_id);
     }
@@ -110,6 +110,9 @@ class Purchase extends Model
         $purchase = Purchase::where('id',$id)->first();
 
         // Update and tranfer to Purchase Orginal
+        $purchase->supplier = $temp_po->supplier;
+        $purchase->month = $temp_po->month;
+        $purchase->year = $temp_po->year;
         $purchase->notes = $temp_po->notes;
         $purchase->creator = $temp_po->creator;
         $purchase->tgl = $temp_po->tgl;
@@ -117,7 +120,7 @@ class Purchase extends Model
         $purchase->total_harga_dist = $temp_po->total_harga_dist;
 
         $purchase->update();
-        
+
         // Delete Old Original Detail
         $purdet = PurchaseDetail::where('trx_id',$id)->delete();
 
@@ -173,7 +176,7 @@ class Purchase extends Model
                     $jurnal2->date = $purchase->tgl;
                     $jurnal2->update();
                 }
-                
+
             //Update credit hutang Dagang
                 $jurnal3 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','2.1.1')->first();
                 $jurnal3->amount = $jurnal3->amount+$total_distributor;
@@ -195,7 +198,7 @@ class Purchase extends Model
             }else{
                 Jurnal::addJurnal($id_jurnal,$total_tertahan,$purchase->tgl,$jurnal_desc,'1.1.3.4','Debet',$user_id);
             }
-            
+
             //insert credit hutang Dagang
             Jurnal::addJurnal($id_jurnal,$total_distributor,$purchase->tgl,$jurnal_desc,'2.1.1','Credit',$user_id);
         }

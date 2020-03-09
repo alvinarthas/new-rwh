@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Handler;
+use Carbon\Carbon;
+use Excel;
+use App\Exports\SOExport;
 
 use App\Customer;
 use App\Product;
@@ -64,7 +67,7 @@ class SalesController extends Controller
             $price = 0;
             $bv = 0;
         }
-    
+
         $append = '<tr style="width:100%" id="trow'.$count.'">
         <input type="hidden" name="detail[]" id="detail'.$count.'" value="baru">
         <td>'.$count.'</td>
@@ -109,17 +112,17 @@ class SalesController extends Controller
                 $sales = TempSales::where('id',$detail->temp_id)->first();
                 $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
                 $sales->save();
-    
+
                 $detail->delete();
             }else{
                 $detail = SalesDet::where('id',$request->detail)->first();
                 $sales = Sales::where('id',$detail->trx_id)->first();
                 $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
                 $sales->save();
-    
+
                 $detail->delete();
             }
-            
+
             return "true";
         } catch (\Exception $e) {
             return response()->json($e);
@@ -188,12 +191,24 @@ class SalesController extends Controller
             $sales = Sales::where('id',$request->id)->first();
             $salesdet = SalesDet::where('trx_id',$request->id)->get();
             $salespay = SalesPayment::where('trx_id',$request->id)->sum('payment_amount');
-            return response()->json(view('sales.modal',compact('sales','salesdet','salespay'))->render());
+
+            $count = TempSales::where('trx_id', $request->id)->count();
+
+            if($count != 0){
+                $temp_sales = TempSales::where('trx_id', $request->id)->first();
+                $temp_salesdet = TempSalesDet::where('temp_id', $temp_sales->id)->get();
+                $jenis = "double";
+                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'temp_sales', 'temp_salesdet', 'jenis'))->render());
+            }else{
+                $jenis = "double";
+                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'jenis'))->render());
+            }
         }
     }
 
     public function edit($id)
     {
+        $customer = Customer::all();
         $count_temp = TempSales::where('trx_id',$id)->count('trx_id');
         $status_temp = TempSales::where('trx_id',$id)->where('status',1)->count('trx_id');
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
@@ -209,7 +224,7 @@ class SalesController extends Controller
             $salesdet = SalesDet::where('trx_id',$id)->get();
             $products = Product::select('prod_id','name')->get();
         }
-        return view('sales.form_update', compact('salesdet','sales','products','page','status'));
+        return view('sales.form_update', compact('salesdet','sales','products','page','status', 'customer'));
     }
 
     public function update(Request $request, $id)
@@ -256,7 +271,7 @@ class SalesController extends Controller
                     ));
                     $temp_sales->save();
                 }
-                
+
                 for ($i=0; $i < $request->count ; $i++) {
                     $temp_salesdet = new TempSalesDet(array(
                         'temp_id' => $temp_sales->id,
@@ -272,7 +287,7 @@ class SalesController extends Controller
                     $temp_salesdet->save();
                 }
                 Log::setLog('PSSLU','Update SO.'.$id);
-                
+
                 return redirect()->route('sales.index')->with('status', 'Data berhasil diubah');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
@@ -287,7 +302,7 @@ class SalesController extends Controller
             Jurnal::where('id_jurnal',$key->jurnal_id)->delete();
         }
         Jurnal::where('id_jurnal',$sales->jurnal_id)->delete();
-        
+
         try {
             $sales->delete();
             Log::setLog('PSSLD','Delete SO.'.$id);
@@ -295,5 +310,65 @@ class SalesController extends Controller
         } catch (\Exception $e) {
             return response()->json($e);
         }
+    }
+
+    public function export(Request $request)
+    {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        ini_set('max_execution_time', 3000);
+
+        $tgl = date('Y-m-d', strtotime(Carbon::today()));
+        $start = $request->start;
+        $end = $request->end;
+
+        if($start != "" && $end != ""){
+            $filename = "Daftar Penjualan ".$start." - ".$end."(".$tgl.")";
+            $sales = SalesDet::join('tblproducttrx', 'tblproducttrxdet.trx_id', 'tblproducttrx.id')->join('tblcustomer', 'tblproducttrx.customer_id', 'tblcustomer.id')->whereBetween('tblproducttrx.trx_date',[$start,$end])->select('tblproducttrx.trx_date', 'tblproducttrx.id', 'tblcustomer.apname', 'tblproducttrxdet.prod_id', 'tblproducttrxdet.price', 'tblproducttrxdet.qty', 'tblproducttrxdet.unit', 'tblproducttrxdet.sub_ttl', 'tblproducttrxdet.pv', 'tblproducttrxdet.sub_ttl_pv')->orderBy('tblproducttrx.trx_date','desc')->get();
+        }else{
+            $filename = "Daftar Penjualan (".$tgl.")";
+            $sales = SalesDet::join('tblproducttrx', 'tblproducttrxdet.trx_id', 'tblproducttrx.id')->join('tblcustomer', 'tblproducttrx.customer_id', 'tblcustomer.id')->select('tblproducttrx.trx_date', 'tblproducttrx.id', 'tblcustomer.apname', 'tblproducttrxdet.prod_id', 'tblproducttrxdet.price', 'tblproducttrxdet.qty', 'tblproducttrxdet.unit', 'tblproducttrxdet.sub_ttl', 'tblproducttrxdet.pv', 'tblproducttrxdet.sub_ttl_pv')->orderBy('tblproducttrx.trx_date','desc')->get();
+        }
+
+        $data = array();
+        $no = 0;
+
+        foreach($sales as $s){
+            $trx_id = "SO".$s->id;
+            $trx_date = $s->trx_date;
+            $cust_name = $s->apname;
+            $prod_id = $s->product()->first()->prod_id;
+            $prod_name = $s->product()->first()->name;
+            $price = $s->price;
+            $qty = $s->qty;
+            $unit = $s->unit;
+            $sub_ttl = $s->sub_ttl;
+            $pv = $s->pv;
+            $sub_ttl_pv = $s->sub_ttl_pv;
+            $no++;
+
+            $array = array(
+                // Data Member
+                'No' => $no,
+                'Transaction ID' => $trx_id,
+                'Transaction Date' => $trx_date,
+                'Customer Name' => $cust_name,
+                'Product ID' => $prod_id,
+                'Product Name' => $prod_name,
+                'Price' => $price,
+                'Qty' => $qty,
+                'Unit' => $unit,
+                'Sub Total' => $sub_ttl,
+                'BV per Product' => $pv,
+                'Total BV' => $sub_ttl_pv,
+            );
+
+            array_push($data, $array);
+        }
+
+        $export = new SOExport($data);
+
+        return Excel::download($export, $filename.'.xlsx');
     }
 }

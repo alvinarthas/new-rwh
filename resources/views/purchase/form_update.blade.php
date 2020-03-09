@@ -57,11 +57,32 @@ Form Update Purchasing #{{$purchase->id}}
                                     </tr>
                                 </tbody>
                             </table>
-            
+
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Posting Period</label>
-                                <div class="col-10">
-                                    <input type="text" class="form-control" value="{{date("F", mktime(0, 0, 0, $purchase->month, 10))}} {{$purchase->year}}">
+                                <div class="col-5">
+                                    <select class="form-control select2" parsley-trigger="change" name="bulan" id="bulan" onchange="changeBulan(this.value)" required>
+                                        <option value="#" disabled>Pilih Bulan</option>
+                                        @for ($i = 1; $i <= 12; $i++)
+                                            @if($purchase->month == $i)
+                                                <option value="{{$i}}" selected>{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
+                                            @else
+                                                <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
+                                            @endif
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="col-5">
+                                    <select class="form-control select2" parsley-trigger="change" name="tahun" id="tahun" onchange="changeTahun(this.value)" required>
+                                        <option value="#" disabled>Pilih Tahun</option>
+                                        @for ($i = 2018; $i <= date('Y'); $i++)
+                                            @if($purchase->year == $i)
+                                                <option value="{{$i}}" selected>{{$i}}</option>
+                                            @else
+                                                <option value="{{$i}}">{{$i}}</option>
+                                            @endif
+                                        @endfor
+                                    </select>
                                 </div>
                             </div>
                             @if ($status == 1)
@@ -70,7 +91,6 @@ Form Update Purchasing #{{$purchase->id}}
                             @else
                                 @php($purchase_id = $purchase->id)
                             @endif
-                            
                                 <input type="hidden" name="status" id="status" value="{{$status}}">
                         </div>
                     </div>
@@ -132,7 +152,7 @@ Form Update Purchasing #{{$purchase->id}}
             <form class="form-horizontal" id="form" role="form" action="{{ route('purchase.update',['id'=>$purchase_id]) }}" enctype="multipart/form-data" method="POST">
                 {{ method_field('PUT') }}
                 @csrf
-                
+
                 <input type="hidden" name="bulanpost" id="bulanpost" value="{{$purchase->month}}">
                 <input type="hidden" name="tahunpost" id="tahunpost" value="{{$purchase->year}}">
                 <input type="hidden" name="supplierpost" id="supplierpost" value="{{$purchase->supplier}}">
@@ -376,7 +396,7 @@ function changeTotal(i){
     sub_ttl_mod = harga_mod*qty;
     $('#sub_ttl_dist'+i).val(sub_ttl_dist);
     $('#sub_ttl_mod'+i).val(sub_ttl_mod)
-    
+
     changeTotalHarga();
 }
 
@@ -421,7 +441,7 @@ function deleteItemOld(id,purdet){
                 'error'
             )
         });
-        
+
     }, function (dismiss) {
         // dismiss can be 'cancel', 'overlay',
         // 'close', and 'timer'
@@ -450,6 +470,14 @@ function getDetail(id){
     }).fail(function (msg) {
         alert('Gagal menampilkan data, silahkan refresh halaman.');
     });
+}
+
+function changeBulan(bulan){
+    $("#bulanpost").val(bulan);
+}
+
+function changeTahun(tahun){
+    $("#tahunpost").val(tahun);
 }
 </script>
 @endsection

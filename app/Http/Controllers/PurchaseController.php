@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Handler;
 use Illuminate\Support\Facades\DB;
 
+use Carbon\Carbon;
+use Excel;
+use App\Exports\POExport;
+
 use App\Purchase;
 use App\PurchaseMap;
 use App\PurchaseDetail;
@@ -54,15 +58,17 @@ class PurchaseController extends Controller
     }
 
     public function showIndexPurchase(Request $request){
+        $bulan = $request->bulan;
+        $tahun = $request->tahun;
         if($request->param == "all"){
             $purchases = Purchase::orderBy('created_at','desc')->get();
         }else{
-            $purchases = Purchase::where('month',$request->bulan)->where('year',$request->tahun)->orderBy('created_at','desc')->get();
+            $purchases = Purchase::where('month',$bulan)->where('year',$tahun)->orderBy('created_at','desc')->get();
         }
 
         $page = MenuMapping::getMap(session('user_id'),"PUPU");
         if ($request->ajax()) {
-            return response()->json(view('purchase.indexpurchase',compact('purchases','page'))->render());
+            return response()->json(view('purchase.indexpurchase',compact('purchases','page', 'bulan', 'tahun'))->render());
         }
     }
 
@@ -227,7 +233,16 @@ class PurchaseController extends Controller
             $purchase = Purchase::where('id',$request->id)->first();
             $purchasedet = PurchaseDetail::where('trx_id',$request->id)->get();
             $purchasepay = PurchasePayment::where('trx_id',$request->id)->sum('payment_amount');
-            return response()->json(view('purchase.modal',compact('purchase','purchasedet','purchasepay'))->render());
+
+            $count = TempPO::where('purchase_id', $request->id)->count();
+
+            if($count != 0){
+                $temp_PO = TempPO::where('purchase_id', $request->id)->first();
+                $temp_POdet = TempPODet::where('temp_id', $temp_PO->id)->get();
+                return response()->json(view('purchase.modal',compact('purchase','purchasedet','purchasepay', 'temp_PO', 'temp_POdet'))->render());
+            }else{
+                return response()->json(view('purchase.modal',compact('purchase','purchasedet','purchasepay'))->render());
+            }
         }
     }
 
@@ -242,6 +257,7 @@ class PurchaseController extends Controller
         $count_temp = TempPO::where('purchase_id',$id)->count('purchase_id');
         $status_temp = TempPO::where('purchase_id',$id)->where('status',1)->count('purchase_id');
         $page = MenuMapping::getMap(session('user_id'),"PUPU");
+        $supplier = Perusahaan::all();
         if($count_temp > 0 && $status_temp == 1){
             $status = 1;
             $purchase = TempPO::where('purchase_id',$id)->first();
@@ -275,7 +291,7 @@ class PurchaseController extends Controller
         }
 
 
-        return view('purchase.form_update', compact('details','purchase','products','ttl_harga_modal','ttl_harga_dist','status','page'));
+        return view('purchase.form_update', compact('details','purchase','products','ttl_harga_modal','ttl_harga_dist','status','page', 'supplier'));
     }
 
     /**
@@ -287,6 +303,9 @@ class PurchaseController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
         // Validate
         $validator = Validator::make($request->all(), [
             'bulanpost' => 'required',
@@ -306,6 +325,9 @@ class PurchaseController extends Controller
                 if($check > 0){
                     $temp_purchase = TempPO::where('purchase_id',$id)->first();
                     // Update and tranfer to Purchase Orginal
+                    $temp_purchase->month = $request->bulanpost;
+                    $temp_purchase->year = $request->tahunpost;
+                    $temp_purchase->supplier = $request->supplierpost;
                     $temp_purchase->notes = $request->notes;
                     $temp_purchase->creator = session('user_id');
                     $temp_purchase->tgl = $request->po_date;
@@ -375,5 +397,67 @@ class PurchaseController extends Controller
         } catch (\Exception $e) {
             return response()->json($e);
         }
+    }
+
+    public function export(Request $request)
+    {
+        ini_set('max_execution_time', 3000);
+
+        $tgl = date('Y-m-d', strtotime(Carbon::today()));
+        $bulan = $request->bulan;
+        $tahun = $request->tahun;
+
+
+        if($bulan != "" && $tahun != ""){
+            $filename = "Daftar Pemesanan bulan bonus ".$namabulan." ".$tahun." (".$tgl.")";
+            $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->join('tblperusahaan', 'tblpotrx.supplier', 'tblperusahaan.id')->where('tblpotrx.month',$bulan)->where('tblpotrx.year', $tahun)->select('tblpotrx.tgl', 'tblpotrx.id', 'tblperusahaan.nama', 'tblpotrx.month', 'tblpotrx.year', 'tblpotrxdet.prod_id', 'tblpotrxdet.price', 'tblpotrxdet.price_dist', 'tblpotrxdet.qty', 'tblpotrxdet.unit')->orderBy('tblpotrx.tgl','asc')->get();
+        }else{
+            $filename = "Daftar Pemesanan (".$tgl.")";
+            $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->join('tblperusahaan', 'tblpotrx.supplier', 'tblperusahaan.id')->select('tblpotrx.tgl', 'tblpotrx.id', 'tblperusahaan.nama', 'tblpotrx.month', 'tblpotrx.year', 'tblpotrxdet.prod_id', 'tblpotrxdet.price', 'tblpotrxdet.price_dist', 'tblpotrxdet.qty', 'tblpotrxdet.unit')->orderBy('tblpotrx.tgl','asc')->get();
+        }
+
+        $data = array();
+        $no = 0;
+
+        foreach($purchase as $p){
+            $trx_id = "PO".$p->id;
+            $trx_date = $p->tgl;
+            $supplier = $p->nama;
+            $namabulan = date("F", mktime(0, 0, 0, $p->month, 10));
+            $periode = $namabulan." ".$p->year;
+            $prod_id = $p->product()->first()->prod_id;
+            $prod_name = $p->product()->first()->name;
+            $price = $p->price;
+            $price_dist = $p->price_dist;
+            $qty = $p->qty;
+            $unit = $p->unit;
+            $total_price = $price * $qty;
+            $total_price_dist = $price_dist * $qty;
+            $no++;
+
+            $array = array(
+                // Data Purchase
+                'No' => $no,
+                'Transaction ID' => $trx_id,
+                'Transaction Date' => $trx_date,
+                'Supplier' => $supplier,
+                'Bulan Bonus' => $periode,
+                'Product ID' => $prod_id,
+                'Product Name' => $prod_name,
+                'Price' => $price,
+                'Price Dist' => $price_dist,
+                'Qty' => $qty,
+                'Unit' => $unit,
+                'Sub Total Price' => $total_price,
+                'Sub Total Price Dist' => $total_price_dist,
+            );
+
+            array_push($data, $array);
+        }
+
+        $export = new POExport($data);
+
+        return Excel::download($export, $filename.'.xlsx');
+
     }
 }

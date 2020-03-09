@@ -22,8 +22,19 @@ class SaldoController extends Controller
     {
         $page = MenuMapping::getMap(session('user_id'),"PSDC");
         $jenis = "topup";
-        $saldo = Saldo::join('tblcustomer', 'tblsaldo.customer_id', 'tblcustomer.id')->select('tblcustomer.apname', 'accNo', 'amount', 'keterangan', 'tblsaldo.creator AS creator', 'tanggal','tblsaldo.id AS sid')->orderBy('tblsaldo.tanggal', 'desc')->get();
-        return view('customer.index', compact('saldo', 'jenis', 'page'));
+        $data = collect();
+        $customers = Customer::all();
+        foreach($customers as $customer){
+            $deposit = collect();
+            $saldo = Saldo::getSaldo($customer->id);
+
+            $deposit->put('name',$customer->apname);
+            $deposit->put('id',$customer->id);
+            $deposit->put('saldo',$saldo);
+            $data->push($deposit);
+        }
+        // $saldo = Saldo::join('tblcustomer', 'tblsaldo.customer_id', 'tblcustomer.id')->select('tblcustomer.apname', 'accNo', 'amount', 'keterangan', 'tblsaldo.creator AS creator', 'tanggal','tblsaldo.id AS sid')->orderBy('tblsaldo.tanggal', 'desc')->get();
+        return view('customer.index2', compact('data', 'jenis', 'page'));
     }
 
     /**
@@ -119,9 +130,13 @@ class SaldoController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        //
+        $saldo = Saldo::getSaldo($request->customer_id);
+        $name = $request->name;
+        $details = Saldo::where('customer_id',$request->customer_id)->orderBy('tanggal','desc')->get();
+        $page = MenuMapping::getMap(session('user_id'),"PSDC");
+        return response()->json(view('customer.modal2',compact('saldo','name','details','page'))->render());
     }
 
     /**
