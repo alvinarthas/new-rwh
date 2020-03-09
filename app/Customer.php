@@ -13,22 +13,27 @@ class Customer extends Model
     ];
     public $timestamps = false;
 
-    public static function sisaPiutang(){
+    public static function sisaPiutang($param=null){
         $data = collect();
+        $total = 0;
         foreach(Customer::all() as $key){
             $supp = collect();
             $sales = Sales::where('customer_id',$key->id)->sum(DB::raw('ttl_harga+ongkir'));
             $paid = Sales::join('tblsopayment','tblsopayment.trx_id','=','tblproducttrx.id')->where('tblproducttrx.customer_id',$key->id)->sum('tblsopayment.payment_amount');
 
             $selisih = $sales - $paid;
-
+            $total+=$selisih;
             $supp->put('name',$key->apname);
             $supp->put('id',$key->id);
             $supp->put('sisa',$selisih);
 
             $data->push($supp);
         }
-        return $data;
+        if($param){
+            return $total;
+        }else{
+            return $data;
+        }
     }
 
     public static function sisaPiutangDetail($customer){

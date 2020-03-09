@@ -42,7 +42,31 @@ class TestController extends Controller
     }
 
     public function index(){
-        dd(Purchase::countPost(2,2020));
+        $parent = Coa::where('AccParent',"1.1.1")->where('AccNo','NOT LIKE',"1.1.1")->get();
+        TestController::recursive($parent);
+    }
+
+    public function recursive($parent){
+        $sum = 0;
+        foreach($parent as $key2){
+            $tot = 0;
+            $check = Coa::where('AccParent',$key2->AccNo)->where('AccNo','NOT LIKE',$key2->AccNo)->count();
+            if($check > 0){
+                $temp = $key2->AccNo;
+                $sub = Coa::where('AccParent',$key2->AccNo)->where('AccNo','NOT LIKE',$key2->AccNo)->get();
+                TestController::recursive($sub);
+            }else{
+                $debet = Jurnal::where('AccNo',$key2->AccNo)->where('AccPos','Debet')->sum('Amount');
+                $credit = Jurnal::where('AccNo',$key2->AccNo)->where('AccPos','Credit')->sum('Amount');
+                $value = $debet-$credit;
+                $acparent = $key2->AccParent;
+                $sum+=$value;
+                // echo $key2->AccNo." - ".$key2->AccName.": ".$value."<br>";
+                echo "<tr>
+                <td>".$key2->AccNo." - ".$key2->AccName."</td>
+                <td>".$value."</td></tr>";
+            }
+        }
     }
 
     public function index_cust(){
@@ -97,17 +121,7 @@ class TestController extends Controller
     //     TestController::test($sub);
     // }
 
-    // public function test($parent){
-    //     $sum = 0;
-    //     foreach($parent as $key2){
-    //         echo $key2->AccNo." - ".$key2->AccName."<br>";
-    //         $check = Coa::where('AccParent',$key2->AccNo)->where('AccNo','NOT LIKE',$key2->AccNo)->count();
-    //         if($check > 0){
-    //             $sub = Coa::where('AccParent',$key2->AccNo)->where('AccNo','NOT LIKE',$key2->AccNo)->get();
-    //             TestController::test($sub);
-    //         }
-    //     }
-    // }
+    
     // public function index(){
     //     $total_credit = 0;
     //     $total_debet = 0;

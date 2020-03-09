@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 
 use App\Employee;
+use App\Salary;
+use App\Perusahaan;
+use App\Customer;
 
 class HomeController extends Controller
 {
@@ -15,8 +18,22 @@ class HomeController extends Controller
         if ($request->session()->has('isLoggedIn')) {
             // Get User Profile
             $user = Employee::where('id',session('user_id'))->first();
-            // Get Poin Sementara
-            return view('welcome.welcome',compact('user'));
+
+            if(session('role') == 'Direktur Utama'){
+                // Get Sisa Hutang Piutang
+                $hutang = Perusahaan::sisaHutang();
+                $piutang = Customer::sisaPiutang();
+            }elseif(session('role') == 'Superadmin'){
+                // Get Poin Sementara
+                $bonus = Salary::currentBonus(session('user_id'));
+                // Get Sisa Hutang Piutang
+                $hutang = Perusahaan::sisaHutang();
+                $piutang = Customer::sisaPiutang();
+            }else{
+                // Get Poin Sementara
+                $bonus = Salary::currentBonus(session('user_id'));
+            }
+            return view('welcome.welcome',compact('user','bonus','hutang','piutang'));
         }else{
             return view('login.login');
         }
