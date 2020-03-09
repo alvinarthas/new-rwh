@@ -46,7 +46,9 @@ class DepositController extends Controller
     public function create()
     {
         $suppliers = Perusahaan::all();
-        $coas = Coa::where('AccNo','LIKE','1.1.1.2%')->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
+        $coas = Coa::where(function ($query) {
+            $query->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo', 'LIKE', '2.5%');
+        })->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
 
         return view('purchase.deposit.form',compact('suppliers','coas'));
     }
@@ -92,7 +94,7 @@ class DepositController extends Controller
 
                 $data->save();
 
-                
+
                 Log::setLog('PUDPC','Create Deposit Pembelian Supplier: '.$request->supplier.' Jurnal ID: '.$id_jurnal);
 
                 return redirect()->route('deposit.index')->with('status', 'Data berhasil ditambah');
@@ -115,7 +117,7 @@ class DepositController extends Controller
         $details = Deposit::where('supplier_id',$request->id)->orderBy('date','desc')->get();
         $page = MenuMapping::getMap(session('user_id'),"PUDP");
         return response()->json(view('purchase.deposit.modal',compact('saldo','name','details','page'))->render());
-        
+
     }
 
     /**
@@ -150,7 +152,7 @@ class DepositController extends Controller
     public function destroy($id)
     {
         $deposit = Deposit::where('id',$id)->first();
-        $id_jurnal = $deposit->jurnal_id; 
+        $id_jurnal = $deposit->jurnal_id;
         $supplier = $deposit->supplier_id;
         try{
             $jurnal = Jurnal::where('id_jurnal',$deposit->jurnal_id)->delete();
