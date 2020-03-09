@@ -282,6 +282,7 @@
                                             <option value="{{$i}}">{{date("F", mktime(0, 0, 0, $i, 10))}}</option>
                                         @endif
                                     @endfor
+                                    <input type="hidden" name="bulan_lama" value="{{$bn->bulan}}">
                                 @else
                                     <option value="#" selected disabled>Pilih Bulan</option>
                                     @for ($i = 1; $i <= 12; $i++)
@@ -299,6 +300,7 @@
                                             <option value="{{$i}}">{{$i}}</option>
                                         @endif
                                     @endfor
+                                    <input type="hidden" name="tahun_lama" value="{{$bn->tahun}}">
                                 @else
                                     <option value="#" selected disabled>Pilih Tahun</option>
                                     @for ($i = 2018; $i <= date('Y'); $i++)
@@ -320,6 +322,7 @@
                                 <select class="form-control" parsley-trigger="change" id="rekening" name="rekening">
                                     @isset($bn->AccNo)
                                         <option value="{{ $bn->AccNo }}" selected>{{ Coa::where('AccNo', $bn->AccNo)->first()->AccName }}</option>
+                                        <input type="hidden" name="rekening_lama" value="{{$bn->AccNo}}">
                                     @endisset
                                 </select>
                             </div>

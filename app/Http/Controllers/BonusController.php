@@ -729,10 +729,13 @@ class BonusController extends Controller
                 // print_r($request->all());
                 // die();
                 $bulan = $request->bulan;
+                $bulan_lama = $request->bulan_lama;
                 $tahun = $request->tahun;
+                $tahun_lama = $request->tahun_lama;
                 $tgl = $request->tgl_transaksi;
                 $ctr = count($request->norekening);
                 $AccNo = $request->rekening;
+                $AccNo_lama = $request->rekening_lama;
                 $total_bonus = $request->total_bonus;
                 $selisih = $request->selisih_bonus;
                 $bonus_tertahan = $request->bonus_tertahan;
@@ -785,9 +788,11 @@ class BonusController extends Controller
 
                     if($AccNo != "1.1.1.1.000003"){
                         $ket = 'penerimaan bonus ke '.$AccNo.' untuk '.$norek.' - bulan '.$bulan.' '.$tahun;
+                        $ket_lama = 'penerimaan bonus ke '.$AccNo_lama.' untuk '.$norek.' - bulan '.$bulan_lama.' '.$tahun_lama;
                     }else{
                         $nama = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('norek', $norek)->first()->nama;
                         $ket = 'penerimaan bonus ke Kas Bonus Morinda untuk '.$nama.' - bulan '.$bulan.' '.$tahun;
+                        $ket_lama = 'penerimaan bonus ke Kas Bonus Morinda untuk '.$nama.' - bulan '.$bulan_lama.' '.$tahun_lama;
                     }
 
                     $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun)->where('bulan', $bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
@@ -795,7 +800,7 @@ class BonusController extends Controller
 
                     if(isset($request->bonus_lama[$i])){
                         // debet kas/bank
-                        $debet = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', $AccNo)->where('AccPos', "Debet")->where('description',"LIKE", $ket)->first();
+                        $debet = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', $AccNo)->where('AccPos', "Debet")->where('description',"LIKE", $ket_lama)->first();
                         // echo "<pre>";
                         // print_r($debet);
                         // print_r($ket);
