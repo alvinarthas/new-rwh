@@ -144,6 +144,8 @@ Route::middleware(['checkUser'])->group(function () {
         'saldo' => 'SaldoController',
         // Deposit Pembelian
         'deposit' => 'DepositController',
+        // Task
+        'task' => 'TaskController',
     ]);
 
     // Member
