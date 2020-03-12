@@ -13,9 +13,9 @@ class TaskEmployee extends Model
 
     public function task(){
         return $this->belongsTo('App\Task');
-    }  
+    }
 
     public function employee(){
         return $this->belongsTo('App\Employee');
-    }  
+    }
 }

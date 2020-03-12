@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
+use App\MenuMapping;
 use App\Task;
 use App\TaskEmployee;
 use App\Employee;
+use App\Log;
 
 class TaskController extends Controller
 {
@@ -17,8 +20,70 @@ class TaskController extends Controller
      */
     public function index()
     {
+        $page = MenuMapping::getMap(session('user_id'),"EMTA");
         $tasks = Task::all();
-        return view('employee.task.index',compact('tasks'));
+        $data = array();
+
+        foreach($tasks as $t){
+            $taskemployee = TaskEmployee::where('task_id', $t->id)->get();
+            $read = 0;
+            $reader = "Sudah : ";
+            $notyet_read ="Belum : ";
+            $status = 0;
+            $count_read = 0;
+            $count_status = 0;
+            $already = "Sudah : ";
+            $notyet_done = "Belum : ";
+
+            foreach($taskemployee as $te){
+                if($te->read == 1){
+                    $read += 1;
+                    $reader .= $te->employee->name.", ";
+                }else{
+                    $notyet_read .= $te->employee->name.", ";
+                }
+
+                if($te->status == 1){
+                    $status += 1;
+                    $already .= $te->employee->name.", ";
+                }else{
+                    $notyet_done .= $te->employee->name.", ";
+                }
+            }
+
+            $count = TaskEmployee::where('task_id', $t->id)->count();
+
+            if($read == $count){
+                $count_read = "text-success";
+            }else{
+                $count_read = "text-danger";
+            }
+
+            if($status == $count){
+                $count_status = "text-success";
+            }else{
+                $count_status = "text-danger";
+            }
+
+            $task = array(
+                'id'          => $t->id,
+                'title'       => $t->title,
+                'description' => $t->description,
+                'due_date'    => $t->due_date,
+                'creator'     => Employee::where('id', $t->creator)->first()->name,
+                'read'        => $read,
+                'count_read'  => $count_read,
+                'reader'      => $reader,
+                'notyet_read' => $notyet_read,
+                'status'      => $status,
+                'count_status'=> $count_status,
+                'already'     => $already,
+                'notyet_done' => $notyet_done,
+            );
+            array_push($data, $task);
+        }
+
+        return view('employee.task.index',compact('data', 'page'));
     }
 
     /**
@@ -28,8 +93,9 @@ class TaskController extends Controller
      */
     public function create()
     {
+        $jenis = "create";
         $employees = Employee::all();
-        return view('employee.task.form',compact('employees'));
+        return view('employee.task.form',compact('employees', 'jenis'));
     }
 
     /**
@@ -72,9 +138,9 @@ class TaskController extends Controller
                     $emtask->save();
                 }
                 Log::setLog('EMTAC','Create Task: '.$task->id.' Title:'.$request->title);
-                return redirect()->route('role.index')->with('status','Role berhasil ditambahkan');
+                return redirect()->route('task.create')->with('status','Task berhasil ditambahkan');
             } catch (\Exception $e) {
-                return redirect()->back()->withErrors($e);
+                return redirect()->back()->withErrors($e->getMessage());
             }
         }
     }
@@ -85,11 +151,15 @@ class TaskController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($id, Request $request)
     {
-        $taskemp = TaskEmployee::where('task_id',$id)->get();
-
-        return $taskemp;
+        if ($request->ajax()) {
+            $task = TaskEmployee::join('task', 'task_employee.task_id', 'task.id')->where('task_employee.task_id', $request->id)->get();
+            // echo "<pre>";
+            // print_r($task);
+            // die();
+            return response()->json(view('employee.task.modal',compact('task'))->render());
+        }
     }
 
     /**
@@ -100,9 +170,16 @@ class TaskController extends Controller
      */
     public function edit($id)
     {
-        $employees = Employee::all();
-        $task = Task::where('id',$id)->first();
-        return view('employee.task.form',compact('employees','task'));
+        $jenis = "edit";
+        $employee_id = array();
+        $employee = TaskEmployee::where('task_id', $id)->select('employee_id')->get();
+        foreach($employee as $e){
+            array_push($employee_id, $e->employee_id);
+        }
+        $employees = Employee::whereNotIn('id', $employee_id)->get();
+
+        $task = TaskEmployee::join('task', 'task_employee.task_id', 'task.id')->where('task_employee.task_id',$id)->select('task.id', 'task.title', 'task.due_date', 'task.description', 'task_employee.employee_id')->get();
+        return view('employee.task.form',compact('employees','task', 'jenis'));
     }
 
     /**
@@ -145,17 +222,17 @@ class TaskController extends Controller
                             'task_id' => $task->id,
                             'employee_id' => $emp,
                         ));
-    
+
                         $emtask->save();
                     }
-                    
+
                 }
 
                 Log::setLog('EMTAU','Update Task: '.$id.' Title:'.$request->title);
-                return redirect()->route('role.index')->with('status','Role berhasil ditambahkan');
+                return redirect()->route('task.index')->with('status','Role berhasil ditambahkan');
 
             } catch (\Exception $e) {
-                return redirect()->back()->withErrors($e);
+                return redirect()->back()->withErrors($e->getMessage());
             }
         }
     }
@@ -174,7 +251,7 @@ class TaskController extends Controller
             return "true";
         // fail
         }catch (\Exception $e) {
-            return redirect()->back()->withErrors($e->errorInfo);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 }
