@@ -42,8 +42,7 @@ class TestController extends Controller
     }
 
     public function index(){
-        $parent = Coa::where('AccParent',"1.1.1")->where('AccNo','NOT LIKE',"1.1.1")->get();
-        TestController::recursive($parent);
+        dd(Customer::sisaPiutang());
     }
 
     public function recursive($parent){

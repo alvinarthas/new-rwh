@@ -224,7 +224,7 @@
                                     <thead>
                                         <tr>
                                             <th>No</th>
-                                            <th>Purchase Order</th>
+                                            <th>Supplier</th>
                                             <th>Sisa Hutang</th>
                                         </tr>
                                     </thead>
@@ -234,7 +234,7 @@
                                             @if($item['sisa'] > 20000000)
                                                 <tr>
                                                     <td>{{$i}}</td>
-                                                    <td>PO.{{$item['id']}}</td>
+                                                    <td>PO.{{$item['nama']}}</td>
                                                     <td><strong>Rp {{number_format($item['sisa'],2,',','.')}}</strong></td>
                                                 </tr>
                                                 @php($i++)
@@ -255,7 +255,7 @@
                                     <thead>
                                         <tr>
                                             <th>No</th>
-                                            <th>Sales Order</th>
+                                            <th>Customer</th>
                                             <th>Sisa Piutang</th>
                                         </tr>
                                     </thead>
@@ -265,7 +265,7 @@
                                             @if($item2['sisa'] > 20000000)
                                                 <tr>
                                                     <td>{{$i}}</td>
-                                                    <td>SO.{{$item2['id']}}</td>
+                                                    <td>{{$item2['name']}}</td>
                                                     <td><strong>Rp {{number_format($item2['sisa'],2,',','.')}}</strong></td>
                                                 </tr>
                                                 @php($i++)

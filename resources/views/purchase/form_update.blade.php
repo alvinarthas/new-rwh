@@ -2,6 +2,7 @@
 @php
     use App\TempPO;
     use App\TempPODet;
+    use App\PurchaseDetail;
 @endphp
 @section('css')
     <!-- DataTables -->
@@ -186,6 +187,7 @@ Form Update Purchasing #{{$purchase->id}}
                                                 <td><input type="hidden" name="prod_name[]" id="prod_name{{$i}}" value="{{$detail->product->name}}">{{$detail->product->name}}</td>
                                                 <td><input type="number" name="qty[]" id="qty{{$i}}" value="{{$detail->qty}}" onchange="changeTotal({{$i}})" onkeyup="changeTotal({{$i}})"></td>
                                                 <td><input type="hidden" name="unit[]" id="unit{{$i}}" value="{{$detail->unit}}">{{$detail->unit}}</td>
+                                                <td>Rp&nbsp;{{number_format(PurchaseDetail::avgCost($detail->prod_id),2,",",".")}}</td>
                                                 <td><input type="number" name="harga_dist[]" id="harga_dist{{$i}}" value="{{$detail->price_dist}}" onkeyup="changeTotal({{$i}})"></td>
                                                 <td><input type="number" name="harga_mod[]" id="harga_mod{{$i}}" value="{{$detail->price}}" onkeyup="changeTotal({{$i}})"></td>
                                                 <td><input type="number" readonly value="{{$detail->price_dist*$detail->qty}}" name="sub_ttl_dist[]" id="sub_ttl_dist{{$i}}"></td>
