@@ -22,7 +22,7 @@ Tambah Task Pegawai
     @if($jenis == "create")
         <form class="form-horizontal" role="form" action="{{ route('task.store') }}" enctype="multipart/form-data" method="POST">
     @elseif($jenis == "edit")
-        <form class="form-horizontal" role="form" action="{{ route('task.update', ['id' => $task->id]) }}" enctype="multipart/form-data" method="POST">
+        <form class="form-horizontal" role="form" action="{{ route('task.update', ['id' => $task[0]->id]) }}" enctype="multipart/form-data" method="POST">
             {{ method_field('PUT') }}
     @endif
 
@@ -54,7 +54,7 @@ Tambah Task Pegawai
                                 <label class="col-2 col-form-label">Deadline Pengerjaan</label>
                                 <div class="col-10">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="due_date" id="due_date" value="@isset($task[0]->due_date){{$task[0]->due_date}}@endisset" autocomplete="off">
+                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="due_date" id="due_date" value="@isset($task[0]->due_date){{$task[0]->due_date}}@endisset" data-date-format="yyyy-mm-dd" autocomplete="off">
                                         <div class="input-group-append">
                                             <span class="input-group-text"><i class="ti-calendar"></i></span>
                                         </div>
@@ -65,18 +65,15 @@ Tambah Task Pegawai
                                 <label class="col-2 col-form-label">Ditujukan kepada</label>
                                 <div class="col-10">
                                     <select class="select2 select2-multiple select2-hidden-accessible" name="employee[]" id="employee" multiple="multiple" data-placeholder="Pilih" tabindex="-1" aria-hidden="true">
-                                        @isset($task[0]->employee)
-                                            @foreach($employee as $e)
-                                                @foreach($task as $t)
-                                                    @if($e->id == $t->employee)
-                                                        <option value="{{$t->id}}" selected>{{$e->name}}</option>
-                                                    @else
-                                                        <option value="{{$t->id}}">{{$e->name}}</option>
-                                                    @endif
-                                                @endforeach
+                                        @isset($task[0]->employee_id)
+                                            @foreach($task as $t)
+                                                <option value="{{$t->id}}" selected>{{$t->employee->name}}</option>
+                                            @endforeach
+                                            @foreach($employees as $e)
+                                                <option value="{{$e->id}}">{{$e->name}}</option>
                                             @endforeach
                                         @else
-                                            @foreach($employee as $e)
+                                            @foreach($employees as $e)
                                                 <option value="{{$e->id}}">{{$e->name}}</option>
                                             @endforeach
                                         @endisset
