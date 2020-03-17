@@ -318,6 +318,9 @@ Route::middleware(['checkUser'])->group(function () {
     // Bonus Helper
     Route::post('repairEstimasibonus', 'BonusController@RepairEstimasi')->name('repairEstimasiBonus');
 
+    // Task Helper
+    Route::put('/task/{id}/updateStatus','TaskController@statusUpdate')->name('task.updatestatus');
+    Route::put('/task/{id}/updateRead','TaskController@readUpdate')->name('task.updateread');
 });
 
 // Fingerprint System

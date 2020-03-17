@@ -33,6 +33,9 @@ class SaldoController extends Controller
             $deposit->put('saldo',$saldo);
             $data->push($deposit);
         }
+
+        $data = $data->sortByDesc('saldo');
+
         // $saldo = Saldo::join('tblcustomer', 'tblsaldo.customer_id', 'tblcustomer.id')->select('tblcustomer.apname', 'accNo', 'amount', 'keterangan', 'tblsaldo.creator AS creator', 'tanggal','tblsaldo.id AS sid')->orderBy('tblsaldo.tanggal', 'desc')->get();
         return view('customer.index2', compact('data', 'jenis', 'page'));
     }

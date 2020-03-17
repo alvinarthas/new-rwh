@@ -800,11 +800,8 @@ class BonusController extends Controller
 
                     if(isset($request->bonus_lama[$i])){
                         // debet kas/bank
-                        $debet = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', $AccNo)->where('AccPos', "Debet")->where('description',"LIKE", $ket_lama)->first();
-                        // echo "<pre>";
-                        // print_r($debet);
-                        // print_r($ket);
-                        // die();
+                        $debet = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', $AccNo_lama)->where('AccPos', "Debet")->where('description',"LIKE", $ket_lama)->first();
+                        $debet->AccNo       = $AccNo;
                         $debet->Amount      = $bonus;
                         $debet->date        = $tgl;
                         $debet->description = $ket;
@@ -875,9 +872,6 @@ class BonusController extends Controller
         // Validation success
         }else{
             try{
-                // echo "<pre>";
-                // print_r($request->all());
-                // die();
                 $ctr = count($request->norekening);
                 $tgl = $request->tgl_transaksi;
                 $AccNo = $request->rekening;

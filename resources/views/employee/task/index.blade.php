@@ -38,6 +38,7 @@
                     <thead>
                         <th>No</th>
                         <th>Judul</th>
+                        <th>Dibuat pada</th>
                         <th>Deadline</th>
                         <th>Creator</th>
                         <th>Status Dilihat</th>
@@ -51,6 +52,8 @@
                         <tr>
                             <td>{{$i}}</td>
                             <td><a href="javascript:;" onclick="getDescribe('{{ $task['id'] }}')" disabled="disabled">{{$task['title']}}</a></td>
+                            <input type="hidden" name="employee_id" id="employee_id" value="{{session('user_id')}}">
+                            <td>{{$task['created_at']}}</td>
                             <td>{{$task['due_date']}}</td>
                             <td>{{$task['creator']}}</td>
                             <td class="text-center">
@@ -128,12 +131,17 @@
     });
 
     function getDescribe(id){
+        var employee = $('#employee_id').val();
+        var page = "task";
+
         $.ajax({
             url : '{{route('task.show',['id'=>1])}}',
             type : "get",
             dataType: 'json',
             data:{
                 id:id,
+                employee_id:employee,
+                page:page,
             },
         }).done(function (data) {
             $('#modalView').html(data);
