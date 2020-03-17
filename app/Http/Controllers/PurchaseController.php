@@ -84,6 +84,8 @@ class PurchaseController extends Controller
         $sub_ttl_dist = $qty*$manage->harga_distributor;
         $sub_ttl_mod = $qty*$manage->harga_modal;
 
+        $avcost = PurchaseDetail::avgCost($request->select_product);
+
         $append = '<tr style="width:100%" id="trow'.$count.'">
         <td>'.$count.'</td>
         <input type="hidden" name="detail[]" id="detail'.$count.'" value="baru">
@@ -91,6 +93,7 @@ class PurchaseController extends Controller
         <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$manage['name'].'">'.$manage['name'].'</td>
         <td><input type="number" name="qty[]" value="'.$qty.'" id="qty'.$count.'" onchange="changeTotal('.$count.')" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="hidden" name="unit[]" value="'.$unit.'" id="unit'.$count.'">'.$unit.'</td>
+        <td>Rp&nbsp;'.number_format($avcost,2,",",".").'</td>
         <td><input type="number" name="harga_dist[]" value="'.$manage['harga_distributor'].'" id="harga_dist'.$count.'" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="number" name="harga_mod[]" value="'.$manage['harga_modal'].'" id="harga_mod'.$count.'" onkeyup="changeTotal('.$count.')"></td>
         <td><input type="number" readonly name="sub_ttl_dist[]" value="'.$sub_ttl_dist.'" id="sub_ttl_dist'.$count.'"></td>
