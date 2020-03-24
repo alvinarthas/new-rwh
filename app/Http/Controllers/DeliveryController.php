@@ -30,7 +30,8 @@ class DeliveryController extends Controller
             $start = $request->start;
             $end = $request->end;
             $sales = Sales::checkDO($start,$end);
-            return response()->json(view('sales.do.view',compact('sales'))->render());
+            $deliveries = DeliveryOrder::checkDO($start,$end);
+            return response()->json(view('sales.do.view',compact('sales','deliveries'))->render());
         }else{
             return view('sales.do.index');
         }
@@ -48,7 +49,7 @@ class DeliveryController extends Controller
 
     public function show($id){
         $sales = Sales::where('id',$id)->first();
-        $salesdets = SalesDet::where('trx_id',$id)->get();
+        $salesdets = SalesDet::where('trx_id',$id)->select('*',DB::Raw('SUM(qty) as sum_qty'))->groupBy('prod_id')->get();
         $dos = DeliveryOrder::where('sales_id',$id)->get();
         $page = MenuMapping::getMap(session('user_id'),"PSDO");
         $products = SalesDet::getProducts($id);

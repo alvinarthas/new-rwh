@@ -13,7 +13,7 @@
         <tbody>
             @csrf
             @php($i=1)
-            @foreach ($purchase['data'] as $item)
+            @foreach ($purchase['data']->sortBy('status') as $item)
                 <tr>
                     <td>{{$i}}</td>
                     <td>PO.{{$item['trx_id']}}</td>

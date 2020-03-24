@@ -192,7 +192,7 @@ class FingerPrintController extends Controller
 
             $salt = md5($sn.$finger->finger_data.$device->vc.$time.$user_id.$device->vkey);
             if (strtoupper($vStamp) == strtoupper($salt)) {
-                if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Operasional"){
+                if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Operasional" || $role == "Manager Keuangan"){
                     // Insert to Log
                     try{
                         $approve = Purchase::where('id',$request->trx_id)->select('approve')->first()->approve;
@@ -254,7 +254,7 @@ class FingerPrintController extends Controller
 
             $salt = md5($sn.$finger->finger_data.$device->vc.$time.$user_id.$device->vkey);
             if (strtoupper($vStamp) == strtoupper($salt)) {
-                if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Keuangan"){
+                if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Keuangan" || $role == "Manager Operasional"){
                     // Insert to Log
                     try{
                         $approve = Sales::where('id',$request->trx_id)->select('approve')->first()->approve;

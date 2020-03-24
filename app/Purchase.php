@@ -59,9 +59,15 @@ class Purchase extends Model
             $temp->put('year',$key->year);
             $temp->put('supplier',$key->supplier()->first()->nama);
             $temp->put('id',$key->id);
-            $temp->put('status',$key->status);
             $temp->put('order',$order);
             $temp->put('paid',$pay_amount);
+            if($pay_amount == $order){
+                $temp->put('status',1);
+            }elseif($pay_amount > $order){
+                $temp->put('status',2);
+            }else{
+                $temp->put('status',0);
+            }
             $data1->push($temp);
         }
         $data->put('data',$data1);

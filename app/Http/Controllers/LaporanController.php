@@ -69,7 +69,12 @@ class LaporanController extends Controller
                 $cogs = Coa::cogs($start,$end);
                 $gross_profit = $nett_sales - $cogs;
                 $biayaa = Coa::biaya($start,$end);
-                $laba_operasional = $gross_profit - $biayaa['amount'];
+                if($biayaa['amount'] < 0 ){
+                    $laba_operasional = $gross_profit + $biayaa['amount'];
+                }else{
+                    $laba_operasional = $gross_profit - $biayaa['amount'];
+                }
+                
                 $laba_bersih_non = Coa::laba_bersih_non($start,$end);
                 $laba_rugi = Coa::laba_rugi($start,$end);
 
