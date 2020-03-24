@@ -84,6 +84,10 @@ Index Purchasing
 
 @section('script-js')
 <script>
+    $(document).ready(function () {
+        // Responsive Datatable
+        $('#responsive-datatable').DataTable();
+    });
     function getDetail(id,name){
         $.ajax({
             url : "{{route('deposit.show',['id'=>1])}}",

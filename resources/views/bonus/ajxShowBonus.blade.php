@@ -125,10 +125,14 @@
                                         @php
                                             $selisih = $total_perhitungan - $total_realisasi;
                                         @endphp
-                                        @if($selisih != 0)
-                                            <td class="table-danger">
-                                        @else
-                                            <td class="table-success">
+                                        @if($selisih <= 25000 AND $selisih > 0)
+                                            <td style="background-color:#ffdf7b">
+                                        @elseif($selisih > 25000)
+                                            <td style="background-color:#ff8484">
+                                        @elseif($selisih == 0)
+                                            <td style="background-color:#62ff60">
+                                        @elseif($selisih < 0)
+                                            <td style="background-color:#7d6dff">
                                         @endif
                                             Rp {{ number_format($selisih, 2, ",", ".") }}
                                         </td>

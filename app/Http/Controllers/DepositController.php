@@ -35,6 +35,8 @@ class DepositController extends Controller
             $data->push($deposit);
         }
 
+        $data = $data->sortByDesc('saldo');
+
         return view('purchase.deposit.index',compact('data','page'));
     }
 
@@ -47,7 +49,7 @@ class DepositController extends Controller
     {
         $suppliers = Perusahaan::all();
         $coas = Coa::where(function ($query) {
-            $query->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo', 'LIKE', '2.5%')->orWhere('AccNo', 'LIKE', '1.10.1%');
+            $query->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo', 'LIKE', '2.5%')->orWhere('AccNo', 'LIKE', '1.10.1');
         })->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
 
         return view('purchase.deposit.form',compact('suppliers','coas'));

@@ -69,6 +69,7 @@ class TaskController extends Controller
                 'id'          => $t->id,
                 'title'       => $t->title,
                 'description' => $t->description,
+                'created_at'  => $t->created_at,
                 'due_date'    => $t->due_date,
                 'creator'     => Employee::where('id', $t->creator)->first()->name,
                 'read'        => $read,
@@ -154,10 +155,12 @@ class TaskController extends Controller
     public function show($id, Request $request)
     {
         if ($request->ajax()) {
+            $te = TaskEmployee::where('task_id', $request->id)->where('employee_id', $request->employee_id)->first();
+            $te->read = 1;
+            $te->update();
+
             $task = TaskEmployee::join('task', 'task_employee.task_id', 'task.id')->where('task_employee.task_id', $request->id)->get();
-            // echo "<pre>";
-            // print_r($task);
-            // die();
+
             return response()->json(view('employee.task.modal',compact('task'))->render());
         }
     }
@@ -191,6 +194,9 @@ class TaskController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
         // Validate
         $validator = Validator::make($request->all(), [
             'title' => 'required|string',
@@ -208,7 +214,7 @@ class TaskController extends Controller
             $task->title = $request->title;
             $task->description = $request->description;
             $task->due_date = $request->due_date;
-            $task->due_date = session('user_id');
+            $task->creator = session('user_id');
 
             try {
                 $task->update();
@@ -229,8 +235,7 @@ class TaskController extends Controller
                 }
 
                 Log::setLog('EMTAU','Update Task: '.$id.' Title:'.$request->title);
-                return redirect()->route('task.index')->with('status','Role berhasil ditambahkan');
-
+                return redirect()->route('task.index')->with('status','Task berhasil diupdate');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->getMessage());
             }
@@ -250,6 +255,27 @@ class TaskController extends Controller
             Log::setLog('EMTAD','Delete Task:'.$id);
             return "true";
         // fail
+        }catch (\Exception $e) {
+            return redirect()->back()->withErrors($e->getMessage());
+        }
+    }
+
+    public function statusUpdate(Request $request, $id)
+    {
+        try{
+            $data = TaskEmployee::where('task_id', $id)->where('employee_id', $request->employee_id)->first();
+            // echo "<pre>";
+            // print_r($data);
+            // die();
+            $data->status = 1;
+            $data->update();
+
+            Log::setLog('EMTAU','Update Task: '.$id.' Title:'.$request->title.' Employee : '.$request->employee_id.' Status : Done');
+            if($request->page == "task"){
+                return redirect()->route('task.index')->with('status','Task Selesai!');
+            }else{
+                return redirect()->route('getHome')->with('status','Task selesai!');
+            }
         }catch (\Exception $e) {
             return redirect()->back()->withErrors($e->getMessage());
         }

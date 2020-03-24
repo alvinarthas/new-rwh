@@ -134,7 +134,7 @@ class PaymentController extends Controller
         }else{
             $sales->status = 1;
         }
-        
+
         $sales->save();
 
         $id_jurnal = $payment->jurnal_id;
@@ -168,7 +168,7 @@ class PaymentController extends Controller
         $payment = PurchasePayment::where('trx_id',$id)->get();
         $ttl_pay = PurchasePayment::where('trx_id',$id)->sum('payment_amount');
         $ttl_order = PurchaseDetail::where('trx_id',$id)->sum(DB::raw('qty * price_dist'));
-        $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo','LIKE','2.5%')->orWhere('AccNo','LIKE','1.10.%')->orWhere('AccNo','LIKE','1.1.1.1.000003')->orderBy('AccName','asc')->get();
+        $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo', '1.1.1.1.000001')->orWhere('AccNo','LIKE','2.5%')->orWhere('AccNo','LIKE','1.10.%')->orWhere('AccNo','LIKE','1.1.1.1.000003')->orderBy('AccName','asc')->get();
         $page = MenuMapping::getMap(session('user_id'),"PUPP");
 
         return view('payment.purchase.form',compact('purchase','payment','coas','details','ttl_pay','ttl_order','page'));
@@ -211,7 +211,7 @@ class PaymentController extends Controller
 
                 // Jurnal Credit Cash/Bank / Deposit Pembelian
                 Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Credit');
-                
+
                 // Payment
                 $payment->save();
 
@@ -236,7 +236,7 @@ class PaymentController extends Controller
 
                     $deposit->save();
                 }
-                
+
                 Log::setLog('PUPPC','Create Purchase Payment PO.'.$request->trx_id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {

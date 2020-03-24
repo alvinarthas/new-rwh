@@ -1,3 +1,6 @@
+@php
+    use App\TaskEmployee;
+@endphp
 <div class="card-box table-responsive">
     <div class="row">
         <div class="col-12">
@@ -40,6 +43,16 @@
                     </div>
                 </div>
             </div>
+            @if(TaskEmployee::where('employee_id',session('user_id'))->where('task_id', $task[0]->task_id)->count() == 1)
+            <div class="row pull-right">
+                <form class="form-horizontal" role="form" action="{{ route('task.updatestatus', ['id' => $task[0]->id]) }}" enctype="multipart/form-data" method="POST">
+                    {{ method_field('PUT') }}
+                    @csrf
+                    <input type="hidden" name="employee_id" value="{{session('user_id')}}">
+                    <button class="btn btn-success waves-effect w-md waves-success m-b-5">Done <span class="mdi mdi-thumb-up-outline"></span></button>
+                </form>
+            </div>
+            @endif
         </div>
     </div>
 </div>

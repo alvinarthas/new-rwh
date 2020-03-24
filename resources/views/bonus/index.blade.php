@@ -452,7 +452,7 @@
                                                 <tr style="width:100%" id="trtd{{ $b->id_bonus }}" class="trow">
                                                     <td><input type="hidden" name="id_bonus[]" value="{{ $b->id_bonus }}">{{$i}}</td>
                                                     @if($bonusapa=="topup")
-                                                        <td>{{$b->id_jurnal}}</td>
+                                                        <td><input type="hidden" name="id_jurnal[]" value="{{ $b->id_jurnal }}">{{$b->id_jurnal}}</td>
                                                     @endif
                                                     @if($bn->AccNo != "1.1.1.1.000003")
                                                         <td>{{$b->namabank}}</td>
@@ -846,6 +846,7 @@
             data:{
                 id_member : id,
                 tgl : tanggal,
+                jenis : "edit",
                 count : cnt,
                 _token : token,
             },

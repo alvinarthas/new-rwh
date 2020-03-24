@@ -18,6 +18,7 @@
                 <thead>
                     <th>No</th>
                     <th>Jumlah</th>
+                    <th>Tanggal</th>
                     <th>Status</th>
                     <th>Creator</th>
                     <th>Keterangan</th>
@@ -30,6 +31,7 @@
                         <tr>
                             <td>{{$i}}</td>
                             <td>Rp {{number_format($key->amount,2,",",".")}}</td>
+                            <td>{{$key->date}}</td>
                             <td>
                                 @if ($key->status == 1)
                                     <a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-md waves-danger m-b-5" >Masuk</a>
@@ -90,7 +92,7 @@
                     'error'
                 )
             });
-            
+
         }, function (dismiss) {
             // dismiss can be 'cancel', 'overlay',
             // 'close', and 'timer'
