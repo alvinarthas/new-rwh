@@ -249,6 +249,12 @@ class SalaryController extends Controller
                 $eomcollect = collect();
                 $bonus_divisi = 0;
 
+                $gaji_pokok = $peg->gaji_pokok;
+
+                if($peg->id == 30 || $peg->id == 21){
+                    $gaji_pokok = ($gaji_pokok*24)/25;
+                }
+
                 if(isset($request->bonus[$peg->id])){
                     $bonus_divisi = $request->bonus[$peg->id];
                 }
@@ -321,7 +327,7 @@ class SalaryController extends Controller
                 $total_bonus = $value_internal+$value_logistik+$value_kendali_perusahaan+$value_top3+$eom+$bonus_divisi;
 
                 // Take Home Pay
-                $take_home_pay = $peg->gaji_pokok+$peg->tunjangan_jabatan+$bonus_jabatan+$total_bonus;
+                $take_home_pay = $gaji_pokok+$peg->tunjangan_jabatan+$bonus_jabatan+$total_bonus;
 
                 // Store to Collection EOM
                 $eomcollect->put('id',$peg->id);
@@ -332,7 +338,7 @@ class SalaryController extends Controller
                 $salarydet = new SalaryDet(array(
                     'salary_id' => $salary->id,
                     'bonus' => $total_bonus,
-                    'gaji_pokok' => $peg->gaji_pokok,
+                    'gaji_pokok' => $gaji_pokok,
                     'bonus_jabatan' => $bonus_jabatan,
                     'take_home_pay' => $take_home_pay,
                     'employee_id' => $peg->id,
