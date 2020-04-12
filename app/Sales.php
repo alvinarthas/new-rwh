@@ -107,12 +107,12 @@ class Sales extends Model
         $data = collect();
         foreach ($sales as $sale) {
             $collect = collect();
-            $salesdet = SalesDet::where('trx_id',$sale->id)->get();
+            $salesdet = SalesDet::where('trx_id',$sale->id)->select('*',DB::Raw('SUM(qty) as sum_qty'))->groupBy('prod_id')->get();
             $detcount = $salesdet->count();
             $count = 0;
             foreach($salesdet as $key){
                 $count_do_product = DeliveryDetail::where('sales_id',$sale->id)->where('product_id',$key->prod_id)->sum('qty');
-                if($key->qty == $count_do_product){
+                if($key->sum_qty == $count_do_product){
                     $count++;
                 }
             }

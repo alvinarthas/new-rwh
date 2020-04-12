@@ -68,12 +68,12 @@ Form Sales Order
                                         <tr>
                                             <td>{{$salesdet->prod_id}}</td>
                                             <td>{{$salesdet->product->name}}</td>
-                                            <td>{{$salesdet->qty}}</td>
+                                            <td>{{$salesdet->sum_qty}}</td>
                                             <td>{{$salesdet->unit}}</td>
                                             @php($count_prod = Sales::checkSent($salesdet->prod_id,$sales->id))
-                                            @if ($salesdet->qty == $count_prod)
+                                            @if ($salesdet->sum_qty == $count_prod)
                                                 <td><a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$count_prod}}</a></td>
-                                            @elseif ($count_prod > $salesdet->qty)
+                                            @elseif ($count_prod > $salesdet->sum_qty)
                                                 <td><a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$count_prod}}</a></td>
                                             @else
                                                 <td><a href="javascrip:;" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$count_prod}}</a></td>

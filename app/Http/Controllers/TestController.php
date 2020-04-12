@@ -37,12 +37,21 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
-    public function indexreqe(){
-        dd(Purchase::where('month',2)->where('year',2020)->distinct()->count('supplier'));
+    public function index(){
+        $a = DeliveryDetail::where('sales_id',271)->where('product_id','SG351')->sum('qty');
+        dd($a);
+        // dd(SalesDet::where('trx_id',271)->groupBy('prod_id')->get());
     }
 
-    public function index(){
-        dd(Customer::sisaPiutang());
+    public function index565(){
+        foreach(Sales::all() as $key){
+            $harga = SalesDet::where('trx_id',$key->id)->sum(DB::raw('price*qty'));
+
+            if($key->ttl_harga <> $harga){
+                echo "<pre>";
+                print_r($harga);
+            }
+        }
     }
 
     public function recursive($parent){

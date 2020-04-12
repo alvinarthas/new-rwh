@@ -86,5 +86,7 @@
 
 <script>
 // Responsive Datatable
-$('#responsive-datatable').DataTable();
+$('#responsive-datatable').DataTable({
+    "order": [[ 7, "asc" ]]
+});
 </script>
