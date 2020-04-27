@@ -3,13 +3,88 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\TaskEmployee;
+use App\Employee;
 
 class Task extends Model
 {
     protected $table ='task';
     protected $fillable = [
-        'title', 'description', 'due_date','creator'
+        'title', 'description', 'start_date', 'due_date', 'is_it_done','creator'
     ];
+
+    public static function getTask($page){
+        if($page=="task"){
+            $tasks = Task::all();
+        }else{
+            $tasks = Task::where('is_it_done', 0)->get();
+        }
+
+        $data = array();
+
+        foreach($tasks as $t){
+            $taskemployee = TaskEmployee::where('task_id', $t->id)->get();
+            $read = 0;
+            $reader = "Sudah : ";
+            $notyet_read ="Belum : ";
+            $status = 0;
+            $count_read = 0;
+            $count_status = 0;
+            $already = "Sudah : ";
+            $notyet_done = "Belum : ";
+
+            foreach($taskemployee as $te){
+                if($te->read == 1){
+                    $read += 1;
+                    $reader .= $te->employee->name.", ";
+                }else{
+                    $notyet_read .= $te->employee->name.", ";
+                }
+
+                if($te->status == 1){
+                    $status += 1;
+                    $already .= $te->employee->name.", ";
+                }else{
+                    $notyet_done .= $te->employee->name.", ";
+                }
+            }
+
+            $count = TaskEmployee::where('task_id', $t->id)->count();
+
+            if($read == $count){
+                $count_read = "text-success";
+            }else{
+                $count_read = "text-danger";
+            }
+
+            if($status == $count){
+                $count_status = "text-success";
+            }else{
+                $count_status = "text-danger";
+            }
+
+            $task = array(
+                'id'          => $t->id,
+                'title'       => $t->title,
+                'description' => $t->description,
+                'created_at'  => $t->created_at,
+                'start_date'  => $t->start_date,
+                'due_date'    => $t->due_date,
+                'creator'     => Employee::where('id', $t->creator)->first()->name,
+                'read'        => $read,
+                'count_read'  => $count_read,
+                'reader'      => $reader,
+                'notyet_read' => $notyet_read,
+                'status'      => $status,
+                'count_status'=> $count_status,
+                'already'     => $already,
+                'notyet_done' => $notyet_done,
+            );
+            array_push($data, $task);
+        }
+
+        return $data;
+    }
 
 
     public static function checkPegawai($id){

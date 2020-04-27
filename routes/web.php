@@ -321,6 +321,9 @@ Route::middleware(['checkUser'])->group(function () {
     // Task Helper
     Route::put('/task/{id}/updateStatus','TaskController@statusUpdate')->name('task.updatestatus');
     Route::put('/task/{id}/updateRead','TaskController@readUpdate')->name('task.updateread');
+    Route::post('/ajxaddtaskcomment', 'TaskController@ajxAddTaskComment')->name('ajxAddTaskComment');
+    Route::put('/task/{id}/done','TaskController@taskDone')->name('task.done');
+    Route::delete('task/image/{id}', 'TaskController@deleteImage');
 });
 
 // Fingerprint System

@@ -38,7 +38,7 @@
                     <thead>
                         <th>No</th>
                         <th>Judul</th>
-                        <th>Dibuat pada</th>
+                        <th>Tanggal</th>
                         <th>Deadline</th>
                         <th>Creator</th>
                         <th>Status Dilihat</th>
@@ -53,7 +53,7 @@
                             <td>{{$i}}</td>
                             <td><a href="javascript:;" onclick="getDescribe('{{ $task['id'] }}')" disabled="disabled">{{$task['title']}}</a></td>
                             <input type="hidden" name="employee_id" id="employee_id" value="{{session('user_id')}}">
-                            <td>{{$task['created_at']}}</td>
+                            <td>{{$task['start_date']}}</td>
                             <td>{{$task['due_date']}}</td>
                             <td>{{$task['creator']}}</td>
                             <td class="text-center">

@@ -10,6 +10,8 @@
     <link href="{{ asset('assets/plugins/timepicker/bootstrap-timepicker.min.css') }}" rel="stylesheet">
     <!--datetimepicker-->
     <link href="{{ asset('assets/plugins/bootstrap-datetimepicker-master/build/css/bootstrap-datetimepicker.min.css') }}" rel="stylesheet">
+    <!-- Sweet Alert css -->
+    <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
     <!--Token-->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
@@ -51,6 +53,17 @@ Tambah Task Pegawai
                                 </div>
                             </div>
                             <div class="form-group row">
+                                <label class="col-2 col-form-label">Tanggal</label>
+                                <div class="col-10">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start_date" id="start_date" value="@isset($task[0]->start_date){{$task[0]->start_date}}@endisset" data-date-format="yyyy-mm-dd" autocomplete="off">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                        </div>
+                                    </div><!-- input-group -->
+                                </div>
+                            </div>
+                            <div class="form-group row">
                                 <label class="col-2 col-form-label">Deadline Pengerjaan</label>
                                 <div class="col-10">
                                     <div class="input-group">
@@ -67,7 +80,7 @@ Tambah Task Pegawai
                                     <select class="select2 select2-multiple select2-hidden-accessible" name="employee[]" id="employee" multiple="multiple" data-placeholder="Pilih" tabindex="-1" aria-hidden="true">
                                         @isset($task[0]->employee_id)
                                             @foreach($task as $t)
-                                                <option value="{{$t->id}}" selected>{{$t->employee->name}}</option>
+                                                <option value="{{$t->employee->id}}" selected>{{$t->employee->name}}</option>
                                             @endforeach
                                             @foreach($employees as $e)
                                                 <option value="{{$e->id}}">{{$e->name}}</option>
@@ -79,6 +92,25 @@ Tambah Task Pegawai
                                         @endisset
                                     </select>
                                 </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Upload Gambar Petunjuk</label>
+                                <div class="col-10 increment">
+                                    <input type="file" class="dropify" data-height="100" name="gambar[]" id="gambar" multiple/>
+                                </div>
+                                @isset($source)
+                                    @if($count_source!=0)
+                                        @foreach($source as $gambar)
+                                            <div class="col-2"></div>
+                                            <div class="col-10">
+                                                <a href="{{ asset('assets/images/task/'.$gambar['source']) }}" class="image-popup" title="{{$gambar['source']}}">
+                                                    <img src="{{ asset('assets/images/task/'.$gambar['source']) }}"  alt="user-img" title="{{ $gambar['source'] }}" width="200px" class="img-thumbnail img-responsive photo">
+                                                </a>
+                                                <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteImage({{$gambar['id']}})">Delete</a>
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                @endisset
                             </div>
                         </div>
                     </div>
@@ -108,14 +140,29 @@ Tambah Task Pegawai
 <!-- Datetimepicker -->
 <script src="{{ asset('assets/plugins/moment/moment2.js') }}"></script>
 <script src="{{ asset('assets/plugins/bootstrap-datetimepicker-master/build/js/bootstrap-datetimepicker.min.js') }}"></script>
+<!-- Sweet Alert Js  -->
+<script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
+<script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
 @endsection
 
 @section('script-js')
     <script type="text/javascript">
         $(document).ready(function() {
             $('form').parsley();
+
+            $(".btn-success").click(function(){
+                var html = $(".clone").html();
+                document.getElementById("file").style.display = 'block';
+                $(".increment").after(html);
+            });
+
+            $("body").on("click",".btn-danger",function(){
+                $(this).parents(".increment").remove();
+            });
+
         });
 
+        $('#start_date').datepicker();
         $('#due_date').datepicker();
 
         // $(function () {
@@ -155,6 +202,56 @@ Tambah Task Pegawai
                 return $opt;
             }
         };
+
+        function deleteImage(id){
+            var token = $("meta[name='csrf-token']").attr("content");
+
+            swal({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'No, cancel!',
+                confirmButtonClass: 'btn btn-success',
+                cancelButtonClass: 'btn btn-danger m-l-10',
+                buttonsStyling: false
+            }).then(function () {
+                $.ajax({
+                    url: "/task/image/"+id,
+                    type: 'DELETE',
+                    data: {
+                        "id": id,
+                        "_token": token,
+                    },
+                }).done(function (data) {
+                    swal(
+                        'Deleted!',
+                        'Your file has been deleted.',
+                        'success'
+                    )
+                    location.reload();
+                }).fail(function (msg) {
+                    swal(
+                        'Failed',
+                        'Your imaginary file is safe :)',
+                        'error'
+                    )
+                });
+
+            }, function (dismiss) {
+                // dismiss can be 'cancel', 'overlay',
+                // 'close', and 'timer'
+                if (dismiss === 'cancel') {
+                    console.log("eh ga kehapus");
+                    swal(
+                        'Cancelled',
+                        'Your imaginary file is safe :)',
+                        'error'
+                    )
+                }
+            })
+        }
     </script>
 
     <script type="text/javascript">
