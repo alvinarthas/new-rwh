@@ -409,10 +409,11 @@ class PurchaseController extends Controller
         $tgl = date('Y-m-d', strtotime(Carbon::today()));
         $bulan = $request->bulan;
         $tahun = $request->tahun;
+        $monthname = date("F", mktime(0, 0, 0, $bulan, 10));
 
 
         if($bulan != "" && $tahun != ""){
-            $filename = "Daftar Pemesanan bulan bonus ".$namabulan." ".$tahun." (".$tgl.")";
+            $filename = "Daftar Pemesanan bulan bonus ".$monthname." ".$tahun." (".$tgl.")";
             $purchase = PurchaseDetail::join('tblpotrx', 'tblpotrxdet.trx_id', 'tblpotrx.id')->join('tblperusahaan', 'tblpotrx.supplier', 'tblperusahaan.id')->where('tblpotrx.month',$bulan)->where('tblpotrx.year', $tahun)->select('tblpotrx.tgl', 'tblpotrx.id', 'tblperusahaan.nama', 'tblpotrx.month', 'tblpotrx.year', 'tblpotrxdet.prod_id', 'tblpotrxdet.price', 'tblpotrxdet.price_dist', 'tblpotrxdet.qty', 'tblpotrxdet.unit')->orderBy('tblpotrx.tgl','asc')->get();
         }else{
             $filename = "Daftar Pemesanan (".$tgl.")";

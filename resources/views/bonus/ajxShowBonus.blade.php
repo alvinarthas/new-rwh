@@ -125,9 +125,9 @@
                                         @php
                                             $selisih = $total_perhitungan - $total_realisasi;
                                         @endphp
-                                        @if($selisih <= 25000 AND $selisih > 0)
+                                        @if($selisih <= 50000 AND $selisih > 0)
                                             <td style="background-color:#ffdf7b">
-                                        @elseif($selisih > 25000)
+                                        @elseif($selisih > 50000)
                                             <td style="background-color:#ff8484">
                                         @elseif($selisih == 0)
                                             <td style="background-color:#62ff60">

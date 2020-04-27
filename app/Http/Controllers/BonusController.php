@@ -503,6 +503,9 @@ class BonusController extends Controller
         }elseif($request->bonusapa=="pembayaran"){
             $bonusapa = $request->bonusapa;
             $details = BonusBayar::join('bankmember', 'tblbonusbayar.no_rek', 'bankmember.norek')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where("tblbonusbayar.id_jurnal", $request->id_jurnal)->select('tblbank.nama AS namabank', 'tblbonusbayar.no_rek', 'tblmember.nama', 'tblbonusbayar.bonus', 'tblbonusbayar.id_jurnal', 'tblbonusbayar.AccNo')->get();
+            echo "<pre>";
+            print_r($details);
+            die();
             $bonus = BonusBayar::join("tblcoa", "tblbonusbayar.AccNo", "tblcoa.AccNo")->where("tblbonusbayar.id_jurnal", $request->id_jurnal)->select('tblbonusbayar.tgl', 'tblcoa.AccName', 'tblbonusbayar.id_jurnal')->first();
             $id_jurnal = $bonus['id_jurnal'];
             $rekening = $bonus['AccName'];
@@ -866,7 +869,9 @@ class BonusController extends Controller
             'tgl_transaksi' => 'required',
         ]);
 
+        // ini_set('max_input_vars', 10000);
         // echo "<pre>";
+        // phpinfo();
         // print_r($request->all());
         // die();
 
@@ -876,6 +881,7 @@ class BonusController extends Controller
         // Validation success
         }else{
             try{
+                ini_set('max_input_vars', 10000);
                 $ctr = count($request->norekening);
                 $tgl = $request->tgl_transaksi;
                 $AccNo = $request->rekening;
@@ -885,9 +891,6 @@ class BonusController extends Controller
                     $norek = $request->norekening[$i];
                     $bonus = $request->bonus[$i];
                     $ket = 'top up bonus '.$norek.' - '.$tgl;
-
-                    $topup = TopUpBonus::where('no_rek', $norek)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
-                    $num = $topup->count();
 
                     if($request->id_bonus[$i] != ""){
                         $id_jurnal_lama = $request->id_jurnal[$i];
@@ -1325,7 +1328,7 @@ class BonusController extends Controller
             <td>'.$count.'</td>
             <td><input type="hidden" name="namabank[]" id="namabank'.$count.'" value="'.$bankmember->bank_id.'">'.$namabank.'</td>
             <td><input type="hidden" name="norekening[]" id="norekening'.$count.'" value="'.$norek.'">'.$norek.'</td>
-            <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$nama.'">'.$nama.'</td>
+            <td>'.$nama.'</td>
             <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="0"></td>
             <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
             </tr>';
@@ -1333,7 +1336,7 @@ class BonusController extends Controller
             $append = '<tr style="width:100%" id="trow'.$count.'" class="trow">
             <td>'.$count.'</td>
             <input type="hidden" name="norekening[]" id="norekening'.$count.'" value="'.$norek.'">'.$norek.'
-            <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$nama.'">'.$nama.'</td>
+            <td>'.$nama.'</td>
             <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="0"></td>
             <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
             </tr>';
@@ -1601,7 +1604,7 @@ class BonusController extends Controller
         $append .=
         '<td>'.$namabank.'</td>
         <td><input type="hidden" name="norekening[]" id="norekening'.$count.'" value="'.$norek.'">'.$norek.'</td>
-        <td><input type="hidden" name="nama[]" id="nama'.$count.'" value="'.$nama.'">'.$nama.'</td>
+        <td>'.$nama.'</td>
         <td><input type="text" class="form-control number" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()" id="bonus'.$count.'" value="'.$bonus.'"></td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
         </tr>';

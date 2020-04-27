@@ -134,12 +134,14 @@
                 @if($bonusapa != "laporan" OR $bonusapa != "bonusgagal")
                     @if($jenis == "create" OR $jenis == "edit")
                         @if($jenis=="edit")
-                            <div class="form-group row">
-                                <label class="col-2 col-form-label">ID Jurnal</label>
-                                <div class="col-10">
-                                    <input value="{{ $bonus[0]['id_jurnal'] }}" type="text" class="form-control" name="id_jurnal_lama" id="id_jurnal_lama" readonly>
+                            @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran")
+                                <div class="form-group row">
+                                    <label class="col-2 col-form-label">ID Jurnal</label>
+                                    <div class="col-10">
+                                        <input value="{{ $bonus[0]['id_jurnal'] }}" type="text" class="form-control" name="id_jurnal_lama" id="id_jurnal_lama" readonly>
+                                    </div>
                                 </div>
-                            </div>
+                            @endif
                         @endif
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Tanggal Transaksi</label>
@@ -460,11 +462,13 @@
                                                     @else
                                                         <input type="hidden" name="norekening[]" value="{{ $b->no_rek }}">
                                                     @endif
-                                                    <td><input type="hidden" name="nama[]" value="{{ $b->nama }}">{{$b->nama}}</td>
+                                                    <td>{{$b->nama}}</td>
                                                     <td>
                                                         {{-- tampil semua data member perusahaan --}}
                                                         <input class="form-control" value="{{ $b['bonus'] }}" type="text" name="bonus[]" parsley-trigger="keyup" onkeyup="checkTotal()">
-                                                        <input value="{{ $b['bonus'] }}" type="hidden" name="bonus_lama[]">
+                                                        @if($bonusapa=="pembayaran")
+                                                            <input value="{{ $b['bonus'] }}" type="hidden" name="bonus_lama[]">
+                                                        @endif
                                                         {{-- hanya yang bonus !=0 --}}
                                                         {{-- <input class="form-control number" value="{{ number_format($prm['bonus'],0) }}" type="text" name="bonus{{ $i }}"> --}}
                                                     </td>

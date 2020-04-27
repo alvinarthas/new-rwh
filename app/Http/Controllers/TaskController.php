@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Validator;
 use App\MenuMapping;
 use App\Task;
 use App\TaskEmployee;
+use App\TaskGambar;
+use App\TaskComment;
 use App\Employee;
 use App\Log;
 
@@ -20,69 +22,8 @@ class TaskController extends Controller
      */
     public function index()
     {
+        $data = Task::getTask("task");
         $page = MenuMapping::getMap(session('user_id'),"EMTA");
-        $tasks = Task::all();
-        $data = array();
-
-        foreach($tasks as $t){
-            $taskemployee = TaskEmployee::where('task_id', $t->id)->get();
-            $read = 0;
-            $reader = "Sudah : ";
-            $notyet_read ="Belum : ";
-            $status = 0;
-            $count_read = 0;
-            $count_status = 0;
-            $already = "Sudah : ";
-            $notyet_done = "Belum : ";
-
-            foreach($taskemployee as $te){
-                if($te->read == 1){
-                    $read += 1;
-                    $reader .= $te->employee->name.", ";
-                }else{
-                    $notyet_read .= $te->employee->name.", ";
-                }
-
-                if($te->status == 1){
-                    $status += 1;
-                    $already .= $te->employee->name.", ";
-                }else{
-                    $notyet_done .= $te->employee->name.", ";
-                }
-            }
-
-            $count = TaskEmployee::where('task_id', $t->id)->count();
-
-            if($read == $count){
-                $count_read = "text-success";
-            }else{
-                $count_read = "text-danger";
-            }
-
-            if($status == $count){
-                $count_status = "text-success";
-            }else{
-                $count_status = "text-danger";
-            }
-
-            $task = array(
-                'id'          => $t->id,
-                'title'       => $t->title,
-                'description' => $t->description,
-                'created_at'  => $t->created_at,
-                'due_date'    => $t->due_date,
-                'creator'     => Employee::where('id', $t->creator)->first()->name,
-                'read'        => $read,
-                'count_read'  => $count_read,
-                'reader'      => $reader,
-                'notyet_read' => $notyet_read,
-                'status'      => $status,
-                'count_status'=> $count_status,
-                'already'     => $already,
-                'notyet_done' => $notyet_done,
-            );
-            array_push($data, $task);
-        }
 
         return view('employee.task.index',compact('data', 'page'));
     }
@@ -107,12 +48,16 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
         // Validate
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string',
+            'title'       => 'required|string',
             'description' => 'required|string',
-            'due_date' => 'required',
-            'employee' => 'required|array',
+            'start_date'  => 'required',
+            'due_date'    => 'required',
+            'employee'    => 'required|array',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -121,25 +66,42 @@ class TaskController extends Controller
         }else{
             $task = new Task(array(
                 // Informasi Pribadi
-                'title' => $request->title,
+                'title'       => $request->title,
                 'description' => $request->description,
-                'due_date' => $request->due_date,
-                'creator' => session('user_id'),
+                'start_date'  => $request->start_date,
+                'due_date'    => $request->due_date,
+                'is_it_done'  => 0,
+                'creator'     => session('user_id'),
             ));
+
             try {
-                $task->save();
+                if($task->save()){
+                    $no=0;
+                    foreach($request->gambar as $gmbr){
+                        // Upload Foto
+                        if($gmbr <> NULL|| $gmbr <> ''){
+                            $gambar = ++$no.' '.$request->title.'.'.$gmbr->getClientOriginalExtension();
+                            $gmbr->move(public_path('assets/images/task/'),$gambar);
 
-                foreach($request->employee as $emp){
-                    $emtask = new TaskEmployee(array(
-                        // Informasi Pribadi
-                        'task_id' => $task->id,
-                        'employee_id' => $emp,
-                    ));
+                            $petunjuk = new TaskGambar(array(
+                                'task_id' => $task->id,
+                                'source'  => $gambar,
+                            ));
+                            $petunjuk->save();
+                        }
+                    }
 
-                    $emtask->save();
+                    foreach($request->employee as $emp){
+                        $emtask = new TaskEmployee(array(
+                            // Informasi Pribadi
+                            'task_id' => $task->id,
+                            'employee_id' => $emp,
+                        ));
+                        $emtask->save();
+                    }
+                    Log::setLog('EMTAC','Create Task: '.$task->id.' Title:'.$request->title);
+                    return redirect()->route('task.index')->with('status','Task berhasil ditambahkan');
                 }
-                Log::setLog('EMTAC','Create Task: '.$task->id.' Title:'.$request->title);
-                return redirect()->route('task.create')->with('status','Task berhasil ditambahkan');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->getMessage());
             }
@@ -154,14 +116,35 @@ class TaskController extends Controller
      */
     public function show($id, Request $request)
     {
+        $page = $request->page;
         if ($request->ajax()) {
-            $te = TaskEmployee::where('task_id', $request->id)->where('employee_id', $request->employee_id)->first();
-            $te->read = 1;
-            $te->update();
+            if(TaskEmployee::where('task_id', $request->id)->where('employee_id', $request->employee_id)->first()){
+                // echo session('role');
+                // die();
+                $te = TaskEmployee::where('task_id', $request->id)->where('employee_id', $request->employee_id)->first();
+                $te->read = 1;
+                $te->update();
+            }
 
             $task = TaskEmployee::join('task', 'task_employee.task_id', 'task.id')->where('task_employee.task_id', $request->id)->get();
+            $comment = TaskComment::where('task_id', $request->id)->get();
 
-            return response()->json(view('employee.task.modal',compact('task'))->render());
+            if(!empty($comment)){
+                $kendala = array();
+                foreach($comment as $c){
+                    $data = array(
+                        'employee'   => $c->employee->name,
+                        'comment'    => $c->comment,
+                        'created_at' => date("Y-m-d, H:i", strtotime($c->created_at)),
+                    );
+                    array_push($kendala, $data);
+                }
+            }
+
+            $source = TaskGambar::where('task_id', $request->id)->get();
+            $count_source = TaskGambar::where('task_id', $request->id)->count();
+
+            return response()->json(view('employee.task.modal',compact('task', 'kendala', 'page', 'source', 'count_source'))->render());
         }
     }
 
@@ -181,8 +164,10 @@ class TaskController extends Controller
         }
         $employees = Employee::whereNotIn('id', $employee_id)->get();
 
-        $task = TaskEmployee::join('task', 'task_employee.task_id', 'task.id')->where('task_employee.task_id',$id)->select('task.id', 'task.title', 'task.due_date', 'task.description', 'task_employee.employee_id')->get();
-        return view('employee.task.form',compact('employees','task', 'jenis'));
+        $task = TaskEmployee::join('task', 'task_employee.task_id', 'task.id')->where('task_employee.task_id',$id)->select('task.id', 'task.title', 'task.start_date', 'task.due_date', 'task.description', 'task_employee.employee_id')->get();
+        $source = TaskGambar::where('task_id', $id)->get();
+        $count_source = TaskGambar::where('task_id', $id)->count();
+        return view('employee.task.form',compact('employees','task', 'jenis', 'source', 'count_source'));
     }
 
     /**
@@ -199,10 +184,11 @@ class TaskController extends Controller
         // die();
         // Validate
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string',
+            'title'       => 'required|string',
             'description' => 'required|string',
-            'due_date' => 'required',
-            'employee' => 'required|array',
+            'start_date'  => 'required',
+            'due_date'    => 'required',
+            'employee'    => 'required|array',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -213,29 +199,45 @@ class TaskController extends Controller
 
             $task->title = $request->title;
             $task->description = $request->description;
+            $task->start_date = $request->start_date;
             $task->due_date = $request->due_date;
+            $task->is_it_done = 0;
             $task->creator = session('user_id');
 
             try {
-                $task->update();
-
-                foreach($request->employee as $emp){
-                    $emtsk = TaskEmployee::where('employee_id',$emp)->where('task_id',$task->id)->count();
-
-                    if($emtsk == 0){
+                if($task->update()){
+                    // Reset Employee Status when task updated
+                    TaskEmployee::where('task_id', $task->id)->delete();
+                    foreach($request->employee as $emp){
                         $emtask = new TaskEmployee(array(
-                            // Informasi Pribadi
                             'task_id' => $task->id,
                             'employee_id' => $emp,
                         ));
-
                         $emtask->save();
                     }
 
-                }
+                    $no=TaskGambar::where('task_id', $id)->count();
+                    if($no!=0){
+                        $file = TaskGambar::where('task_id', $id)->latest()->first()->source;
+                        $no = $file[0];
+                    }
+                    foreach($request->gambar as $gmbr){
+                        // Upload Foto
+                        if($gmbr <> NULL|| $gmbr <> ''){
+                            $gambar = ++$no.' '.$request->title.'.'.$gmbr->getClientOriginalExtension();
+                            $gmbr->move(public_path('assets/images/task/'),$gambar);
 
-                Log::setLog('EMTAU','Update Task: '.$id.' Title:'.$request->title);
-                return redirect()->route('task.index')->with('status','Task berhasil diupdate');
+                            $petunjuk = new TaskGambar(array(
+                                'task_id' => $task->id,
+                                'source'  => $gambar,
+                            ));
+                            $petunjuk->save();
+                        }
+                    }
+
+                    Log::setLog('EMTAU','Update Task: '.$id.' Title:'.$request->title);
+                    return redirect()->route('task.index')->with('status','Task berhasil diupdate');
+                }
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->getMessage());
             }
@@ -260,6 +262,21 @@ class TaskController extends Controller
         }
     }
 
+    public function deleteImage($id)
+    {
+        try{
+            $gambar = TaskGambar::where('id',$id)->first();
+            if (file_exists(public_path('assets/images/task/').$gambar->source)) {
+                unlink(public_path('assets/images/task/').$gambar->source);
+            }
+            $gambar->delete();
+            return "true";
+        // fail
+        }catch (\Exception $e) {
+            return redirect()->back()->withErrors($e->getMessage());
+        }
+    }
+
     public function statusUpdate(Request $request, $id)
     {
         try{
@@ -275,6 +292,45 @@ class TaskController extends Controller
                 return redirect()->route('task.index')->with('status','Task Selesai!');
             }else{
                 return redirect()->route('getHome')->with('status','Task selesai!');
+            }
+        }catch (\Exception $e) {
+            return redirect()->back()->withErrors($e->getMessage());
+        }
+    }
+
+    public function ajxAddTaskComment(Request $request){
+        $task_id = $request->id;
+        $employee_id = $request->employee_id;
+        $comment = $request->comment;
+
+        $taskcomment = new TaskComment(array(
+            'task_id'     => $task_id,
+            'employee_id' => $employee_id,
+            'comment'     => $comment,
+        ));
+
+        if($taskcomment->save()){
+            $append = '<i class="ti-arrow-circle-right"></i> '.$taskcomment->employee->name.' ('.date("Y-m-d, H:i", strtotime($taskcomment->created_at)).') - '.$taskcomment->comment.'
+            <br>';
+
+            $data = array(
+                'append' => $append,
+            );
+            return response()->json($data);
+        }
+    }
+
+    public function taskDone($id, Request $request)
+    {
+        try{
+            $data = Task::where('id', $id)->first();
+            $data->is_it_done = 1;
+            $data->update();
+
+            if($request->page == "task"){
+                return redirect()->route('task.index')->with('status','Task telah Selesai');
+            }else{
+                return redirect()->route('getHome')->with('status','Task telah Selesai');
             }
         }catch (\Exception $e) {
             return redirect()->back()->withErrors($e->getMessage());
