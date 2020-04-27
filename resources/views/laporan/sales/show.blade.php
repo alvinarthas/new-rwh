@@ -67,8 +67,8 @@
                                 <tr>
                                     <td>{{ $i }}</td>
                                     <td>{{ $rep2['customer'] }}</td>
-                                    <td>Rp <span class="divide">{{ number_format($rep2['bv'],2,',','.') }}</span></td>
-                                    <td>Rp <span class="divide">{{ number_format($rep2['price'],2,',','.') }}</span></td>
+                                    <td>Rp {{ number_format($rep2['bv'],2,',','.') }}</td>
+                                    <td>Rp {{ number_format($rep2['price'],2,',','.') }}</td>
                                 </tr>
                                 @php($i++)
                             @endforeach
