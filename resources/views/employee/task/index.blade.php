@@ -27,10 +27,10 @@
     <div class="row">
         <div class="col-12">
             <div class="card-box table-responsive">
-                <h4 class="m-t-0 header-title">Index Task Employee</h4>
+                <h4 class="m-t-0 header-title">Index Tugas Pegawai</h4>
                 <p class="text-muted font-14 m-b-30">
                     @if (array_search("EMTAC",$page))
-                        <a href="{{ route('task.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Task</a>
+                        <a href="{{ route('task.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Tugas</a>
                     @endif
                 </p>
 
@@ -43,6 +43,7 @@
                         <th>Creator</th>
                         <th>Status Dilihat</th>
                         <th>Status Dikerjakan</th>
+                        <th>Status Tugas</th>
                         <th>Action</th>
                     </thead>
 
@@ -65,6 +66,13 @@
                                 <a tabindex="0" class="{{$task['count_status']}}"data-toggle="popover" data-trigger="focus" title="" data-content="{{ $task['notyet_done'] }}" data-original-title="{{ $task['already'] }}">
                                     <b>{{$task['status']}}</b>
                                 </a>
+                            </td>
+                            <td>
+                                @if ($task['is_it_done'] == 1)
+                                    <a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-md waves-danger m-b-5" >Selesai</a>
+                                @else
+                                    <a href="javascript:;" disabled="disabled" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" >Belum</a>
+                                @endif
                             </td>
                             <td>
                                 @if (array_search("EMTAU",$page))
