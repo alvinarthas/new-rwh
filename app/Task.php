@@ -70,6 +70,7 @@ class Task extends Model
                 'created_at'  => $t->created_at,
                 'start_date'  => $t->start_date,
                 'due_date'    => $t->due_date,
+                'is_it_done'  => $t->is_it_done,
                 'creator'     => Employee::where('id', $t->creator)->first()->name,
                 'read'        => $read,
                 'count_read'  => $count_read,
