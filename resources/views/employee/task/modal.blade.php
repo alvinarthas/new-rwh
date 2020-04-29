@@ -22,6 +22,17 @@
                                 </div>
                             </div>
                             <div class="form-group row">
+                                <label class="col-4 col-form-label">Tanggal</label>
+                                <div class="col-8">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="start_date" id="start_date" value="@isset($task[0]->start_date){{$task[0]->start_date}}@endisset" data-date-format="yyyy-mm-dd" autocomplete="off" disabled>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="ti-calendar"></i></span>
+                                        </div>
+                                    </div><!-- input-group -->
+                                </div>
+                            </div>
+                            <div class="form-group row">
                                 <label class="col-4 col-form-label">Deadline Pengerjaan</label>
                                 <div class="col-8">
                                     <div class="input-group">

@@ -76,10 +76,19 @@ class TaskController extends Controller
 
             try {
                 if($task->save()){
-                    $no=0;
-                    foreach($request->gambar as $gmbr){
-                        // Upload Foto
-                        if($gmbr <> NULL|| $gmbr <> ''){
+                    foreach($request->employee as $emp){
+                        $emtask = new TaskEmployee(array(
+                            // Informasi Pribadi
+                            'task_id' => $task->id,
+                            'employee_id' => $emp,
+                        ));
+                        $emtask->save();
+                    }
+
+                    if($request->gambar <> NULL|| $request->gambar <> ''){
+                        $no=0;
+                        foreach($request->gambar as $gmbr){
+                            // Upload Foto
                             $gambar = ++$no.' '.$request->title.'.'.$gmbr->getClientOriginalExtension();
                             $gmbr->move(public_path('assets/images/task/'),$gambar);
 
@@ -91,14 +100,6 @@ class TaskController extends Controller
                         }
                     }
 
-                    foreach($request->employee as $emp){
-                        $emtask = new TaskEmployee(array(
-                            // Informasi Pribadi
-                            'task_id' => $task->id,
-                            'employee_id' => $emp,
-                        ));
-                        $emtask->save();
-                    }
                     Log::setLog('EMTAC','Create Task: '.$task->id.' Title:'.$request->title);
                     return redirect()->route('task.index')->with('status','Task berhasil ditambahkan');
                 }
@@ -216,14 +217,14 @@ class TaskController extends Controller
                         $emtask->save();
                     }
 
-                    $no=TaskGambar::where('task_id', $id)->count();
-                    if($no!=0){
-                        $file = TaskGambar::where('task_id', $id)->latest()->first()->source;
-                        $no = $file[0];
-                    }
-                    foreach($request->gambar as $gmbr){
-                        // Upload Foto
-                        if($gmbr <> NULL|| $gmbr <> ''){
+                    if($request->gambar <> NULL|| $request->gambar <> ''){
+                        $no=TaskGambar::where('task_id', $id)->count();
+                        if($no!=0){
+                            $file = TaskGambar::where('task_id', $id)->latest()->first()->source;
+                            $no = $file[0];
+                        }
+                        foreach($request->gambar as $gmbr){
+                            // Upload Foto
                             $gambar = ++$no.' '.$request->title.'.'.$gmbr->getClientOriginalExtension();
                             $gmbr->move(public_path('assets/images/task/'),$gambar);
 
