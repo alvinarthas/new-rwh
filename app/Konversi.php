@@ -10,12 +10,11 @@ class Konversi extends Model
     protected $fillable = [
         'keterangan','creator','supplier'
     ];
-
-    public function product(){
-        return $this->belongsTo('App\Product','product_id','prod_id');
-    }
-
     public function supplier(){
         return $this->belongsTo('App\Perusahaan','supplier','id');
+    }
+
+    public function creator(){
+        return $this->belongsTo('App\Employee','creator','id');
     }
 }

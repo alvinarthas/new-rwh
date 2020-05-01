@@ -146,6 +146,8 @@ Route::middleware(['checkUser'])->group(function () {
         'deposit' => 'DepositController',
         // Task
         'task' => 'TaskController',
+        // Konversi
+        'konversi' => 'KonversiController',
     ]);
 
     // Member
@@ -324,6 +326,10 @@ Route::middleware(['checkUser'])->group(function () {
     Route::post('/ajxaddtaskcomment', 'TaskController@ajxAddTaskComment')->name('ajxAddTaskComment');
     Route::put('/task/{id}/done','TaskController@taskDone')->name('task.done');
     Route::delete('task/image/{id}', 'TaskController@deleteImage');
+
+    // Konversi Helper
+    Route::get('/addkonversi','KonversiController@addKonversi')->name('addKonversi');
+    Route::get('/destroydetailkonversi','KonversiController@destroyKonversiDetail')->name('destroyKonversiDetail');
 });
 
 // Fingerprint System

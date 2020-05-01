@@ -19,6 +19,7 @@ use App\Customer;
 use App\SalesDet;
 use App\Sales;
 use App\Log;
+use App\KonversiDetail;
 
 class ProductController extends Controller
 {
@@ -392,8 +393,9 @@ class ProductController extends Controller
             }
             array_multisort($date, SORT_DESC, $result);
 
+            $konversidetail = KonversiDetail::where('product_id',$product->prod_id)->get();
             // return view('product.controlling.mutasi_produk', compact('product','result', 'total'));
-            return response()->json(view('product.controlling.modal',compact('product','result','total','modal'))->render());
+            return response()->json(view('product.controlling.modal',compact('product','result','total','modal','konversidetail'))->render());
         }else{
             $products = Product::all();
 

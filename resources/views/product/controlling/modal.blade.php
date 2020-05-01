@@ -18,6 +18,35 @@
             </div>
         @elseif($modal=="mutasi")
             {{-- <table id="datatable" class="table table-bordered"> --}}
+            @isset($konversidetail)
+                @if (count($konversidetail) > 0)
+                    <h4>Record Konversi Barang</h4>
+                    <table id="datatableKonversi" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                        <thead>
+                            <th>#</th>
+                            <th>Tanggal</th>
+                            <th>Qty</th>
+                            <th>Status</th>
+                        </thead>
+                        <tbody>
+                            <?php $a = 1; ?>
+                            @foreach ($konversidetail as $konvdet)
+                                <tr>
+                                    <td>{{$a}}</td>
+                                    <td>{{$konvdet->created_at}}</td>
+                                    <td>{{$konvdet->qty}}</td>
+                                    @if ($konvdet->status == 1)
+                                    <td>Barang Keluar</td>
+                                    @else
+                                    <td>Barang Masuk</td>
+                                    @endif
+                                </tr>
+                                <?php $a++; ?>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            @endisset
             <table id="datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                 <thead>
                     <tr>

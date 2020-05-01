@@ -10,6 +10,7 @@ use App\Product;
 use App\Konversi;
 use App\KonversiDetail;
 use App\Perusahaan;
+use App\MenuMapping;
 use App\PurchaseMap;
 
 class KonversiController extends Controller
@@ -31,7 +32,7 @@ class KonversiController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
         if($request->ajax()){
             $supplier = Perusahaan::where('id',$request->supplier)->first();
@@ -56,22 +57,22 @@ class KonversiController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    public function addProduct(Request $request){
+    public function addKonversi(Request $request){
         $parent = $request->product_parent;
         $child = $request->product_child;
         $qtyParent = $request->qty_parent;
         $qtyChild = $request->qty_child;
         $count = $request->count+1;
 
-        $productParent = Product::where('prod_id',$request->productParent)->first();
-        $productChild = Product::where('prod_id',$request->productChild)->first();
+        $productParent = Product::where('prod_id',$parent)->first();
+        $productChild = Product::where('prod_id',$child)->first();
 
         $append = '<tr style="width:100%" id="trow'.$count.'">
         <td>'.$count.'</td>
         <input type="hidden" name="detail[]" id="detail'.$count.'" value="baru">
         <td><input type="hidden" name="productParent[]" id="productParent'.$count.'" value="'.$parent.'">'.$parent.' - '.$productParent->name.'</td>
         <td><input type="number" name="qtyParent[]" value="'.$qtyParent.'" id="qty'.$count.'"></td>
-        <td> => </td>
+        <td><style="align:center">=></style></td>
         <td><input type="hidden" name="productChild[]" id="productChild'.$count.'" value="'.$child.'">'.$child.' - '.$productChild->name.'</td>
         <td><input type="number" name="qtyChild[]" value="'.$qtyChild.'" id="qty'.$count.'"></td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
@@ -123,14 +124,14 @@ class KonversiController extends Controller
                     $konversiDetailChild = new KonversiDetail(array(
                         'konversi_id' => $konversi->id,
                         'product_id' => $request->productChild[$i],
-                        'status' => 0,
+                        'status' => 1,
                         'qty' => $request->qtyChild[$i],
                     ));
                     $konversiDetailChild->save();
                 }
 
                 Log::setLog('PRKVC','Create Konversi: .'.$konversi->id);
-                return redirect()->route('product.konversi.index')->with('status', 'Data Konversi berhasil dibuat');
+                return redirect()->route('konversi.index')->with('status', 'Data Konversi berhasil dibuat');
 
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->getMessage());
@@ -147,9 +148,9 @@ class KonversiController extends Controller
     public function show(Request $request,$id)
     {
         if($request->ajax()){
-            $detail = KonversiDetail::where('id',$id)->get();
+            $details = KonversiDetail::where('konversi_id',$request->id)->get();
 
-            return response()->json(view('product.konversi.modal',compact('detail'))->render());
+            return response()->json(view('product.konversi.modal',compact('details'))->render());
         }
     }
 
@@ -218,7 +219,7 @@ class KonversiController extends Controller
                     }
                 }
 
-                Log::setLog('PRKVU','Update Konversi: .'.$konveri->id);
+                Log::setLog('PRKVU','Update Konversi: .'.$konversi->id);
                 return redirect()->back()->with('status', 'Data berhasil diubah');
             } catch (\Exception $e) {
                 return redirect()->back()->withErrors($e);
@@ -243,8 +244,9 @@ class KonversiController extends Controller
         }
     }
 
-    public function deleteDetail(Request $request, $id){
-        $detail = KonversiDetail::where('id',$id)->delete();
+    public function destroyKonversiDetail(Request $request){
+        KonversiDetail::where('id',$request->parent)->delete();
+        KonversiDetail::where('id',$request->child)->delete();
         return "true";
     }
 }
