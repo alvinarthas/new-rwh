@@ -306,9 +306,6 @@ class PurchaseController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
         // Validate
         $validator = Validator::make($request->all(), [
             'bulanpost' => 'required',
