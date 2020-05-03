@@ -74,7 +74,7 @@ class LaporanController extends Controller
                 }else{
                     $laba_operasional = $gross_profit - $biayaa['amount'];
                 }
-                
+
                 $laba_bersih_non = Coa::laba_bersih_non($start,$end);
                 $laba_rugi = Coa::laba_rugi($start,$end);
 
@@ -149,7 +149,7 @@ class LaporanController extends Controller
                     }
 
                     $sales = $sales->select('tblproducttrxdet.*','tblproducttrx.trx_date')->get();
-                    
+
                     $collects = collect();
                     foreach($sales as $item2){
                         // AVG COST

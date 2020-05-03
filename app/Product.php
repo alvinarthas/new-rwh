@@ -8,6 +8,7 @@ use App\PurchaseDetail;
 use App\DeliveryDetail;
 use App\ReceiveDet;
 use App\SalesDet;
+use App\KonversiDetail;
 
 class Product extends Model
 {
@@ -36,9 +37,8 @@ class Product extends Model
     public static function getGudang($prod_id){
         $qty_receive = ReceiveDet::where('prod_id',$prod_id)->sum('qty');
         $qty_delivered = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
-        // STOCK AWAL, kata bos nggak usah
-        // $stock_awal = Product::where('prod_id',$prod_id)->first()->stock;
-        $gudang = $qty_receive-$qty_delivered;
+        $konversi = KonversiDetail::getTotal($prod_id);
+        $gudang = ($qty_receive-$qty_delivered)+$konversi;
 
         return $gudang;
     }
