@@ -20,6 +20,8 @@ use App\SalesDet;
 use App\Sales;
 use App\Log;
 use App\KonversiDetail;
+use App\Retur;
+use App\ReturDetail;
 
 class ProductController extends Controller
 {
@@ -387,6 +389,28 @@ class ProductController extends Controller
                 array_push($result, $stock);
             }
 
+            $retur = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('prod_id', $product->prod_id)->get();
+
+            foreach($retur AS $r){
+                $tgl = $r['tgl'];
+                $trx_id = $r['id_jurnal'];
+                if($r['status'] == 0){
+                    $status = "OUT";
+                    $total -= $r['qty'];
+                }elseif($r['status'] == 1){
+                    $status = "IN";
+                    $total += $r['qty'];
+                }
+
+                $stock = array(
+                    'tanggal' => $tgl,
+                    'trx_id'  => $trx_id,
+                    'status'  => $status,
+                    'qty'     => $r['qty']
+                );
+                array_push($result, $stock);
+            }
+
             $date = array();
             foreach ($result as $key => $row){
                 $date[$key] = $row['tanggal'];
@@ -440,6 +464,23 @@ class ProductController extends Controller
                     'trx_id'  => $trx_id,
                     'status'  => $status,
                     'qty'     => $d->qty,
+                );
+                array_push($result, $stock);
+            }
+
+            $retur = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('status', 1)->where('prod_id', $product->prod_id)->get();
+
+            foreach($retur AS $r){
+                $tgl = $r['tgl'];
+                $trx_id = $r['id_jurnal'];
+                $status = "OUT";
+                $total -= $r['qty'];
+
+                $stock = array(
+                    'tanggal' => $tgl,
+                    'trx_id'  => $trx_id,
+                    'status'  => $status,
+                    'qty'     => $r['qty']
                 );
                 array_push($result, $stock);
             }

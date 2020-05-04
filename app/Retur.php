@@ -22,4 +22,23 @@ class Retur extends Model
     public function creator(){
         return $this->belongsTo('App\Employee','creator','id');
     }
+
+    public static function getTotal($product, $status){
+        $total = 0;
+        if($status == null){
+            foreach(ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblreturdet.prod_id',$product)->get() as $detail){
+                if($detail->status == 0){
+                    $total-=$detail->qty;
+                }else{
+                    $total+=$detail->qty;
+                }
+            }
+        }else{
+            foreach(ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('status', $status)->where('tblreturdet.prod_id',$product)->get() as $detail){
+                $total+=$detail->qty;
+            }
+        }
+
+        return $total;
+    }
 }
