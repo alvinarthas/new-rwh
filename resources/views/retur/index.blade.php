@@ -14,6 +14,8 @@
     <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css"/>
     <!--datepicker-->
     <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
+    <!-- Sweet Alert css -->
+    <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
     <!--Token-->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
@@ -72,93 +74,128 @@
                         <h3 class="l-h-34">Retur Penjualan Barang Report</h3>
                         <div class="form-group m-b-0">
                             <a href="{{ route("retur.createpj") }}"><button class="btn btn-primary waves-effect waves-light" type="submit">
-                                Manage Retur Penjualan Barang
+                                Buat Retur Penjualan Barang
                             </button></a>
                         </div>
                         <h4 class="m-t-0 header-title">Retur Penjualan Barang Detail</h4>
                         <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                             <thead>
+                                <th>No</th>
                                 <th>Transaction ID</th>
-                                <th>Transaction Date</th>
+                                <th>Retur Date</th>
                                 <th>Customer Name</th>
-                                <th>Product ID</th>
+                                <th>SO ID</th>
+                                <th>Action</th>
+                                {{-- <th>Product ID</th>
                                 <th>Product Name</th>
                                 <th>Qty</th>
-                                <th>Unit</th>
                                 <th>Qty Retur</th>
                                 <th>Alasan Retur</th>
-                                <th>Tgl Retur</th>
+                                <th>Tgl Retur</th> --}}
                             </thead>
                             <tbody>
                                 @php
                                     $i = 1;
-                                    $total_bonus = 0;
                                 @endphp
-                                @foreach($sales as $s)
+                                @foreach($retur as $r)
+                                    <tr>
+                                        <td>{{ $i++ }}</td>
+                                        <td class="text-center"><a href="javascript:;" onclick="getDetailRJ({{$r->trx_id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">{{ $r['id_jurnal'] }}</td>
+                                        <td>{{ $r->tgl }}</td>
+                                        <td>{{ $r->customer()->first()->apname }}</td>
+                                        <td>{{ $r->so_id }}</td>
+                                        <td>
+                                            {{-- @if (array_search("REPJU",$page))
+                                            <a href="{{route('retur.edit',['id'=>$r->trx_id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
+                                            @endif --}}
+                                            @if (array_search("REPJD",$page))
+                                            <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteReturPj({{$r->trx_id}})">Delete</a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                {{-- @foreach($sales as $s)
                                     @php
-                                        $dataretur = ReturPenjualanDet::where('trx_id', $s['trx_id'])->where('prod_id', $s['prod_id'])->first();
+                                        $dataretur = ReturPenjualanDet::join('tblreturpj', 'tblreturpjdet.trx_id', 'tblreturpj.trx_id')->where('tblreturpj.trx_id', $s['trx_id'])->where('prod_id', $s['prod_id'])->first();
                                     @endphp
                                     @if($dataretur['qty']!=0)
                                         <tr>
-                                            <td class="text-center">{{ $s->id}}</td>
+
+                                            <td class="text-center">{{ $dataretur['id_jurnal']}}</td>
                                             <td>{{ $s['trx_date'] }}</td>
                                             <td>{{ Customer::where('id', $s['customer_id'])->first()->apname }}</td>
                                             <td>{{ $s['prod_id'] }}</td>
                                             <td>{{ Product::where('prod_id', $s['prod_id'])->first()->name }}</td>
-                                            <td>{{ $s['qty'] }}</td>
-                                            <td>{{ $s['unit'] }}</td>
+                                            <td>{{ $s['qty'] }} {{ $s['unit'] }}</td>
                                             <td style="background-color:yellow">{{ $dataretur['qty'] }}</td>
                                             <td style="background-color:yellow">{{ $dataretur['reason'] }}</td>
                                             <td style="background-color:yellow">{{ $dataretur['tgl'] }}</td>
                                         </tr>
                                     @endif
-                                @endforeach
+                                @endforeach --}}
                             </tbody>
                         </table>
                     @elseif($jenisretur=="pembelian")
                         <h3 class="l-h-34">Retur Pembelian Barang Report</h3>
                         <div class="form-group m-b-0">
                             <a href="{{ route("retur.create") }}"><button class="btn btn-primary waves-effect waves-light" type="submit">
-                                Manage Retur Pembelian Barang
+                                Buat Retur Pembelian Barang
                             </button></a>
                         </div>
                         <h4 class="m-t-0 header-title">Retur Pembelian Barang Detail</h4>
                         <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                             <thead>
+                                <th>No</th>
                                 <th>Transaction ID</th>
-                                <th>Transaction Date</th>
+                                <th>Retur Date</th>
                                 <th>Supplier Name</th>
-                                <th>Product ID</th>
+                                <th>PO ID</th>
+                                <th>Action</th>
+                                {{-- <th>Product ID</th>
                                 <th>Product Name</th>
                                 <th>Qty</th>
-                                <th>Unit</th>
                                 <th>Qty Retur</th>
                                 <th>Alasan Retur</th>
-                                <th>Tgl Retur</th>
+                                <th>Tgl Retur</th> --}}
                             </thead>
                             <tbody>
                                 @php
                                     $i = 1;
-                                    $total_bonus = 0;
                                 @endphp
-                                @foreach($purchase as $p)
+                                {{-- @foreach($purchase as $p)
                                     @php
-                                        $dataretur = ReturPembelianDet::where('trx_id', $p['trx_id'])->where('prod_id', $p['prod_id'])->first();
+                                        $dataretur = ReturPembelianDet::join('tblreturpb', 'tblreturpbdet.trx_id', 'tblreturpb.trx_id')->where('tblreturpb.trx_id', $p['trx_id'])->where('prod_id', $p['prod_id'])->first();
                                     @endphp
                                     @if($dataretur['qty']!=0)
                                         <tr>
-                                            <td class="text-center">{{ $p->trx_id}}</td>
+                                            <td class="text-center">{{ $dataretur['id_jurnal']}}</td>
                                             <td>{{ date("F",strtotime("2017-".$p['month']."-01"))." ".$p['year'] }}</td>
                                             <td>{{ Perusahaan::where('id', $p['supplier'])->first()->nama }}</td>
                                             <td>{{ $p['prod_id'] }}</td>
                                             <td>{{ Product::where('prod_id', $p['prod_id'])->first()->name }}</td>
-                                            <td>{{ $p['qty'] }}</td>
-                                            <td>{{ $p['unit'] }}</td>
+                                            <td>{{ $p['qty'] }} {{ $p['unit'] }}</td>
                                             <td style="background-color:yellow">{{ $dataretur['qty'] }}</td>
                                             <td style="background-color:yellow">{{ $dataretur['reason'] }}</td>
                                             <td style="background-color:yellow">{{ $dataretur['tgl'] }}</td>
                                         </tr>
                                     @endif
+                                @endforeach --}}
+                                @foreach($retur as $r)
+                                    <tr>
+                                        <td>{{ $i++ }}</td>
+                                        <td class="text-center"><a href="javascript:;" onclick="getDetailRB({{$r->trx_id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">{{ $r['id_jurnal'] }}</td>
+                                        <td>{{ $r->tgl }}</td>
+                                        <td>{{ $r->supplier()->first()->nama }}</td>
+                                        <td>{{ $r->po_id }}</td>
+                                        <td>
+                                            {{-- @if (array_search("REPBU",$page))
+                                            <a href="{{route('retur.edit',['id'=>$r->trx_id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
+                                            @endif --}}
+                                            @if (array_search("REPBD",$page))
+                                            <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteReturPb({{$r->trx_id}})">Delete</a>
+                                            @endif
+                                        </td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -186,6 +223,20 @@
     <div id="tabelPO">
 
     </div> <!-- end row -->
+
+    <!--  Modal content for the above example -->
+    <div class="modal fade bs-example-modal-lg" id="modalLarge" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog modal-lg" id="do-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myLargeModalLabel">Retur Order Detail</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
+                </div>
+                <div class="modal-body" id="modalView">
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 @endsection
 
 @section('js')
@@ -212,6 +263,10 @@
 
     <!-- Datepicker -->
     <script src="{{ asset('assets/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
+
+    <!-- Sweet Alert Js  -->
+    <script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
+    <script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
 @endsection
 
 @section('script-js')
@@ -286,6 +341,139 @@
             error       :   function(data){
                 document.getElementById('customer').value = '#';
             }
+        });
+    }
+
+    function deleteReturPb(id){
+        var token = $("meta[name='csrf-token']").attr("content");
+
+        swal({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!',
+            confirmButtonClass: 'btn btn-success',
+            cancelButtonClass: 'btn btn-danger m-l-10',
+            buttonsStyling: false
+        }).then(function () {
+            $.ajax({
+                url: "/returpb/delete/"+id,
+                type: 'DELETE',
+                data: {
+                    "id": id,
+                    "_token": token,
+                },
+            }).done(function (data) {
+                swal(
+                    'Deleted!',
+                    'Your file has been deleted.',
+                    'success'
+                )
+                location.reload();
+            }).fail(function (msg) {
+                swal(
+                    'Failed',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            });
+
+        }, function (dismiss) {
+            // dismiss can be 'cancel', 'overlay',
+            // 'close', and 'timer'
+            if (dismiss === 'cancel') {
+                console.log("eh ga kehapus");
+                swal(
+                    'Cancelled',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            }
+        })
+    }
+
+    function deleteReturPj(id){
+        var token = $("meta[name='csrf-token']").attr("content");
+        console.log(id)
+
+        swal({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!',
+            confirmButtonClass: 'btn btn-success',
+            cancelButtonClass: 'btn btn-danger m-l-10',
+            buttonsStyling: false
+        }).then(function () {
+            $.ajax({
+                url: "/returpj/delete/"+id,
+                type: 'DELETE',
+                data: {
+                    "id": id,
+                    "_token": token,
+                },
+            }).done(function (data) {
+                swal(
+                    'Deleted!',
+                    'Your file has been deleted.',
+                    'success'
+                )
+                location.reload();
+            }).fail(function (msg) {
+                swal(
+                    'Failed',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            });
+
+        }, function (dismiss) {
+            // dismiss can be 'cancel', 'overlay',
+            // 'close', and 'timer'
+            if (dismiss === 'cancel') {
+                console.log("eh ga kehapus");
+                swal(
+                    'Cancelled',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            }
+        })
+    }
+
+    function getDetailRB(id){
+        $.ajax({
+            url : "{{route('showReturPb',['id'=>1])}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                id:id,
+            },
+        }).done(function (data) {
+            $('#modalView').html(data);
+            $('#modalLarge').modal("show");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+
+    function getDetailRJ(id){
+        $.ajax({
+            url : "{{route('showReturPj',['id'=>1])}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                id:id,
+            },
+        }).done(function (data) {
+            $('#modalView').html(data);
+            $('#modalLarge').modal("show");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
         });
     }
 </script>

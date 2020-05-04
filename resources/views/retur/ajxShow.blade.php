@@ -37,7 +37,7 @@
                             @endphp
                             <tr>
                                 <td class="text-center">{{$i++}}</td>
-                                <td class="text-center"><a href="{{ route('retur.edit',['id' => $p['trx_id']]) }}">{{$p->trx_id}}</a></td>
+                                <td class="text-center"><a href="{{ route('retur.edit',['id' => $p['trx_id']]) }}">{{$p->jurnal_id}}</a></td>
                                 <td>{{ date("F",strtotime("2017-".$p['month']."-01"))." ".$p['year'] }}</td>
                                 <td>{{ Perusahaan::where('id', $p['supplier'])->first()->nama }}</td>
                                 <td>{{ $p['prod_id'] }}</td>
@@ -78,16 +78,16 @@
                             @endphp
                             <tr>
                                 <td class="text-center">{{$i++}}</td>
-                                <td class="text-center"><a href="{{ route('retur.editpj',['id' => $s['trx_id']]) }}">{{$s->trx_id}}</a></td>
+                                <td class="text-center"><a href="{{ route('retur.editpj',['id' => $s['trx_id']]) }}">{{$s->jurnal_id}}</a></td>
                                 <td>{{ $s['trx_date'] }}</td>
                                 <td>{{ Customer::where('id', $s['customer_id'])->first()->apname }}</td>
                                 <td>{{ $s['prod_id'] }}</td>
                                 <td>{{ Product::where('prod_id', $s['prod_id'])->first()->name }}</td>
                                 <td>{{ $s['qty'] }}</td>
                                 <td>{{ $s['unit'] }}</td>
-                                <td style="background-color:yellow"></td>
-                                <td style="background-color:yellow"></td>
-                                <td style="background-color:yellow"></td>
+                                <td style="background-color:yellow">{{ $dataretur['qty'] }}</td>
+                                <td style="background-color:yellow">{{ $dataretur['reason'] }}</td>
+                                <td style="background-color:yellow">{{ $dataretur['tgl'] }}</td>
                             </tr>
                         @endforeach
                     </tbody>

@@ -8,7 +8,7 @@
 @endsection
 
 @section('judul')
-Purchase Order Detail
+Retur Detail
 @endsection
 
 @section('content')
@@ -130,7 +130,7 @@ Purchase Order Detail
                     <div class="form-group row">
                         <label class="col-2 col-form-label">Notes</label>
                         <div class="col-10">
-                            <textarea name="notes" cols="117" rows="4" disabled="disabled" id="notes">{{ $purchase['notes'] }}</textarea>
+                            <textarea name="notes" cols="99" rows="4" disabled="disabled" id="notes">{{ $purchase['notes'] }}</textarea>
                         </div>
                     </div>
                 @elseif($jenisretur=="penjualan")
