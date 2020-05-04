@@ -15,6 +15,8 @@ use App\Sales;
 use App\SalesDet;
 use App\Purchase;
 use App\PurchaseDetail;
+use App\Retur;
+use App\ReturDetail;
 use App\Perusahaan;
 use App\Customer;
 use Carbon\Carbon;
@@ -32,8 +34,9 @@ class ReturController extends Controller
         // $purchase = Purchase::join('tblpotrxdet', 'tblpotrx.id', '=', 'tblpotrxdet.trx_id')->orderBy('tblpotrx.id', 'desc')->get();
         // echo $purchase;
         // die();
-        // $retur = ReturPembelianDet::join('tblreturpb','tblreturpbdet.trx_id', 'tblreturpb.trx_id')->join('tblperusahaan','tblreturpb.supplier', 'tblperusahaan.id')->join('tblproduct', 'tblreturpbdet.prod_id', 'tblproduct.id')->select('tblreturpb.trx_id', 'tblperusahaan.nama', 'tblproduct.name', 'tblproduct.prod_id');
-        $retur = ReturPembelian::join('tblpotrx', 'tblreturpb.trx_id', 'tblpotrx.id')->select('tblreturpb.trx_id','tblreturpb.id_jurnal', 'tblreturpb.tgl', 'tblreturpb.supplier', 'tblpotrx.jurnal_id AS po_id')->get();
+        // $retur = ReturPembelian::join('tblpotrx', 'tblreturpb.trx_id', 'tblpotrx.id')->select('tblreturpb.trx_id','tblreturpb.id_jurnal', 'tblreturpb.tgl', 'tblreturpb.supplier', 'tblpotrx.jurnal_id AS po_id')->get();
+
+        $retur = Retur::where('status', '0')->get();
         $jenis = "report";
         $jenisretur = "pembelian";
         $page = MenuMapping::getMap(session('user_id'),"REPB");
@@ -44,7 +47,8 @@ class ReturController extends Controller
     {
         // $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', '=', 'tblproducttrxdet.trx_id')->orderBy('tblproducttrx.id', 'desc')->get();
         // $retur = ReturPenjualanDet::all();
-        $retur = ReturPenjualan::join('tblproducttrx', 'tblreturpj.trx_id', 'tblproducttrx.id')->select('tblreturpj.trx_id', 'tblreturpj.id_jurnal', 'tblreturpj.tgl', 'tblreturpj.customer', 'tblproducttrx.jurnal_id AS so_id')->get();
+        // $retur = ReturPenjualan::join('tblproducttrx', 'tblreturpj.trx_id', 'tblproducttrx.id')->select('tblreturpj.trx_id', 'tblreturpj.id_jurnal', 'tblreturpj.tgl', 'tblreturpj.customer', 'tblproducttrx.jurnal_id AS so_id')->get();
+        $retur = Retur::where('status', '1')->get();
         $jenis = "report";
         $jenisretur = "penjualan";
         $page = MenuMapping::getMap(session('user_id'),"REPJ");
@@ -96,20 +100,27 @@ class ReturController extends Controller
     public function showpb(Request $request, $id){
         if ($request->ajax()) {
             $jenis = "PB";
-            $retur = ReturPembelian::join('tblpotrx', 'tblreturpb.trx_id', 'tblpotrx.id')->where('tblreturpb.trx_id',$request->id)->select('tblreturpb.trx_id', 'tblreturpb.id_jurnal', 'tblreturpb.tgl', 'tblreturpb.supplier', 'tblpotrx.jurnal_id AS po_id', 'tblreturpb.creator')->first();
-            $returdet = ReturPembelianDet::where('trx_id',$request->id)->get();
+            // $retur = ReturPembelian::join('tblpotrx', 'tblreturpb.trx_id', 'tblpotrx.id')->where('tblreturpb.trx_id',$request->id)->select('tblreturpb.trx_id', 'tblreturpb.id_jurnal', 'tblreturpb.tgl', 'tblreturpb.supplier', 'tblpotrx.jurnal_id AS po_id', 'tblreturpb.creator')->first();
+            $retur = Retur::where('status', 0)->where('id', $request->id)->first();
+            $po_trx = Purchase::where('jurnal_id', $retur->source_id)->first()->id;
+            // $returdet = ReturPembelianDet::where('trx_id',$request->id)->get();
+            $returdet = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.status', 0)->where('trx_id', $request->id)->get();
 
-            return response()->json(view('retur.modal',compact('retur','returdet', 'jenis'))->render());
+            return response()->json(view('retur.modal',compact('retur','returdet', 'jenis', 'po_trx'))->render());
         }
     }
 
     public function showpj(Request $request, $id){
         if ($request->ajax()) {
             $jenis = "PJ";
-            $retur = ReturPenjualan::join('tblproducttrx', 'tblreturpj.trx_id', 'tblproducttrx.id')->where('tblreturpj.trx_id',$request->id)->select('tblreturpj.trx_id', 'tblreturpj.id_jurnal', 'tblreturpj.tgl', 'tblreturpj.customer', 'tblproducttrx.jurnal_id AS so_id', 'tblreturpj.creator')->first();
-            $returdet = ReturPenjualanDet::where('trx_id',$request->id)->get();
 
-            return response()->json(view('retur.modal',compact('retur','returdet', 'jenis'))->render());
+            // $retur = ReturPenjualan::join('tblproducttrx', 'tblreturpj.trx_id', 'tblproducttrx.id')->where('tblreturpj.trx_id',$request->id)->select('tblreturpj.trx_id', 'tblreturpj.id_jurnal', 'tblreturpj.tgl', 'tblreturpj.customer', 'tblproducttrx.jurnal_id AS so_id', 'tblreturpj.creator')->first();
+            $retur = Retur::where('status', 1)->where('id', $request->id)->first();
+            $so_trx = Sales::where('jurnal_id', $retur->source_id)->first()->id;
+            // $returdet = ReturPenjualanDet::where('trx_id',$request->id)->get();
+            $returdet = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.status', 1)->where('trx_id', $request->id)->get();
+
+            return response()->json(view('retur.modal',compact('retur','returdet', 'jenis', 'so_trx'))->render());
         }
     }
 
@@ -164,49 +175,56 @@ class ReturController extends Controller
             try{
                 $id_jurnal = Jurnal::getJurnalID('RB');
 
-                $retur = new ReturPembelian;
-                $retur->trx_id = $id;
+                $purchase = Purchase::where('id',$id)->first();
+
+                // $retur = new ReturPembelian;
+                $retur = new Retur;
                 $retur->tgl = $tgl;
                 $retur->supplier = $request->supplier;
                 $retur->id_jurnal = $id_jurnal;
+                $retur->source_id = $purchase->jurnal_id;
+                $retur->status = 0;
                 $retur->creator = session('user_id');
+                // echo "<pre>";
+                // print_r($retur);
+                // die();
                 $ctr = count($request->qtyretur);
 
                 $total_modal = 0;
                 $total_tertahan = 0;
                 $total_distributor = 0;
 
-                for($i=0;$i<$ctr;$i++){
-                    $qty = $request->qtyretur[$i];
-                    $reason = $request->reason[$i];
-                    $prod_id = $request->prod_id[$i];
+                if($retur->save()){
+                    for($i=0;$i<$ctr;$i++){
+                        $qty = $request->qtyretur[$i];
+                        $reason = $request->reason[$i];
+                        $prod_id = $request->prod_id[$i];
 
-                    if($qty!=0){
-                        $returdet = new ReturPembelianDet;
-                        $returdet->trx_id = $id;
-                        $returdet->prod_id = $prod_id;
-                        $returdet->qty = $qty;
-                        $returdet->reason = $reason;
-                        $returdet->creator = session('user_id');
-                        $returdet->tgl = $tgl;
-
-                        try{
-                            // success
-                            $returdet->save();
+                        if($qty!=0){
                             $pur_det = PurchaseDetail::where('trx_id', $id)->where('prod_id', $prod_id)->first();
-                            $total_modal += $pur_det->price * $qty;
-                            $total_tertahan += PurchaseDetail::where('trx_id',$id)->where('prod_id', $prod_id)->sum(DB::Raw('(price_dist - price)*'.$qty));
-                            $total_distributor += $pur_det->price_dist * $qty;
-                        }catch(\Exception $e) {
-                            // failed
-                            return redirect()->back()->withErrors($e->errorInfo);
-                            // return response()->json($e);
+
+                            $returdet = new ReturDetail;
+                            $returdet->trx_id = $retur->id;
+                            $returdet->prod_id = $prod_id;
+                            $returdet->qty = $qty;
+                            $returdet->harga = $pur_det->price;
+                            $returdet->harga_dist = $pur_det->price_dist;
+                            $returdet->reason = $reason;
+                            $returdet->creator = session('user_id');
+
+                            try{
+                                // success
+                                $returdet->save();
+                                $total_modal += $pur_det->price * $qty;
+                                $total_tertahan += PurchaseDetail::where('trx_id',$id)->where('prod_id', $prod_id)->sum(DB::Raw('(price_dist - price)*'.$qty));
+                                $total_distributor += $pur_det->price_dist * $qty;
+                            }catch(\Exception $e) {
+                                // failed
+                                return redirect()->back()->withErrors($e->errorInfo);
+                                // return response()->json($e);
+                            }
                         }
                     }
-                }
-
-                if($retur->save()){
-                    $purchase = Purchase::where('id',$id)->first();
 
                     $jurnal_desc = "retur ".$id_jurnal." dari ".$purchase->jurnal_id;
 
@@ -250,62 +268,64 @@ class ReturController extends Controller
             try{
                 $id_jurnal = Jurnal::getJurnalID('RJ');
 
-                $retur = new ReturPenjualan;
-                $retur->trx_id = $id;
+                $sales = Sales::where('id',$id)->first();
+
+                $retur = new Retur;
                 $retur->tgl = $tgl;
                 $retur->customer = $request->customer;
                 $retur->id_jurnal = $id_jurnal;
+                $retur->source_id = $sales->jurnal_id;
+                $retur->status = 1;
                 $retur->creator = session('user_id');
                 $ctr = count($request->qtyretur);
                 $modal = 0;
                 $total_transaksi = 0;
 
-                $sales = Sales::where('id',$id)->first();
-
-                for($i=0;$i<$ctr;$i++){
-                    $qty = $request->qtyretur[$i];
-                    $reason = $request->reason[$i];
-                    $prod_id = $request->prod_id[$i];
-
-                    if($qty!=0){
-                        $returdet = new ReturPenjualanDet;
-                        $returdet->trx_id = $id;
-                        $returdet->prod_id = $prod_id;
-                        $returdet->qty = $qty;
-                        $returdet->reason = $reason;
-                        $returdet->creator = session('user_id');
-                        $returdet->tgl = $tgl;
-
-                        // success
-                        try{
-                            $returdet->save();
-                            $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price * qty'));
-
-                            $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum('tblpotrxdet.qty');
-
-                            if($sumprice <> 0 && $sumqty <> 0){
-                                $avcharga = $sumprice/$sumqty;
-                            }else{
-                                $avcharga = 0;
-                            }
-                            $modal += ($qty * $avcharga);
-                            $sales_det = SalesDet::where('trx_id', $id)->where('prod_id', $prod_id)->first();
-                            $total_transaksi += $sales_det->price * $qty;
-
-                        }catch(\Exception $e) {
-                            return redirect()->back()->withErrors($e->errorInfo);
-                            // return response()->json($e);
-                        }
-                    }
-
-                    // foreach (SalesDet::where('trx_id',$id)->get() as $key) {
-                    //     $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->avg('price');
-                    //     $modal += ($qty * $avcharga);
-                    // }
-                }
-
-
                 if($retur->save()){
+                    for($i=0;$i<$ctr;$i++){
+                        $qty = $request->qtyretur[$i];
+                        $reason = $request->reason[$i];
+                        $prod_id = $request->prod_id[$i];
+
+                        if($qty!=0){
+                            $sales_det = SalesDet::where('trx_id', $id)->where('prod_id', $prod_id)->first();
+
+                            $returdet = new ReturDetail;
+                            $returdet->trx_id = $retur->id;
+                            $returdet->prod_id = $prod_id;
+                            $returdet->qty = $qty;
+                            $returdet->harga = $sales_det->price;
+                            $returdet->reason = $reason;
+                            $returdet->creator = session('user_id');
+
+                            try{
+                                // success
+                                $returdet->save();
+
+                                $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price * qty'));
+
+                                $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum('tblpotrxdet.qty');
+
+                                if($sumprice <> 0 && $sumqty <> 0){
+                                    $avcharga = $sumprice/$sumqty;
+                                }else{
+                                    $avcharga = 0;
+                                }
+                                $modal += ($qty * $avcharga);
+
+                                $total_transaksi += $sales_det->price * $qty;
+
+                            }catch(\Exception $e) {
+                                return redirect()->back()->withErrors($e->errorInfo);
+                                // return response()->json($e);
+                            }
+                        }
+
+                        // foreach (SalesDet::where('trx_id',$id)->get() as $key) {
+                        //     $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->avg('price');
+                        //     $modal += ($qty * $avcharga);
+                        // }
+                    }
                     $jurnal_desc = "Retur ".$id_jurnal." dari ".$sales->jurnal_id;
 
                     // Jurnal 1
@@ -322,6 +342,7 @@ class ReturController extends Controller
 
                     return redirect()->route('retur.indexpj')->with('status', 'Data berhasil disimpan');
                 }
+
             }catch(\Exception $a){
                 return redirect()->back()->withErrors($a->errorInfo);
                 // return response()->json($e);
@@ -337,28 +358,10 @@ class ReturController extends Controller
      */
     public function destroy($id)
     {
-        //
-    }
-
-    public function destroypb($id)
-    {
         try{
-            $data = ReturPembelian::where('trx_id', $id)->first();
+            $data = Retur::where('id', $id)->first();
             Jurnal::where('id_jurnal',$data->id_jurnal)->delete();
-            ReturPembelian::where('trx_id', $id)->delete();
-
-            return "true";
-        }catch(\Exception $a){
-            return response()->json($a);
-        }
-    }
-
-    public function destroypj($id)
-    {
-        try{
-            $data = ReturPenjualan::where('trx_id', $id)->first();
-            Jurnal::where('id_jurnal',$data->id_jurnal)->delete();
-            ReturPenjualan::where('trx_id', $id)->delete();
+            Retur::where('id', $id)->delete();
 
             return "true";
         }catch(\Exception $a){
@@ -372,7 +375,7 @@ class ReturController extends Controller
         $tahun = $request->tahun;
         $bulan = $request->bulan;
         $retur = ReturPembelianDet::all();
-        $purchase = Purchase::join('tblpotrxdet', 'tblpotrx.id', '=', 'tblpotrxdet.trx_id')->where('tblpotrx.month', $bulan)->where('tblpotrx.year', $tahun)->orderBy('tblpotrx.id','desc')->get();
+        $purchase = Purchase::join('tblpotrxdet', 'tblpotrx.id', '=', 'tblpotrxdet.trx_id')->where('tblpotrx.month', $bulan)->where('tblpotrx.year', $tahun)->where('tblpotrx.approve', 1)->orderBy('tblpotrx.id','desc')->get();
         return view('retur.ajxShow', compact('jenisretur','purchase','tahun','bulan', 'retur'));;
     }
 

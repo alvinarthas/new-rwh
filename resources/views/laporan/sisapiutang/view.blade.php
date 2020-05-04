@@ -19,7 +19,8 @@
                 @foreach ($detail as $item)
                     <tr>
                         <td>{{$i}}</td>
-                        <td><a href="javascript:;" onclick="getDetailOrder({{$item['id']}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">SO.{{$item['id']}}</a></td>
+                        <input type="hidden" id="jenis{{ $item['id'] }}" value="{{ $item['jenis'] }}">
+                        <td><a href="javascript:;" onclick="getDetailOrder({{$item['id']}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">{{$item['trx_id']}}</a></td>
                         <td><strong>Rp {{number_format($item['sisa'],2,',','.')}}</strong></td>
                     </tr>
                     @php($i++)
@@ -34,7 +35,7 @@
     <div class="modal-dialog modal-lg" id="do-modal2">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="myLargeModalLabel2">Purchase Order Detail</h4>
+                <h4 class="modal-title" id="myLargeModalLabel2">Detail</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal2">×</button>
             </div>
             <div class="modal-body" id="modalView2">
@@ -54,18 +55,36 @@
     });
 
     function getDetailOrder(id2){
-        $.ajax({
-            url : "{{route('sales.show',['id'=>1])}}",
-            type : "get",
-            dataType: 'json',
-            data:{
-                id:id2,
-            },
-        }).done(function (data) {
-            $('#modalView2').html(data);
-            $('#modal2').modal("show");
-        }).fail(function (msg) {
-            alert('Gagal menampilkan data, silahkan refresh halaman.');
-        });
+        var jenis = $('#jenis'+id2).val();
+        console.log(jenis);
+        if(jenis === "SO"){
+            $.ajax({
+                url : "{{route('sales.show',['id'=>1])}}",
+                type : "get",
+                dataType: 'json',
+                data:{
+                    id:id2,
+                },
+            }).done(function (data) {
+                $('#modalView2').html(data);
+                $('#modal2').modal("show");
+            }).fail(function (msg) {
+                alert('Gagal menampilkan data, silahkan refresh halaman.');
+            });
+        }else if(jenis === "RJ"){
+            $.ajax({
+                url : "{{route('showReturPj',['id'=>1])}}",
+                type : "get",
+                dataType: 'json',
+                data:{
+                    id:id2,
+                },
+            }).done(function (data) {
+                $('#modalView2').html(data);
+                $('#modal2').modal("show");
+            }).fail(function (msg) {
+                alert('Gagal menampilkan data, silahkan refresh halaman.');
+            });
+        }
     }
 </script>

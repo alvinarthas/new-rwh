@@ -3,9 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 use App\Purchase;
 use App\PurchasePayment;
+use App\ReturDetail;
 
 class Perusahaan extends Model
 {
@@ -23,8 +25,9 @@ class Perusahaan extends Model
             $supp = collect();
             $purchase = Purchase::where('supplier',$key->id)->sum('total_harga_dist');
             $paid = Purchase::join('tblpopayment','tblpopayment.trx_id','=','tblpotrx.id')->where('tblpotrx.supplier',$key->id)->sum('tblpopayment.payment_amount');
+            $retur = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.status', 0)->where('tblretur.supplier', $key->id)->sum(DB::raw('tblreturdet.qty * tblreturdet.harga_dist'));
 
-            $selisih = $purchase - $paid;
+            $selisih = $purchase - $paid - $retur;
             $total+=$selisih;
             $supp->put('nama',$key->nama);
             $supp->put('id',$key->id);
@@ -38,7 +41,7 @@ class Perusahaan extends Model
         }else{
             return $data;
         }
-        
+
     }
 
     public static function sisaHutangDetail($supplier){
@@ -51,9 +54,26 @@ class Perusahaan extends Model
 
             if($selisih < 0 || $selisih > 0){
                 $data_hutang->put('id',$key->id);
+                $data_hutang->put('trx_id', $key->jurnal_id);
                 $data_hutang->put('sisa',$selisih);
+                $data_hutang->put('jenis',"PO");
 
                 $data->push($data_hutang);
+            }
+        }
+
+        foreach(ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.supplier',$supplier)->where('tblretur.status', 0)->select('tblretur.id', 'tblretur.id_jurnal', 'tblreturdet.harga_dist', 'tblreturdet.qty')->get() as $key){
+            $dataretur = collect();
+
+            $amount = $key->harga_dist * $key->qty;
+
+            if($amount < 0 || $amount > 0){
+                $dataretur->put('id',$key->id);
+                $dataretur->put('trx_id',$key->id_jurnal);
+                $dataretur->put('sisa', "-".$amount);
+                $dataretur->put('jenis',"RB");
+
+                $data->push($dataretur);
             }
         }
 

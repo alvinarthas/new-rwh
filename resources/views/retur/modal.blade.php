@@ -27,11 +27,10 @@
                             <td>{{ $retur->tgl }} </td>
                             @if($jenis == "PB")
                                 <td>{{ $retur->supplier()->first()->nama }}</td>
-                                <td>{{ $retur->po_id }}</td>
                             @elseif($jenis == "PJ")
                                 <td>{{ $retur->customer()->first()->apname }}</td>
-                                <td>{{ $retur->so_id }}</td>
                             @endif
+                            <td>{{ $retur->source_id }}</td>
                             <td>{{ $retur->creator()->first()->name }}</td>
                         </tr>
                     </tbody>
@@ -52,6 +51,7 @@
                     <th>Qty saat SO</th>
                 @endif
                 <th>Qty Retur</th>
+                <th>Harga</th>
                 <th>Alasan Retur</th>
             </thead>
             <tbody id="purchase-list-body">
@@ -63,11 +63,12 @@
                         <td>{{$detail->prod_id}}</td>
                         <td>{{$detail->product->name}}</td>
                         @if($jenis == "PB")
-                            <td>{{PurchaseDetail::where('trx_id', $detail->trx_id)->where('prod_id', $detail->prod_id)->first()->qty }}</td>
+                            <td>{{ PurchaseDetail::where('trx_id', $po_trx)->where('prod_id', $detail->prod_id)->first()->qty }}</td>
                         @elseif($jenis == "PJ")
-                            <td>{{SalesDet::where('trx_id', $detail->trx_id)->where('prod_id', $detail->prod_id)->first()->qty }}</td>
+                            <td>{{SalesDet::where('trx_id', $so_trx)->where('prod_id', $detail->prod_id)->first()->qty }}</td>
                         @endif
                         <td>{{$detail->qty}}</td>
+                        <td>Rp {{ number_format($detail->harga, 2 , ",",".") }}</td>
                         <td>{{$detail->reason}}</td>
                     </tr>
                     @endisset

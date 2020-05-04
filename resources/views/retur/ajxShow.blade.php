@@ -1,8 +1,7 @@
 @php
     use App\Supplier;
     use App\Product;
-    use App\ReturPembelianDet;
-    use App\ReturPenjualanDet;
+    use App\ReturDetail;
     use App\Perusahaan;
     use App\Customer;
 @endphp
@@ -15,13 +14,14 @@
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                     <thead>
                         <th>No</th>
-                        <th>Transaction ID</th>
+                        <th>Trx ID</th>
                         <th>Posting Period</th>
                         <th>Supplier Name</th>
                         <th>Product ID</th>
                         <th>Product Name</th>
                         <th>Qty</th>
-                        <th>Unit</th>
+                        <th>Harga</th>
+                        <th>Harga Distributor</th>
                         <th>Qty Retur</th>
                         <th>Alasan Retur</th>
                         <th>Tgl Retur</th>
@@ -33,7 +33,7 @@
                         @endphp
                         @foreach($purchase as $p)
                             @php
-                                $dataretur = ReturPembelianDet::where('trx_id', $p['trx_id'])->where('prod_id', $p['prod_id'])->first();
+                                $dataretur = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.source_id', $p->jurnal_id)->where('tblretur.status', 0)->where('tblreturdet.prod_id', $p['prod_id'])->first();
                             @endphp
                             <tr>
                                 <td class="text-center">{{$i++}}</td>
@@ -43,7 +43,8 @@
                                 <td>{{ $p['prod_id'] }}</td>
                                 <td>{{ Product::where('prod_id', $p['prod_id'])->first()->name }}</td>
                                 <td>{{ $p['qty'] }}</td>
-                                <td>{{ $p['unit'] }}</td>
+                                <td>Rp {{ number_format($p['price'], 2, ",",".") }}</td>
+                                <td>Rp {{ number_format($p['price_dist'], 2, ",", ".") }}</td>
                                 <td style="background-color:yellow">{{ $dataretur['qty'] }}</td>
                                 <td style="background-color:yellow">{{ $dataretur['reason'] }}</td>
                                 <td style="background-color:yellow">{{ $dataretur['tgl'] }}</td>
@@ -56,13 +57,13 @@
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                     <thead>
                         <th>No</th>
-                        <th>Transaction ID</th>
+                        <th>Trx ID</th>
                         <th>Transaction Date</th>
                         <th>Customer Name</th>
                         <th>Product ID</th>
                         <th>Product Name</th>
                         <th>Qty</th>
-                        <th>Unit</th>
+                        <th>Harga</th>
                         <th>Qty Retur</th>
                         <th>Alasan Retur</th>
                         <th>Tgl Retur</th>
@@ -74,7 +75,7 @@
                         @endphp
                         @foreach($sales as $s)
                             @php
-                                $dataretur = ReturPenjualanDet::where('trx_id', $s['trx_id'])->where('prod_id', $s['prod_id'])->first();
+                                $dataretur = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.source_id', $s->jurnal_id)->where('tblretur.status', 1)->where('tblreturdet.prod_id', $s['prod_id'])->first();
                             @endphp
                             <tr>
                                 <td class="text-center">{{$i++}}</td>
@@ -84,7 +85,7 @@
                                 <td>{{ $s['prod_id'] }}</td>
                                 <td>{{ Product::where('prod_id', $s['prod_id'])->first()->name }}</td>
                                 <td>{{ $s['qty'] }}</td>
-                                <td>{{ $s['unit'] }}</td>
+                                <td>Rp {{number_format($s['price'],2,",", ".") }}</td>
                                 <td style="background-color:yellow">{{ $dataretur['qty'] }}</td>
                                 <td style="background-color:yellow">{{ $dataretur['reason'] }}</td>
                                 <td style="background-color:yellow">{{ $dataretur['tgl'] }}</td>

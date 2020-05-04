@@ -100,16 +100,16 @@
                                 @foreach($retur as $r)
                                     <tr>
                                         <td>{{ $i++ }}</td>
-                                        <td class="text-center"><a href="javascript:;" onclick="getDetailRJ({{$r->trx_id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">{{ $r['id_jurnal'] }}</td>
+                                        <td class="text-center"><a href="javascript:;" onclick="getDetailRJ({{$r->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">{{ $r['id_jurnal'] }}</td>
                                         <td>{{ $r->tgl }}</td>
                                         <td>{{ $r->customer()->first()->apname }}</td>
-                                        <td>{{ $r->so_id }}</td>
+                                        <td>{{ $r->source_id }}</td>
                                         <td>
                                             {{-- @if (array_search("REPJU",$page))
                                             <a href="{{route('retur.edit',['id'=>$r->trx_id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
                                             @endif --}}
                                             @if (array_search("REPJD",$page))
-                                            <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteReturPj({{$r->trx_id}})">Delete</a>
+                                            <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteRetur({{$r->id}})">Delete</a>
                                             @endif
                                         </td>
                                     </tr>
@@ -183,16 +183,16 @@
                                 @foreach($retur as $r)
                                     <tr>
                                         <td>{{ $i++ }}</td>
-                                        <td class="text-center"><a href="javascript:;" onclick="getDetailRB({{$r->trx_id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">{{ $r['id_jurnal'] }}</td>
+                                        <td class="text-center"><a href="javascript:;" onclick="getDetailRB({{$r->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">{{ $r['id_jurnal'] }}</td>
                                         <td>{{ $r->tgl }}</td>
                                         <td>{{ $r->supplier()->first()->nama }}</td>
-                                        <td>{{ $r->po_id }}</td>
+                                        <td>{{ $r->source_id }}</td>
                                         <td>
                                             {{-- @if (array_search("REPBU",$page))
                                             <a href="{{route('retur.edit',['id'=>$r->trx_id])}}" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
                                             @endif --}}
                                             @if (array_search("REPBD",$page))
-                                            <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteReturPb({{$r->trx_id}})">Delete</a>
+                                            <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteRetur({{$r->id}})">Delete</a>
                                             @endif
                                         </td>
                                     </tr>
@@ -344,57 +344,7 @@
         });
     }
 
-    function deleteReturPb(id){
-        var token = $("meta[name='csrf-token']").attr("content");
-
-        swal({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            type: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!',
-            confirmButtonClass: 'btn btn-success',
-            cancelButtonClass: 'btn btn-danger m-l-10',
-            buttonsStyling: false
-        }).then(function () {
-            $.ajax({
-                url: "/returpb/delete/"+id,
-                type: 'DELETE',
-                data: {
-                    "id": id,
-                    "_token": token,
-                },
-            }).done(function (data) {
-                swal(
-                    'Deleted!',
-                    'Your file has been deleted.',
-                    'success'
-                )
-                location.reload();
-            }).fail(function (msg) {
-                swal(
-                    'Failed',
-                    'Your imaginary file is safe :)',
-                    'error'
-                )
-            });
-
-        }, function (dismiss) {
-            // dismiss can be 'cancel', 'overlay',
-            // 'close', and 'timer'
-            if (dismiss === 'cancel') {
-                console.log("eh ga kehapus");
-                swal(
-                    'Cancelled',
-                    'Your imaginary file is safe :)',
-                    'error'
-                )
-            }
-        })
-    }
-
-    function deleteReturPj(id){
+    function deleteRetur(id){
         var token = $("meta[name='csrf-token']").attr("content");
         console.log(id)
 
@@ -410,7 +360,7 @@
             buttonsStyling: false
         }).then(function () {
             $.ajax({
-                url: "/returpj/delete/"+id,
+                url: "/retur/"+id,
                 type: 'DELETE',
                 data: {
                     "id": id,

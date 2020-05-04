@@ -5,6 +5,9 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
+use App\ReturPenjualan;
+use App\ReturDetail;
+
 class Customer extends Model
 {
     protected $table ='tblcustomer';
@@ -20,8 +23,9 @@ class Customer extends Model
             $supp = collect();
             $sales = Sales::where('customer_id',$key->id)->sum(DB::raw('ttl_harga+ongkir'));
             $paid = Sales::join('tblsopayment','tblsopayment.trx_id','=','tblproducttrx.id')->where('tblproducttrx.customer_id',$key->id)->sum('tblsopayment.payment_amount');
+            $retur = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.status', 1)->where('tblretur.customer', $key->id)->sum(DB::raw('tblreturdet.qty * tblreturdet.harga'));
 
-            $selisih = $sales - $paid;
+            $selisih = $sales - $paid - $retur;
             $total+=$selisih;
             $supp->put('name',$key->apname);
             $supp->put('id',$key->id);
@@ -46,9 +50,30 @@ class Customer extends Model
 
             if($selisih < 0 || $selisih > 0){
                 $data_hutang->put('id',$key->id);
+                $data_hutang->put('trx_id', $key->jurnal_id);
                 $data_hutang->put('sisa',$selisih);
+                $data_hutang->put('jenis', "SO");
 
                 $data->push($data_hutang);
+            }
+        }
+
+        foreach(ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.customer',$customer)->where('tblretur.status', 1)->select('tblretur.id', 'tblretur.id_jurnal', 'tblreturdet.harga', 'tblreturdet.qty')->get() as $key){
+            $dataretur = collect();
+
+            $amount = $key->harga * $key->qty;
+
+            // echo "<pre>";
+            // print_r($key);
+            // die();
+
+            if($amount < 0 || $amount > 0){
+                $dataretur->put('id',$key->id);
+                $dataretur->put('trx_id', $key->id_jurnal);
+                $dataretur->put('sisa', "-".$amount);
+                $dataretur->put('jenis', "RJ");
+
+                $data->push($dataretur);
             }
         }
 

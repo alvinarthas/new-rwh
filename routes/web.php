@@ -183,8 +183,6 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('/retur/penjualan/edit/{id}', 'ReturController@editpj')->name('retur.editpj');
         Route::put('/retur/penjualan/edit/{id}', 'ReturController@updatepj')->name('retur.updatepj');
         Route::get('/showpenjualan', 'ReturController@showReturPenjualan')->name('showReturPenjualan');
-        Route::delete('/returpb/delete/{id}', 'ReturController@destroypb');
-        Route::delete('/returpj/delete/{id}', 'ReturController@destroypj');
         Route::get('retur/pembelian/show/{id}','ReturController@showpb')->name('showReturPb');
         Route::get('retur/penjualan/show/{id}','ReturController@showpj')->name('showReturPj');
 
