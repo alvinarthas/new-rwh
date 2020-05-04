@@ -293,7 +293,7 @@
                                     <tbody>
                                         @php($i=1)
                                         @foreach ($hutang as $item)
-                                            @if($item['sisa'] > 20000000)
+                                            @if($item['sisa'] > 10000000)
                                                 <tr>
                                                     <td>{{$i}}</td>
                                                     <td>{{$item['nama']}}</td>
@@ -324,7 +324,7 @@
                                     <tbody>
                                         @php($i=1)
                                         @foreach ($piutang as $item2)
-                                            @if($item2['sisa'] > 20000000)
+                                            @if($item2['sisa'] > 10000000)
                                                 <tr>
                                                     <td>{{$i}}</td>
                                                     <td>{{$item2['name']}}</td>
