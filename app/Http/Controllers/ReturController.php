@@ -159,6 +159,10 @@ class ReturController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+
         Carbon::setLocale('id');
         $tgl = date('Y-m-d', strtotime(Carbon::today()));
         $validator = Validator::make($request->all(), [

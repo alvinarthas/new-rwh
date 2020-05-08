@@ -38,7 +38,9 @@ class Product extends Model
         $qty_receive = ReceiveDet::where('prod_id',$prod_id)->sum('qty');
         $qty_delivered = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
         $konversi = KonversiDetail::getTotal($prod_id);
-        $gudang = ($qty_receive-$qty_delivered)+$konversi;
+        $retur = Retur::getTotal($prod_id, null);
+        $gudang = ($qty_receive-$qty_delivered)+$konversi+$retur;
+        // $gudang = ($qty_receive-$qty_delivered)+$konversi;
 
         return $gudang;
     }
@@ -46,8 +48,10 @@ class Product extends Model
     public static function getBrgCust($prod_id){
         $sales = SalesDet::join('tblproducttrx', 'tblproducttrxdet.trx_id', 'tblproducttrx.id')->where('prod_id',$prod_id)->where('jurnal_id','!=','0')->sum('qty');
         $delivery = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
+        $retur = Retur::getTotal($prod_id, 1);
 
-        $brgcust = $sales-$delivery;
+        $brgcust = $sales-$delivery-$retur;
+        // $brgcust = $sales-$delivery;
 
         return $brgcust;
     }
