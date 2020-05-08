@@ -431,4 +431,24 @@ class Coa extends Model
             }
         }
     }
+
+    public static function deposit($account){
+        foreach ($account as $key) {
+            $acc = substr($key->AccNo,0,1);
+
+            $debet = Jurnal::where('AccNo',$key->AccNo)->where('AccPos','Debet')->sum('Amount');
+            $credit = Jurnal::where('AccNo',$key->AccNo)->where('AccPos','Credit')->sum('Amount');
+
+            if ($acc == 1){
+                $value = $debet-$credit;
+            }else{
+                $value = $credit-$debet;
+            }
+
+            echo "<tr>
+            <td>".$key->AccNo." - ".$key->AccName."</td>
+            <td>Rp ".number_format($value,2,',','.')."</td></tr>";
+        }
+
+    }
 }

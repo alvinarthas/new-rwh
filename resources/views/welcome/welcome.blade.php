@@ -271,6 +271,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="#deposit" data-toggle="tab" aria-expanded="true" class="nav-link">
+                        Deposit Pembelian/Penjualan
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="#kas" data-toggle="tab" aria-expanded="true" class="nav-link">
                         Kas/Bank
                     </a>
@@ -333,6 +338,27 @@
                                                 @php($i++)
                                             @endif
                                         @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="deposit">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card-box table-responsive">
+                                <h4>Deposit Pembelian/Penjualan</h4>
+                                <table id="datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Account</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php($coa = Coa::where('AccNo',"2.1.2")->orWhere('AccNo',"1.1.3.3")->get())
+                                        @php(Coa::deposit($coa))
                                     </tbody>
                                 </table>
                             </div>
