@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Purchase;
 use App\PurchasePayment;
 use App\ReturDetail;
+use App\Deposit;
 
 class Perusahaan extends Model
 {
