@@ -25,26 +25,33 @@ class HomeController extends Controller
             $data = Task::getTask($page);
 
             $birth = Customer::getBirthday();
-
             if(session('role') == 'Direktur Utama'){
                 // Get Sisa Hutang Piutang
                 $hutang = Perusahaan::sisaHutang();
                 $piutang = Customer::sisaPiutang();
+                // Deposit
+                $deppurchase = Perusahaan::getDeposit();
+                $depsales = Customer::getDeposit();
             }elseif(session('role') == 'Superadmin'){
                 // Get Poin Sementara
                 $bonus = Salary::currentBonus(session('user_id'));
                 // Get Sisa Hutang Piutang
                 $hutang = Perusahaan::sisaHutang();
                 $piutang = Customer::sisaPiutang();
+                // Deposit
+                $deppurchase = Perusahaan::getDeposit();
+                $depsales = Customer::getDeposit();
             }else{
                 // Get Poin Sementara
                 $hutang = 0;
                 $piutang = 0;
+                $deppurchase = 0;
+                $depsales = 0;
                 $bonus = Salary::currentBonus(session('user_id'));
             }
 
             // die("asu");
-            return view('welcome.welcome',compact('user','bonus','hutang','piutang', 'data', 'birth'));
+            return view('welcome.welcome',compact('user','bonus','hutang','piutang','data','deppurchase','depsales','birth'));
         }else{
             return view('login.login');
         }

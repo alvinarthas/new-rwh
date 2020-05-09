@@ -10,6 +10,7 @@ use App\ReturDetail;
 use App\Employee;
 use App\Sales;
 use App\SalesPayment;
+use App\Saldo;
 
 class Customer extends Model
 {
@@ -113,6 +114,26 @@ class Customer extends Model
                 array_push($data, $array);
             }
         }
+
+        return $data;
+    }
+
+    public static function getDeposit(){
+        $data = collect();
+        $customers = Customer::all();
+        foreach($customers as $customer){
+            $deposit = collect();
+            $saldo = Saldo::getSaldo($customer->id);
+
+            if($saldo > 0){
+                $deposit->put('name',$customer->apname);
+                $deposit->put('id',$customer->id);
+                $deposit->put('saldo',$saldo);
+                $data->push($deposit);
+            }
+        }
+
+        $data = $data->sortByDesc('saldo');
 
         return $data;
     }

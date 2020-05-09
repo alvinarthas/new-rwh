@@ -300,8 +300,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#deposit" data-toggle="tab" aria-expanded="true" class="nav-link">
-                        Deposit Pembelian/Penjualan
+                    <a href="#deppur" data-toggle="tab" aria-expanded="true" class="nav-link">
+                        Deposit Pembelian
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#depsale" data-toggle="tab" aria-expanded="true" class="nav-link">
+                        Deposit Penjualan
                     </a>
                 </li>
                 <li class="nav-item">
@@ -373,21 +378,58 @@
                         </div>
                     </div>
                 </div>
-                <div role="tabpanel" class="tab-pane fade" id="deposit">
+                <div role="tabpanel" class="tab-pane fade" id="deppur">
                     <div class="row">
                         <div class="col-12">
                             <div class="card-box table-responsive">
-                                <h4>Deposit Pembelian/Penjualan</h4>
+                                <h4>Deposit Pembelian</h4>
                                 <table id="datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                                     <thead>
                                         <tr>
-                                            <th>Account</th>
-                                            <th>Total</th>
+                                            <th>No</th>
+                                            <th>Supplier</th>
+                                            <th>Saldo</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php($coa = Coa::where('AccNo',"2.1.2")->orWhere('AccNo',"1.1.3.3")->get())
-                                        @php(Coa::deposit($coa))
+                                        @php($i=1)
+                                        @foreach ($deppurchase as $dpur)
+                                            <tr>
+                                                <td>{{$i}}</td>
+                                                <td>{{$dpur['name']}}</td>
+                                                <td><strong>Rp {{number_format($dpur['saldo'],2,',','.')}}</strong></td>
+                                            </tr>
+                                            @php($i++)
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="depsale">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card-box table-responsive">
+                                <h4>Deposit Penjualan</h4>
+                                <table id="datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Customer</th>
+                                            <th>Saldo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php($i=1)
+                                        @foreach ($depsales as $dsale)
+                                            <tr>
+                                                <td>{{$i}}</td>
+                                                <td>{{$dsale['name']}}</td>
+                                                <td><strong>Rp {{number_format($dsale['saldo'],2,',','.')}}</strong></td>
+                                            </tr>
+                                            @php($i++)
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
