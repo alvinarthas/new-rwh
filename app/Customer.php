@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 use Carbon\Carbon;
+use App\ReturDetail;
+use App\Employee;
+use App\Sales;
+use App\SalesPayment;
 
 class Customer extends Model
 {
@@ -48,9 +52,30 @@ class Customer extends Model
 
             if($selisih < 0 || $selisih > 0){
                 $data_hutang->put('id',$key->id);
+                $data_hutang->put('trx_id', $key->jurnal_id);
                 $data_hutang->put('sisa',$selisih);
+                $data_hutang->put('jenis', "SO");
 
                 $data->push($data_hutang);
+            }
+        }
+
+        foreach(ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.customer',$customer)->where('tblretur.status', 1)->select('tblretur.id', 'tblretur.id_jurnal', 'tblreturdet.harga', 'tblreturdet.qty')->get() as $key){
+            $dataretur = collect();
+
+            $amount = $key->harga * $key->qty;
+
+            // echo "<pre>";
+            // print_r($key);
+            // die();
+
+            if($amount < 0 || $amount > 0){
+                $dataretur->put('id',$key->id);
+                $dataretur->put('trx_id', $key->id_jurnal);
+                $dataretur->put('sisa', "-".$amount);
+                $dataretur->put('jenis', "RJ");
+
+                $data->push($dataretur);
             }
         }
 
