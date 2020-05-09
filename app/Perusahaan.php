@@ -79,4 +79,24 @@ class Perusahaan extends Model
 
         return $data;
     }
+
+    public static function getDeposit(){
+        $data = collect();
+        $suppliers = Perusahaan::all();
+        foreach($suppliers as $supplier){
+            $deposit = collect();
+            $saldo = Deposit::getSaldo($supplier->id);
+
+            if($saldo > 0){
+                $deposit->put('name',$supplier->nama);
+                $deposit->put('id',$supplier->id);
+                $deposit->put('saldo',$saldo);
+                $data->push($deposit);
+            }
+        }
+
+        $data = $data->sortByDesc('saldo');
+
+        return $data;
+    }
 }
