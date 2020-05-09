@@ -258,6 +258,35 @@
         </div>
     </div> <!-- end row -->
     @if(session('role') == 'Superadmin' || session('role') == 'Direktur Utama')
+        @if($birth <> null)
+            <div class="row">
+                <div class="col-12">
+                    <div class="card-box table-responsive">
+                        <h4 class="m-t-0 header-title">Daftar Ulang Tahun</h4>
+                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                            <thead>
+                                <th>No</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Tanggal</th>
+                            </thead>
+
+                            <tbody>
+                                @php($i = 1)
+                                @foreach($birth as $key)
+                                    <tr>
+                                        <td>{{$i++}}</td>
+                                        <td>{{$key['name']}}</td>
+                                        <td>{{$key['status']}}</td>
+                                        <td>{{$key['tanggal']}}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div> <!-- end row -->
+        @endif
         <div class="card-box table-responsive">
             <ul class="nav nav-tabs">
                 <li class="nav-item">

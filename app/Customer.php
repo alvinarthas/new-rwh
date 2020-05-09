@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\ReturPenjualan;
 use App\ReturDetail;
 
+use Carbon\Carbon;
 class Customer extends Model
 {
     protected $table ='tblcustomer';
@@ -74,6 +75,41 @@ class Customer extends Model
                 $dataretur->put('jenis', "RJ");
 
                 $data->push($dataretur);
+            }
+        }
+
+        return $data;
+    }
+
+    public static function getBirthday(){
+        Carbon::setLocale('id');
+        $getTime = date('Y-m-d', strtotime(Carbon::now()));
+        // $getTime = date('Y-m-d', strtotime("1994-10-18"));
+        $data = array();
+
+        $customer = Customer::where('apbirthdate', $getTime)->get();
+
+        if(!empty($customer)){
+            foreach($customer as $c){
+                $array = array(
+                    'name'    => $c->apname,
+                    'status'  => "Customer",
+                    'tanggal' => $c->apbirthdate,
+                );
+                array_push($data, $array);
+            }
+        }
+
+        $employee = Employee::where('tgl_lhr', $getTime)->get();
+
+        if(!empty($employee)){
+            foreach($employee as $e){
+                $array = array(
+                    'name'    => $e->name,
+                    'status'  => "Pegawai",
+                    'tanggal' => $e->tgl_lhr,
+                );
+                array_push($data, $array);
             }
         }
 
