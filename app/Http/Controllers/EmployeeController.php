@@ -13,6 +13,7 @@ use App\Bank;
 use App\DemoUser;
 use Carbon\Carbon;
 use App\MenuMapping;
+use App\RoleMapping;
 use App\Log;
 
 class EmployeeController extends Controller
@@ -50,8 +51,9 @@ class EmployeeController extends Controller
         }else{
             if($request->nip == ''){
                 $rowmember = Employee::where('mulai_kerja',$request->mulai_kerja)->count();
+                $rowmember+=1;
                 $tgl = Carbon::createFromFormat('Y-m-d',$request->mulai_kerja)->format('Ymd');
-                $nip = "Royal".$tgl.$rowmember+1;
+                $nip = "Royal".$tgl.$rowmember;
             }else{
                 $nip = $request->nip;
             }
@@ -151,6 +153,13 @@ class EmployeeController extends Controller
                 ));
 
                 $fingeruser->save();
+
+                $mapping = new RoleMapping(array(
+                    'username' => $employee->username,
+                    'company_id' => 1,
+                    'role_id' => 43,
+                ));
+                $mapping->save();
 
                 Log::setLog('EMEMC','Create Employee: '.$request->nama);
 
@@ -323,7 +332,7 @@ class EmployeeController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->withErrors($e->errorInfo);
         }
-            
+
         }
     }
 

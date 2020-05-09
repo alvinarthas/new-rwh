@@ -40,22 +40,22 @@ class FingerPrintController extends Controller
 
             if (strtoupper($vStamp) == strtoupper($salt)) {
                 $fid = DemoFinger::where('user_id',$user_id)->max('finger_id');
-    
+
                 if($fid == 0){
-                    
+
                     $insFinger = new DemoFinger(array(
                         'user_id' => $user_id,
                         'finger_id' => $fid+1,
                         'finger_data' => $regTemp
                     ));
-    
+
                     if($insFinger->save()){
                         $res['result'] = true;
                         $page = route('employee.index');
                         $sec = "10";
                         header("Refresh: $sec; url=$page");
                     }else{
-                        
+
                         $res['server'] = "Error insert registration data!";
                     }
                 }else{
@@ -65,7 +65,7 @@ class FingerPrintController extends Controller
                 echo "empty";
             }else{
                 $msg = "Parameter invalid..";
-                
+
                 echo route('fingerMessage',['msg' => $mgs]);
             }
         }
@@ -87,7 +87,7 @@ class FingerPrintController extends Controller
             echo $request->user_name." login success on ".date('Y-m-d H:i:s', strtotime($time));
         }else{
             $msg = "Parameter invalid..";
-	
+
             echo "$msg";
         }
     }
@@ -95,8 +95,8 @@ class FingerPrintController extends Controller
     public function checkreg(Request $request){
         $countfinger     =  DemoFinger::where('user_id',$request->user_id)->count();
 		if (intval($countfinger) > intval($request->current)) {
-			$res['result'] = true;			
-			$res['current'] = intval($countfinger);			
+			$res['result'] = true;
+			$res['current'] = intval($countfinger);
 		}
 		else
 		{
@@ -110,10 +110,10 @@ class FingerPrintController extends Controller
             $time_limit_ver = 50;
 
             $finger = DemoFinger::where('user_id',$request->user_id)->first();
-            
+
             echo "$request->user_id;".$finger->finger_data.";SecurityKey;".$time_limit_ver.";".route('fingerProcessVerification',['keterangan'=>$request->keterangan]).";".route('fingerGetAc').";extraParams";
         }
-        
+
     }
 
     public function process_verification(Request $request){
@@ -121,8 +121,8 @@ class FingerPrintController extends Controller
             // initialize
             $data 		= explode(";",$request->VerPas);
             $user_id	= $data[0];
-            $vStamp 	= $data[1];   
-            $time 		= $data[2];          
+            $vStamp 	= $data[1];
+            $time 		= $data[2];
             $sn 		= $data[3];
 
             // Get Finger Data
@@ -141,11 +141,11 @@ class FingerPrintController extends Controller
                     'keterangan' => $request->keterangan,
                     'data' => date('Y-m-d H:i:s', strtotime($time))." (PC Time) | ".$sn." (SN)",
                 ));
-                
+
                 $log->save();
             }
         }
-        
+
     }
 
     public function ajxlog(Request $request){
@@ -178,8 +178,8 @@ class FingerPrintController extends Controller
             // initialize
             $data 		= explode(";",$request->VerPas);
             $user_id	= $data[0];
-            $vStamp 	= $data[1];   
-            $time 		= $data[2];          
+            $vStamp 	= $data[1];
+            $time 		= $data[2];
             $sn 		= $data[3];
             $role = $request->role;
             // Get Finger Data
@@ -192,26 +192,26 @@ class FingerPrintController extends Controller
 
             $salt = md5($sn.$finger->finger_data.$device->vc.$time.$user_id.$device->vkey);
             if (strtoupper($vStamp) == strtoupper($salt)) {
-                if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Operasional" || $role == "Manager Keuangan"){
+                if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Operasional" || $role == "Manager Keuangan" || $role == "Assistant General Manager"){
                     // Insert to Log
                     try{
                         $approve = Purchase::where('id',$request->trx_id)->select('approve')->first()->approve;
                         $count_temp = TempPO::where('purchase_id',$request->trx_id)->count('purchase_id');
                         $status_temp = TempPO::where('purchase_id',$request->trx_id)->where('status',1)->count('purchase_id');
-                        
+
                         if($approve == 0){
                             if($count_temp > 0 && $status_temp == 1){
-                                Purchase::updatePurchase($request->trx_id,$user_id);  
+                                Purchase::updatePurchase($request->trx_id,$user_id);
                             }else{
                                 Purchase::setJurnal($request->trx_id,$user_id);
                             }
-                            
+
                         }else{
                             Purchase::updatePurchase($request->trx_id,$user_id);
                         }
 
                         echo route('purchase.index');
-                        
+
                     }catch(\Exception $e){
                         echo "<pre>";
                         print_r($e->getMessage());
@@ -221,16 +221,16 @@ class FingerPrintController extends Controller
                 }
             }
         }
-        
+
     }
 
     // Sales
     public function salesApprove(Request $request){
         if (isset($request->user_id) && !empty($request->user_id)) {
             $time_limit_ver = 50;
-            
+
             $finger = DemoFinger::where('user_id',$request->user_id)->first();
-        
+
             echo "$request->user_id;".$finger->finger_data.";SecurityKey;".$time_limit_ver.";".route('salesApproveProcess',['trx_id'=>$request->trx_id,'role'=>$request->role]).";".route('fingerGetAc').";extraParams";
         }
     }
@@ -240,8 +240,8 @@ class FingerPrintController extends Controller
             // initialize
             $data 		= explode(";",$request->VerPas);
             $user_id	= $data[0];
-            $vStamp 	= $data[1];   
-            $time 		= $data[2];          
+            $vStamp 	= $data[1];
+            $time 		= $data[2];
             $sn 		= $data[3];
             $role = $request->role;
             // Get Finger Data
@@ -254,20 +254,20 @@ class FingerPrintController extends Controller
 
             $salt = md5($sn.$finger->finger_data.$device->vc.$time.$user_id.$device->vkey);
             if (strtoupper($vStamp) == strtoupper($salt)) {
-                if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Keuangan" || $role == "Manager Operasional"){
+                if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Manager Keuangan" || $role == "Manager Operasional" || $role == "Assistant General Manager"){
                     // Insert to Log
                     try{
                         $approve = Sales::where('id',$request->trx_id)->select('approve')->first()->approve;
                         $count_temp = TempSales::where('trx_id',$request->trx_id)->count('trx_id');
                         $status_temp = TempSales::where('trx_id',$request->trx_id)->where('status',1)->count('trx_id');
-                        
+
                         if($approve == 0){
                             if($count_temp > 0 && $status_temp == 1){
-                                Sales::updateSales($request->trx_id,$user_id);  
+                                Sales::updateSales($request->trx_id,$user_id);
                             }else{
                                 Sales::setJurnal($request->trx_id,$user_id);
                             }
-                            
+
                         }else{
                             Sales::updateSales($request->trx_id,$user_id);
                         }
@@ -279,9 +279,9 @@ class FingerPrintController extends Controller
                 }else{
                     echo route('sales.index')->with('warning', 'Akun anda tidak bisa menggaprove transaksi ini');
                 }
-               
+
             }
         }
-        
+
     }
 }

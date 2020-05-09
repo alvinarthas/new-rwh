@@ -21,6 +21,7 @@
                     <th>No</th>
                     <th>Nama Perusahaan</th>
                     <th>Sisa Hutang</th>
+                    <th>Option</th>
                 </thead>
 
                 <tbody>
@@ -29,7 +30,8 @@
                         <tr>
                             <td>{{$i}}</td>
                             <td>{{$sup['nama']}}</td>
-                            <td><a href="javascript:;" type="button" class="btn btn-custom btn-round waves-effect waves-danger m-b-5" onclick="getDetail({{ $sup['id'] }})" >Rp {{number_format($sup['sisa'],2,',','.')}}</a></td>
+                            <td>{{$sup['sisa']}}</td>
+                            <td><a href="javascript:;" type="button" class="btn btn-custom btn-round waves-effect waves-danger m-b-5" onclick="getDetail({{ $sup['id'] }})" >Detail</a></td>
                         </tr>
                         @php($i++)
                     @endforeach
@@ -75,7 +77,14 @@
 
     $(document).ready(function () {
         // Responsive Datatable
-        $('#responsive-datatable').DataTable();
+        $('#responsive-datatable').DataTable({
+            "columns": [
+                { "data": "no"},
+                { "data": "name"},
+                { "data": "sisa", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' ) },
+                { "data": "detail"},
+            ],
+        });
     });
 
     function getDetail(id){
