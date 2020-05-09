@@ -73,9 +73,9 @@
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Fax</label>
+                                <label class="col-2 col-form-label">Tanggal Lahir</label>
                                 <div class="col-10">
-                                    <input type="text" class="form-control" parsley-trigger="change" name="fax" id="fax" value="@isset($customer->apfax){{$customer->apfax}}@endisset">
+                                    <input type="text" class="form-control" parsley-trigger="change" name="birth" id="birth" value="@isset($customer->apbirthdate){{$customer->apbirthdate}}@endisset" data-date-format="yyyy-mm-dd" placeholder="yyyy-mm-dd">
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -248,11 +248,6 @@
     @endif
 
     <div class="form-group text-right m-b-0">
-        @if($jenis=="edit")
-            @if (array_search("MDCSD",$page))
-                <a href="javascript:;" type="button" class="btn btn-danger waves-effect waves-danger" onclick="deleteCustomer({{ $customer->id}})" >Delete</a>
-            @endif
-        @endif
         <button class="btn btn-primary waves-effect waves-light" type="submit">
             Submit
         </button>
@@ -280,6 +275,7 @@
             $('form').parsley();
             ajx_coa();
             $(".divide").divide();
+            $('#birth').datepicker();
         });
 
         $('.dropify').dropify({
@@ -349,24 +345,6 @@
                 // templateResult: formatRepo,
                 // templateSelection: formatRepoSelection
             });
-        }
-
-        function deleteCustomer(id){
-            var token = $("meta[name='csrf-token']").attr("content");
-            // console.log(id);
-            $.ajax({
-                url : "/deletecustomer/"+id,
-                type : "GET",
-                data:{
-                    id : id,
-                    _token : token,
-                },success   :	function(){
-                    window.location="http://localhost:8000/customer";
-                    alert('Data Berhasil dihapus');
-                },error     :   function(){
-                    alert('Gagal menampilkan data, silahkan refresh halaman.');
-                }
-            })
         }
     </script>
 @endsection

@@ -1,4 +1,5 @@
 @extends('layout.main')
+
 @php
     use App\Customer;
     use App\Coa;
@@ -13,18 +14,13 @@
     <link href="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Multi Item Selection examples -->
     <link href="{{ asset('assets/plugins/datatables/select.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
+    <!-- Sweet Alert css -->
+    <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
 
-    <!--venobox lightbox-->
-    <link rel="stylesheet" href="{{ asset('assets/plugins/magnific-popup/dist/magnific-popup.css') }}"/>
-
-    {{-- Fingerprint --}}
-    <link href="{{ asset('assets/fingerprint/ajaxmask.css') }}" rel="stylesheet">
-
-    <style>
-    img.photo{
-        display:block; width:50%; height:auto;
-    }
-    </style>
+@section('judul')
+Index
 @endsection
 
 @section('content')
@@ -43,6 +39,7 @@
                             <th>No</th>
                             <th>Customer ID</th>
                             <th>Nama Customer</th>
+                            <th>Tanggal Lahir</th>
                             <th>Personal Phone</th>
                             <th>Company Name</th>
                             <th>Company Phone</th>
@@ -56,13 +53,17 @@
                             <tr>
                                 <td>{{$i}}</td>
                                 <td>{{$cus->cid}}</td>
-                                <td>{{$cus->apname}}</td>
+                                <td><a href="javascript:;" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5" onclick="getDescribe('{{ $cus['id'] }}')" disabled="disabled">{{$cus->apname}}</td>
+                                <td>{{$cus->apbirthdate}}</td>
                                 <td>{{$cus->apphone}}</td>
                                 <td>{{$cus->cicn}}</td>
                                 <td>{{$cus->ciphone}}</td>
                                 <td>
                                     @if (array_search("MDCSU",$page))
-                                        <a href="{{route('customer.edit',['id'=>$cus->id])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-75 m-b-5">Update Data</a>
+                                        <a href="{{route('customer.edit',['id'=>$cus->id])}}" class="btn btn-custom waves-effect waves-light w-md">Update</a>
+                                    @endif
+                                    @if (array_search("MDCSD",$page))
+                                        <a href="javascript:;" type="button" class="btn btn-danger waves-effect waves-danger w-md" onclick="deleteCustomer({{ $cus->id}})" >Delete</a>
                                     @endif
                                 </td>
                             </tr>
@@ -106,87 +107,71 @@
                     </table>
                 @elseif($jenis=="topup")
                     <h4 class="m-t-0 header-title">Saldo Customer</h4>
-                    <p class="text-muted font-14 m-b-30">
-                        @if (array_search("PSDCC",$page))
-                            <a href="{{ route('saldo.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Deposit</a>
-                        @endif
-                    </p>
-                    <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
+                        <p class="text-muted font-14 m-b-30">
+                            @if (array_search("PSDCC",$page))
+                                <a href="{{ route('saldo.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Deposit</a>
+                            @endif
+                        </p>
+                    <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                         <thead>
                             <th>No</th>
-                            <th>Customer</th>
-                            <th>Tanggal</th>
-                            <th>Rekening Penerima</th>
-                            <th>Nominal</th>
-                            <th>Keterangan</th>
-                            <th>Creator</th>
-                            @if (array_search("PSDCU",$page) OR array_search("PSDCD",$page))
-                                <th>Action</th>
-                            @endif
+                            <th>Customer Name</th>
+                            <th>Saldo</th>
+                            <th>Option</th>
                         </thead>
                         <tbody>
-                            @php
-                                $i = 1;
-                            @endphp
-                            @foreach($saldo as $s)
-                            <tr>
-                                <td>{{$i}}</td>
-                                <td>{{$s->apname}}</td>
-                                <td>{{$s->tanggal}}</td>
-                                @php
-                                    $coa = Coa::where('AccNo', $s->accNo)->select('AccName')->first();
-                                    $creator = Employee::where('id', $s->creator)->select('name')->first();
-                                    $i++;
-                                @endphp
-                                {{-- number_format($s->amount,2,",",".") --}}
-                                <td>{{$coa['AccName']}}</td>
-                                <td>Rp {{ number_format($s->amount,2,",",".") }}</td>
-                                <td>{{$s->keterangan}}</td>
-                                <td>{{$creator['name']}}</td>
-                                <td>
-                                    @if (array_search("PSDCU",$page))
-                                        <a href="{{route('saldo.edit',['id'=>$s->sid])}}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
-                                    @endif
-                                    @if (array_search("PSDCD",$page))
-                                        <form class="" action="{{ route('saldo.destroy', ['id' => $s->sid]) }}" method="post">
-                                            {{ csrf_field() }}
-                                            {{ method_field('delete') }}
-                                            <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
-                                        </form>
-                                    @endif
-                                </td>
-                            </tr>
+                            @php($i=1)
+                            @foreach ($data as $key)
+                                <tr>
+                                    <td>{{$i}}</td>
+                                    <td>{{$key['name']}}</td>
+                                    <td>Rp {{number_format($key['saldo'],2,",",".")}}</td>
+                                    <td>
+                                        @if (array_search("PSDCS",$page))
+                                            <a href="javascript:;" onclick="getDetail({{$key['id']}}, `{{$key['name']}}`)" class="btn btn-custom btn-trans waves-effect w-md waves-danger m-b-5">Detail</a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @php($i++)
                             @endforeach
                         </tbody>
                     </table>
                 @endif
             </div>
         </div>
-    </div> <!-- end row -->
+    </div>
+
+    <!--  Modal content for the above example -->
+    <div class="modal fade bs-example-modal-lg" id="modalLarge" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog modal-lg" id="do-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myLargeModalLabel">Detail</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
+                </div>
+                <div class="modal-body" id="modalView">
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 @endsection
 
 @section('js')
-    <!-- Required datatable js -->
-    <script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
+<!-- Sweet Alert Js  -->
+<script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
+<script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
 
-    <!-- Responsive examples -->
-    <script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
-    <script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
+<!-- Required datatable js -->
+<script src="{{ asset('assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
 
-    <!-- Modal-Effect -->
-    <script src="{{ asset('assets/plugins/custombox/dist/custombox.min.js') }}"></script>
-    <script src="{{ asset('assets/plugins/custombox/dist/legacy.min.js') }}"></script>
+<!-- Responsive examples -->
+<script src="{{ asset('assets/plugins/datatables/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
 
-    <!-- Magnific popup -->
-    <script type="text/javascript" src="{{ asset('assets/plugins/magnific-popup/dist/jquery.magnific-popup.min.js') }}"></script>
-
-    {{-- Fingerprint --}}
-    <script src="{{ asset('assets/fingerprint/jquery.timer.js') }}"></script>
-    <script src="{{ asset('assets/fingerprint/ajaxmask.js') }}"></script>
-
-    <!-- number-divider -->
-    <script src="{{ asset('assets/plugins/number-divider/number-divider.min.js') }}"></script>
+<!-- Sweet Alert Js  -->
+<script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
+<script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
 @endsection
 
 @section('script-js')
@@ -195,12 +180,90 @@
     $(document).ready(function () {
         // Responsive Datatable
         $('#responsive-datatable').DataTable();
-
-        $('.image-popup').magnificPopup({
-            type: 'image',
-        });
-
-        $(".divide").divide();
     });
+    function getDetail(id, name){
+        $.ajax({
+            url : "{{route('saldo.show',['id'=>1])}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                customer_id:id,
+                name:name,
+            },
+        }).done(function (data) {
+            $('#modalView').html(data);
+            $('#modalLarge').modal("show");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+
+    function deleteCustomer(id){
+        var token = $("meta[name='csrf-token']").attr("content");
+        console.log(id);
+
+        swal({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!',
+            confirmButtonClass: 'btn btn-success',
+            cancelButtonClass: 'btn btn-danger m-l-10',
+            buttonsStyling: false
+        }).then(function () {
+            $.ajax({
+                url: "customer/"+id,
+                type: 'DELETE',
+                data: {
+                    "id": id,
+                    "_token": token,
+                },
+            }).done(function (data) {
+                swal(
+                    'Deleted!',
+                    'Your file has been deleted.',
+                    'success'
+                )
+                location.reload();
+            }).fail(function (msg) {
+                swal(
+                    'Failed',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            });
+
+        }, function (dismiss) {
+            // dismiss can be 'cancel', 'overlay',
+            // 'close', and 'timer'
+            if (dismiss === 'cancel') {
+                console.log("eh ga kehapus");
+                swal(
+                    'Cancelled',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            }
+        })
+    }
+
+    function getDescribe(id){
+
+        $.ajax({
+            url : '{{route('customer.show',['id'=>1])}}',
+            type : "get",
+            dataType: 'json',
+            data:{
+                id:id,
+            },
+        }).done(function (data) {
+            $('#modalView').html(data);
+            $('#modalLarge').modal("show");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
 </script>
 @endsection

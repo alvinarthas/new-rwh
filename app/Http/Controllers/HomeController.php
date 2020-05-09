@@ -24,6 +24,8 @@ class HomeController extends Controller
             $page = "dashboard";
             $data = Task::getTask($page);
 
+            $birth = Customer::getBirthday();
+
             if(session('role') == 'Direktur Utama'){
                 // Get Sisa Hutang Piutang
                 $hutang = Perusahaan::sisaHutang();
@@ -42,7 +44,7 @@ class HomeController extends Controller
             }
 
             // die("asu");
-            return view('welcome.welcome',compact('user','bonus','hutang','piutang', 'data'));
+            return view('welcome.welcome',compact('user','bonus','hutang','piutang', 'data', 'birth'));
         }else{
             return view('login.login');
         }

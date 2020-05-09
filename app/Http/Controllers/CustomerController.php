@@ -24,8 +24,8 @@ class CustomerController extends Controller
     {
         $page = MenuMapping::getMap(session('user_id'),"MDCS");
         $jenis = "customer";
-        $customers = Customer::select('id', 'apname', 'cid' ,'apphone', 'cicn' , 'ciphone')->get();
-        return view('customer.index2', compact('customers', 'jenis', 'page'));
+        $customers = Customer::select('id', 'apname', 'cid' ,'apphone', 'cicn' , 'ciphone', 'apbirthdate')->get();
+        return view('customer.index', compact('customers', 'jenis', 'page'));
     }
 
     /**
@@ -47,6 +47,9 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
         $validator = Validator::make($request->all(), [
             'customer_id' => 'required|string',
             'name' => 'required|string',
@@ -61,7 +64,7 @@ class CustomerController extends Controller
                     'cid' => $request->customer_id,
                     'apname' => $request->name,
                     'apphone' => $request->phone,
-                    'apfax' => $request->fax,
+                    'apbirthdate' => $request->birth,
                     'apemail' => $request->email,
                     'apadd' => $request->address,
                     'cicn' => $request->cname,
@@ -89,9 +92,13 @@ class CustomerController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($id, Request $request)
     {
-        //
+        if ($request->ajax()) {
+            $customer = Customer::where('id', $request->id)->first();
+
+            return response()->json(view('customer.modal',compact('customer'))->render());
+        }
     }
 
     /**
@@ -131,7 +138,7 @@ class CustomerController extends Controller
                 $customer->cid = $request->customer_id;
                 $customer->apname = $request->name;
                 $customer->apphone = $request->phone;
-                $customer->apfax = $request->fax;
+                $customer->apbirthdate = $request->birth;
                 $customer->apemail = $request->email;
                 $customer->apadd = $request->address;
                 $customer->cicn = $request->cname;
@@ -159,81 +166,20 @@ class CustomerController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
         try{
-            $customer = Customer::where('id', $request->id)->first();
-            $customer->delete();
-            return response()->json();
-            // return redirect()->route('customer.index')->with('status','Data berhasil dihapus');
+            Customer::where('id', $id)->delete();
+            return "true";
         }catch(\Exception $e){
             return redirect()->back()->withErrors($e->getMessage());
-        }
-    }
-
-    public function priceCustomer()
-    {
-        $customers = Customer::select('id', 'apname', 'cid' ,'apphone', 'cicn' , 'ciphone')->get();
-        return view('customer.price_index', compact('customers'));
-    }
-
-    public function priceBV($id)
-    {
-        $page = MenuMapping::getMap(session('user_id'),"PRMC");
-        $customer = Customer::where('id', $id)->first();
-        // $product = Product::join('tblperusahaan','tblproduct.supplier', 'tblperusahaan.id')->select('tblproduct.name','tblperusahaan.nama AS namasupplier', 'prod_id', 'category')->get();
-        $product = PriceDet::join('tblproduct', 'tblpricedetail.prod_id', 'tblproduct.prod_id')->join('tblperusahaan','tblproduct.supplier', 'tblperusahaan.id')->where('customer_id', $id)->select('tblproduct.name','tblperusahaan.nama AS namasupplier', 'tblproduct.prod_id', 'category', 'tblpricedetail.price', 'tblpricedetail.pv', 'tblpricedetail.id AS pdid')->orderBy('tblproduct.name', 'asc')->get();
-        $jenis = "customer";
-        return view('customer.pricebv', compact('jenis', 'customer', 'product','page'));
-    }
-
-    public function updatePriceBV(Request $request, $id)
-    {
-        if($request->opsi==0){
-            try{
-                if(isset($request->prod_id)){
-                    $ctr = count($request->prod_id);
-                    for($i=0; $i<$ctr; $i++){
-                        $prod_id = $request->prod_id[$i];
-                        $prod_price = $request->prod_price[$i];
-                        $prod_bv = $request->prod_bv[$i];
-
-                        if(isset($request->prod_price_lama[$i]) || isset($request->prod_bv_lama[$i])){
-                            $prod_price_lama = $request->prod_price_lama[$i];
-                            $prod_bv_lama = $request->prod_bv_lama[$i];
-                            if($prod_price_lama != $prod_price || $prod_bv_lama != $prod_bv){
-                                $pricedet = PriceDet::where('prod_id', $prod_id)->where('customer_id', $id)->first();
-                                $pricedet->price = $prod_price;
-                                $pricedet->pv = $prod_bv;
-                                $pricedet->update();
-                            }
-                        }else{
-                            $pricedet = new PriceDet;
-                            $pricedet->customer_id = $id;
-                            $pricedet->prod_id = $prod_id;
-                            $pricedet->price = $prod_price;
-                            $pricedet->pv = $prod_bv;
-                            $pricedet->save();
-                        }
-                    }
-                    return redirect()->route('priceCustomer')->with('status','Price & BV berhasil diupdate!');
-                }else{
-                    return redirect()->route('priceCustomer')->with('warning','Price & BV gagal terupdate!');
-                }
-            }catch(\Exception $e) {
-                return redirect()->back()->withErrors($e->getMessage());
-                // return response()->json($e);
-            }
-        }elseif($request->opsi==1){
-            return redirect()->route('exportXlsProduct', ['id' => $id]);
         }
     }
 
     public function ajxGetProduct(Request $request){
         $keyword = strip_tags(trim($request->keyword));
         $key = $keyword.'%';
-        $search = Product::join('tblperusahaan','tblproduct.supplier','=','tblperusahaan.id')->where('name','LIKE', $key)->orWhere('tblproduct.prod_id','LIKE', $key)->select('tblproduct.id AS id','tblproduct.name', 'tblproduct.prod_id', 'tblperusahaan.nama AS supplier')->orderBy('tblproduct.name')->limit(5)->get();
-        // $s = BankMember::where('norek','LIKE', $norek.'%')->select('norek', 'id')->limit(5)->get();
+    $search = Product::join('tblperusahaan','tblproduct.supplier','=','tblperusahaan.id')->where('name','LIKE', $key)->orWhere('tblproduct.prod_id','LIKE', $key)->select('tblproduct.id AS id','tblproduct.name', 'tblproduct.prod_id', 'tblperusahaan.nama AS supplier')->orderBy('tblproduct.name')->limit(5)->get();
         $data = array();
         $array = json_decode( json_encode($search), true);
         foreach ($array as $key) {
@@ -287,7 +233,7 @@ class CustomerController extends Controller
     {
         $products = Product::join('tblperusahaan','tblproduct.supplier', 'tblperusahaan.id')->select('tblproduct.id AS pid', 'tblproduct.name','tblperusahaan.nama AS namasupplier', 'prod_id', 'category')->get();
         $jenis = "pricebyproduct";
-        return view('customer.index2', compact('jenis', 'products', 'page'));
+        return view('customer.index', compact('jenis', 'products'));
     }
 
     public function managePriceByProduct($id)

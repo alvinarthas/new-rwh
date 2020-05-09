@@ -5,14 +5,13 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-use App\ReturPenjualan;
-use App\ReturDetail;
+use Carbon\Carbon;
 
 class Customer extends Model
 {
     protected $table ='tblcustomer';
     protected $fillable = [
-        'cid','apname','apbp','apbd','apjt','apphone','apfax','apidc','apidcn','apidce','apemail','apadd','cicn','cicg','cilob','ciadd','cicty','cizip','cipro','ciweb','ciemail','cinpwp','ciphone','cifax','creator'
+        'cid','apname','apbp','apbd','apjt','apphone','apfax','apbirthdate','apidc','apidcn','apidce','apemail','apadd','cicn','cicg','cilob','ciadd','cicty','cizip','cipro','ciweb','ciemail','cinpwp','ciphone','cifax','creator'
     ];
     public $timestamps = false;
 
@@ -23,9 +22,8 @@ class Customer extends Model
             $supp = collect();
             $sales = Sales::where('customer_id',$key->id)->sum(DB::raw('ttl_harga+ongkir'));
             $paid = Sales::join('tblsopayment','tblsopayment.trx_id','=','tblproducttrx.id')->where('tblproducttrx.customer_id',$key->id)->sum('tblsopayment.payment_amount');
-            $retur = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.status', 1)->where('tblretur.customer', $key->id)->sum(DB::raw('tblreturdet.qty * tblreturdet.harga'));
 
-            $selisih = $sales - $paid - $retur;
+            $selisih = $sales - $paid;
             $total+=$selisih;
             $supp->put('name',$key->apname);
             $supp->put('id',$key->id);
@@ -50,30 +48,44 @@ class Customer extends Model
 
             if($selisih < 0 || $selisih > 0){
                 $data_hutang->put('id',$key->id);
-                $data_hutang->put('trx_id', $key->jurnal_id);
                 $data_hutang->put('sisa',$selisih);
-                $data_hutang->put('jenis', "SO");
 
                 $data->push($data_hutang);
             }
         }
 
-        foreach(ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.customer',$customer)->where('tblretur.status', 1)->select('tblretur.id', 'tblretur.id_jurnal', 'tblreturdet.harga', 'tblreturdet.qty')->get() as $key){
-            $dataretur = collect();
+        return $data;
+    }
 
-            $amount = $key->harga * $key->qty;
+    public static function getBirthday(){
+        Carbon::setLocale('id');
+        $getTime = date('Y-m-d', strtotime(Carbon::now()));
+        // $getTime = date('Y-m-d', strtotime("1994-10-18"));
+        $data = array();
 
-            // echo "<pre>";
-            // print_r($key);
-            // die();
+        $customer = Customer::where('apbirthdate', $getTime)->get();
 
-            if($amount < 0 || $amount > 0){
-                $dataretur->put('id',$key->id);
-                $dataretur->put('trx_id', $key->id_jurnal);
-                $dataretur->put('sisa', "-".$amount);
-                $dataretur->put('jenis', "RJ");
+        if(!empty($customer)){
+            foreach($customer as $c){
+                $array = array(
+                    'name'    => $c->apname,
+                    'status'  => "Customer",
+                    'tanggal' => $c->apbirthdate,
+                );
+                array_push($data, $array);
+            }
+        }
 
-                $data->push($dataretur);
+        $employee = Employee::where('tgl_lhr', $getTime)->get();
+
+        if(!empty($employee)){
+            foreach($employee as $e){
+                $array = array(
+                    'name'    => $e->name,
+                    'status'  => "Pegawai",
+                    'tanggal' => $e->tgl_lhr,
+                );
+                array_push($data, $array);
             }
         }
 

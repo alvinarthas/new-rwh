@@ -211,7 +211,7 @@
     <div class="row">
         <div class="col-12">
             <div class="card-box table-responsive">
-                <h4 class="m-t-0 header-title">Tugas Harian</h4>
+                <h4 class="m-t-0 header-title">Task Employee</h4>
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                     <thead>
                         <th>No</th>
@@ -219,7 +219,7 @@
                         <th>Dibuat pada</th>
                         <th>Deadline</th>
                         <th>Creator</th>
-                        @if(session('role') == 'Superadmin' || session('role') == 'Direktur Utama' || session('role') == 'Manager IT' || session('role') == 'Manager Keuangan' || session('role') == 'Manager Operasional' || session('role') == 'General Manager')
+                        @if(session('role') == 'Superadmin' || session('role') == 'Direktur Utama' || session('role') == 'Manager IT' || session('role') == 'General Manager')
                             <th>Status Dilihat</th>
                             <th>Status Dikerjakan</th>
                         @endif
@@ -228,12 +228,12 @@
                     <tbody>
                         @php($i = 1)
                         @foreach($data as $task)
-                            @if((TaskEmployee::where('employee_id',session('user_id'))->where('task_id', $task['id'])->count() == 1) OR (session('role')=="Superadmin" OR session('role')=="Direktur Utama" OR session('role')=="General Manager"))
+                            @if((TaskEmployee::where('employee_id',session('user_id'))->where('task_id', $task['id'])->count() == 1) OR (session('role') == 'Superadmin' || session('role') == 'Direktur Utama' || session('role') == 'Manager IT' || session('role') == 'General Manager'))
                                 <tr>
                                     <td>{{$i}}</td>
                                     <td><a href="javascript:;" onclick="getDescribe('{{ $task['id'] }}')" disabled="disabled">{{$task['title']}}</a></td>
                                     <input type="hidden" name="employee_id" id="employee_id" value="{{session('user_id')}}">
-                                    <td>{{$task['start_date']}}</td>
+                                    <td>{{$task['created_at']}}</td>
                                     <td>{{$task['due_date']}}</td>
                                     <td>{{$task['creator']}}</td>
                                     @if(session('role') == 'Superadmin' || session('role') == 'Direktur Utama' || session('role') == 'Manager IT' || session('role') == 'Manager Keuangan' || session('role') == 'Manager Operasional' || session('role') == 'Direktur Utama')
@@ -258,6 +258,35 @@
         </div>
     </div> <!-- end row -->
     @if(session('role') == 'Superadmin' || session('role') == 'Direktur Utama')
+        @if($birth <> null)
+            <div class="row">
+                <div class="col-12">
+                    <div class="card-box table-responsive">
+                        <h4 class="m-t-0 header-title">Daftar Ulang Tahun</h4>
+                        <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                            <thead>
+                                <th>No</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Tanggal</th>
+                            </thead>
+
+                            <tbody>
+                                @php($i = 1)
+                                @foreach($birth as $key)
+                                    <tr>
+                                        <td>{{$i++}}</td>
+                                        <td>{{$key['name']}}</td>
+                                        <td>{{$key['status']}}</td>
+                                        <td>{{$key['tanggal']}}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div> <!-- end row -->
+        @endif
         <div class="card-box table-responsive">
             <ul class="nav nav-tabs">
                 <li class="nav-item">
@@ -296,7 +325,7 @@
                                             @if($item['sisa'] > 20000000)
                                                 <tr>
                                                     <td>{{$i}}</td>
-                                                    <td>{{$item['nama']}}</td>
+                                                    <td>{{$item['id']}}</td>
                                                     <td><strong>Rp {{number_format($item['sisa'],2,',','.')}}</strong></td>
                                                 </tr>
                                                 @php($i++)
@@ -368,7 +397,7 @@
         <div class="modal-dialog modal-lg" id="do-modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="myLargeModalLabel">Detail Tugas</h4>
+                    <h4 class="modal-title" id="myLargeModalLabel">Detail Task</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
                 </div>
                 <div class="modal-body" id="modalView">
