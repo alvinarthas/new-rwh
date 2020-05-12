@@ -233,7 +233,7 @@ class ReturController extends Controller
                     $jurnal_desc = "retur ".$id_jurnal." dari ".$purchase->jurnal_id;
 
                     //insert debet hutang Dagang
-                    Jurnal::addJurnal($id_jurnal,$total_distributor,$purchase->tgl,$jurnal_desc,'2.1.1','Debet',session('$user_id'));
+                    Jurnal::addJurnal($id_jurnal,$total_distributor,$purchase->tgl,$jurnal_desc,'2.1.1','Debet',session('user_id'));
                     //insert credit Persediaan Barang Indent ( harga modal x qty )
                     Jurnal::addJurnal($id_jurnal,$total_modal,$purchase->tgl,$jurnal_desc,'1.1.4.1.1','Credit',session('user_id'));
                     if($total_tertahan < 0){

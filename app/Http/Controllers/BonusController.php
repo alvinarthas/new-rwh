@@ -16,6 +16,8 @@ use PDF;
 
 use App\Exports\BonusGagalUploadExport1;
 use App\Exports\BonusGagalUploadExport2;
+use App\Exports\PerhitunganBonusExport;
+use App\Exports\PenerimaanBonusExport;
 use Carbon\Carbon;
 
 use App\Purchase;
@@ -503,9 +505,9 @@ class BonusController extends Controller
         }elseif($request->bonusapa=="pembayaran"){
             $bonusapa = $request->bonusapa;
             $details = BonusBayar::join('bankmember', 'tblbonusbayar.no_rek', 'bankmember.norek')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where("tblbonusbayar.id_jurnal", $request->id_jurnal)->select('tblbank.nama AS namabank', 'tblbonusbayar.no_rek', 'tblmember.nama', 'tblbonusbayar.bonus', 'tblbonusbayar.id_jurnal', 'tblbonusbayar.AccNo')->get();
-            echo "<pre>";
-            print_r($details);
-            die();
+            // echo "<pre>";
+            // print_r($details);
+            // die();
             $bonus = BonusBayar::join("tblcoa", "tblbonusbayar.AccNo", "tblcoa.AccNo")->where("tblbonusbayar.id_jurnal", $request->id_jurnal)->select('tblbonusbayar.tgl', 'tblcoa.AccName', 'tblbonusbayar.id_jurnal')->first();
             $id_jurnal = $bonus['id_jurnal'];
             $rekening = $bonus['AccName'];
@@ -1895,5 +1897,87 @@ class BonusController extends Controller
         //     }
         // }
         return redirect()->route('bonus.index')->with('status', 'Berhasil!');
+    }
+
+    public function export(Request $request){
+        ini_set('max_execution_time', 3000);
+
+        $tgl = date('Y-m-d', strtotime(Carbon::today()));
+        $id_jurnal = $request->id_jurnal;
+        $bonusapa = $request->bonusapa;
+        $data = array();
+        $no = 0;
+
+        if($bonusapa == "perhitungan"){
+            $bonus = Bonus::join('perusahaanmember', 'tblbonus.noid', 'perusahaanmember.noid')->join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->join('tblperusahaan', 'tblbonus.perusahaan_id', 'tblperusahaan.id')->where('id_jurnal', $id_jurnal)->select('tblbonus.noid', 'tblbonus.tgl', 'tblbonus.bonus', 'tblbonus.tahun', 'tblbonus.bulan', 'tblmember.nama', 'tblbonus.id_jurnal', 'tblperusahaan.nama AS perusahaan')->get();
+            $month = date("F", mktime(0, 0, 0, $bonus[0]['bulan'], 10));
+            $year = $bonus[0]['tahun'];
+            $filename = "Daftar Perhitungan Bonus ".$month." ".$year." ".$id_jurnal." (".$tgl.")";
+
+            foreach($bonus as $b){
+                $trx_id = $b->id_jurnal;
+                $trx_date = $b->tgl;
+                $periode = $month." ".$year;
+                $id_jurnal = $b->id_jurnal;
+                $perusahaan = $b->perusahaan;
+                $noid = $b->noid;
+                $nama = $b->nama;
+                $bonus = $b->bonus;
+                $no++;
+
+                $array = array(
+                    // Data Purchase
+                    'No' => $no,
+                    'ID' => $trx_id,
+                    'Bulan Bonus' => $periode,
+                    'Tanggal Transaksi' => $trx_date,
+                    'Perusahaan' => $perusahaan,
+                    'No ID Member' => $noid,
+                    'Nama Member' => $nama,
+                    'Bonus' => $bonus,
+                );
+
+                array_push($data, $array);
+            }
+
+            $export = new PerhitunganBonusExport($data);
+        }elseif($bonusapa == "pembayaran"){
+            $bonus = BonusBayar::join('bankmember', 'tblbonusbayar.no_rek', 'bankmember.norek')->join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('tblbonusbayar.id_jurnal', $id_jurnal)->select('tblbonusbayar.no_rek', 'tblbonusbayar.bonus', 'tblbonusbayar.tgl', 'tblbonusbayar.tahun', 'tblbonusbayar.bulan', 'tblmember.nama', 'tblbonusbayar.id_jurnal', 'tblbonusbayar.AccNo')->get();
+            $month = date("F", mktime(0, 0, 0, $bonus[0]['bulan'], 10));
+            $year = $bonus[0]['tahun'];
+            $filename = "Daftar Penerimaan Bonus ".$month." ".$year." ".$id_jurnal." (".$tgl.")";
+
+            foreach($bonus as $b){
+                $trx_id = $b->id_jurnal;
+                $trx_date = $b->tgl;
+                $periode = $month." ".$year;
+                $id_jurnal = $b->id_jurnal;
+                if($b->AccNo == "1.1.1.1.000003"){
+                    $norek = "";
+                }else{
+                    $norek = $b->no_rek;
+                }
+                $nama = $b->nama;
+                $bonus = $b->bonus;
+                $no++;
+
+                $array = array(
+                    // Data Purchase
+                    'No' => $no,
+                    'ID' => $trx_id,
+                    'Bulan Bonus' => $periode,
+                    'Tanggal Transaksi' => $trx_date,
+                    'No Rekening' => $norek,
+                    'Nama Member' => $nama,
+                    'Bonus' => $bonus,
+                );
+
+                array_push($data, $array);
+            }
+
+            $export = new PenerimaanBonusExport($data);
+        }
+
+        return Excel::download($export, $filename.'.xlsx');
     }
 }

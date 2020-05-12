@@ -320,7 +320,8 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('jurnaldetaildestroy','JurnalController@detailJuralDestroy')->name('detailJuralDestroy');
 
     // Bonus Helper
-    Route::post('repairEstimasibonus', 'BonusController@RepairEstimasi')->name('repairEstimasiBonus');
+    // Route::post('repairEstimasibonus', 'BonusController@RepairEstimasi')->name('repairEstimasiBonus');
+    Route::post('/bonus/export', 'BonusController@export')->name('exportBonus');
 
     // Task Helper
     Route::put('/task/{id}/updateStatus','TaskController@statusUpdate')->name('task.updatestatus');
