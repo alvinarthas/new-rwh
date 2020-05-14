@@ -43,6 +43,7 @@ Index
                             <th>Personal Phone</th>
                             <th>Company Name</th>
                             <th>Company Phone</th>
+                            <th>Customer Type</th>
                             <th width="200px">Action</th>
                         </thead>
                         <tbody>
@@ -58,6 +59,11 @@ Index
                                 <td>{{$cus->apphone}}</td>
                                 <td>{{$cus->cicn}}</td>
                                 <td>{{$cus->ciphone}}</td>
+                                @if($cus->cust_type == 1)
+                                    <td class="text-success">Customer Online</td>
+                                @else
+                                    <td class="text-danger">Customer Offline</td>
+                                @endif
                                 <td>
                                     @if (array_search("MDCSU",$page))
                                         <a href="{{route('customer.edit',['id'=>$cus->id])}}" class="btn btn-custom waves-effect waves-light w-md">Update</a>

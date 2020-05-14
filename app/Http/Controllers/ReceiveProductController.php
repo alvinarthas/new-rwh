@@ -24,19 +24,20 @@ class ReceiveProductController extends Controller
         if($request->jenis == "all"){
             $lists = json_decode (json_encode (ReceiveDet::listReceiveAll()), FALSE);
         }else{
-            $bulan_start = date('m',strtotime($request->start));
-            $bulan_end = date('m',strtotime($request->end));
+            // $bulan_start = date('m',strtotime($request->start));
+            // $bulan_end = date('m',strtotime($request->end));
 
-            $tahun_start = date('Y',strtotime($request->start));
-            $tahun_end = date('Y',strtotime($request->end));
+            // $tahun_start = date('Y',strtotime($request->start));
+            // $tahun_end = date('Y',strtotime($request->end));
 
-            $lists = json_decode (json_encode (ReceiveDet::listReceive($bulan_start,$bulan_end,$tahun_start,$tahun_end)), FALSE);
+            $lists = json_decode (json_encode (ReceiveDet::listReceive($request->start,$request->end)), FALSE);
         }
-        
-        
+
+
         if ($request->ajax()) {
+            $purchases = Purchase::checkReceive($request->start, $request->end);
             $page = MenuMapping::getMap(session('user_id'),"PURP");
-            return response()->json(view('purchase.receive.indexreceive',compact('lists','page'))->render());
+            return response()->json(view('purchase.receive.indexreceive',compact('purchases', 'lists','page'))->render());
         }
     }
 
@@ -85,7 +86,7 @@ class ReceiveProductController extends Controller
                 Jurnal::addJurnal($id_jurnal,$price,$request->receive_date,$desc,'1.1.4.1.2','Debet');
                 //insert credit Persediaan Barang Indent
                 Jurnal::addJurnal($id_jurnal,$price,$request->receive_date,$desc,'1.1.4.1.1','Credit');
-                
+
                 $receive->save();
                 Log::setLog('PURPC','Create Receive Product PO.'.$request->trx_id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data berhasil dibuat');

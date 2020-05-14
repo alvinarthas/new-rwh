@@ -10,7 +10,8 @@ use App\PurchaseDetail;
 use App\TempPO;
 use App\TempPODet;
 use App\Jurnal;
-use App\Perushaan;
+use App\Perusahaan;
+use App\ReceiveDet;
 
 class Purchase extends Model
 {
@@ -243,5 +244,40 @@ class Purchase extends Model
         $count = Purchase::where('month',$month)->where('year',$year)->whereNotIn('creator',$d)->distinct()->count('supplier');
 
         return $count;
+    }
+
+    public static function checkReceive($start,$end){
+        if($start <> NULL && $end <> NULL){
+            $purchases = Purchase::whereBetween('tgl',[$start,$end])->where('approve',1)->get();
+        }else{
+            $purchases = Purchase::where('approve',1)->get();
+        }
+
+        $data = collect();
+        foreach ($purchases as $purchase) {
+            $collect = collect();
+            $purchasedet = PurchaseDetail::where('trx_id',$purchase->id)->select('*',DB::Raw('SUM(qty) as sum_qty'))->groupBy('prod_id')->get();
+            $detcount = $purchasedet->count();
+            $count = 0;
+            foreach($purchasedet as $key){
+                $count_receive_product = ReceiveDet::where('trx_id',$purchase->id)->where('prod_id',$key->prod_id)->sum('qty');
+                if($key->sum_qty == $count_receive_product){
+                    $count++;
+                }
+            }
+
+            if($detcount == $count){
+                $status = 1;
+            }else{
+                $status = 0;
+            }
+            $collect->put('trx_id',$purchase->id);
+            $collect->put('supplier',Perusahaan::where('id', $purchase->supplier)->first()->nama);
+            $collect->put('ttl_dist',$purchase->total_harga_dist);
+            $collect->put('ttl_modal',$purchase->total_harga_modal);
+            $collect->put('status_receive',$status);
+            $data->push($collect);
+        }
+        return $data;
     }
 }

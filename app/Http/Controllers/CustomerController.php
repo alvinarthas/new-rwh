@@ -24,7 +24,7 @@ class CustomerController extends Controller
     {
         $page = MenuMapping::getMap(session('user_id'),"MDCS");
         $jenis = "customer";
-        $customers = Customer::select('id', 'apname', 'cid' ,'apphone', 'cicn' , 'ciphone', 'apbirthdate')->get();
+        $customers = Customer::select('id', 'apname', 'cid' ,'apphone', 'cicn' , 'ciphone', 'apbirthdate', 'cust_type')->get();
         return view('customer.index', compact('customers', 'jenis', 'page'));
     }
 
@@ -62,6 +62,7 @@ class CustomerController extends Controller
             try{
                 $customer = new Customer(array(
                     'cid' => $request->customer_id,
+                    'cust_type' => $request->cust_type,
                     'apname' => $request->name,
                     'apphone' => $request->phone,
                     'apbirthdate' => $request->birth,
@@ -137,6 +138,7 @@ class CustomerController extends Controller
                 $customer = Customer::where('id', $id)->first();
                 $customer->cid = $request->customer_id;
                 $customer->apname = $request->name;
+                $customer->cust_type = $request->cust_type;
                 $customer->apphone = $request->phone;
                 $customer->apbirthdate = $request->birth;
                 $customer->apemail = $request->email;

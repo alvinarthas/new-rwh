@@ -16,7 +16,7 @@ class Customer extends Model
 {
     protected $table ='tblcustomer';
     protected $fillable = [
-        'cid','apname','apbp','apbd','apjt','apphone','apfax','apbirthdate','apidc','apidcn','apidce','apemail','apadd','cicn','cicg','cilob','ciadd','cicty','cizip','cipro','ciweb','ciemail','cinpwp','ciphone','cifax','creator'
+        'cid','apname','apbp','apbd','apjt','apphone','apfax','apbirthdate','apidc','apidcn','apidce','apemail','apadd','cicn','cicg','cilob','ciadd','cicty','cizip','cipro','ciweb','ciemail','cinpwp','ciphone','cifax','creator', 'cust_type'
     ];
     public $timestamps = false;
 

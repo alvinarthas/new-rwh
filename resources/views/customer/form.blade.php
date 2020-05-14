@@ -61,6 +61,27 @@
                                 </div>
                             </div>
                             <div class="form-group row">
+                                <label class="col-2 col-form-label">Tipe Customer</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="cust_type">
+                                        @isset($customer->cust_type)
+                                            <option value="#" disabled>Pilih Tipe Customer</option>
+                                            @if($customer->cust_type == 0)
+                                                <option value="0" selected>Customer Offline</option>
+                                                <option value="1">Customer Online</option>
+                                            @elseif($customer->cust_type == 1)
+                                                <option value="0">Customer Offline</option>
+                                                <option value="1" selected>Customer Online</option>
+                                            @endif
+                                        @else
+                                            <option value="#" disabled selected>Pilih Tipe Customer</option>
+                                            <option value="0">Customer Offline</option>
+                                            <option value="1">Customer Online</option>
+                                        @endisset
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
                                 <label class="col-2 col-form-label">Nama</label>
                                 <div class="col-10">
                                     <input type="text" class="form-control" parsley-trigger="change" name="name" id="name" value="@isset($customer->apname){{$customer->apname}}@endisset" required>
