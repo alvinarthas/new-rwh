@@ -148,6 +148,8 @@ Route::middleware(['checkUser'])->group(function () {
         'task' => 'TaskController',
         // Konversi
         'konversi' => 'KonversiController',
+        // Ecommerce
+        'ecommerce' => 'EcommerceController',
     ]);
 
     // Member
