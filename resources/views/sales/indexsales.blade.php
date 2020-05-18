@@ -33,7 +33,12 @@
                         @foreach ($sales as $sale)
                             <tr>
                                 <td>{{$i}}</td>
+                                @if ($sale->method <> 0)
+                                <td><a href="javascript:;" onclick="getDetail({{$sale->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">{{$sale->online()->first()->kode_trx}}.{{$sale->online_id}}</a></td>
+                                @else
                                 <td><a href="javascript:;" onclick="getDetail({{$sale->id}})" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">SO.{{$sale->id}}</a></td>
+                                @endif
+
                                 <td>{{$sale->trx_date}}</td>
                                 <td>{{$sale->customer->apname}}</td>
                                 <td>{{$sale->creator()->first()->name}}</td>

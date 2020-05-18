@@ -50,6 +50,18 @@ Index Sales Order
                                     </div><!-- input-group -->
                                 </div>
                             </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Pilih Method</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="method" id="method">
+                                        <option value="#" selected disabled>Pilih Method</option>
+                                        <option value="0">Offline</option>
+                                        @if (array_search("PSSLVO",$page))
+                                        <option value="1">Online</option>
+                                        @endif
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -103,6 +115,8 @@ Index Sales Order
     function chooseSales(param=null){
         start = $('#trx_start').val();
         end = $('#trx_end').val();
+        method = $('#method').val();
+
         $('#choose').val(param);
 
         $.ajax({
@@ -113,6 +127,7 @@ Index Sales Order
                 start: start,
                 end: end,
                 param: param,
+                method: method,
             },
         }).done(function (data) {
             document.getElementById("sales-list").style.display = 'block';

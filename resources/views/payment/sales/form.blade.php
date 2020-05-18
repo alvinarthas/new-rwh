@@ -31,7 +31,6 @@ Form Sales Payment
                         <th>Product Price</th>
                         <th>Buy Qty</th>
                         <th>Sub Total</th>
-                        <th>Jurnal</th>
                     </thead>
                     <tbody>
                         @php($i=1)
@@ -43,7 +42,6 @@ Form Sales Payment
                                 <td>Rp {{number_format($item->price,2,",",".")}}</td>
                                 <td>{{$item->qty}}</td>
                                 <td>Rp {{number_format($item->sub_ttl,2,",",".")}}</td>
-                                <td></td>
                             </tr>
                         @php($i++)
                         @endforeach
@@ -58,7 +56,12 @@ Form Sales Payment
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Transaction ID</label>
                             <div class="col-10">
-                                <input type="text" class="form-control" parsley-trigger="change" value="{{$sales->id}}" readonly>
+                                @if ($sales->method == 0)
+                                    <input type="text" class="form-control" parsley-trigger="change" value="{{$sales->id}}" readonly>
+                                @else
+                                    <input type="text" class="form-control" parsley-trigger="change" value="SO.{{$sales->id}} / {{$sales->jurnal_id}}" readonly>
+                                @endif
+
                             </div>
                         </div>
                         <div class="form-group row">
@@ -357,7 +360,7 @@ Form Sales Payment
                     'error'
                 )
             });
-            
+
         }, function (dismiss) {
             // dismiss can be 'cancel', 'overlay',
             // 'close', and 'timer'

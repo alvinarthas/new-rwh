@@ -22,6 +22,7 @@ use App\Log;
 use App\TempSales;
 use App\TempSalesDet;
 use App\DeliveryOrder;
+use App\Ecommerce;
 
 class SalesController extends Controller
 {
@@ -35,9 +36,10 @@ class SalesController extends Controller
     public function showSales(Request $request){
         // $products = PriceDet::where('customer_id',$request->customer)->select('prod_id')->orderBy('prod_id','asc')->get();
         $products = Product::select('prod_id','name')->get();
+        $method = $request->method;
         $customer = Customer::where('id',$request->customer)->select('id','apname','apphone','cicn','ciphone')->first();
         if ($request->ajax()) {
-            return response()->json(view('sales.showsales',compact('products','customer'))->render());
+            return response()->json(view('sales.showsales',compact('products','customer','method'))->render());
         }
     }
 
@@ -96,13 +98,36 @@ class SalesController extends Controller
         if($request->param == "all"){
             $sales = Sales::orderBy('trx_date','desc')->get();
         }else{
-            $sales = Sales::whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
+            if ($request->method == 0) {
+                $sales = Sales::where('method',$request->method)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
+            }else{
+                $sales = Sales::where('method','NOT LIKE',0)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
+            }
         }
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
-        $transaksi = Sales::getOrder($request->start,$request->end,$request->param);
+        $transaksi = Sales::getOrder($request->start,$request->end,$request->param,$request->method);
         if ($request->ajax()) {
             return response()->json(view('sales.indexsales',compact('sales','page','transaksi'))->render());
         }
+    }
+
+    public function customerSales(Request $request){
+        if($request->method == '*'){
+            $customers = Customer::select('id','apname')->get();
+            $append = '<option value="#" disabled selected>Pilih Customer</option>';
+        }elseif($request->method == 0){
+            $customers = Customer::where('cust_type',0)->select('id','apname')->get();
+            $append = '<option value="#" disabled selected>Pilih Customer Offline</option>';
+        }else{
+            $customers = Customer::where('cust_type',1)->select('id','apname')->get();
+            $append = '<option value="#">Pilih Customer Online</option>';
+        }
+
+        foreach($customers as $key){
+            $append.='<option value="'.$key->id.'">'.$key->apname.'</option>';
+        }
+
+        return response()->json($append);
     }
 
     public function destroySalesDetail(Request $request){
@@ -131,8 +156,9 @@ class SalesController extends Controller
 
     public function create()
     {
-        $customers = Customer::select('id','apname')->get();
-        return view('sales.form', compact('customers'));
+        $page = MenuMapping::getMap(session('user_id'),"PSSL");
+        $ecoms = Ecommerce::all();
+        return view('sales.form', compact('page','ecoms'));
     }
 
     public function store(Request $request)
@@ -143,12 +169,20 @@ class SalesController extends Controller
             'trx_date' => 'required|date',
             'count' => 'required',
             'raw_ttl_trx' => 'required|integer',
+            'method' => 'required',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
+            if($request->method <> 0){
+                $count_trx = Sales::where('method',$request->method)->count();
+                $online_id = $count_trx+1;
+            }else{
+                $online_id = 0;
+            }
+
             $sales = new Sales(array(
                 'customer_id' => $request->customer,
                 'trx_date' => $request->trx_date,
@@ -156,6 +190,8 @@ class SalesController extends Controller
                 'ttl_harga' => $request->raw_ttl_trx,
                 'ongkir' => $request->ongkir,
                 'approve' => 0,
+                'method' => $request->method,
+                'online_id' => $online_id,
             ));
             // success
             try {
@@ -224,6 +260,12 @@ class SalesController extends Controller
             $salesdet = SalesDet::where('trx_id',$id)->get();
             $products = Product::select('prod_id','name')->get();
         }
+
+        if($sales->method == 0){
+            $customer = Customer::where('cust_type',0)->get();
+        }else{
+            $customer = Customer::where('cust_type',1)->get();
+        }
         return view('sales.form_update', compact('salesdet','sales','products','page','status', 'customer'));
     }
 
@@ -268,6 +310,8 @@ class SalesController extends Controller
                         'ongkir' => $request->ongkir,
                         'approve' => 0,
                         'status' => 1,
+                        'method' => $request->method,
+                        'online_id' => $request->online_id,
                     ));
                     $temp_sales->save();
                 }

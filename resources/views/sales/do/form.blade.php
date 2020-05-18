@@ -18,7 +18,7 @@
     <!-- Sweet Alert css -->
     <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> 
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 @endsection
 
 @section('judul')
@@ -36,7 +36,12 @@ Form Sales Order
                             <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <label for="salesid" class="col-form-label">Sales ID</label>
-                                    <input type="text" class="form-control" id="salesid" value="SO.{{$sales->id}}" readonly>
+                                    @if ($sales->method == 0)
+                                        <input type="text" class="form-control" id="salesid" value="SO.{{$sales->id}}" readonly>
+                                    @else
+                                        <input type="text" class="form-control" id="salesid" value="SO.{{$sales->id}}  / {{$sales->jurnal_id}}" readonly>
+                                    @endif
+
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label for="salesdate" class="col-form-label">Sales Date</label>

@@ -17,6 +17,9 @@
         @isset($temp_sales)
         <div role="tabpanel" class="tab-pane fade show active" id="edited">
             <h4>Sales Order #{{$sales->id}}</h4>
+            @if($sales->method <> 0)
+            <h4>{{$sales->online->nama}} #{{$sales->online_id}}</h4>
+            @endif
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label for="salesid" class="col-form-label">Nama</label>
@@ -94,6 +97,9 @@
         @endisset
         <div role="tabpanel" class="tab-pane fade show active" id="original">
             <h4>Sales Order #{{$sales->id}}</h4>
+            @if($sales->method <> 0)
+            <h4>{{$sales->online->nama}} #{{$sales->online_id}}</h4>
+            @endif
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label for="salesid" class="col-form-label">Nama</label>

@@ -21,13 +21,16 @@ use App\SaldoHistory;
 use App\Jurnal;
 use App\MenuMapping;
 use App\Log;
+use App\Ecommerce;
+use App\DeliveryOrder;
 
 class PaymentController extends Controller
 {
     // Sales
     public function salesIndex(){
-        $customers = Customer::select('id','apname')->orderBy('apname','asc')->get();
-        return view('payment.sales.index',compact('customers'));
+        $ecoms = Ecommerce::all();
+        $page = MenuMapping::getMap(session('user_id'),"PSSP");
+        return view('payment.sales.index',compact('ecoms','page'));
     }
 
     public function salesView(Request $request){
@@ -37,7 +40,7 @@ class PaymentController extends Controller
         $end_pay = $request->end_pay;
         $customer = $request->customer;
         $page = MenuMapping::getMap(session('user_id'),"PSSP");
-        $sales = Sales::getOrderPayment($start_trx,$end_trx,$start_pay,$end_pay,$customer,$request->param);
+        $sales = Sales::getOrderPayment($start_trx,$end_trx,$start_pay,$end_pay,$customer,$request->param,$request->method);
         if ($request->ajax()) {
             return response()->json(view('payment.sales.view',compact('sales','page'))->render());
         }
@@ -68,8 +71,11 @@ class PaymentController extends Controller
         // Validation success
         }else{
             $rest = $request->paid - $request->payment_amount;
+
+            $sales = Sales::where('id',$request->trx_id)->first();
+
             // Jurnal
-            $jurnal_desc = "SO.".$request->trx_id;
+            $jurnal_desc = $sales->jurnal_id;
             $id_jurnal = Jurnal::getJurnalID('SP');
 
             $payment = new SalesPayment(array(
@@ -95,10 +101,13 @@ class PaymentController extends Controller
 
                 // Status Sales
                 if($rest == 0){
-                    $sales = Sales::where('id',$request->trx_id)->first();
                     $sales->status = 1;
 
                     $sales->save();
+
+                    if($sales->method <> 0){
+                        DeliveryOrder::autoDO($sales->id,$request->payment_date);
+                    }
                 }
 
                 // Saldo
@@ -140,6 +149,9 @@ class PaymentController extends Controller
         $id_jurnal = $payment->jurnal_id;
 
         try {
+            if($sales->method <> 0){
+                DeliveryOrder::deleteDO($sales->id);
+            }
             $jurnal = Jurnal::where('id_jurnal',$payment->jurnal_id)->delete();
             $saldo->delete();
             Log::setLog('PSSPD','Delete Sales Payment SO.'.$request->id.' Jurnal ID: '.$id_jurnal);

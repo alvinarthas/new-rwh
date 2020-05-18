@@ -65,6 +65,7 @@
 <form class="form-horizontal" id="form" role="form" action="{{ route('sales.store') }}" enctype="multipart/form-data" method="POST">
     @csrf
     <input type="hidden" name="customer" id="customer" value="{{$customer->id}}">
+    <input type="hidden" name="method" id="method" value="{{$method}}">
 
     <div class="card-box">
         <div class="row">
@@ -245,7 +246,7 @@ function changeTotal(i,param=null){
 
         $('#sub_ttl_price'+i).val(ttl_price);
         $('#sub_ttl_bv'+i).val(ttl_bv)
-        
+
         changeTotalHarga();
     }, 1000);
 }
@@ -264,7 +265,7 @@ $input.on('keyup', function () {
     typingTimer = setTimeout(ongkosKirim, doneTypingInterval);
 });
 
-//on keydown, clear the countdown 
+//on keydown, clear the countdown
 $input.on('keydown', function () {
     clearTimeout(typingTimer);
     typingTimer = setTimeout(ongkosKirim, doneTypingInterval);
@@ -284,4 +285,3 @@ function ongkosKirim() {
     $('#ttl_trx').val(result);
 }
 </script>
-        

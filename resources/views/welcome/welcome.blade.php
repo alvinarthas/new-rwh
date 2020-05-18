@@ -335,7 +335,7 @@
                                             @if($item['sisa'] > 10000000)
                                                 <tr>
                                                     <td>{{$i}}</td>
-                                                    <td>{{$item['id']}}</td>
+                                                    <td>{{$item['nama']}}</td>
                                                     <td><strong>Rp {{number_format($item['sisa'],2,',','.')}}</strong></td>
                                                 </tr>
                                                 @php($i++)

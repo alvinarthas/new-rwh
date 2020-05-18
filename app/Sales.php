@@ -15,12 +15,13 @@ use App\TempSales;
 use App\TempSalesDet;
 use App\Customer;
 use App\Purchase;
+use App\Ecommerce;
 
 class Sales extends Model
 {
     protected $table ='tblproducttrx';
     protected $fillable = [
-        'trx_date','creator','payment','ttl_harga','customer_id','jurnal_id','hpp_jurnal_id','ongkir','approve','approve_by','status','cogs'
+    'trx_date','creator','payment','ttl_harga','customer_id','jurnal_id','hpp_jurnal_id','ongkir','approve','approve_by','status','cogs','method','online_id'
     ];
 
     public function customer(){
@@ -31,26 +32,29 @@ class Sales extends Model
         return $this->belongsTo('App\Employee','creator','id');
     }
 
-    public static function getOrder($start,$end,$param){
+    public function online(){
+        return $this->belongsTo('App\Ecommerce','method','id');
+    }
+
+    public static function getOrder($start,$end,$param,$method){
         $data = collect();
         if($param == "all"){
             $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id');
         }else{
             $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id')
-            ->whereBetween('trx_date',[$start,$end]);
+            ->where('method',$method)->whereBetween('trx_date',[$start,$end]);
         }
-        
         $ttl_count = $order->sum('x.qty');
         $order->orderBy('tblproducttrx.id')->select('tblproducttrx.*');
-        
+
         $ttl_pemasukan = $order->sum('x.sub_ttl');
         $ttl_total = $order->sum('x.sub_ttl_pv');
         if($param == "all"){
             $ttl_trx = Sales::count('id');
         }else{
-            $ttl_trx = Sales::whereBetween('trx_date',[$start,$end])->count('id');
+            $ttl_trx = Sales::where('method',$method)->whereBetween('trx_date',[$start,$end])->count('id');
         }
-        
+
 
         $data->put('ttl_count',$ttl_count);
         $data->put('ttl_pemasukan',$ttl_pemasukan);
@@ -62,31 +66,39 @@ class Sales extends Model
         return $data;
     }
 
-    public static function getOrderPayment($start_trx,$end_trx,$start_pay,$end_pay,$customer,$param){
+    public static function getOrderPayment($start_trx,$end_trx,$start_pay,$end_pay,$customer,$param,$method){
         if($param == "all"){
             $payment = SalesPayment::sum('payment_amount');
             $sales = Sales::where('approve',1);
             $data = collect();
-            
+
             $ttl_trx = $sales->count('id');
-    
+
             $ttl_harga = $sales->sum('ttl_harga');
             $ttl_ongkir = $sales->sum('ongkir');
         }elseif($param == null){
-            $payment = SalesPayment::whereBetween('payment_date',[$start_pay,$end_pay])->sum('payment_amount');
-            $sales = Sales::whereBetween('trx_date',[$start_trx,$end_trx])->where('approve',1);
+            if($method == '*'){
+                $payment = SalesPayment::whereBetween('payment_date',[$start_pay,$end_pay])->sum('payment_amount');
+                $sales = Sales::whereBetween('trx_date',[$start_trx,$end_trx])->where('approve',1);
+            }elseif($method == 0){
+                $payment = SalesPayment::join('tblproducttrx','tblproducttrx.id','=','tblsopayment.trx_id')->where('method',0)->whereBetween('payment_date',[$start_pay,$end_pay])->sum('payment_amount');
+                $sales = Sales::where('method',0)->whereBetween('trx_date',[$start_trx,$end_trx])->where('approve',1);
+            }else{
+                $payment = SalesPayment::join('tblproducttrx','tblproducttrx.id','=','tblsopayment.trx_id')->where('method','NOT LIKE',0)->whereBetween('payment_date',[$start_pay,$end_pay])->sum('payment_amount');
+                $sales = Sales::where('method','NOT LIKE',0)->whereBetween('trx_date',[$start_trx,$end_trx])->where('approve',1);
+            }
             $data = collect();
-    
+
             if($customer <> "all"){
                 $sales->where('customer_id',$customer);
             }
-            
+
             $ttl_trx = $sales->count('id');
-    
+
             $ttl_harga = $sales->sum('ttl_harga');
             $ttl_ongkir = $sales->sum('ongkir');
         }
-        
+
         $ttl_sales = $ttl_harga+$ttl_ongkir;
 
         $data->put('ttl_trx',$ttl_trx);
@@ -103,7 +115,7 @@ class Sales extends Model
         }else{
             $sales = Sales::where('approve',1)->get();
         }
-        
+
         $data = collect();
         foreach ($sales as $sale) {
             $collect = collect();
@@ -140,16 +152,28 @@ class Sales extends Model
     }
 
     public static function setJurnal($id,$user_id){
-        $id_jurnal = 'SO.'.$id;
-
         $sales = Sales::where('id',$id)->first();
-        $sales->approve = 1;
-        $sales->approve_by = $user_id;
-        $sales->jurnal_id = $id_jurnal;
+
+        if($sales->method <> 0){
+            $ecom = Ecommerce::where('id',$sales->method)->first();
+
+            $id_jurnal = $ecom->kode_trx.'.'.$sales->online_id;
+            $jurnal_desc = $ecom->kode_trx.'.'.$sales->online_id.' => '."SO.".$id;
+
+            $sales->approve = 1;
+            $sales->approve_by = $user_id;
+            $sales->jurnal_id = $id_jurnal;
+        }else{
+            $id_jurnal = 'SO.'.$id;
+            $jurnal_desc = "SO.".$id;
+
+            $sales->approve = 1;
+            $sales->approve_by = $user_id;
+            $sales->jurnal_id = $id_jurnal;
+        }
+
         $sales->update();
 
-        $jurnal_desc = "SO.".$sales->id;
-        
         $total_transaksi = $sales->ttl_harga + $sales->ongkir;
 
         $modal = 0;
@@ -157,7 +181,7 @@ class Sales extends Model
             $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
 
             $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum('tblpotrxdet.qty');
-            
+
             if($sumprice <> 0 && $sumqty <> 0){
                 $avcharga = $sumprice/$sumqty;
             }else{
@@ -182,7 +206,7 @@ class Sales extends Model
     public static function updateSales($id,$user_id){
         $temp_sales = TempSales::where('trx_id',$id)->first();
         $temp_sales_det = TempSalesDet::where('temp_id',$temp_sales->id)->get();
-        
+
         $sales = Sales::where('id',$id)->first();
 
         // Update and tranfer to Sales Orginal
@@ -211,9 +235,9 @@ class Sales extends Model
                 'sub_ttl' => $key->sub_ttl,
                 'sub_ttl_pv' => $key->sub_ttl_pv,
             ));
-            
+
             $salesdet->save();
-            
+
             $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
 
             $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum('tblpotrxdet.qty');
@@ -223,7 +247,7 @@ class Sales extends Model
             }else{
                 $avcharga = 0;
             }
-            
+
             $modal += ($key->qty * $avcharga);
         }
 
@@ -253,13 +277,23 @@ class Sales extends Model
             $jurnal_d->date = $sales->trx_date;
             $jurnal_d->update();
         }else{
-            $id_jurnal = 'SO.'.$id;
+            if($sales->method <> 0){
+                $ecom = Ecommerce::where('id',$sales->method)->first();
+
+                $id_jurnal = $ecom->kode_trx.'.'.$sales->online_id;
+                $jurnal_desc = $ecom->kode_trx.'.'.$sales->online_id.' => '."SO.".$id;
+
+            }else{
+                $id_jurnal = 'SO.'.$id;
+                $jurnal_desc = "SO.".$id;
+            }
+
             $sales->jurnal_id = $id_jurnal;
             $sales->approve = 1;
             $sales->approve_by = $user_id;
             $sales->update();
 
-            $jurnal_desc = "SO.".$sales->id;
+
 
             // Jurnal 1
                 //insert debet Piutang Konsumen Masukkan harga total - diskon
@@ -299,7 +333,7 @@ class Sales extends Model
 
     public static function customerStock($customer){
         $data = collect();
-        foreach(Sales::where('customer_id',$customer)->select('id')->get() as $key){
+        foreach(Sales::where('customer_id',$customer)->select('id','method','online_id')->get() as $key){
             $sales = collect();
             $data_sales = collect();
             $ttl_selisih = 0;
@@ -317,7 +351,11 @@ class Sales extends Model
                 }
             }
             if($ttl_selisih > 0){
-                $sales->put('id','SO.'.$key->id);
+                if($key->method == 0){
+                    $sales->put('id','SO.'.$key->id);
+                }else{
+                    $sales->put('id',$key->online->kode_trx.'.'.$key->online_id);
+                }
                 $sales->put('data',$data_sales);
                 $data->push($sales);
             }

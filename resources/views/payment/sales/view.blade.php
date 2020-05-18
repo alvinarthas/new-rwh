@@ -20,7 +20,7 @@
             @foreach ($sales['data'] as $sale)
                 <tr>
                     <td>{{$i}}</td>
-                    <td>SO.{{$sale->id}}</td>
+                    <td>{{$sale->jurnal_id}}</td>
                     <td>{{$sale->trx_date}}</td>
                     <td>{{$sale->customer->apname}}</td>
                     <td>{{$sale->ongkir}}</td>
@@ -31,7 +31,7 @@
 
                     <td>Rp {{number_format($sale->ttl_harga+$sale->ongkir,2,",",".")}}</td>
                     <td>Rp {{number_format($ttlpayment,2,",",".")}}</td>
-                    
+
                     @if($ttlpayment == $total_sale)
                     <td><a href="javascript:;" disabled="disabled" class="btn btn-success btn-rounded waves-effect w-md waves-danger m-b-5" >Lunas</a></td>
                     @elseif($ttlpayment > $total_sale)
@@ -39,7 +39,7 @@
                     @else
                     <td><a href="javascript:;" disabled="disabled" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" >Belum Lunas</a></td>
                     @endif
-                    
+
                     <td>
                         @if (array_search("PSSPC",$page))
                         <a href="{{route('salesCreate',['id'=>$sale->id])}}" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5" >Detail Payment</a>
