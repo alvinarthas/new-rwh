@@ -76,17 +76,28 @@ Index Sales Payment
                     </div>
                 </div>
 
-                <h4 class="m-t-0 header-title">Choose Customer</h4>
+                <h4 class="m-t-0 header-title">Choose Method & Customer</h4>
                 <div class="col-12">
                     <div class="p-20">
+                        <div class="form-group row">
+                            <label class="col-2 col-form-label">Pilih Method</label>
+                            <div class="col-10">
+                                <select class="form-control select2" parsley-trigger="change" name="method" id="method" onchange="getCustomer(this.value)">
+                                    <option value="#" disabled selected>Pilih Method</option>
+                                    <option value="*">Semua</option>
+                                    <option value="0">Offline</option>
+                                    @if (array_search("PSSPVO",$page))
+                                        @foreach ($ecoms as $ecom)
+                                            <option value="{{$ecom->id}}">{{$ecom->nama}}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Pilih Customer</label>
                             <div class="col-10">
                                 <select class="form-control select2" parsley-trigger="change" name="customer" id="customer">
-                                    <option value="all" selected>All</option>
-                                    @foreach ($customers as $customer)
-                                        <option value="{{$customer->id}}">{{$customer->apname}}</option>
-                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -151,6 +162,7 @@ Index Sales Payment
         start_pay = $('#start_pay').val();
         end_pay = $('#end_pay').val();
         customer = $('#customer').val();
+        method = $('#method').val();
 
         $.ajax({
             url : "{{route('salesView')}}",
@@ -163,10 +175,28 @@ Index Sales Payment
                 end_pay: end_pay,
                 customer: customer,
                 param: param,
+                method: method,
             },
         }).done(function (data) {
             document.getElementById("sales-list").style.display = 'block';
             $('#showsales').html(data);
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+
+    function getCustomer(params) {
+        $.ajax({
+            url : "{{route('customerSales')}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                method: params,
+            },
+        }).done(function (data) {
+            appen = '<option value="all">Semua</option>';
+            $('#customer').html(appen);
+            $('#customer').append(data);
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });

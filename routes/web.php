@@ -305,6 +305,7 @@ Route::middleware(['checkUser'])->group(function () {
 
     // sales helper
     Route::get('/showsales','SalesController@showSales')->name('showSales');
+    Route::get('/customersales','SalesController@customerSales')->name('customerSales');
     Route::get('/addsales','SalesController@addSales')->name('addSales');
     Route::get('/showindexsales','SalesController@showIndexSales')->name('showIndexSales');
     Route::get('/destroydetailsales','SalesController@destroySalesDetail')->name('destroySalesDetail');

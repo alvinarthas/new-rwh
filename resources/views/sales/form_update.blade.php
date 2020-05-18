@@ -29,7 +29,7 @@
 @endsection
 
 @section('judul')
-Form Update Sales Order #{{$sales->id}}
+Form Update Sales Order #{{$sales->id}} @if($sales->method <> 0 ) / {{$sales->online->nama}} # {{$sales->online_id}} @endif
 @endsection
 
 @section('content')
@@ -137,6 +137,9 @@ Form Update Sales Order #{{$sales->id}}
                 @csrf
 
                 <input type="hidden" name="customer" id="customer" value="{{$sales->customer_id}}">
+                <input type="hidden" name="method" id="method" value="{{$sales->method}}">
+                <input type="hidden" name="online_id" id="online_id" value="{{$sales->online_id}}">
+
                 <div class="card-box">
                     <div class="row">
                         <h4 class="m-t-0 header-title">Sales Order Item Details</h4>
