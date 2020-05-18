@@ -468,22 +468,22 @@ class ProductController extends Controller
                 array_push($result, $stock);
             }
 
-            $retur = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('status', 1)->where('prod_id', $product->prod_id)->get();
+            // $retur = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('status', 1)->where('prod_id', $product->prod_id)->get();
 
-            foreach($retur AS $r){
-                $tgl = $r['tgl'];
-                $trx_id = $r['id_jurnal'];
-                $status = "OUT";
-                $total -= $r['qty'];
+            // foreach($retur AS $r){
+            //     $tgl = $r['tgl'];
+            //     $trx_id = $r['id_jurnal'];
+            //     $status = "OUT";
+            //     $total -= $r['qty'];
 
-                $stock = array(
-                    'tanggal' => $tgl,
-                    'trx_id'  => $trx_id,
-                    'status'  => $status,
-                    'qty'     => $r['qty']
-                );
-                array_push($result, $stock);
-            }
+            //     $stock = array(
+            //         'tanggal' => $tgl,
+            //         'trx_id'  => $trx_id,
+            //         'status'  => $status,
+            //         'qty'     => $r['qty']
+            //     );
+            //     array_push($result, $stock);
+            // }
 
             $date = array();
             foreach ($result as $key => $row){

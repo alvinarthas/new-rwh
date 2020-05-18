@@ -59,6 +59,20 @@
                             </tbody>
                         </table>
                     @elseif($bonusapa=="laporan")
+                        <form class="form-horizontal" role="form" action="{{ route('exportBonus') }}" enctype="multipart/form-data" method="POST">
+                            @csrf
+                            <div class="form-group text-right m-b-0">
+                                <button class="btn btn-success btn-trans btn-rounded waves-effect waves-light w-xs m-b-5">
+                                    <span class="mdi mdi-file-excel">
+                                        Cetak Excel
+                                    </span>
+                                </button>
+                                <input type="hidden" name="bonusapa" value="{{ $bonusapa }}">
+                                <input type="hidden" name="id_jurnal" value="">
+                                <input type="hidden" name="bulan" value="{{ $bulan }}">
+                                <input type="hidden" name="tahun" value="{{ $tahun }}">
+                            </div>
+                        </form>
                         <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                             <thead>
                                 <th>No</th>
