@@ -49,7 +49,7 @@ class DepositController extends Controller
     {
         $suppliers = Perusahaan::all();
         $coas = Coa::where(function ($query) {
-            $query->where('AccNo','LIKE','1.1.1.2%')->orWhere('AccNo', 'LIKE', '2.5%')->orWhere('AccNo', 'LIKE', '1.10.1');
+            $query->where('AccNo','LIKE','1.1.1.2.%')->orWhere('AccNo', 'LIKE', '2.5%')->orWhere('AccNo', 'LIKE', '1.10.1')->orWhere('AccNo', 'LIKE', '1.1.1.1.%');
         })->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
 
         return view('purchase.deposit.form',compact('suppliers','coas'));
@@ -130,7 +130,13 @@ class DepositController extends Controller
      */
     public function edit($id)
     {
-        //
+        $deposit = Deposit::where('id', $id)->first();
+        $suppliers = Perusahaan::all();
+        $coas = Coa::where(function ($query) {
+            $query->where('AccNo','LIKE','1.1.1.2.%')->orWhere('AccNo', 'LIKE', '2.5%')->orWhere('AccNo', 'LIKE', '1.10.1')->orWhere('AccNo', 'LIKE', '1.1.1.1.%');
+        })->where('StatusAccount','Detail')->orderBy('AccName','asc')->get();
+
+        return view('purchase.deposit.form',compact('suppliers','coas', 'deposit'));
     }
 
     /**
@@ -142,7 +148,55 @@ class DepositController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'supplier' => 'required',
+            'amount' => 'required|integer',
+            'tanggal' => 'required|date',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            $data = Deposit::where('id', $id)->first();
+            $AccNo_lama = $data->AccNo;
+            $jurnal_id = $data->jurnal_id;
+
+            $data->supplier_id = $request->supplier;
+            $data->amount = $request->amount;
+            $data->keterangan = $request->keterangan;
+            $data->creator = session('user_id');
+            $data->date = $request->tanggal;
+            $data->AccNo = $request->method;
+
+            try{
+                $desc = "Top Up Deposit Pembelian, id=".$data->id." (Edit)";
+                // Jurnal Debet Deposit Pembelian
+                $debet = Jurnal::where('id_jurnal', $jurnal_id)->where('AccPos', 'Debet')->where('AccNo', '1.1.3.3')->first();
+                $debet->Amount = $request->amount;
+                $debet->date = $request->tanggal;
+                $debet->description = $desc;
+                $debet->creator = session('user_id');
+
+                // Jurnal Kredit Cash/Bank
+                $credit = Jurnal::where('id_jurnal', $jurnal_id)->where('AccPos', 'Credit')->where('AccNo', $AccNo_lama)->first();
+                $credit->Amount = $request->amount;
+                $credit->date = $request->tanggal;
+                $credit->description = $desc;
+                $credit->AccNo = $request->method;
+                $credit->creator = session('user_id');
+
+                $data->update();
+                $debet->update();
+                $credit->update();
+
+                Log::setLog('PUDPC','Update Deposit Pembelian Supplier: '.$request->supplier.' Jurnal ID: '.$jurnal_id);
+
+                return redirect()->route('deposit.index')->with('status', 'Data berhasil ditambah');
+            }catch(\Exception $e) {
+                return redirect()->back()->withErrors($e->getMessage());
+            }
+        }
     }
 
     /**

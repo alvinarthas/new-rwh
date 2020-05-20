@@ -44,6 +44,9 @@
                             <td><a href="javascript:;" disabled="disabled" class="btn btn-custom btn-rounded waves-effect w-md waves-danger m-b-5" >{{$key->jurnal_id}}</a></td>
                             <td>
                                 @if (array_search("PUDPS",$page))
+                                    @if($key->status == 1)
+                                        <a href="{{route('deposit.edit',['id'=>$key->id])}}" class="btn btn-custom btn-rounded waves-effect w-md waves-danger m-b-5">Edit</a>
+                                    @endif
                                     <a href="javascript:;" onclick="destory({{$key->id}})" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5">Hapus</a>
                                 @endif
                             </td>
