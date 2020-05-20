@@ -18,6 +18,7 @@ use App\Exports\BonusGagalUploadExport1;
 use App\Exports\BonusGagalUploadExport2;
 use App\Exports\PerhitunganBonusExport;
 use App\Exports\PenerimaanBonusExport;
+use App\Exports\RealisasiBonusExport;
 use Carbon\Carbon;
 
 use App\Purchase;
@@ -1976,6 +1977,66 @@ class BonusController extends Controller
             }
 
             $export = new PenerimaanBonusExport($data);
+        }elseif($bonusapa == "laporan"){
+            $tahun = $request->tahun;
+            $bulan = $request->bulan;
+            $month = date("F", mktime(0, 0, 0, $bulan, 10));
+            $bonus = Bonus::join('perusahaanmember', 'tblbonus.noid', 'perusahaanmember.noid')->join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('tblbonus.tahun',$tahun)->where('tblbonus.bulan',$bulan)->select('tblmember.nama', 'tblmember.ktp')->groupBy('tblmember.ktp')->get();
+            $filename = "Daftar Realisasi Bonus ".$month." ".$tahun." (".$tgl.")";
+
+            $i = 1;
+
+            foreach($bonus as $b){
+                $no_perhitungan = 1;
+                $perhitungan = "";
+                $total_perhitungan = 0;
+
+                $no_penerimaan = 1;
+                $penerimaan = "";
+                $total_realisasi = 0;
+
+                $selisih = 0;
+
+                $prm = PerusahaanMember::join('tblperusahaan', 'perusahaanmember.perusahaan_id', 'tblperusahaan.id')->where('ktp',$b->ktp)->select('tblperusahaan.nama', 'noid')->get();
+                $bm = BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('ktp',$b->ktp)->select('norek', 'nama')->get();
+
+                foreach($prm as $p){
+                    $perusahaan = $p->nama;
+                    $data_bonus = Bonus::where('bulan', $bulan)->where('tahun', $tahun)->where('noid', $p->noid)->sum('bonus');
+                    $perhitungan .= $no_perhitungan++." ".$perusahaan." ".$p->noid." \n";
+                    $perhitungan .= "Bonus : Rp ".number_format($data_bonus, 2, ",", ".")." \n";
+                    $total_perhitungan += $data_bonus;
+                }
+                $perhitungan .= "\n Total : Rp ".number_format($total_perhitungan, 2, ",", ".");
+
+                foreach($bm as $m){
+                    $bb = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('no_rek',$m->norek)->select('tgl')->first();
+                    $d_bonus = BonusBayar::where('tahun',$tahun)->where('bulan',$bulan)->where('no_rek',$m->norek)->sum('bonus');
+                    $d_tgl = $bb['tgl'];
+                    $bank = $m->nama;
+                    $penerimaan .= $no_penerimaan++.". ".$bank." ".$m->norek." \n";
+                    $penerimaan .= "Bonus : Rp ".number_format($d_bonus, 2, ",", ".")." \n";
+                    $penerimaan .= "Tgl : ".$d_tgl."\n";
+                    $total_realisasi += $d_bonus;
+                }
+                $penerimaan .= "\n Total : Rp ".number_format($total_realisasi, 2, ",", ".");
+
+                $selisih = $total_perhitungan - $total_realisasi;
+
+                $array = array(
+                    'No'   => $i++,
+                    'KTP'  => $b->ktp,
+                    'Nama' => $b->nama,
+                    'Perhitungan Bonus' => $perhitungan,
+                    'Realisasi Bonus' => $penerimaan,
+                    'Selisih' => "Rp ".number_format($selisih, 2, ",", "."),
+                );
+                array_push($data, $array);
+            }
+            // echo "<pre>";
+            // print_r($data);
+            // die();
+            $export = new RealisasiBonusExport($data);
         }
 
         return Excel::download($export, $filename.'.xlsx');

@@ -50,8 +50,8 @@ class Product extends Model
         $delivery = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
         $retur = Retur::getTotal($prod_id, 1);
 
-        $brgcust = $sales-$delivery-$retur;
-        // $brgcust = $sales-$delivery;
+        // $brgcust = $sales-$delivery-$retur;
+        $brgcust = $sales-$delivery;
 
         return $brgcust;
     }
