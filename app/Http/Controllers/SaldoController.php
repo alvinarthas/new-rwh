@@ -37,7 +37,7 @@ class SaldoController extends Controller
         $data = $data->sortByDesc('saldo');
 
         // $saldo = Saldo::join('tblcustomer', 'tblsaldo.customer_id', 'tblcustomer.id')->select('tblcustomer.apname', 'accNo', 'amount', 'keterangan', 'tblsaldo.creator AS creator', 'tanggal','tblsaldo.id AS sid')->orderBy('tblsaldo.tanggal', 'desc')->get();
-        return view('customer.index2', compact('data', 'jenis', 'page'));
+        return view('customer.index', compact('data', 'jenis', 'page'));
     }
 
     /**
@@ -209,7 +209,7 @@ class SaldoController extends Controller
                 $saldo->save();
 
 
-                $ket = 'Deposit dari '.$namacust['apname'].'('.$request->tanggal.')';
+                $ket = 'Deposit dari '.$namacust['apname'].'('.$request->tanggal.'), id='.$id;
 
                 // Update Jurnal Debet
                 $jurnal1 = Jurnal::where('id_jurnal',$saldo->id_jurnal)->where('AccPos','Debet')->first();
@@ -221,7 +221,7 @@ class SaldoController extends Controller
                 $jurnal1->update();
 
                 // Update Jurnal Credit
-                $jurnal2 = Jurnal::where('id_jurnal',$saldo->id_jurnal)->where('AccNo','2.1.2')->first();
+                $jurnal2 = Jurnal::where('id_jurnal',$saldo->id_jurnal)->where('AccPos', 'Credit')->where('AccNo','2.1.2')->first();
                 $jurnal2->amount = $request->nominal;
                 $jurnal2->date = $request->tanggal;
                 $jurnal2->description = $ket;
