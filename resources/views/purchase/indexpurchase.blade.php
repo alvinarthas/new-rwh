@@ -23,6 +23,7 @@
                         <th>Posting Period</th>
                         <th>Supplier</th>
                         <th>PO Date</th>
+                        <th>Notes</th>
                         <th>Creator</th>
                         <th>Option</th>
                     </thead>
@@ -36,6 +37,7 @@
                                 <td>{{date("F", mktime(0, 0, 0, $purchase->month, 10))}} {{$purchase->year}}</td>
                                 <td>{{$purchase->supplier()->first()->nama}}</td>
                                 <td>{{$purchase->tgl}}</td>
+                                <td>{{$purchase->notes}}</td>
                                 <td>{{$purchase->creator()->first()->name}}</td>
                                 <td>
                                     @if (array_search("PUPUU",$page))

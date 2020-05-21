@@ -29,7 +29,7 @@ class CoaController extends Controller
     {
         $parents = Coa::where('StatusAccount','Grup')->get();
         $jenis = "create";
-        return view('coa.form', compact('company','jenis','parents'));
+        return view('coa.form', compact('jenis','parents'));
     }
 
     public function store(Request $request)
