@@ -18,6 +18,10 @@ class ReceiveDet extends Model
         return $this->belongsTo('App\Product','prod_id','prod_id');
     }
 
+    public function creator(){
+        return $this->belongsTo('App\Employee','creator','id');
+    }
+
     public static function listReceive($start,$end){
         // $purchase = Purchase::join('tblpotrxdet','tblpotrx.id','=','tblpotrxdet.trx_id')->whereBetween('tblpotrx.month',[$bulan_start,$bulan_end])->whereBetween('tblpotrx.year',[$tahun_start,$tahun_end])->where('tblpotrx.approve',1)->select('tblpotrx.id as trx_id','tblpotrx.supplier','tblpotrxdet.prod_id','tblpotrxdet.qty','tblpotrxdet.unit')->get();
         $receive = ReceiveDet::whereBetween('receive_date', [$start,$end] )->get();

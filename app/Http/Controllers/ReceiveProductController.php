@@ -13,11 +13,25 @@ use App\PurchaseDetail;
 use App\Jurnal;
 use App\MenuMapping;
 use App\Log;
+use App\Product;
 
 class ReceiveProductController extends Controller
 {
     public function index(){
         return view('purchase.receive.index');
+    }
+
+    public function view(Request $request){
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        if ($request->ajax()) {
+            $jurnal_id = $request->ri_id;
+            $receives = ReceiveDet::where('id_jurnal',$jurnal_id)->get();
+            $receive = ReceiveDet::where('id_jurnal',$jurnal_id)->first();
+
+            return response()->json(view('purchase.receive.modal',compact('receive', 'receives'))->render());
+        }
     }
 
     public function ajx(Request $request){
@@ -46,17 +60,41 @@ class ReceiveProductController extends Controller
         $details = json_decode (json_encode (ReceiveDet::detailPurchase($request->trx_id)), FALSE);
         $producttrx = PurchaseDetail::where('trx_id',$request->trx_id)->select('prod_id')->get();
         $page = MenuMapping::getMap(session('user_id'),"PURP");
-        $receives = ReceiveDet::where('trx_id',$request->trx_id)->get();
+        $receives = ReceiveDet::where('trx_id',$request->trx_id)->groupBy('id_jurnal')->get();
 
         return view('purchase.receive.form',compact('trx','details','producttrx','receives','page'));
+    }
+
+    public function addBrgReceive(Request $request){
+        $qty = $request->qty;
+        $count = $request->count+1;
+        $product = $request->select_product;
+        $expired = $request->expired;
+
+        $product = Product::where('prod_id',$product)->first();
+
+        $append = '<tr style="width:100%" id="trow'.$count.'">
+        <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$product->prod_id.'">'.$product->prod_id.'</td>
+        <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$product->name.'">'.$product->name.'</td>
+        <td><input type="hidden" name="qty[]" value="'.$qty.'" id="qty'.$count.'">'.$qty.'</td>
+        <td><input type="hidden" name="expired_date[]" value="'.$expired.'" id="expired_date'.$count.'">'.$expired.'</td>
+        <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
+        </tr>';
+
+        $data = array(
+            'append' => $append,
+            'count' => $count,
+        );
+
+        return response()->json($data);
     }
 
     public function store(Request $request){
         // Validate
         $validator = Validator::make($request->all(), [
             'trx_id' => 'required',
-            'product' => 'required',
-            'qty' => 'required|integer',
+            'prod_id' => 'required|array',
+            'qty' => 'required|array',
             'receive_date' => 'required|date',
         ]);
         // IF Validation fail
@@ -64,30 +102,38 @@ class ReceiveProductController extends Controller
             return redirect()->back()->withErrors($validator->errors());
         // Validation success
         }else{
-            $id_jurnal = Jurnal::getJurnalID('RP');
-
-            $receive = new ReceiveDet(array(
-                'trx_id' => $request->trx_id,
-                'prod_id' => $request->product,
-                'qty' => $request->qty,
-                'expired_date' => $request->expired_date,
-                'creator' => session('user_id'),
-                'receive_date' => $request->receive_date,
-                'id_jurnal' => $id_jurnal,
-            ));
-
-            $desc = "Receive Barang Product_id: ".$request->product." PO.".$request->trx_id;
-            $pricedet = PurchaseDetail::where('trx_id',$request->trx_id)->where('prod_id',$request->product)->first()->price;
-            $price = $pricedet * $request->qty;
-
             try{
+                $id_jurnal = Jurnal::getJurnalID('RP');
+                $price = 0;
+                $count = count($request->prod_id);
+
+                for($i=0; $i < $count; $i++){
+                    $pricedet = PurchaseDetail::where('trx_id',$request->trx_id)->where('prod_id',$request->prod_id[$i])->first()->price;
+                    $price += $pricedet * $request->qty[$i];
+                }
+
+                $desc = "Receive Barang PO.".$request->trx_id;
+
                 // JURNAL
                 //insert debet Persediaan Barang di Gudang
                 Jurnal::addJurnal($id_jurnal,$price,$request->receive_date,$desc,'1.1.4.1.2','Debet');
                 //insert credit Persediaan Barang Indent
                 Jurnal::addJurnal($id_jurnal,$price,$request->receive_date,$desc,'1.1.4.1.1','Credit');
 
-                $receive->save();
+                for($i=0; $i < $count; $i++){
+                    $receive = new ReceiveDet(array(
+                        'trx_id' => $request->trx_id,
+                        'prod_id' => $request->prod_id[$i],
+                        'qty' => $request->qty[$i],
+                        'expired_date' => $request->expired_date[$i],
+                        'creator' => session('user_id'),
+                        'receive_date' => $request->receive_date,
+                        'id_jurnal' => $id_jurnal,
+                    ));
+
+                    $receive->save();
+                }
+
                 Log::setLog('PURPC','Create Receive Product PO.'.$request->trx_id.' Jurnal ID: '.$id_jurnal);
                 return redirect()->back()->with('status', 'Data berhasil dibuat');
             } catch (\Exception $e) {
@@ -97,13 +143,17 @@ class ReceiveProductController extends Controller
     }
 
     public function delete(Request $request){
-        $receive = ReceiveDet::where('id',$request->id)->first();
-        $id_jurnal = $receive->id_jurnal;
-        $trx_id = $receive->trx_id;
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        // $receive = ReceiveDet::where('id_jurnal',$request->jurnal_id)->get();
+        $id_jurnal = $request->jurnal_id;
+        // $trx_id = $receive->trx_id;
         try {
-            $jurnal = Jurnal::where('id_jurnal',$receive->id_jurnal)->delete();
-            Log::setLog('PURPD','Delete Receive Product ID:'.$request->id.' PO.'.$trx_id.' Jurnal ID: '.$id_jurnal);
-            return redirect()->back()->with('status', 'Data berhasil dihapus');
+            Jurnal::where('id_jurnal',$id_jurnal)->delete();
+            Log::setLog('PURPD','Delete Receive Product Jurnal ID: '.$id_jurnal);
+            return "true";
+            // return redirect()->back()->with('status', 'Data berhasil dihapus');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors($e);
         }
