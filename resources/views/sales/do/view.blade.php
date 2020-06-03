@@ -60,7 +60,7 @@
                             <thead>
                                 <th>No</th>
                                 <th>SO ID</th>
-                                <th>DO ID</th>
+                                <th>Customer</th>
                                 <th>Product ID</th>
                                 <th>Product Name</th>
                                 <th>Qty</th>
@@ -69,24 +69,20 @@
                             <tbody>
                                 @php($x=1)
                                 @foreach ($deliveries as $delivery)
-                                    <?php
-                                        $count_do_product = DeliveryDetail::where('sales_id',$delivery->sales_id)->where('product_id',$delivery->product_id)->sum('qty');
-                                        $sum_qty = SalesDet::where('trx_id',$delivery->sales_id)->where('prod_id',$delivery->product_id)->sum('qty');
-                                    ?>
                                     <tr>
                                         <td>{{$x}}</td>
-                                        <td>SO.{{$delivery->sales_id}}</td>
-                                        <td>{{$delivery->jurnal_id}}</td>
-                                        <td>{{$delivery->product_id}}</td>
-                                        <td>{{$delivery->product->name}}</td>
-                                        @if ($sum_qty == $count_do_product)
+                                        <td>SO.{{$delivery->trx_id}}</td>
+                                        <td>{{$delivery->customer_name}}</td>
+                                        <td>{{$delivery->prod_id}}</td>
+                                        <td>{{$delivery->product_name}}</td>
+                                        @if ($delivery->qty == $delivery->do_qty)
                                             <td><a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->qty}}</a></td>
-                                        @elseif ($count_do_product > $sum_qty)
+                                        @elseif ($delivery->qty > $delivery->do_qty)
                                             <td><a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->qty}}</a></td>
                                         @else
                                             <td><a href="javascrip:;" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->qty}}</a></td>
                                         @endif
-                                        <td><a href="{{route('showDo',['id'=>$delivery->sales_id])}}" class="btn btn-primary btn-rounded waves-effect w-md waves-danger m-b-5">Atur DO</a></td>
+                                        <td><a href="{{route('showDo',['id'=>$delivery->trx_id])}}" class="btn btn-primary btn-rounded waves-effect w-md waves-danger m-b-5">Atur DO</a></td>
                                     </tr>
                                 @php($x++)
                                 @endforeach

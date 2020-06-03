@@ -167,7 +167,7 @@ class DeliveryController extends Controller
     public function print(Request $request){
         try{
             $delivery = DeliveryOrder::where('id',$request->id)->select('sales_id','date')->first();
-        
+
             $data = collect();
             $datdet = collect();
             $filename = "DO-".$request->id;
