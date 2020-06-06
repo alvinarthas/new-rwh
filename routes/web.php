@@ -151,6 +151,8 @@ Route::middleware(['checkUser'])->group(function () {
         'konversi' => 'KonversiController',
         // Ecommerce
         'ecommerce' => 'EcommerceController',
+        // Piutang
+        'piutang' => 'PiutangController',
     ]);
 
     // Member
