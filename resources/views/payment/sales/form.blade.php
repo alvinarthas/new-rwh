@@ -164,6 +164,7 @@ Form Sales Payment
                                 <div class="col-10">
                                     <select class="form-control select2" parsley-trigger="change" name="payment_deduction" id="payment_deduction" required onchange="deduction(this.value)">
                                         <option value="No_Deduction">No Deduction</option>
+                                        <option value="6.3.5">Biaya Transfer Bank</option>
                                         <option value="Biaya_Transfer_Bank">Biaya Transfer Bank</option>
                                     </select>
                                 </div>
@@ -320,7 +321,7 @@ Form Sales Payment
     }
 
     function deduction(id) {
-        if(id == "Biaya_Transfer_Bank"){
+        if(id != "No_Deduction"){
             document.getElementById("deduct").style.display='block';
         }else{
             document.getElementById("deduct").style.display='none';
