@@ -165,7 +165,7 @@ Form Sales Payment
                                     <select class="form-control select2" parsley-trigger="change" name="payment_deduction" id="payment_deduction" required onchange="deduction(this.value)">
                                         <option value="No_Deduction">No Deduction</option>
                                         <option value="6.3.5">Biaya Transfer Bank</option>
-                                        <option value="Biaya_Transfer_Bank">Biaya Transfer Bank</option>
+                                        <option value="4.1.3">Potongan Harga / Cashback</option>
                                     </select>
                                 </div>
                             </div>
