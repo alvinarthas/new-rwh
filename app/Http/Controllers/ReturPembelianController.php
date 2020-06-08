@@ -40,10 +40,10 @@ class ReturController extends Controller
         $jenis = "report";
         $jenisretur = "pembelian";
         $page = MenuMapping::getMap(session('user_id'),"REPB");
-        return view('retur.index', compact('retur', 'jenis', 'jenisretur','page'));
+        return view('retur.nota.index', compact('retur', 'jenis', 'jenisretur','page'));
     }
 
-    public function indexpj()
+    public function indexRP()
     {
         // $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', '=', 'tblproducttrxdet.trx_id')->orderBy('tblproducttrx.id', 'desc')->get();
         // $retur = ReturPenjualanDet::all();
@@ -52,7 +52,7 @@ class ReturController extends Controller
         $jenis = "report";
         $jenisretur = "penjualan";
         $page = MenuMapping::getMap(session('user_id'),"REPJ");
-        return view('retur.index', compact('retur', 'jenis', 'jenisretur','page'));
+        return view('retur.nota.index', compact('retur', 'jenis', 'jenisretur','page'));
     }
 
     /**
@@ -64,7 +64,7 @@ class ReturController extends Controller
     {
         $jenisretur = "pembelian";
         $jenis = "create";
-        return view('retur.index', compact('jenisretur', 'jenis'));
+        return view('retur.nota.index', compact('jenisretur', 'jenis'));
     }
 
     public function createpj()
@@ -72,7 +72,7 @@ class ReturController extends Controller
         $jenisretur = "penjualan";
         $jenis = "create";
         $customer = Customer::orderBy('apname', 'asc')->get();
-        return view('retur.index', compact('jenisretur', 'jenis', 'customer'));
+        return view('retur.nota.index', compact('jenisretur', 'jenis', 'customer'));
     }
 
     /**
@@ -106,7 +106,7 @@ class ReturController extends Controller
             // $returdet = ReturPembelianDet::where('trx_id',$request->id)->get();
             $returdet = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.status', 0)->where('trx_id', $request->id)->get();
 
-            return response()->json(view('retur.modal',compact('retur','returdet', 'jenis', 'po_trx'))->render());
+            return response()->json(view('retur.nota.modal',compact('retur','returdet', 'jenis', 'po_trx'))->render());
         }
     }
 
@@ -120,7 +120,7 @@ class ReturController extends Controller
             // $returdet = ReturPenjualanDet::where('trx_id',$request->id)->get();
             $returdet = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.status', 1)->where('trx_id', $request->id)->get();
 
-            return response()->json(view('retur.modal',compact('retur','returdet', 'jenis', 'so_trx'))->render());
+            return response()->json(view('retur.nota.modal',compact('retur','returdet', 'jenis', 'so_trx'))->render());
         }
     }
 
@@ -137,7 +137,7 @@ class ReturController extends Controller
         $purchasedet = PurchaseDetail::where('trx_id', $id)->get();
         $perusahaans = Perusahaan::all();
         $trx_id = $id;
-        return view('retur.form', compact('purchasedet', 'purchase', 'perusahaans', 'jenisretur', 'trx_id'));
+        return view('retur.nota.form', compact('purchasedet', 'purchase', 'perusahaans', 'jenisretur', 'trx_id'));
     }
 
     public function editpj($id)
@@ -147,7 +147,7 @@ class ReturController extends Controller
         $salesdet = SalesDet::where('trx_id', $id)->get();
         $customer = Customer::where('id', $sales['customer_id'])->first();
         $trx_id = $id;
-        return view('retur.form', compact('salesdet', 'sales', 'customer', 'jenisretur', 'trx_id'));
+        return view('retur.nota.form', compact('salesdet', 'sales', 'customer', 'jenisretur', 'trx_id'));
     }
 
     /**
@@ -380,7 +380,7 @@ class ReturController extends Controller
         $bulan = $request->bulan;
         $retur = ReturPembelianDet::all();
         $purchase = Purchase::join('tblpotrxdet', 'tblpotrx.id', '=', 'tblpotrxdet.trx_id')->where('tblpotrx.month', $bulan)->where('tblpotrx.year', $tahun)->where('tblpotrx.approve', 1)->orderBy('tblpotrx.id','desc')->get();
-        return view('retur.ajxShow', compact('jenisretur','purchase','tahun','bulan', 'retur'));;
+        return view('retur.nota.ajxShow', compact('jenisretur','purchase','tahun','bulan', 'retur'));;
     }
 
     public function showReturPenjualan(Request $request)
@@ -389,6 +389,6 @@ class ReturController extends Controller
         $customer = $request->customer;
         $retur = ReturPenjualanDet::all();
         $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', '=', 'tblproducttrxdet.trx_id')->where('tblproducttrx.customer_id', $customer)->orderBy('tblproducttrx.id','desc')->get();
-        return view('retur.ajxShow', compact('jenisretur','sales', 'retur'));;
+        return view('retur.nota.ajxShow', compact('jenisretur','sales', 'retur'));;
     }
 }

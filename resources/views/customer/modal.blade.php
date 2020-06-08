@@ -20,6 +20,8 @@
                                             <option value="0" selected>Customer Offline</option>
                                         @elseif($customer->cust_type == 1)
                                             <option value="1" selected>Customer Online</option>
+                                        @elseif($customer->cust_type == 2)
+                                            <option value="2" selected>Customer Online & Offline</option>
                                         @endif
                                     </select>
                                 </div>

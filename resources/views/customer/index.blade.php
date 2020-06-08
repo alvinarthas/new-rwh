@@ -61,6 +61,8 @@ Index
                                 <td>{{$cus->ciphone}}</td>
                                 @if($cus->cust_type == 1)
                                     <td class="text-success">Customer Online</td>
+                                @elseif($cus->cust_type == 2)
+                                    <td class="text-primary">Customer Online & Offline</td>
                                 @else
                                     <td class="text-danger">Customer Offline</td>
                                 @endif

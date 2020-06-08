@@ -69,14 +69,21 @@
                                             @if($customer->cust_type == 0)
                                                 <option value="0" selected>Customer Offline</option>
                                                 <option value="1">Customer Online</option>
+                                                <option value="2">Customer Online dan Offline</option>
                                             @elseif($customer->cust_type == 1)
                                                 <option value="0">Customer Offline</option>
                                                 <option value="1" selected>Customer Online</option>
+                                                <option value="2">Customer Online dan Offline</option>
+                                            @elseif($customer->cust_type == 2)
+                                            <option value="0">Customer Offline</option>
+                                            <option value="1">Customer Online</option>
+                                            <option value="2" selected>Customer Online dan Offline</option>
                                             @endif
                                         @else
                                             <option value="#" disabled selected>Pilih Tipe Customer</option>
                                             <option value="0">Customer Offline</option>
                                             <option value="1">Customer Online</option>
+                                            <option value="2">Customer Online dan Offline</option>
                                         @endisset
                                     </select>
                                 </div>
