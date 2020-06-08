@@ -95,9 +95,9 @@ class PaymentController extends Controller
                 // Jurnal Debet kas/bank
                     Jurnal::addJurnal($id_jurnal,$amount,$request->payment_date,$jurnal_desc,$request->payment_method,'Debet');
 
-                if($request->payment_deduction == "Biaya_Transfer_Bank"){
+                if($request->payment_deduction != "Biaya_Transfer_Bank"){
                     // Jurnal Biaya Transfer Bank
-                    Jurnal::addJurnal($id_jurnal,$request->deduct_amount,$request->payment_date,$jurnal_desc,'6.3.5','Debet');
+                    Jurnal::addJurnal($id_jurnal,$request->deduct_amount,$request->payment_date,$jurnal_desc,$request->payment_deduction,'Debet');
                 }
 
                 // Jurnal Credit piutang konsumen
