@@ -1158,11 +1158,24 @@ class BonusController extends Controller
             $norek = $xls[0][$i][2];
             $nama = $xls[0][$i][3];
             $bonus = $xls[0][$i][4];
+            $reason = "";
 
             if($norek <> ''){
                 $num_member = PerusahaanMember::where('noid', $noid)->join('tblmember','perusahaanmember.ktp','=','tblmember.ktp')->join('bankmember', 'perusahaanmember.ktp', 'bankmember.ktp')->where('bankmember.norek', $norek)->where('tblmember.nama',"LIKE", $nama)->where('perusahaanmember.perusahaan_id',$perusahaan_id)->count();
                 // $num_member= $perusahaan['perusahaanmember.noid']->count();
                 if($num_member==0){
+                    if(PerusahaanMember::join('bankmember', 'perusahaanmember.ktp', 'bankmember.ktp')->where('bankmember.norek', $norek)->where('perusahaanmember.noid', $noid)->count() == 0){
+                        $reason .= "No Rekening tidak sesuai/tidak ditemukan, ";
+                    }
+
+                    if(PerusahaanMember::where('noid', $noid)->where('perusahaan_id', $perusahaan_id)->count() == 0){
+                        $reason .= "No ID Member tidak ditemukan di perusahaan, ";
+                    }
+
+                    if(PerusahaanMember::join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('perusahaanmember.noid', $noid)->where('tblmember.nama',"LIKE", $nama)->count() == 0){
+                        $reason .= "Nama Member tidak sesuai/tidak ditemukan, ";
+                    }
+
                     // $member = array(
                     //     'noid'  => $noid,
                     //     'norek' => $norek,
@@ -1171,13 +1184,22 @@ class BonusController extends Controller
                     // );
                     // array_push($datas, $member);
                     $ktp = PerusahaanMember::where('perusahaanmember.noid', $noid)->select('perusahaanmember.ktp')->first();
+                    // $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
+                    // <td><input type="hidden" name="nogagal[]" value="'.$r.'">'.$r.'</td>
+                    // <td><input type="hidden" name="namagagal[]" id="namagagal'.$r.'" value="'.$nama.'">'.$nama.'</td>
+                    // <td><input type="hidden" name="ktpgagal[]" id="ktpgagal'.$r.'" value="'.$ktp['ktp'].'">'.$ktp['ktp'].'</td>
+                    // <td><input type="hidden" name="noidgagal[]" id="noidgagal'.$r.'" value="'.$noid.'">'.$noid.'</td>
+                    // <td><input type="hidden" name="norekeninggagal[]" id="norekeninggagal'.$r.'" value="'.$norek.'">'.$norek.'</td>
+                    // <td><input type="hidden" name="bonusgagal[]" id="bonusgagal'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    // </tr>';
                     $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
-                    <td><input type="hidden" name="nogagal[]" value="'.$r.'">'.$r.'</td>
-                    <td><input type="hidden" name="namagagal[]" id="namagagal'.$r.'" value="'.$nama.'">'.$nama.'</td>
-                    <td><input type="hidden" name="ktpgagal[]" id="ktpgagal'.$r.'" value="'.$ktp['ktp'].'">'.$ktp['ktp'].'</td>
-                    <td><input type="hidden" name="noidgagal[]" id="noidgagal'.$r.'" value="'.$noid.'">'.$noid.'</td>
-                    <td><input type="hidden" name="norekeninggagal[]" id="norekeninggagal'.$r.'" value="'.$norek.'">'.$norek.'</td>
-                    <td><input type="hidden" name="bonusgagal[]" id="bonusgagal'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    <td>'.$r.'</td>
+                    <td>'.$nama.'</td>
+                    <td>'.$ktp['ktp'].'</td>
+                    <td>'.$noid.'</td>
+                    <td>'.$norek.'</td>
+                    <td>'.$bonus.'</td>
+                    <td>'.$reason.'</td>
                     </tr>';
 
                     $data = array(
@@ -1387,18 +1409,40 @@ class BonusController extends Controller
             $norek = $xls[0][$i][2];
             $nama = $xls[0][$i][3];
             $bonus = $xls[0][$i][4];
+            $reason = "";
 
             if($norek <> ''){
-                $num_member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('bankmember.norek',$norek)->where('tblmember.nama',"LIKE", $nama)->where('tblbank.nama', 'LIKE', $bank)->count();
+                $num_member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('bankmember.norek',$norek)->where('tblmember.nama',"LIKE", $nama)->where('tblbank.nama', 'LIKE', '%'.$bank.'%')->count();
                 // $num_member= $perusahaan['perusahaanmember.noid']->count();
                 if($num_member==0){
+                    if(BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('bankmember.norek', $norek)->where('tblbank.nama', 'LIKE', '%'.$bank.'%')->count() == 0){
+                        $reason .= "Nama Bank tidak sesuai/tidak ditemukan, ";
+                    }
+
+                    if(BankMember::where('norek', $norek)->count() == 0){
+                        $reason .= "No Rekening tidak ditemukan, ";
+                    }
+
+                    if(BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek', $norek)->where('tblmember.nama',"LIKE", $nama)->count() == 0){
+                        $reason .= "Nama Member tidak sesuai/tidak ditemukan, ";
+                    }
+
                     $member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek', $norek)->select('tblmember.ktp AS ktp')->first();
+                    // $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
+                    // <td><input type="hidden" name="no[]" value="'.$r.'">'.$r.'</td>
+                    // <td><input type="hidden" name="namagagal[]" id="namagagal'.$r.'" value="'.$nama.'">'.$nama.'</td>
+                    // <td><input type="hidden" name="ktpgagal[]" id="ktpgagal'.$r.'" value="'.$member['ktp'].'">'.$member['ktp'].'</td>
+                    // <td><input type="hidden" name="norekeninggagal[]" id="norekeninggagal'.$r.'" value="'.$norek.'">'.$norek.'</td>
+                    // <td><input type="hidden" name="bonusgagal[]" id="bonusgagal'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    // <td>'.$reason.'</td>
+                    // </tr>';
                     $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
-                    <td><input type="hidden" name="no[]" value="'.$r.'">'.$r.'</td>
-                    <td><input type="hidden" name="namagagal[]" id="namagagal'.$r.'" value="'.$nama.'">'.$nama.'</td>
-                    <td><input type="hidden" name="ktpgagal[]" id="ktpgagal'.$r.'" value="'.$member['ktp'].'">'.$member['ktp'].'</td>
-                    <td><input type="hidden" name="norekeninggagal[]" id="norekeninggagal'.$r.'" value="'.$norek.'">'.$norek.'</td>
-                    <td><input type="hidden" name="bonusgagal[]" id="bonusgagal'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    <td>'.$r.'</td>
+                    <td>'.$nama.'</td>
+                    <td>'.$member['ktp'].'</td>
+                    <td>'.$norek.'</td>
+                    <td>'.$bonus.'</td>
+                    <td>'.$reason.'</td>
                     </tr>';
 
                     $data = array(
@@ -1521,10 +1565,23 @@ class BonusController extends Controller
             $norek = $xls[0][$i][2];
             $nama = $xls[0][$i][3];
             $bonus = $xls[0][$i][4];
+            $reason ="";
+
             if($norek <> ''){
-                $num_member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('bankmember.norek',$norek)->where('tblmember.nama',"LIKE", $nama)->where('tblbank.nama', 'LIKE', $bank)->count();
+                $num_member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('bankmember.norek',$norek)->where('tblmember.nama',"LIKE", $nama)->where('tblbank.nama', 'LIKE', '%'.$bank.'%')->count();
                 // $num_member= $perusahaan['perusahaanmember.noid']->count();
                 if($num_member==0){
+                    if(BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('bankmember.norek', $norek)->where('tblbank.nama', 'LIKE', '%'.$bank.'%')->count() == 0){
+                        $reason .= "Nama Bank tidak sesuai/tidak ditemukan, ";
+                    }
+
+                    if(BankMember::where('norek', $norek)->count() == 0){
+                        $reason .= "No Rekening tidak ditemukan, ";
+                    }
+
+                    if(BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek', $norek)->where('tblmember.nama',"LIKE", $nama)->count() == 0){
+                        $reason .= "Nama Member tidak sesuai/tidak ditemukan, ";
+                    }
                     // $member = array(
                     //     'norek' => $norek,
                     //     'nama'  => $nama,
@@ -1532,12 +1589,21 @@ class BonusController extends Controller
                     // );
                     // array_push($datas, $member);
                     $member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek', $norek)->select('tblmember.ktp AS ktp')->first();
+                    // $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
+                    // <td><input type="hidden" name="no[]" value="'.$r.'">'.$r.'</td>
+                    // <td><input type="hidden" name="namagagal[]" id="namagagal'.$r.'" value="'.$nama.'">'.$nama.'</td>
+                    // <td><input type="hidden" name="ktpgagal[]" id="ktpgagal'.$r.'" value="'.$member['ktp'].'">'.$member['ktp'].'</td>
+                    // <td><input type="hidden" name="norekeninggagal[]" id="norekeninggagal'.$r.'" value="'.$norek.'">'.$norek.'</td>
+                    // <td><input type="hidden" name="bonusgagal[]" id="bonusgagal'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    // </tr>';
+
                     $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
-                    <td><input type="hidden" name="no[]" value="'.$r.'">'.$r.'</td>
-                    <td><input type="hidden" name="namagagal[]" id="namagagal'.$r.'" value="'.$nama.'">'.$nama.'</td>
-                    <td><input type="hidden" name="ktpgagal[]" id="ktpgagal'.$r.'" value="'.$member['ktp'].'">'.$member['ktp'].'</td>
-                    <td><input type="hidden" name="norekeninggagal[]" id="norekeninggagal'.$r.'" value="'.$norek.'">'.$norek.'</td>
-                    <td><input type="hidden" name="bonusgagal[]" id="bonusgagal'.$r.'" value="'.$bonus.'">'.$bonus.'</td>
+                    <td>'.$r.'</td>
+                    <td>'.$nama.'</td>
+                    <td>'.$member['ktp'].'</td>
+                    <td>'.$norek.'</td>
+                    <td>'.$bonus.'</td>
+                    <td>'.$reason.'</td>
                     </tr>';
 
                     $data = array(
