@@ -19,6 +19,7 @@
                             @endif
                             <th width="27%">No Rekening</th>
                             <th width="20%">Bonus</th>
+                            <th width="20%">Alasan Gagal</th>
                         </tr>
                     </thead>
                     <tbody id="table-body2">
