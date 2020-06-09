@@ -38,9 +38,15 @@ use Carbon\Carbon;
 class TestController extends Controller
 {
     public function index(){
-        $a = DeliveryDetail::where('sales_id',271)->where('product_id','SG351')->sum('qty');
-        dd($a);
-        // dd(SalesDet::where('trx_id',271)->groupBy('prod_id')->get());
+        $time = Carbon::now(); // Current time
+        $start = Carbon::create($time->year, $time->month, $time->day, 22, 0, 0); //set time to 10:00
+        $end = Carbon::create($time->year, $time->month, $time->day+1, 6, 0, 0); //set time to 18:00
+        // dd($time,$start,$end);
+        if($time < $end && $time > $start){
+            echo "over";
+        }else{
+            echo "not";
+        }
     }
 
     public function index565(){
@@ -112,7 +118,7 @@ class TestController extends Controller
         foreach (ReceiveDet::all() as $key) {
             $pricedet = PurchaseDetail::where('trx_id',$key->trx_id)->where('prod_id',$key->prod_id)->first()->price;
             $price = $pricedet * $key->qty;
-            
+
             $jurnal_receive_a = Jurnal::where('id_jurnal',$key->id_jurnal)->where('AccNo','1.1.4.1.2')->first();
             $jurnal_receive_a->amount = $price;
             $jurnal_receive_a->update();
@@ -129,7 +135,7 @@ class TestController extends Controller
     //     TestController::test($sub);
     // }
 
-    
+
     // public function index(){
     //     $total_credit = 0;
     //     $total_debet = 0;
@@ -216,7 +222,7 @@ class TestController extends Controller
         foreach (Sales::all() as $key) {
             foreach(DeliveryOrder::where('sales_id',$key->id)->select('id','jurnal_id')->get() as $dokey){
                 $do_sum = 0;
-               
+
                 foreach(DeliveryDetail::where('do_id',$dokey->id)->get() as $dodet){
                     $do_avcost = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->trx_date)->avg('tblpotrxdet.price');
                     $price = $do_avcost * $dodet->qty;
@@ -247,7 +253,7 @@ class TestController extends Controller
                 $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
 
                 $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum('tblpotrxdet.qty');
-                
+
                 if($sumprice <> 0 && $sumqty <> 0){
                     $avcost = $sumprice/$sumqty;
                 }else{
@@ -466,7 +472,7 @@ class TestController extends Controller
     //         }
 
     //         $parent_sum+=$sub_sum;
-            
+
     //         $subsub->put('name',$key->AccName);
     //         $subsub->put('amount',$sub_sum);
     //         $subsub->put('data',$sub_coa_collect);
@@ -512,7 +518,7 @@ class TestController extends Controller
     //     }
     //     dd($data);
     // }
-    
+
     // public function indexww(){
     //     $total_tertahan = PurchaseDetail::where('trx_id',4)->sum(DB::Raw('(price - price_dist)* qty'));
     //     echo $total_tertahan;
@@ -528,7 +534,7 @@ class TestController extends Controller
     //     echo $date."<br>";
     //     $today = Carbon::now();
     //     echo $today."<br>";
-        
+
     //     $interval = date_diff($today, $date);
     //     $selisih = intval($interval->format('%R%a'));
     //     echo $interval->format('%R%a days')."<br>";
@@ -539,7 +545,7 @@ class TestController extends Controller
     //     }else{
     //         echo "masih bisa";
     //     }
-        
+
     // }
 
     // public function indexwq(){
@@ -588,13 +594,13 @@ class TestController extends Controller
     //     if (is_dir($dir)){
     //         $files = scandir($dir);
     //         $filecount = count($files);
-    //         for ($i=0; $i < $filecount ; $i++) { 
+    //         for ($i=0; $i < $filecount ; $i++) {
     //             if ($files[$i] != '.' && $files[$i] != '..') {
     //                 $subdir = $dir."/".$files[$i];
     //                 // $filebaru = $subdir."/".$files[$i].".jpg";
     //                 $subfiles = array_values(array_diff(scandir($subdir), array('..', '.')));
     //                 if(is_array($subfiles) && $subfiles <> null){
-                        
+
     //                     // echo "<pre>";
     //                     // print_r($subdir."/".$subfiles[0]);
     //                     $old = $subdir."/".$subfiles[0];
@@ -671,7 +677,7 @@ class TestController extends Controller
 
     //         if(!is_dir($dir)){
     //         }else{
-                
+
     //             $filebaru = $dir."/".str_replace(' ', '', $key->norek).".jpg";
     //             $subfiles = array_values(array_diff(scandir($dir), array('..', '.')));
     //             if(is_array($subfiles) && $subfiles <> null){
@@ -685,7 +691,7 @@ class TestController extends Controller
     //                 $key->scantabungan = str_replace(' ', '', $key->norek).".jpg";
     //                 $key->update();
     //             }
-                
+
     //             // echo "<pre>";
     //             // print_r($subfiles);
     //             // echo "enggak<br>";
@@ -740,9 +746,9 @@ class TestController extends Controller
     //             $key->tgllhr = $newDate;
     //             $key->update();
     //         }
-            
+
     //     }
-        
+
     // }
 
     // public function indexaa(){
@@ -757,10 +763,10 @@ class TestController extends Controller
     //     // }
     //     $encrypted = Crypt::encryptString('Belajar Laravel Di malasngoding.com');
 	// 	$decrypted = Crypt::decryptString('$2y$10$Rchoh5O7de3roYe84yGfweyAQFkMHm3SYrevYfBk/oBXzV7A4P4p2');
- 
+
 	// 	echo "Hasil Enkripsi : " . $encrypted;
 	// 	echo "<br/>";
 	// 	echo "<br/>";
 	// 	echo "Hasil Dekripsi : " . $decrypted;
     // }
-}   
+}

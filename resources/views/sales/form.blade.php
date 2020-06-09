@@ -32,27 +32,69 @@ Form Sales Order
             <div class="row">
                 <div class="col-12">
                     <div class="p-20">
-                        <div class="form-group row">
-                            <label class="col-2 col-form-label">Pilih Method</label>
-                            <div class="col-10">
-                                <select class="form-control select2" parsley-trigger="change" name="method" id="method" onchange="getCustomer(this.value)">
-                                    <option value="#" selected disabled>Pilih Method</option>
-                                    <option value="0">Offline</option>
-                                    @if (array_search("PSSLCO",$page))
+                        @if(array_search("PSSLC",$page) && array_search("PSSLCO",$page))
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Pilih Method</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="method" id="method" onchange="getCustomer(this.value)">
+                                        <option value="#" selected disabled>Pilih Method</option>
+                                        <option value="0">Offline</option>
+                                        @if (array_search("PSSLCO",$page))
+                                            @foreach ($ecoms as $ecom)
+                                                <option value="{{$ecom->id}}">{{$ecom->nama}}</option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Pilih Customer</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="customer" id="customer">
+                                    </select>
+                                </div>
+                            </div>
+                        @elseif(array_search("PSSLC",$page))
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Pilih Method</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="method" id="method">
+                                        <option value="0" selected>Offline</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Pilih Customer</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="customer" id="customer">
+                                        @foreach($customers as $cust)
+                                            <option value="{{$cust->id}}">{{$cust->apname}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        @elseif(array_search("PSSLCO",$page))
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Pilih Method</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="method" id="method">
                                         @foreach ($ecoms as $ecom)
                                             <option value="{{$ecom->id}}">{{$ecom->nama}}</option>
                                         @endforeach
-                                    @endif
-                                </select>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-2 col-form-label">Pilih Customer</label>
-                            <div class="col-10">
-                                <select class="form-control select2" parsley-trigger="change" name="customer" id="customer">
-                                </select>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Pilih Customer</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="customer" id="customer">
+                                        @foreach($customers as $cust)
+                                            <option value="{{$cust->id}}">{{$cust->apname}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
-                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

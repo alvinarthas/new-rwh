@@ -95,8 +95,17 @@ class SalesController extends Controller
     }
 
     public function showIndexSales(Request $request){
+        $page = MenuMapping::getMap(session('user_id'),"PSSL");
         if($request->param == "all"){
-            $sales = Sales::orderBy('trx_date','desc')->get();
+            if(array_search("PSSLV",$page) && array_search("PSSLVO",$page)){
+                $sales = Sales::orderBy('trx_date','desc')->get();
+            }else if(array_search("PSSLV",$page)){
+                $sales = Sales::where('method',0)->orderBy('trx_date','desc')->get();
+            }else if(array_search("PSSLVO",$page)){
+                $sales = Sales::where('method','NOT LIKE',0)->orderBy('trx_date','desc')->get();
+            }
+
+
         }else{
             if ($request->method == 0) {
                 $sales = Sales::where('method',$request->method)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
@@ -104,8 +113,8 @@ class SalesController extends Controller
                 $sales = Sales::where('method','NOT LIKE',0)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
             }
         }
-        $page = MenuMapping::getMap(session('user_id'),"PSSL");
-        $transaksi = Sales::getOrder($request->start,$request->end,$request->param,$request->method);
+
+        $transaksi = Sales::getOrder($request->start,$request->end,$request->param,$request->method,$page);
         if ($request->ajax()) {
             return response()->json(view('sales.indexsales',compact('sales','page','transaksi'))->render());
         }
@@ -116,10 +125,10 @@ class SalesController extends Controller
             $customers = Customer::select('id','apname')->get();
             $append = '<option value="#" disabled selected>Pilih Customer</option>';
         }elseif($request->method == 0){
-            $customers = Customer::where('cust_type',0)->select('id','apname')->get();
+            $customers = Customer::where('cust_type',0)->orwhere('cust_type',2)->select('id','apname')->get();
             $append = '<option value="#" disabled selected>Pilih Customer Offline</option>';
         }else{
-            $customers = Customer::where('cust_type',1)->select('id','apname')->get();
+            $customers = Customer::where('cust_type',1)->orwhere('cust_type',2)->select('id','apname')->get();
             $append = '<option value="#">Pilih Customer Online</option>';
         }
 
@@ -157,8 +166,18 @@ class SalesController extends Controller
     public function create()
     {
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
-        $ecoms = Ecommerce::all();
-        return view('sales.form', compact('page','ecoms'));
+        if(array_search("PSSLC",$page) && array_search("PSSLCO",$page)){
+            $ecoms = Ecommerce::all();
+            $customers = "";
+        }else if(array_search("PSSLC",$page)){
+            $ecoms = "";
+            $customers = Customer::where('cust_type',0)->orwhere('cust_type',2)->select('id','apname')->get();
+        }else if(array_search("PSSLCO",$page)){
+            $ecoms = Ecommerce::all();
+            $customers = Customer::where('cust_type',1)->orwhere('cust_type',2)->select('id','apname')->get();
+        }
+
+        return view('sales.form', compact('page','ecoms','customers'));
     }
 
     public function store(Request $request)
