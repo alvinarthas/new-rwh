@@ -36,10 +36,19 @@ class Sales extends Model
         return $this->belongsTo('App\Ecommerce','method','id');
     }
 
-    public static function getOrder($start,$end,$param,$method){
+    public static function getOrder($start,$end,$param,$method,$page){
         $data = collect();
         if($param == "all"){
-            $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id');
+            if(array_search("PSSLV",$page) && array_search("PSSLVO",$page)){
+                $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id');
+            }else if(array_search("PSSLV",$page)){
+                $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id')
+            ->where('method',0);
+            }else if(array_search("PSSLVO",$page)){
+                $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id')
+                ->where('method','NOT LIKE', 0);
+            }
+
         }else{
             $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id')
             ->where('method',$method)->whereBetween('trx_date',[$start,$end]);
@@ -50,7 +59,14 @@ class Sales extends Model
         $ttl_pemasukan = $order->sum('x.sub_ttl');
         $ttl_total = $order->sum('x.sub_ttl_pv');
         if($param == "all"){
-            $ttl_trx = Sales::count('id');
+            if(array_search("PSSLV",$page) && array_search("PSSLVO",$page)){
+                $ttl_trx = Sales::count('id');
+            }else if(array_search("PSSLV",$page)){
+                $ttl_trx = Sales::where('method',0)->whereBetween('trx_date',[$start,$end])->count('id');
+            }else if(array_search("PSSLVO",$page)){
+                $ttl_trx = Sales::where('method','NOT LIKE', 0)->whereBetween('trx_date',[$start,$end])->count('id');
+            }
+
         }else{
             $ttl_trx = Sales::where('method',$method)->whereBetween('trx_date',[$start,$end])->count('id');
         }

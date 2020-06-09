@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Exceptions\Handler;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 use App\Employee;
 use App\Salary;
@@ -18,6 +19,22 @@ class HomeController extends Controller
 {
     public function index(Request $request){
         if ($request->session()->has('isLoggedIn')) {
+            $role = session('role');
+
+            if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Assistant General Manager"){
+
+            }else{
+
+                $time = Carbon::now(); // Current time
+                $start = Carbon::create($time->year, $time->month, $time->day, 22, 0, 0); //set time to 10:00
+                $end = Carbon::create($time->year, $time->month, $time->day+1, 6, 0, 0); //set time to 18:00
+                if($time < $end || $time > $start){
+                    $request->session()->flush();
+                    return redirect()->route('getHome');
+                }else{
+
+                }
+            }
             // Get User Profile
             $user = Employee::where('id',session('user_id'))->first();
 

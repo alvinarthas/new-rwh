@@ -10,7 +10,6 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-// Route::get('user','UserController@index');cache:clear
 Route::get('/testuser','TestController@index');
 Route::get('/user/json','MemberController@json');
 Route::get('/','HomeController@index')->name('getHome');
