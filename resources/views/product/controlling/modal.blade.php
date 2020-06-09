@@ -53,6 +53,9 @@
                         <th>#</th>
                         <th>Tanggal Transaksi</th>
                         <th>Transaksi ID</th>
+                        @isset($jenis)
+                            <th>Customer</th>
+                        @endisset
                         <th>Status</th>
                         <th>Jumlah</th>
                     </tr>
@@ -66,6 +69,9 @@
                         <td>{{ $i+1 }}</td>
                         <td>{{ $r['tanggal'] }}</td>
                         <td>{{ $r['trx_id'] }}</td>
+                        @isset($jenis)
+                            <td>{{ $r['customer'] }}</td>
+                        @endisset
                         <td>{{ $r['status'] }}</td>
                         <td>{{ $r['qty'] }}</td>
                     </tr>

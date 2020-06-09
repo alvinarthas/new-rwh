@@ -98,6 +98,9 @@ Form Receive Item
                                 <td>{{$receive->receive_date}}</td>
                                 <td>{{$receive->creator()->first()->name}}</td>
                                 <td>
+                                    @if(array_search("PURPU",$page))
+                                    <a href="{{route('receiveProdEdit',['id'=>$receive['id_jurnal']])}}" class="btn btn-primary btn-rounded waves-effect w-xs waves-danger m-b-5 ">Edit</a>
+                                    @endif
                                     @if(array_search("PURPD",$page))
                                         <a href="javascript:;" onclick="deleteReceive('{{$receive->id_jurnal}}')" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5">Delete DO</a>
                                     @endif

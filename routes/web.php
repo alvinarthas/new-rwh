@@ -58,7 +58,12 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('receiveproduct/view','ReceiveProductController@view')->name('viewRI');
     Route::get('receiveproduct/detail','ReceiveProductController@detail')->name('receiveProdDet');
     Route::post('receiveproduct/store','ReceiveProductController@store')->name('receiveProdStr');
+    Route::get('receiveproduct/edit/{id}','ReceiveProductController@edit')->name('receiveProdEdit');
+    Route::post('receiveproduct/addProduct','ReceiveProductController@addProduct')->name('receiveProdAddProd');
+    Route::put('receiveproduct/{id}/update','ReceiveProductController@update')->name('receiveProdUpd');
     Route::delete('receiveproduct/delete','ReceiveProductController@delete')->name('receiveProdDel');
+    Route::delete('receiveproduct/deleteProd','ReceiveProductController@deleteProd')->name('receiveProdDelProd');
+
     // Bonus
     Route::get('/showBonus', 'BonusController@showBonusPerhitungan')->name('showBonusPerhitungan');
     Route::get('/createBonus', 'BonusController@createBonusPerhitungan')->name('createBonusPerhitungan');
