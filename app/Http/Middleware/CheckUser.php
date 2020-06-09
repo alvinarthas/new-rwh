@@ -26,7 +26,7 @@ class CheckUser
 
                 $time = Carbon::now(); // Current time
                 $start = Carbon::create($time->year, $time->month, $time->day, 22, 0, 0); //set time to 10:00
-                $end = Carbon::create($time->year, $time->month, $time->day+1, 6, 0, 0); //set time to 18:00
+                $end = Carbon::create($time->year, $time->month, $time->day, 6, 0, 0); //set time to 18:00
                 if($time < $end || $time > $start){
                     $request->session()->flush();
                     return redirect()->route('getHome');
