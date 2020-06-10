@@ -103,6 +103,8 @@ class DeliveryController extends Controller
             ));
 
             try {
+                $price = 0;
+
                 for ($i=0; $i < $request->count ; $i++) {
                     $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$request->prod_id[$i])->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
 
@@ -150,6 +152,127 @@ class DeliveryController extends Controller
         }
     }
 
+    public function edit($id)
+    {
+        $do = DeliveryOrder::where('id', $id)->first();
+        $details = DeliveryDetail::where('do_id', $id)->get();
+        $producttrx = SalesDet::where('trx_id', $do->sales_id)->select('prod_id')->get();
+        // echo "<pre>";
+        // print_r($producttrx);
+        // die();
+
+        return view('sales.do.form_update', compact('do', 'details', 'producttrx'));
+    }
+
+    public function update($id, Request $request){
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'delivery_date' => 'required|date',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            try{
+                $delivery = DeliveryOrder::where('id', $id)->first();
+
+                // JURNAL
+                //insert debet Persediaan Barang di Gudang
+                $debet = Jurnal::where('id_jurnal', $delivery->jurnal_id)->where('AccPos', 'Debet')->first();
+                $debet->date = $request->delivery_date;
+                $debet->update();
+
+                //insert credit Persediaan Barang Indent
+                $credit = Jurnal::where('id_jurnal', $delivery->jurnal_id)->where('AccPos', 'Credit')->first();
+                $credit->date = $request->delivery_date;
+                $credit->update();
+
+                $delivery->date = $request->delivery_date;
+                $delivery->update();
+
+                Log::setLog('PSDOU','Update Delivery Order SO.'.$delivery->sales_id.' Jurnal ID: '.$id);
+                return redirect()->route('showDo',['id'=>$delivery->sales_id])->with('status', 'Data berhasil diupdate');
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors($e);
+            }
+        }
+    }
+
+    public function addProduct(Request $request){
+        $validator = Validator::make($request->all(), [
+            'sales_id' => 'required',
+            'do_id' => 'required',
+            'id_jurnal' => 'required',
+            'select_product' => 'required',
+            'qty' => 'required|integer',
+            'delivery_date' => 'required|date',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            $sales = Sales::where('id',$request->sales_id)->first();
+            $do = new DeliveryDetail(array(
+                'do_id' => $request->do_id,
+                'sales_id' => $request->sales_id,
+                'qty' => $request->qty,
+                'product_id' => $request->select_product,
+            ));
+
+            try{
+
+                $do->save();
+                $price = 0;
+
+                $details = DeliveryDetail::where('do_id', $request->do_id)->get();
+                $count = $details->count();
+
+                // echo "<pre>";
+                // print_r($details);
+                // die();
+
+                for ($i=0; $i < $count ; $i++) {
+                    $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$details[$i]->product_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
+
+                    $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$details[$i]->product_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum('tblpotrxdet.qty');
+
+                    if($sumprice <> 0 && $sumqty <> 0){
+                        $avcharga = $sumprice/$sumqty;
+                    }else{
+                        $avcharga = 0;
+                    }
+                    // echo $sumprice;
+
+                    $price = $avcharga * $details[$i]->qty;
+                }
+
+                // echo "<pre>";
+                // print_r($price);
+                // die();
+
+                $debet = Jurnal::where('id_jurnal',$request->id_jurnal)->where('AccPos', 'Debet')->first();
+                $debet->amount = $price;
+                $debet->update();
+
+                $credit = Jurnal::where('id_jurnal',$request->id_jurnal)->where('AccPos', 'Credit')->first();
+                $credit->amount = $price;
+                $credit->update();
+
+                Log::setLog('PSDOU','Update Receive Product Jurnal ID: '.$request->id_jurnal);
+
+                return redirect()->back()->with('status', 'Data berhasil diupdate');
+            }catch (\Exception $e) {
+                return redirect()->back()->withErrors($e);
+            }
+        }
+    }
+
     public function delete(Request $request){
         $do_id = $request->id;
         $do = DeliveryOrder::where('id',$do_id)->select('jurnal_id','sales_id')->first();
@@ -161,6 +284,64 @@ class DeliveryController extends Controller
             return "true";
         } catch (\Exception $e) {
             return response()->json($e);
+        }
+    }
+
+    public function deleteProd(Request $request){
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        $id = $request->id;
+        $do_id = $request->do_id;
+
+        $do = DeliveryOrder::where('id',$do_id)->first();
+        $sales = Sales::where('id',$do->sales_id)->first();
+        $jurnal_id = $do->jurnal_id;
+
+        try {
+            $price = 0;
+            $datas = DeliveryDetail::where('do_id', $do_id)->where('id', '!=', $id)->get();
+            $count = $datas->count();
+
+            // echo "<pre>";
+            // print_r($datas);
+            // die();
+
+            if(!empty($datas)){
+                for ($i=0; $i < $count ; $i++) {
+                    $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$datas[$i]->product_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
+
+                    $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$datas[$i]->product_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum('tblpotrxdet.qty');
+
+                    if($sumprice <> 0 && $sumqty <> 0){
+                        $avcharga = $sumprice/$sumqty;
+                    }else{
+                        $avcharga = 0;
+                    }
+                    // echo $sumprice;
+
+                    $price = $avcharga * $datas[$i]->qty;
+                }
+                $debet = Jurnal::where('id_jurnal',$jurnal_id)->where('AccPos', 'Debet')->first();
+                $debet->amount = $price;
+                $debet->update();
+
+                $credit = Jurnal::where('id_jurnal',$jurnal_id)->where('AccPos', 'Credit')->first();
+                $credit->amount = $price;
+                $credit->update();
+
+                DeliveryDetail::where('id', $id)->delete();
+
+                Log::setLog('PSDOD','Delete Delivery Detail ID='.$id.', Jurnal ID: '.$jurnal_id);
+            }else{
+                Jurnal::where('id_jurnal', $jurnal_id)->delete();
+                Log::setLog('PSDOD','Delete Delivery Detail Jurnal ID: '.$jurnal_id);
+            }
+
+            return "true";
+            // return redirect()->back()->with('status', 'Data berhasil dihapus');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors($e);
         }
     }
 

@@ -231,7 +231,7 @@ class ReceiveProductController extends Controller
                 $credit->amount = $price;
                 $credit->update();
 
-                Log::setLog('PURPD','Update Receive Product Jurnal ID: '.$request->id_jurnal);
+                Log::setLog('PURPU','Update Receive Product Jurnal ID: '.$request->id_jurnal);
 
                 return redirect()->back()->with('status', 'Data berhasil diupdate');
             }catch (\Exception $e) {

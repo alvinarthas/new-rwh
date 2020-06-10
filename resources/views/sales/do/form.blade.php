@@ -103,6 +103,9 @@ Form Sales Order
                                             <td>{{$do->date}}</td>
                                             <td>{{$do->petugas()->first()->name}}</td>
                                             <td>
+                                                @if (array_search("PSDOU",$page))
+                                                    <a href="{{ route('editDo', ['id' => $do->id]) }}" class="btn btn-primary btn-rounded waves-effect w-xs waves-danger m-b-5">Edit DO</a>
+                                                @endif
                                                 @if (array_search("PSDOD",$page))
                                                     <a href="javascript:;" onclick="deleteDO({{ $do->id}})" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5">Delete DO</a>
                                                 @endif

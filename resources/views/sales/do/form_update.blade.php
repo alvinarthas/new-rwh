@@ -1,9 +1,5 @@
 @extends('layout.main')
-@php
-    use App\TempPO;
-    use App\TempPODet;
-    use App\PurchaseDetail;
-@endphp
+
 @section('css')
     <!-- DataTables -->
     <link href="{{ asset('assets/plugins/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
@@ -31,7 +27,7 @@
 @endsection
 
 @section('judul')
-Form Update Receive Product {{$receive[0]->id_jurnal}}
+Form Update Delivery Order {{$do->jurnal_id}}
 @endsection
 
 @section('content')
@@ -39,43 +35,44 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
     <div class="row">
         <div class="col-12">
             {{-- Form Data --}}
-            <form class="form-horizontal" id="form" role="form" action="{{ route('receiveProdUpd',['id'=>$receive[0]->id_jurnal]) }}" enctype="multipart/form-data" method="POST">
+            <form class="form-horizontal" id="form" role="form" action="{{ route('doUpdate',['id'=> $do->id]) }}" enctype="multipart/form-data" method="POST">
                 {{ method_field('PUT') }}
                 @csrf
 
                 <div class="card-box table-responsive">
-                    <h4 class="m-t-0 header-title">Receive Product Data</h4>
+                    <h4 class="m-t-0 header-title">Delivery Order Data</h4>
                     <div class="row">
                         <div class="col-12">
                             <div class="p-20">
                                 <div class="form-row">
                                     <div class="form-group col-md-4">
-                                        <label for="salesdate" class="col-form-label">Purchase ID</label>
-                                        <input type="text" class="form-control" id="po_id" value="PO.{{$receive[0]->trx_id}}" readonly>
+                                        <label for="so_id" class="col-form-label">Sales ID</label>
+                                        <input type="text" class="form-control" id="so_id" value="SO.{{$do->sales_id}}" readonly>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label for="salesid" class="col-form-label">Receive Item ID</label>
-                                        <input type="text" class="form-control" id="rp_id" value="{{$receive[0]->id_jurnal}}" readonly>
+                                        <label for="do_id" class="col-form-label">DO ID</label>
+                                        <input type="text" class="form-control" id="do_id" value="{{$do->jurnal_id}}" readonly>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label for="salesdate" class="col-form-label">Creator</label>
-                                        <input type="text" class="form-control" id="creator" value="{{$receive[0]->creator()->first()->name}}" readonly>
+                                        <label for="creator" class="col-form-label">Creator</label>
+                                        <input type="text" class="form-control" id="creator" value="{{$do->petugas()->first()->name}}" readonly>
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-2 col-form-label">Receive Date</label>
+                                    <label class="col-2 col-form-label">Delivery Date</label>
                                     <div class="col-10">
                                         <div class="input-group">
-                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="receive_date" id="receive_date" data-date-format='yyyy-mm-dd' autocomplete="off" value="{{ $receive[0]->receive_date }}">
+                                            <input type="text" class="form-control" parsley-trigger="change" required placeholder="yyyy/mm/dd" name="delivery_date" id="delivery_date" data-date-format='yyyy-mm-dd' autocomplete="off" value="{{ $do->date }}">
                                             <div class="input-group-append">
                                                 <span class="input-group-text"><i class="ti-calendar"></i></span>
                                             </div>
                                         </div><!-- input-group -->
                                     </div>
                                 </div>
+
                                 <div class="form-group text-right m-b-0">
-                                    <a href="{{ route('receiveProdDet',['trx_id'=>$receive[0]->trx_id]) }}" class="btn btn-warning btn-rounded waves-effect waves-light w-md m-b-5">Kembali</a>
-                                    <button class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Update Receive Date</button>
+                                    <a href="{{ route('showDo',['id'=>$do->sales_id]) }}" class="btn btn-warning btn-rounded waves-effect waves-light w-md m-b-5">Kembali</a>
+                                    <button class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Update Delivery Date</button>
                                 </div>
                             </div>
                         </div>
@@ -84,11 +81,12 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
             </form>
 
             {{-- Form Data --}}
-            <form class="form-horizontal" id="form" role="form" action="{{ route('receiveProdAddProd') }}" enctype="multipart/form-data" method="POST">
+            <form class="form-horizontal" id="form" role="form" action="{{ route('doAddProd') }}" enctype="multipart/form-data" method="POST">
                 @csrf
-                <input type="hidden" name="receive_date" id="receive_date" value="{{ $receive[0]->receive_date }}">
-                <input type="hidden" name="trx_id" id="trx_id" value="{{ $receive[0]->trx_id }}">
-                <input type="hidden" name="id_jurnal" id="id_jurnal" value="{{ $receive[0]->id_jurnal }}">
+                <input type="hidden" name="delivery_date" id="delivery_date" value="{{ $do->date }}">
+                <input type="hidden" name="sales_id" id="sales_id" value="{{ $do->sales_id }}">
+                <input type="hidden" name="do_id" id="do_id" value="{{ $do->id }}">
+                <input type="hidden" name="id_jurnal" id="id_jurnal" value="{{ $do->jurnal_id }}">
 
                 {{-- Insert Item Card --}}
                 <div class="card-box">
@@ -108,20 +106,9 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-2 col-form-label">Quantity Receive</label>
+                                    <label class="col-2 col-form-label">Quantity</label>
                                     <div class="col-10">
                                         <input type="number" class="form-control" name="qty" id="qty" parsley-trigger="change" required>
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-2 col-form-label">Expired Date</label>
-                                    <div class="col-10">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control" parsley-trigger="change" placeholder="yyyy/mm/dd" name="expired_date" id="expired_date" data-date-format='yyyy-mm-dd' autocomplete="off">
-                                            <div class="input-group-append">
-                                                <span class="input-group-text"><i class="ti-calendar"></i></span>
-                                            </div>
-                                        </div><!-- input-group -->
                                     </div>
                                 </div>
                                 <div class="form-group text-right m-b-0">
@@ -135,7 +122,7 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
 
             <div class="card-box table-responsive">
                 <div class="row">
-                    <h4 class="m-t-0 header-title">Receive Item Details</h4>
+                    <h4 class="m-t-0 header-title">Delivery Order Details</h4>
                     <div class="col-12">
                         <div class="p-20">
                             <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
@@ -144,21 +131,19 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
                                     <th>Product ID</th>
                                     <th>Product Name</th>
                                     <th>Qty</th>
-                                    <th>Expired Date</th>
                                     <th>Action</th>
                                 </thead>
                                 <tbody id="ri-list-body">
                                     @php($i=1)
-                                    @foreach ($receive as $rec)
-                                        @isset($rec->prod->name)
+                                    @foreach ($details as $detail)
+                                        @isset($detail->product->name)
                                         <tr>
                                             <td>{{ $i++ }}</td>
-                                            <td>{{ $rec->prod_id }}</td>
-                                            <td>{{ $rec->prod->name }}</td>
-                                            <td>{{ $rec->qty }}</td>
-                                            <td>{{ $rec->expired_date }}</td>
+                                            <td>{{ $detail->product_id }}</td>
+                                            <td>{{ $detail->product->name }}</td>
+                                            <td>{{ $detail->qty }}</td>
                                             <td>
-                                                <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem({{ $rec->id }})" >Delete</a>
+                                                <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem({{ $detail->id }}, {{ $detail->do_id }})" >Delete</a>
                                             </td>
                                         </tr>
                                         @endisset
@@ -194,13 +179,12 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
 // Select2
 $(".select2").select2();
 
-jQuery('#receive_date').datepicker();
-jQuery('#expired_date').datepicker();
+jQuery('#delivery_date').datepicker();
 
-function deleteItem(id){
+function deleteItem(id, do_id){
     var token = $("meta[name='csrf-token']").attr("content");
 
-    console.log(id)
+    console.log(id, do_id)
     swal({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -213,11 +197,12 @@ function deleteItem(id){
         buttonsStyling: false
     }).then(function () {
         $.ajax({
-            url : "{{route('receiveProdDelProd')}}",
+            url : "{{route('doDelProd')}}",
             type : "DELETE",
             dataType: 'json',
             data:{
                 id:id,
+                do_id:do_id,
                 _token: token,
             },
         }).done(function (data) {

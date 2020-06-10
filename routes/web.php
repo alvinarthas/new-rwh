@@ -247,7 +247,11 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('do/print','DeliveryController@print')->name('printDo');
         Route::get('do/show/{id}','DeliveryController@show')->name('showDo');
         Route::post('do/store','DeliveryController@store')->name('storeDo');
+        Route::post('do/addProduct','DeliveryController@addProduct')->name('doAddProd');
+        Route::get('do/edit/{id}','DeliveryController@edit')->name('editDo');
+        Route::put('do/update/{id}','DeliveryController@update')->name('doUpdate');
         Route::delete('do/delete','DeliveryController@delete')->name('deleteDo');
+        Route::delete('do/deleteProd','DeliveryController@deleteProd')->name('doDelProd');
 
     // Laporan
     Route::prefix('laporan')->group(function () {
