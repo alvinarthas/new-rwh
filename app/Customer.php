@@ -25,8 +25,8 @@ class Customer extends Model
         $total = 0;
         foreach(Customer::all() as $key){
             $supp = collect();
-            $sales = Sales::where('customer_id',$key->id)->sum(DB::raw('ttl_harga+ongkir'));
-            $paid = Sales::join('tblsopayment','tblsopayment.trx_id','=','tblproducttrx.id')->where('tblproducttrx.customer_id',$key->id)->sum('tblsopayment.payment_amount');
+            $sales = Sales::where('customer_id',$key->id)->where('approve',1)->sum(DB::raw('ttl_harga+ongkir'));
+            $paid = Sales::join('tblsopayment','tblsopayment.trx_id','=','tblproducttrx.id')->where('tblproducttrx.customer_id',$key->id)->where('tblproducttrx.approve',1)->sum('tblsopayment.payment_amount');
 
             $selisih = $sales - $paid;
             $total+=$selisih;
@@ -45,7 +45,7 @@ class Customer extends Model
 
     public static function sisaPiutangDetail($customer){
         $data = collect();
-        foreach(Sales::where('customer_id',$customer)->get() as $key){
+        foreach(Sales::where('customer_id',$customer)->where('approve',1)->get() as $key){
             $data_hutang = collect();
             $payment = SalesPayment::where('trx_id',$key->id)->sum('payment_amount');
 
@@ -65,10 +65,6 @@ class Customer extends Model
             $dataretur = collect();
 
             $amount = $key->harga * $key->qty;
-
-            // echo "<pre>";
-            // print_r($key);
-            // die();
 
             if($amount < 0 || $amount > 0){
                 $dataretur->put('id',$key->id);
