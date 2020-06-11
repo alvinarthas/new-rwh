@@ -57,7 +57,12 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('receiveproduct/view','ReceiveProductController@view')->name('viewRI');
     Route::get('receiveproduct/detail','ReceiveProductController@detail')->name('receiveProdDet');
     Route::post('receiveproduct/store','ReceiveProductController@store')->name('receiveProdStr');
+    Route::get('receiveproduct/edit/{id}','ReceiveProductController@edit')->name('receiveProdEdit');
+    Route::post('receiveproduct/addProduct','ReceiveProductController@addProduct')->name('receiveProdAddProd');
+    Route::put('receiveproduct/{id}/update','ReceiveProductController@update')->name('receiveProdUpd');
     Route::delete('receiveproduct/delete','ReceiveProductController@delete')->name('receiveProdDel');
+    Route::delete('receiveproduct/deleteProd','ReceiveProductController@deleteProd')->name('receiveProdDelProd');
+
     // Bonus
     Route::get('/showBonus', 'BonusController@showBonusPerhitungan')->name('showBonusPerhitungan');
     Route::get('/createBonus', 'BonusController@createBonusPerhitungan')->name('createBonusPerhitungan');
@@ -242,7 +247,11 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('do/print','DeliveryController@print')->name('printDo');
         Route::get('do/show/{id}','DeliveryController@show')->name('showDo');
         Route::post('do/store','DeliveryController@store')->name('storeDo');
+        Route::post('do/addProduct','DeliveryController@addProduct')->name('doAddProd');
+        Route::get('do/edit/{id}','DeliveryController@edit')->name('editDo');
+        Route::put('do/update/{id}','DeliveryController@update')->name('doUpdate');
         Route::delete('do/delete','DeliveryController@delete')->name('deleteDo');
+        Route::delete('do/deleteProd','DeliveryController@deleteProd')->name('doDelProd');
 
     // Laporan
     Route::prefix('laporan')->group(function () {

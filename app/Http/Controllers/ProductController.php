@@ -434,36 +434,40 @@ class ProductController extends Controller
             $result = array();
             $total = 0;
 
-            $so = SalesDet::join('tblproducttrx', 'tblproducttrxdet.trx_id', 'tblproducttrx.id')->where('prod_id', $product->prod_id)->where('jurnal_id', '!=', '0')->select('jurnal_id','trx_date', 'qty')->get();
+            $so = SalesDet::join('tblproducttrx', 'tblproducttrxdet.trx_id', 'tblproducttrx.id')->where('prod_id', $product->prod_id)->where('jurnal_id', '!=', '0')->select('jurnal_id','trx_date', 'qty', 'customer_id')->get();
 
             foreach($so AS $s){
                 $tgl = $s['trx_date'];
                 $trx_id = $s->jurnal_id;
                 $status = "IN";
                 $total = $total + $s->qty;
+                $customer = Customer::where('id', $s->customer_id)->first()->apname;
 
                 $stock = array(
                     'tanggal' => $tgl,
                     'trx_id'  => $trx_id,
                     'status'  => $status,
                     'qty'     => $s->qty,
+                    'customer' => $customer,
                 );
                 array_push($result, $stock);
             }
 
-            $do = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('product_id', $product->prod_id)->select('jurnal_id', 'date', 'qty')->get();
+            $do = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->join('tblproducttrx', 'delivery_order.sales_id', 'tblproducttrx.id')->where('product_id', $product->prod_id)->select('delivery_order.jurnal_id', 'delivery_order.date', 'delivery_detail.qty', 'tblproducttrx.customer_id')->get();
 
             foreach($do AS $d){
                 $tgl = $d['date'];
                 $trx_id = $d->jurnal_id;
                 $status = "OUT";
                 $total = $total - $d->qty;
+                $customer = Customer::where('id', $d->customer_id)->first()->apname;
 
                 $stock = array(
                     'tanggal' => $tgl,
                     'trx_id'  => $trx_id,
                     'status'  => $status,
                     'qty'     => $d->qty,
+                    'customer' => $customer,
                 );
                 array_push($result, $stock);
             }
@@ -491,8 +495,10 @@ class ProductController extends Controller
             }
             array_multisort($date, SORT_DESC, $result);
 
+            $jenis = "brgCustomer";
+
             // return view('product.controlling.mutasi_produk', compact('product','result', 'total'));
-            return response()->json(view('product.controlling.modal',compact('product','result','total','modal'))->render());
+            return response()->json(view('product.controlling.modal',compact('product','result','total','modal', 'jenis'))->render());
         }else{
             $products = Product::all();
 

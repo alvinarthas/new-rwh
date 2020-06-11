@@ -142,6 +142,104 @@ class ReceiveProductController extends Controller
         }
     }
 
+    public function edit($id)
+    {
+        $receive = ReceiveDet::where('id_jurnal', $id)->get();
+        $producttrx = PurchaseDetail::where('trx_id',$receive[0]->trx_id)->select('prod_id')->get();
+
+        return view('purchase.receive.form_update', compact('receive', 'producttrx'));
+    }
+
+    public function update($id, Request $request){
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'receive_date' => 'required|date',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            try{
+                $receive = ReceiveDet::where('id_jurnal', $id)->get();
+
+                // JURNAL
+                //insert debet Persediaan Barang di Gudang
+                $debet = Jurnal::where('id_jurnal', $id)->where('AccPos', 'Debet')->first();
+                $debet->date = $request->receive_date;
+                $debet->update();
+
+                //insert credit Persediaan Barang Indent
+                $credit = Jurnal::where('id_jurnal', $id)->where('AccPos', 'Credit')->first();
+                $credit->date = $request->receive_date;
+                $credit->update();
+
+                foreach($receive as $rec){
+                    $data = ReceiveDet::where('id', $rec->id)->first();
+                    $data->receive_date = $request->receive_date;
+                    $data->update();
+                }
+
+                Log::setLog('PURPU','Update Receive Product PO.'.$receive[0]->trx_id.' Jurnal ID: '.$id);
+                return redirect()->route('receiveProdDet',['trx_id'=>$receive[0]['trx_id']])->with('status', 'Data berhasil diupdate');
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors($e);
+            }
+        }
+    }
+
+    public function addProduct(Request $request){
+
+        $validator = Validator::make($request->all(), [
+            'trx_id' => 'required',
+            'select_product' => 'required',
+            'qty' => 'required',
+            'receive_date' => 'required|date',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            try{
+                $receive = new ReceiveDet(array(
+                    'trx_id' => $request->trx_id,
+                    'prod_id' => $request->select_product,
+                    'qty' => $request->qty,
+                    'expired_date' => $request->expired_date,
+                    'creator' => session('user_id'),
+                    'receive_date' => $request->receive_date,
+                    'id_jurnal' => $request->id_jurnal,
+                ));
+                $receive->save();
+                $price = 0;
+
+                $datas = ReceiveDet::where('id_jurnal', $request->id_jurnal)->get();
+                foreach($datas as $data){
+                    $pricedet = PurchaseDetail::where('trx_id',$data->trx_id)->where('prod_id',$data->prod_id)->first()->price;
+                    $price += $pricedet * $data->qty;
+                }
+                $debet = Jurnal::where('id_jurnal',$request->id_jurnal)->where('AccPos', 'Debet')->first();
+                $debet->amount = $price;
+                $debet->update();
+
+                $credit = Jurnal::where('id_jurnal',$request->id_jurnal)->where('AccPos', 'Credit')->first();
+                $credit->amount = $price;
+                $credit->update();
+
+                Log::setLog('PURPU','Update Receive Product Jurnal ID: '.$request->id_jurnal);
+
+                return redirect()->back()->with('status', 'Data berhasil diupdate');
+            }catch (\Exception $e) {
+                return redirect()->back()->withErrors($e);
+            }
+        }
+    }
+
     public function delete(Request $request){
         // echo "<pre>";
         // print_r($request->all());
@@ -152,6 +250,45 @@ class ReceiveProductController extends Controller
         try {
             Jurnal::where('id_jurnal',$id_jurnal)->delete();
             Log::setLog('PURPD','Delete Receive Product Jurnal ID: '.$id_jurnal);
+            return "true";
+            // return redirect()->back()->with('status', 'Data berhasil dihapus');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors($e);
+        }
+    }
+
+    public function deleteProd(Request $request){
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        $receive = ReceiveDet::where('id',$request->id)->first();
+        $id_jurnal = $receive->id_jurnal;
+        $idr = $request->id;
+
+        try {
+            $price = 0;
+            $datas = ReceiveDet::where('id_jurnal', $id_jurnal)->where('id', '!=', $idr)->get();
+
+            if(!empty($datas)){
+                foreach($datas as $data){
+                    $pricedet = PurchaseDetail::where('trx_id',$data->trx_id)->where('prod_id',$data->prod_id)->first()->price;
+                    $price += $pricedet * $data->qty;
+                }
+                $debet = Jurnal::where('id_jurnal',$receive->id_jurnal)->where('AccPos', 'Debet')->first();
+                $debet->amount = $price;
+                $debet->update();
+
+                $credit = Jurnal::where('id_jurnal',$receive->id_jurnal)->where('AccPos', 'Credit')->first();
+                $credit->amount = $price;
+                $credit->update();
+
+                Log::setLog('PURPD','Delete Receive Product ID='.$idr.', Jurnal ID: '.$id_jurnal);
+            }else{
+                Jurnal::where('id_jurnal', $receive->id_jurnal)->delete();
+                Log::setLog('PURPD','Delete Receive Produc Jurnal ID: '.$id_jurnal);
+            }
+            $receive->delete();
+
             return "true";
             // return redirect()->back()->with('status', 'Data berhasil dihapus');
         } catch (\Exception $e) {
