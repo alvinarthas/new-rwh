@@ -38,16 +38,65 @@ use Carbon\Carbon;
 class TestController extends Controller
 {
     public function index(){
-        $time = Carbon::now(); // Current time
-        $start = Carbon::create($time->year, $time->month, $time->day, 22, 0, 0); //set time to 10:00
-        $end = Carbon::create($time->year, $time->month, $time->day+1, 6, 0, 0); //set time to 18:00
-        // dd($time,$start,$end);
-        if($time < $end && $time > $start){
-            echo "over";
-        }else{
-            echo "not";
+        foreach (DeliveryOrder::all() as $key) {
+            $sum = 0;
+            $price = 0;
+            foreach(DeliveryDetail::where('do_id',$key->id)->get() as $dodet){
+                $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
+                $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->sales->trx_date)->sum('tblpotrxdet.qty');
+
+                if($sumprice <> 0 && $sumqty <> 0){
+                    $avcharga = $sumprice/$sumqty;
+                }else{
+                    $avcharga = 0;
+                }
+
+                $price += $avcharga * $dodet->qty;
+            }
+            $sum += $price;
+            echo $key->jurnal_id." - ".$price."<br>";
+            //insert debet Persediaan Barang di Gudang
+            $debet = Jurnal::where('id_jurnal', $key->jurnal_id)->where('AccNo','2.1.3')->where('AccPos', 'Debet')->first();
+            $debet->Amount = $price;
+            $debet->update();
+
+            //insert credit Persediaan Barang Indent
+            $credit = Jurnal::where('id_jurnal', $key->jurnal_id)->where('AccNo','1.1.4.1.2')->where('AccPos', 'Credit')->first();
+            $credit->Amount = $price;
+            $credit->update();
         }
+
+        echo "total: ".$sum;
     }
+
+    public function index_check(){
+        $price = 0;
+        foreach (Jurnal::where('id_jurnal','LIKE','DO.%')->where('AccPos','Debet')->get() as $key) {
+            $price += $key->Amount;
+            echo $key->id_jurnal." - ".number_format($key->Amount)."<br>";
+        }
+        echo "Total: ".number_format($price);
+    }
+
+    public function indexa(){
+        $sum = 0;
+
+        foreach (Sales::all() as $key) {
+            foreach(DeliveryOrder::where('sales_id',$key->id)->select('id','jurnal_id')->get() as $dokey){
+                $do_sum = 0;
+
+                foreach(DeliveryDetail::where('do_id',$dokey->id)->get() as $dodet){
+                    $do_avcost = Purchase::join('tblpotrxdet','tblpotrxdet. xtrx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->trx_date)->avg('tblpotrxdet.price');
+                    $price = $do_avcost * $dodet->qty;
+                    $do_sum+=$price;
+                }
+                echo $dokey->jurnal_id." - ".$do_sum."<br>";
+                $sum+=$do_sum;
+            }
+        }
+        echo "<strong>".$sum."</strong>";
+    }
+
 
     public function index565(){
         foreach(Sales::all() as $key){
@@ -212,25 +261,6 @@ class TestController extends Controller
             }
             $sum+=$cogs;
             echo $key->jurnal_id." - ".$cogs."<br>";
-        }
-        echo "<strong>".$sum."</strong>";
-    }
-
-    public function indexa(){
-        $sum = 0;
-
-        foreach (Sales::all() as $key) {
-            foreach(DeliveryOrder::where('sales_id',$key->id)->select('id','jurnal_id')->get() as $dokey){
-                $do_sum = 0;
-
-                foreach(DeliveryDetail::where('do_id',$dokey->id)->get() as $dodet){
-                    $do_avcost = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$dodet->product_id)->where('tblpotrx.tgl','<=',$key->trx_date)->avg('tblpotrxdet.price');
-                    $price = $do_avcost * $dodet->qty;
-                    $do_sum+=$price;
-                }
-                echo $dokey->jurnal_id." - ".$do_sum."<br>";
-                $sum+=$do_sum;
-            }
         }
         echo "<strong>".$sum."</strong>";
     }
