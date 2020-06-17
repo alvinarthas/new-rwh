@@ -4,6 +4,9 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\ReturDetail;
+use App\ReturPayment;
+
 class Retur extends Model
 {
     protected $table ='tblretur';
@@ -40,5 +43,37 @@ class Retur extends Model
         }
 
         return $total;
+    }
+    public static function getReturPay($jenis){
+        $data = collect();
+        foreach(Retur::where('status', $jenis)->get() as $key){
+            $retur = collect();
+            $detail = ReturDetail::where('trx_id', $key->id)->get();
+            $total = 0;
+
+            foreach($detail as $det){
+                if($jenis == 0){
+                    $total += $det->harga_dist * $det->qty;
+                }elseif($jenis == 1){
+                    $total += $det->harga * $det->qty;
+                }
+            }
+            $returpay = ReturPayment::where('trx_id',$key->id)->sum('amount');
+
+            $retur->put('id',$key->id);
+            $retur->put('id_jurnal', $key->id_jurnal);
+            $retur->put('tgl',$key->tgl);
+            if($jenis == 0){
+                $retur->put('supplier', $key->supplier()->first()->nama);
+            }elseif($jenis == 1){
+                $retur->put('customer', $key->customer()->first()->apname);
+            }
+
+            $retur->put('total', $total);
+            $retur->put('paid', $returpay);
+            $data->push($retur);
+        }
+
+        return $data;
     }
 }
