@@ -116,7 +116,7 @@ class DeliveryController extends Controller
                         $avcharga = 0;
                     }
 
-                    $price = $avcharga * $request->qty[$i];
+                    $price += $avcharga * $request->qty[$i];
                 }
 
                 $desc = "Delivery Order SO.".$request->sales_id;
@@ -249,7 +249,7 @@ class DeliveryController extends Controller
                     }
                     // echo $sumprice;
 
-                    $price = $avcharga * $details[$i]->qty;
+                    $price += $avcharga * $details[$i]->qty;
                 }
 
                 // echo "<pre>";
@@ -320,7 +320,7 @@ class DeliveryController extends Controller
                     }
                     // echo $sumprice;
 
-                    $price = $avcharga * $datas[$i]->qty;
+                    $price += $avcharga * $datas[$i]->qty;
                 }
                 $debet = Jurnal::where('id_jurnal',$jurnal_id)->where('AccPos', 'Debet')->first();
                 $debet->amount = $price;

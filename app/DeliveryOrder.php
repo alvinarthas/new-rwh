@@ -57,7 +57,7 @@ class DeliveryOrder extends Model
         ));
 
         $details = SalesDet::where('trx_id',$sales_id)->get();
-
+        $price = 0;
         foreach ($details as $key) {
             $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
 
@@ -69,7 +69,7 @@ class DeliveryOrder extends Model
                 $avcharga = 0;
             }
 
-            $price = $avcharga * $key->qty;
+            $price += $avcharga * $key->qty;
         }
 
         $desc = "Delivery Order ".$sales->jurnal_id;
