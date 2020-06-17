@@ -142,7 +142,9 @@ Route::middleware(['checkUser'])->group(function () {
         // Jurnal
         'jurnal' => 'JurnalController',
         // Retur
-        'retur' => 'ReturController',
+        'returbeli' => 'ReturPembelianController',
+        // Retur
+        'returjual' => 'ReturPenjualanController',
         // Customer
         'customer' => 'CustomerController',
         // Saldo
@@ -185,15 +187,19 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('invoice/view','InvoiceController@view')->name('invoiceView');
         Route::get('invoice/print','InvoiceController@print')->name('invoicePrint');
 
-    // Retur
-        Route::get('/showpembelian', 'ReturController@showReturPembelian')->name('showReturPembelian');
-        Route::get('/retur/penjualan/index', 'ReturController@indexpj')->name('retur.indexpj');
-        Route::get('/retur/penjualan/create', 'ReturController@createpj')->name('retur.createpj');
-        Route::get('/retur/penjualan/edit/{id}', 'ReturController@editpj')->name('retur.editpj');
-        Route::put('/retur/penjualan/edit/{id}', 'ReturController@updatepj')->name('retur.updatepj');
-        Route::get('/showpenjualan', 'ReturController@showReturPenjualan')->name('showReturPenjualan');
-        Route::get('retur/pembelian/show/{id}','ReturController@showpb')->name('showReturPb');
-        Route::get('retur/penjualan/show/{id}','ReturController@showpj')->name('showReturPj');
+    // Retur Pembelian
+        Route::get('/showpembelian', 'ReturPembelianController@showReturPembelian')->name('showReturPembelian');
+        Route::get('/returbeli/payment/index', 'ReturPembelianController@indexReturPayment')->name('returbeli.indexpayment');
+        Route::get('/returbeli/payment/edit/{id}', 'ReturPembelianController@editReturPayment')->name('returbeli.editpayment');
+        Route::post('/returbeli/payment/edit/{id}', 'ReturPembelianController@updateReturPayment')->name('returbeli.updatepayment');
+        Route::get('/returbeli/destroy','ReturPembelianController@destroyReturPayment')->name('returbeli.destroypayment');
+
+    // Retur Penjualan
+        Route::get('/showpenjualan', 'ReturPenjualanController@showReturPenjualan')->name('showReturPenjualan');
+        Route::get('/returjual/payment/index', 'ReturPenjualanController@indexReturPayment')->name('returjual.indexpayment');
+        Route::get('/returjual/payment/edit/{id}', 'ReturPenjualanController@editReturPayment')->name('returjual.editpayment');
+        Route::post('/returjual/payment/edit/{id}', 'ReturPenjualanController@updateReturPayment')->name('returjual.updatepayment');
+        Route::get('/returjual/destroy','ReturPenjualanController@destroyReturPayment')->name('returjual.destroypayment');
 
     // Security
         Route::get('/security', 'SecurityController@index')->name('security.index');
