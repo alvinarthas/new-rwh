@@ -7,22 +7,16 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
 use App\Jurnal;
-use App\ReturPembelian;
-use App\ReturPembelianDet;
-use App\ReturPenjualan;
-use App\ReturPenjualanDet;
-use App\Sales;
-use App\SalesDet;
 use App\Purchase;
 use App\PurchaseDetail;
 use App\Retur;
 use App\ReturPayment;
 use App\ReturDetail;
-use App\Perusahaan;
-use App\Customer;
+use App\ReturStock;
 use Carbon\Carbon;
 use App\MenuMapping;
 use App\Coa;
+use App\Log;
 
 class ReturPembelianController extends Controller
 {
@@ -33,32 +27,23 @@ class ReturPembelianController extends Controller
      */
     public function index()
     {
-        // $purchase = Purchase::join('tblpotrxdet', 'tblpotrx.id', '=', 'tblpotrxdet.trx_id')->orderBy('tblpotrx.id', 'desc')->get();
-        // echo $purchase;
-        // die();
-        // $retur = ReturPembelian::join('tblpotrx', 'tblreturpb.trx_id', 'tblpotrx.id')->select('tblreturpb.trx_id','tblreturpb.id_jurnal', 'tblreturpb.tgl', 'tblreturpb.supplier', 'tblpotrx.jurnal_id AS po_id')->get();
-
         $retur = Retur::where('status', 0)->get();
-        $jenis = "report";
-        $jenisretur = "pembelian";
         $page = MenuMapping::getMap(session('user_id'),"RBPO");
-        return view('retur.nota.index', compact('retur', 'jenis', 'jenisretur','page'));
+        return view('retur.pembelian.nota.index', compact('retur', 'page'));
     }
 
     public function indexReturPayment()
     {
         $retur = Retur::getReturPay(0);
-        // echo "<pre>";
-        // print_r($retur);
-        // die();
-        $jenisretur = "pembelian";
         $page = MenuMapping::getMap(session('user_id'),"RBPP");
-        return view('retur.payment.index', compact('retur', 'jenisretur','page'));
+        return view('retur.pembelian.payment.index', compact('retur', 'page'));
     }
 
     public function indexReturReceive()
     {
-        //
+        $retur = Retur::getReturStock(0);
+        $page = MenuMapping::getMap(session('user_id'),"RBRP");
+        return view('retur.pembelian.stock.index', compact('retur', 'page'));
     }
 
     /**
@@ -68,9 +53,7 @@ class ReturPembelianController extends Controller
      */
     public function create()
     {
-        $jenisretur = "pembelian";
-        $jenis = "create";
-        return view('retur.nota.index', compact('jenisretur', 'jenis'));
+        return view('retur.pembelian.nota.indexCreate');
     }
 
     public function createReturPayment()
@@ -103,14 +86,11 @@ class ReturPembelianController extends Controller
     public function show($id, Request $request)
     {
         if ($request->ajax()) {
-            $jenis = "PB";
-            // $retur = ReturPembelian::join('tblpotrx', 'tblreturpb.trx_id', 'tblpotrx.id')->where('tblreturpb.trx_id',$request->id)->select('tblreturpb.trx_id', 'tblreturpb.id_jurnal', 'tblreturpb.tgl', 'tblreturpb.supplier', 'tblpotrx.jurnal_id AS po_id', 'tblreturpb.creator')->first();
             $retur = Retur::where('status', 0)->where('id', $request->id)->first();
             $po_trx = Purchase::where('jurnal_id', $retur->source_id)->first()->id;
-            // $returdet = ReturPembelianDet::where('trx_id',$request->id)->get();
             $returdet = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.status', 0)->where('trx_id', $request->id)->get();
 
-            return response()->json(view('retur.nota.modal',compact('retur','returdet', 'jenis', 'po_trx'))->render());
+            return response()->json(view('retur.pembelian.nota.modal',compact('retur','returdet', 'po_trx'))->render());
         }
     }
 
@@ -119,9 +99,15 @@ class ReturPembelianController extends Controller
         //
     }
 
-    public function showReturReceive($id, Request $request)
+    public function showReturReceive(Request $request)
     {
-        //
+        if ($request->ajax()) {
+            $jurnal_id = $request->ri_id;
+            $receives = ReturStock::where('id_jurnal',$jurnal_id)->where('status', 0)->get();
+            $receive = ReturStock::where('id_jurnal',$jurnal_id)->where('status', 0)->first();
+
+            return response()->json(view('retur.pembelian.stock.modal',compact('receive', 'receives'))->render());
+        }
     }
 
     /**
@@ -132,17 +118,16 @@ class ReturPembelianController extends Controller
      */
     public function edit($id)
     {
-        $jenisretur = "pembelian";
         $purchase = Purchase::where('id', $id)->first();
         $purchasedet = PurchaseDetail::where('trx_id', $id)->get();
-        $perusahaans = Perusahaan::all();
+        $retur = ReturDetail::getRetured(0, $purchase->jurnal_id, $id);
         $trx_id = $id;
-        return view('retur.nota.form', compact('purchasedet', 'purchase', 'perusahaans', 'jenisretur', 'trx_id'));
+
+        return view('retur.pembelian.nota.form', compact('purchasedet', 'purchase', 'retur', 'trx_id'));
     }
 
     public function editReturPayment($id)
     {
-        $jenisretur = "pembelian";
         $retur = Retur::where('id', $id)->first();
         $details = ReturDetail::where('trx_id', $id)->get();
         $ttl_pay = ReturPayment::where('trx_id',$id)->sum('amount');
@@ -150,12 +135,18 @@ class ReturPembelianController extends Controller
         $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2.%')->orWhere('AccNo','LIKE','1.1.1.1.%')->orWhere('AccNo','LIKE','2.5%')->orWhere('AccNo','LIKE','1.10.%')->orderBy('AccName','asc')->get();
         $payment = ReturPayment::where('trx_id', $id)->get();
 
-        return view('retur.payment.form', compact('retur', 'details', 'ttl_pay', 'ttl_order', 'coas', 'jenisretur', 'payment'));
+        return view('retur.pembelian.payment.form', compact('retur', 'details', 'ttl_pay', 'ttl_order', 'coas', 'payment'));
     }
 
     public function editReturReceive($id)
     {
-        //
+        $trx = Retur::where('id',$id)->first();
+        $details = ReturStock::detailRetur($id, 0);
+        $productretur = ReturDetail::where('trx_id',$id)->select('prod_id')->get();
+        $page = MenuMapping::getMap(session('user_id'),"RBRP");
+        $receives = ReturStock::where('trx_id',$id)->groupBy('id_jurnal')->get();
+
+        return view('retur.pembelian.stock.form',compact('trx','details','productretur','receives','page'));
     }
 
     /**
@@ -167,10 +158,6 @@ class ReturPembelianController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
-
         Carbon::setLocale('id');
         $tgl = date('Y-m-d', strtotime(Carbon::today()));
         $validator = Validator::make($request->all(), [
@@ -189,7 +176,6 @@ class ReturPembelianController extends Controller
 
                 $purchase = Purchase::where('id',$id)->first();
 
-                // $retur = new ReturPembelian;
                 $retur = new Retur;
                 $retur->tgl = $tgl;
                 $retur->supplier = $request->supplier;
@@ -197,9 +183,6 @@ class ReturPembelianController extends Controller
                 $retur->source_id = $purchase->jurnal_id;
                 $retur->status = 0;
                 $retur->creator = session('user_id');
-                // echo "<pre>";
-                // print_r($retur);
-                // die();
                 $ctr = count($request->qtyretur);
 
                 $total_modal = 0;
@@ -211,25 +194,27 @@ class ReturPembelianController extends Controller
                         $qty = $request->qtyretur[$i];
                         $reason = $request->reason[$i];
                         $prod_id = $request->prod_id[$i];
+                        $price = $request->harga[$i];
+                        $price_dist = $request->harga_dist[$i];
+                        $unit = $request->unit[$i];
 
                         if($qty!=0){
-                            $pur_det = PurchaseDetail::where('trx_id', $id)->where('prod_id', $prod_id)->first();
-
                             $returdet = new ReturDetail;
                             $returdet->trx_id = $retur->id;
                             $returdet->prod_id = $prod_id;
                             $returdet->qty = $qty;
-                            $returdet->harga = $pur_det->price;
-                            $returdet->harga_dist = $pur_det->price_dist;
+                            $returdet->unit = $unit;
+                            $returdet->harga = $price;
+                            $returdet->harga_dist = $price_dist;
                             $returdet->reason = $reason;
                             $returdet->creator = session('user_id');
 
                             try{
                                 // success
                                 $returdet->save();
-                                $total_modal += $pur_det->price * $qty;
+                                $total_modal += $price * $qty;
                                 $total_tertahan += PurchaseDetail::where('trx_id',$id)->where('prod_id', $prod_id)->sum(DB::Raw('(price_dist - price)*'.$qty));
-                                $total_distributor += $pur_det->price_dist * $qty;
+                                $total_distributor += $price_dist * $qty;
                             }catch(\Exception $e) {
                                 // failed
                                 return redirect()->back()->withErrors($e->errorInfo);
@@ -270,7 +255,57 @@ class ReturPembelianController extends Controller
 
     public function updateReturReceive(Request $request, $id)
     {
-        //
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'trx_id' => 'required',
+            'prod_id' => 'required|array',
+            'qty' => 'required|array',
+            'receive_date' => 'required|date',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            try{
+                $id_jurnal = Jurnal::getJurnalID('RD');
+                $price = 0;
+                $count = count($request->prod_id);
+                $retur = Retur::where('id', $request->trx_id)->first();
+
+                for($i=0; $i < $count; $i++){
+                    $pricedet = ReturDetail::where('trx_id',$request->trx_id)->where('prod_id',$request->prod_id[$i])->first()->harga;
+                    $price += $pricedet * $request->qty[$i];
+                }
+
+                $desc = "Retur Receive Product dari ".$retur->source_id.", Retur ID : ".$retur->id_jurnal;
+
+                // JURNAL
+                // insert credit Persediaan Barang di Gudang
+                Jurnal::addJurnal($id_jurnal,$price,$request->receive_date,$desc,'1.1.4.1.2','Credit');
+                // insert debet Persediaan Barang Indent
+                Jurnal::addJurnal($id_jurnal,$price,$request->receive_date,$desc,'1.1.4.1.1','Debet');
+
+                for($i=0; $i < $count; $i++){
+                    $receive = new ReturStock(array(
+                        'trx_id' => $request->trx_id,
+                        'prod_id' => $request->prod_id[$i],
+                        'qty' => $request->qty[$i],
+                        'date' => $request->receive_date,
+                        'creator' => session('user_id'),
+                        'status' => 0,
+                        'id_jurnal' => $id_jurnal,
+                    ));
+
+                    $receive->save();
+                }
+
+                Log::setLog('RBRPC','Create Retur Receive Product dari '.$retur->source_id.' Jurnal ID: '.$id_jurnal);
+                return redirect()->back()->with('status', 'Data berhasil dibuat');
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors($e);
+            }
+        }
     }
 
     /**
@@ -305,13 +340,24 @@ class ReturPembelianController extends Controller
         }
     }
 
+    public function destroyReturReceive(Request $request){
+        $id_jurnal = $request->jurnal_id;
+        try {
+            // Jurnal::where('id_jurnal',$id_jurnal)->delete();
+            ReturStock::where('id_jurnal', $id_jurnal)->delete();
+            Log::setLog('RBRPD','Delete Retur Receive Product Jurnal ID: '.$id_jurnal);
+            return "true";
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors($e);
+        }
+    }
+
     public function showReturPembelian(Request $request)
     {
-        $jenisretur = "pembelian";
         $tahun = $request->tahun;
         $bulan = $request->bulan;
-        $retur = ReturPembelianDet::all();
         $purchase = Purchase::join('tblpotrxdet', 'tblpotrx.id', '=', 'tblpotrxdet.trx_id')->where('tblpotrx.month', $bulan)->where('tblpotrx.year', $tahun)->where('tblpotrx.approve', 1)->orderBy('tblpotrx.id','desc')->get();
-        return view('retur.nota.ajxShow', compact('jenisretur','purchase','tahun','bulan', 'retur'));;
+
+        return view('retur.pembelian.nota.ajxShow', compact('purchase','tahun','bulan'));
     }
 }
