@@ -364,6 +364,11 @@ class SalesController extends Controller
         foreach (DeliveryOrder::where('sales_id',$id)->select('jurnal_id')->get() as $key) {
             Jurnal::where('id_jurnal',$key->jurnal_id)->delete();
         }
+
+        foreach (SalesPayment::where('trx_id',$id)->select('jurnal_id')->get() as $key) {
+            Jurnal::where('id_jurnal',$key->jurnal_id)->delete();
+        }
+
         Jurnal::where('id_jurnal',$sales->jurnal_id)->delete();
 
         try {

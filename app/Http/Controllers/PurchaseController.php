@@ -19,6 +19,7 @@ use App\PurchasePayment;
 use App\ManageHarga;
 use App\Jurnal;
 use App\MenuMapping;
+use App\ReceiveDet;
 use App\Product;
 use App\Log;
 use App\TempPO;
@@ -387,6 +388,15 @@ class PurchaseController extends Controller
         $prodarray = collect();
         foreach (PurchaseDetail::where('trx_id',$id)->get() as $key) {
             $prodarray->push($key->prod_id);
+        }
+        // Receive Item
+        foreach (ReceiveDet::where('trx_id',$id)->select('id_jurnal')->get() as $key) {
+            Jurnal::where('id_jurnal',$key->id_jurnal)->delete();
+        }
+
+        // Purchase Payment
+        foreach (PurchasePayment::where('trx_id',$id)->select('jurnal_id')->get() as $key) {
+            Jurnal::where('id_jurnal',$key->jurnal_id)->delete();
         }
         Jurnal::where('id_jurnal',$purchase->jurnal_id)->delete();
         try {

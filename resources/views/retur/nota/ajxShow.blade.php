@@ -5,7 +5,6 @@
     use App\Perusahaan;
     use App\Customer;
 @endphp
-
 <div class="row">
     <div class="col-12">
         <div class="card-box table-responsive">
