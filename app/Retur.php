@@ -44,6 +44,7 @@ class Retur extends Model
 
         return $total;
     }
+
     public static function getReturPay($jenis){
         $data = collect();
         foreach(Retur::where('status', $jenis)->get() as $key){
@@ -71,6 +72,44 @@ class Retur extends Model
 
             $retur->put('total', $total);
             $retur->put('paid', $returpay);
+            $data->push($retur);
+        }
+
+        return $data;
+    }
+
+    public static function getReturStock($jenis){
+        $data = collect();
+        foreach(Retur::where('status', $jenis)->get() as $key){
+            $retur = collect();
+            $detail = ReturDetail::where('trx_id', $key->id)->get();
+            $statuscount = 0;
+
+            foreach($detail as $det){
+                $qtynota = ReturDetail::where('trx_id',$key->id)->where('prod_id', $det->prod_id)->sum('qty');
+                $qtystock = ReturStock::where('trx_id',$key->id)->where('prod_id', $det->prod_id)->sum('qty');
+                if($qtynota != $qtystock){
+                    $statuscount++;
+                }
+            }
+
+            if($statuscount == 0){
+                $status = "Selesai";
+            }else{
+                $status = "Belum Selesai";
+            }
+
+            $retur->put('id',$key->id);
+            $retur->put('id_jurnal', $key->id_jurnal);
+            $retur->put('tgl',$key->tgl);
+            if($jenis == 0){
+                $retur->put('supplier', $key->supplier()->first()->nama);
+                $retur->put('po_id', $key->source_id);
+            }elseif($jenis == 1){
+                $retur->put('customer', $key->customer()->first()->apname);
+                $retur->put('so_id', $key->source_id);
+            }
+            $retur->put('status', $status);
             $data->push($retur);
         }
 

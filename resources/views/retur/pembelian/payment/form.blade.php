@@ -15,11 +15,7 @@
 @endsection
 
 @section('judul')
-@if($jenisretur=="pembelian")
     Form Retur Purchase Payment
-@elseif($jenisretur=="penjualan")
-    Form Retur Sales Payment
-@endif
 @endsection
 
 @section('content')
@@ -42,21 +38,12 @@
                         @endphp
                         @foreach ($details as $item)
                             <tr>
-                                @php
-                                    if($jenisretur=="pembelian"){
-                                        $price = $item->harga_dist;
-                                        $sub_total = $item->harga_dist * $item->qty;
-                                    }elseif($jenisretur=="penjualan"){
-                                        $price = $item->harga;
-                                        $sub_total = $item->harga * $item->qty;
-                                    }
-                                @endphp
                                 <td>{{$i++}}</td>
                                 <td>{{$item->prod_id}}</td>
                                 <td>{{$item->product->name}}</td>
-                                <td>Rp {{number_format($price,2,",",".")}}</td>
+                                <td>Rp {{number_format($item->harga_dist,2,",",".")}}</td>
                                 <td>{{$item->qty}}</td>
-                                <td>Rp {{number_format($sub_total,2,",",".")}}</td>
+                                <td>Rp {{number_format($item->harga_dist * $item->qty,2,",",".")}}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -86,7 +73,6 @@
                         </div>
                     </div>
                 </div>
-                @if($jenisretur=="pembelian")
                 <h4 class="m-t-0 header-title">Supplier Information</h4>
                 <div class="col-12">
                     <div class="p-20">
@@ -99,20 +85,6 @@
                         </div>
                     </div>
                 </div>
-                @elseif($jenisretur=="penjualan")
-                <h4 class="m-t-0 header-title">Customer Information</h4>
-                <div class="col-12">
-                    <div class="p-20">
-                        <div class="form-group row">
-                            <label class="col-2 col-form-label">Customer Name</label>
-                            <div class="col-10">
-                                <input type="text" class="form-control" parsley-trigger="change" value="{{$retur->customer()->first()->apname}}" readonly>
-                                <input type="hidden" class="form-control" id="customer" parsley-trigger="change" value="{{$retur->customer}}" readonly>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endif
                 <h4 class="m-t-0 header-title">Retur Payment Status</h4>
                 <div class="col-12">
                     <div class="p-20">
@@ -127,11 +99,7 @@
             </div>
 
             <div class="card-box">
-                @if($jenisretur == "pembelian")
-                    <form class="form-horizontal" role="form" id="form" action="{{ route('returbeli.updatepayment', ['id' => $retur->id]) }}" enctype="multipart/form-data" method="POST">
-                @elseif($jenisretur == "penjualan")
-                    <form class="form-horizontal" role="form" id="form" action="{{ route('returjual.updatepayment', ['id' => $retur->id]) }}" enctype="multipart/form-data" method="POST">
-                @endif
+                <form class="form-horizontal" role="form" id="form" action="{{ route('returbeli.updatepayment', ['id' => $retur->id]) }}" enctype="multipart/form-data" method="POST">
                     @csrf
                     <input type="hidden" name="trx_id" value="{{$retur->id}}">
 
@@ -139,7 +107,7 @@
                     <div class="col-12">
                         <div class="p-20">
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Total Transaction to Paid</label>
+                                <label class="col-2 col-form-label">Total Retur Transaction</label>
                                 <div class="col-10">
                                     <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($ttl_order-$ttl_pay,2,",",".")}}" readonly>
                                     <input type="hidden" name="returned" id="returned" value="{{$ttl_order-$ttl_pay}}">
@@ -157,7 +125,7 @@
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Payment Method</label>
+                                <label class="col-2 col-form-label">Retur Payment Method</label>
                                 <div class="col-10">
                                     <select class="form-control select2" parsley-trigger="change" name="AccNo" id="AccNo" onchange="ifSaldo(this.value)" required>
                                         <option value="#" disabled>Pilih Method</option>
@@ -170,7 +138,7 @@
                             </div>
                             <div id="deposit" style="display:none">
                                 <div class="form-group row">
-                                    <label class="col-2 col-form-label">Saldo Deposit Pembelian</label>
+                                    <label class="col-2 col-form-label">Retur Saldo Deposit Pembelian</label>
                                     <div class="col-10">
                                         <input type="text" class="form-control" parsley-trigger="change" id="deposit_amount" value="0">
                                         <input type="hidden" class="form-control" parsley-trigger="change" id="deposit_amountraw" name="deposit_amount" value="0">
@@ -179,20 +147,37 @@
                             </div>
                             <div id="saldo"></div>
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Payment Amount</label>
+                                <label class="col-2 col-form-label">Retur Payment Amount</label>
                                 <div class="col-10">
                                     <input type="number" min="0" class="form-control" parsley-trigger="change" id="amount" name="amount" value="{{$ttl_order-$ttl_pay}}" required>
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-2 col-form-label">Payment Description</label>
+                                <label class="col-2 col-form-label">Retur Payment Deduction</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="payment_deduction" id="payment_deduction" required onchange="deduction(this.value)">
+                                        <option value="No_Deduction">No Deduction</option>
+                                        <option value="Biaya_Transfer_Bank">Biaya Transfer Bank</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="deduct" style="display:none">
+                                <div class="form-group row">
+                                    <label class="col-2 col-form-label">Retur Deduction Amount</label>
+                                    <div class="col-10">
+                                        <input type="text" class="form-control" parsley-trigger="change" id="deduct_amount" name="deduct_amount" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Retur Payment Description</label>
                                 <div class="col-10">
                                     <textarea class="form-control" rows="5" id="description" name="description"></textarea>
                                 </div>
                             </div>
                             @if($ttl_pay < $ttl_order)
                             <div class="form-group text-right m-b-0">
-                                <button class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Simpan Purchase Payment</a>
+                                <button class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Simpan Retur Payment</a>
                             </div>
                             @endif
                         </div>
@@ -223,14 +208,8 @@
                                 <td>{{$pay->description}}</td>
                                 <td>{{$pay->id_jurnal}}</td>
                                 <td>
-                                    @if($jenisretur=="pembelian")
-                                        @if (array_search("RBPPD",$page))
-                                            <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5" onclick="deletePaymentBeli({{$pay->id}})">Delete</a>
-                                        @endif
-                                    @elseif($jenisretur=="penjualan")
-                                        @if (array_search("RJSPD",$page))
-                                            <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5" onclick="deletePaymentJual({{$pay->id}})">Delete</a>
-                                        @endif
+                                    @if (array_search("RBPPD",$page))
+                                        <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5" onclick="deletePayment({{$pay->id}})">Delete</a>
                                     @endif
                                 </td>
                             </tr>
@@ -273,8 +252,7 @@
 
     $(".select2").select2();
 
-    function deletePaymentBeli(id){
-
+    function deletePayment(id){
         swal({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -321,51 +299,12 @@
         })
     }
 
-    function deletePaymentJual(id){
-        swal({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            type: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!',
-            confirmButtonClass: 'btn btn-success',
-            cancelButtonClass: 'btn btn-danger m-l-10',
-            buttonsStyling: false
-        }).then(function () {
-            $.ajax({
-                url : "{{route('returjual.destroypayment')}}",
-                type : "get",
-                dataType: 'json',
-                data:{
-                    id: id,
-                },
-            }).done(function (data) {
-                swal(
-                    'Deleted!',
-                    'Your file has been deleted.',
-                    'success'
-                )
-                location.reload();
-            }).fail(function (msg) {
-                swal(
-                    'Failed',
-                    'Your imaginary file is safe :)',
-                    'error'
-                )
-            });
-
-        }, function (dismiss) {
-            // dismiss can be 'cancel', 'overlay',
-            // 'close', and 'timer'
-            if (dismiss === 'cancel') {
-                swal(
-                    'Cancelled',
-                    'Your imaginary file is safe :)',
-                    'error'
-                )
-            }
-        })
+    function deduction(id) {
+        if(id == "Biaya_Transfer_Bank"){
+            document.getElementById("deduct").style.display='block';
+        }else{
+            document.getElementById("deduct").style.display='none';
+        }
     }
 
     function formatNumber(num) {

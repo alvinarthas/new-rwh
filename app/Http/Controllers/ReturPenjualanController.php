@@ -7,10 +7,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
 use App\Jurnal;
-use App\ReturPembelian;
-use App\ReturPembelianDet;
-use App\ReturPenjualan;
-use App\ReturPenjualanDet;
 use App\ReturPayment;
 use App\Sales;
 use App\SalesDet;
@@ -18,11 +14,13 @@ use App\Purchase;
 use App\PurchaseDetail;
 use App\Retur;
 use App\ReturDetail;
+use App\ReturStock;
 use App\Perusahaan;
 use App\Customer;
 use Carbon\Carbon;
 use App\MenuMapping;
 use App\Coa;
+use App\Log;
 
 class ReturPenjualanController extends Controller
 {
@@ -33,27 +31,23 @@ class ReturPenjualanController extends Controller
      */
     public function index()
     {
-        // $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', '=', 'tblproducttrxdet.trx_id')->orderBy('tblproducttrx.id', 'desc')->get();
-        // $retur = ReturPenjualanDet::all();
-        // $retur = ReturPenjualan::join('tblproducttrx', 'tblreturpj.trx_id', 'tblproducttrx.id')->select('tblreturpj.trx_id', 'tblreturpj.id_jurnal', 'tblreturpj.tgl', 'tblreturpj.customer', 'tblproducttrx.jurnal_id AS so_id')->get();
-        $retur = Retur::where('status', '1')->get();
-        $jenis = "report";
-        $jenisretur = "penjualan";
+        $retur = Retur::where('status', 1)->get();
         $page = MenuMapping::getMap(session('user_id'),"RJSO");
-        return view('retur.nota.index', compact('retur', 'jenis', 'jenisretur','page'));
+        return view('retur.penjualan.nota.index', compact('retur', 'page'));
     }
 
     public function indexReturPayment()
     {
         $retur = Retur::getReturPay(1);
-        $jenisretur = "penjualan";
         $page = MenuMapping::getMap(session('user_id'),"RJSP");
-        return view('retur.payment.index', compact('retur', 'jenisretur','page'));
+        return view('retur.penjualan.payment.index', compact('retur', 'page'));
     }
 
     public function indexReturDelivery()
     {
-        //
+        $retur = Retur::getReturStock(1);
+        $page = MenuMapping::getMap(session('user_id'),"RJDO");
+        return view('retur.penjualan.stock.index', compact('retur', 'page'));
     }
 
     /**
@@ -63,10 +57,8 @@ class ReturPenjualanController extends Controller
      */
     public function create()
     {
-        $jenisretur = "penjualan";
-        $jenis = "create";
-        $customer = Customer::all();
-        return view('retur.nota.index', compact('jenisretur', 'jenis', 'customer'));
+        $customer = Customer::orderBy('apname', 'asc')->get();
+        return view('retur.penjualan.nota.indexCreate', compact('customer'));
     }
 
     public function createReturPayment()
@@ -99,15 +91,11 @@ class ReturPenjualanController extends Controller
     public function show($id, Request $request)
     {
         if ($request->ajax()) {
-            $jenis = "PJ";
-
-            // $retur = ReturPenjualan::join('tblproducttrx', 'tblreturpj.trx_id', 'tblproducttrx.id')->where('tblreturpj.trx_id',$request->id)->select('tblreturpj.trx_id', 'tblreturpj.id_jurnal', 'tblreturpj.tgl', 'tblreturpj.customer', 'tblproducttrx.jurnal_id AS so_id', 'tblreturpj.creator')->first();
             $retur = Retur::where('status', 1)->where('id', $request->id)->first();
             $so_trx = Sales::where('jurnal_id', $retur->source_id)->first()->id;
-            // $returdet = ReturPenjualanDet::where('trx_id',$request->id)->get();
             $returdet = ReturDetail::join('tblretur', 'tblreturdet.trx_id', 'tblretur.id')->where('tblretur.status', 1)->where('trx_id', $request->id)->get();
 
-            return response()->json(view('retur.nota.modal',compact('retur','returdet', 'jenis', 'so_trx'))->render());
+            return response()->json(view('retur.penjualan.nota.modal',compact('retur','returdet', 'so_trx'))->render());
         }
     }
 
@@ -118,7 +106,13 @@ class ReturPenjualanController extends Controller
 
     public function showReturDelivery($id, Request $request)
     {
-        //
+        if ($request->ajax()) {
+            $jurnal_id = $request->ri_id;
+            $sales = ReturStock::where('id_jurnal',$jurnal_id)->where('status', 1)->get();
+            $sale = ReturStock::where('id_jurnal',$jurnal_id)->where('status', 1)->first();
+
+            return response()->json(view('retur.penjualan.stock.modal',compact('sale', 'sales'))->render());
+        }
     }
 
     /**
@@ -129,30 +123,39 @@ class ReturPenjualanController extends Controller
      */
     public function edit($id)
     {
-        $jenisretur = "penjualan";
         $sales = Sales::where('id', $id)->first();
         $salesdet = SalesDet::where('trx_id', $id)->get();
-        $customer = Customer::where('id', $sales['customer_id'])->first();
+        $retur = ReturDetail::getRetured(1, $sales->jurnal_id, $id);
+        $customer = Customer::where('id', $sales->customer_id)->first();
         $trx_id = $id;
-        return view('retur.nota.form', compact('salesdet', 'sales', 'customer', 'jenisretur', 'trx_id'));
+
+        return view('retur.penjualan.nota.form', compact('salesdet', 'sales', 'retur', 'trx_id', 'customer'));
     }
 
     public function editReturPayment($id)
     {
-        $jenisretur = "penjualan";
         $retur = Retur::where('id', $id)->first();
         $details = ReturDetail::where('trx_id', $id)->get();
         $ttl_pay = ReturPayment::where('trx_id',$id)->sum('amount');
-        $ttl_order = ReturDetail::where('trx_id',$id)->sum(DB::raw('qty * harga_dist'));
+        $ttl_order = ReturDetail::where('trx_id',$id)->sum(DB::raw('qty * harga'));
         $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2.%')->orWhere('AccNo','LIKE','1.1.1.1.%')->orWhere('AccNo','LIKE','2.5%')->orWhere('AccNo','LIKE','1.10.%')->orderBy('AccName','asc')->get();
         $payment = ReturPayment::where('trx_id', $id)->get();
 
-        return view('retur.payment.form', compact('retur', 'details', 'ttl_pay', 'ttl_order', 'coas', 'jenisretur', 'payment'));
+        return view('retur.penjualan.payment.form', compact('retur', 'details', 'ttl_pay', 'ttl_order', 'coas', 'payment'));
     }
 
     public function editReturDelivery($id)
     {
-        //
+        $trx = Retur::where('id',$id)->first();
+        $details = ReturStock::detailRetur($id, 1);
+        $productretur = ReturDetail::where('trx_id',$id)->select('prod_id')->get();
+        $page = MenuMapping::getMap(session('user_id'),"RJDO");
+        $delivered = ReturStock::where('trx_id',$id)->groupBy('id_jurnal')->get();
+        // echo "<pre>";
+        // print_r($details);
+        // die();
+
+        return view('retur.penjualan.stock.form',compact('trx','details','productretur','delivered','page'));
     }
 
     /**
@@ -199,15 +202,16 @@ class ReturPenjualanController extends Controller
                         $qty = $request->qtyretur[$i];
                         $reason = $request->reason[$i];
                         $prod_id = $request->prod_id[$i];
+                        $unit = $request->unit[$i];
+                        $harga = $request->harga[$i];
 
                         if($qty!=0){
-                            $sales_det = SalesDet::where('trx_id', $id)->where('prod_id', $prod_id)->first();
-
                             $returdet = new ReturDetail;
                             $returdet->trx_id = $retur->id;
                             $returdet->prod_id = $prod_id;
                             $returdet->qty = $qty;
-                            $returdet->harga = $sales_det->price;
+                            $returdet->unit = $unit;
+                            $returdet->harga = $harga;
                             $returdet->reason = $reason;
                             $returdet->creator = session('user_id');
 
@@ -226,18 +230,13 @@ class ReturPenjualanController extends Controller
                                 }
                                 $modal += ($qty * $avcharga);
 
-                                $total_transaksi += $sales_det->price * $qty;
+                                $total_transaksi += $harga * $qty;
 
                             }catch(\Exception $e) {
                                 return redirect()->back()->withErrors($e->errorInfo);
                                 // return response()->json($e);
                             }
                         }
-
-                        // foreach (SalesDet::where('trx_id',$id)->get() as $key) {
-                        //     $avcharga = PurchaseDetail::where('prod_id',$key->prod_id)->avg('price');
-                        //     $modal += ($qty * $avcharga);
-                        // }
                     }
                     $jurnal_desc = "Retur ".$id_jurnal." dari ".$sales->jurnal_id;
 
@@ -272,7 +271,66 @@ class ReturPenjualanController extends Controller
 
     public function updateReturDelivery(Request $request, $id)
     {
-        //
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'trx_id' => 'required|integer',
+            'count' => 'required',
+            'prod_id' => 'required|array',
+            'qty' => 'required|array',
+            'delivery_date' => 'required|date',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            $id_jurnal = Jurnal::getJurnalID('RL');
+            $retur = Retur::where('id',$request->trx_id)->first();
+            $sales = Sales::where('jurnal_id', $retur->source_id)->first();
+
+            try {
+                $price = 0;
+
+                for ($i=0; $i < $request->count ; $i++) {
+                    $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$request->prod_id[$i])->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
+
+                    $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$request->prod_id[$i])->where('tblpotrx.tgl','<=',$sales->trx_date)->sum('tblpotrxdet.qty');
+
+                    if($sumprice <> 0 && $sumqty <> 0){
+                        $avcharga = $sumprice/$sumqty;
+                    }else{
+                        $avcharga = 0;
+                    }
+
+                    $price = $avcharga * $request->qty[$i];
+                }
+
+                $desc = "Retur Delivery Order dari ".$retur->source_id.", Jurnal ID:".$id_jurnal;
+                // JURNAL
+                //insert credit Persediaan Barang milik Customer
+                Jurnal::addJurnal($id_jurnal,$price,$request->delivery_date,$desc,'2.1.3','Credit');
+                //insert debet Persediaan Barang digudang
+                Jurnal::addJurnal($id_jurnal,$price,$request->delivery_date,$desc,'1.1.4.1.2','Debet');
+
+                for ($i=0; $i < $request->count ; $i++) {
+                    $stock = new ReturStock(array(
+                        'trx_id' => $request->trx_id,
+                        'prod_id' => $request->prod_id[$i],
+                        'qty' => $request->qty[$i],
+                        'date' => $request->delivery_date,
+                        'id_jurnal' => $id_jurnal,
+                        'status' => 1,
+                        'creator' => session('user_id'),
+                    ));
+
+                    $stock->save();
+                }
+                Log::setLog('RJDOC','Create Retur Delivery Order dari '.$retur->source_id.' Jurnal ID: '.$id_jurnal);
+                return redirect()->back()->with('status', 'Data DO berhasil dibuat');
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors($e->errorInfo);
+            }
+        }
     }
 
     /**
@@ -299,7 +357,9 @@ class ReturPenjualanController extends Controller
         try{
             $data = ReturPayment::where('id', $request->id)->first();
             Jurnal::where('id_jurnal',$data->id_jurnal)->delete();
+            Log::setLog('RJSPD','Delete Retur Sales Payment Jurnal ID: '.$data->id_jurnal);
             ReturPayment::where('id', $request->id)->delete();
+
 
             return "true";
         }catch(\Exception $a){
@@ -307,12 +367,26 @@ class ReturPenjualanController extends Controller
         }
     }
 
+    public function destroyReturDelivery(Request $request){
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        $id_jurnal = $request->jurnal_id;
+        try {
+            Jurnal::where('id_jurnal',$id_jurnal)->delete();
+            ReturStock::where('id_jurnal', $id_jurnal)->delete();
+            Log::setLog('RBRPD','Delete Retur Receive Product Jurnal ID: '.$id_jurnal);
+            return "true";
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors($e);
+        }
+    }
+
     public function showReturPenjualan(Request $request)
     {
-        $jenisretur = "penjualan";
         $customer = $request->customer;
-        $retur = ReturPenjualanDet::all();
         $sales = Sales::join('tblproducttrxdet', 'tblproducttrx.id', '=', 'tblproducttrxdet.trx_id')->where('tblproducttrx.customer_id', $customer)->orderBy('tblproducttrx.id','desc')->get();
-        return view('retur.nota.ajxShow', compact('jenisretur','sales', 'retur'));;
+
+        return view('retur.penjualan.nota.ajxShow', compact('sales', 'customer'));
     }
 }
