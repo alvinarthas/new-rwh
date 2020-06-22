@@ -83,7 +83,11 @@ class LaporanController extends Controller
                 $modal_awal = Coa::modalAwal($start,$end);
                 $set_modal = Coa::setoranModal($start,$end);
                 $prive = Coa::pengeluaranPribadi($start,$end);
-                $perubahan_modal = $set_modal-$prive+$nett_profit;
+                if($prive < 0 ){
+                    $perubahan_modal = $set_modal+$prive+$nett_profit;
+                }else{
+                    $perubahan_modal = $set_modal-$prive+$nett_profit;
+                }
                 $modal_akhir = $modal_awal+$perubahan_modal;
             // Neraca
                 $date = $request->end_date;
