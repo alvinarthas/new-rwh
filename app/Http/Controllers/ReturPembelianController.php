@@ -11,6 +11,7 @@ use App\Purchase;
 use App\PurchaseDetail;
 use App\Retur;
 use App\ReturPayment;
+use App\Deposit;
 use App\ReturDetail;
 use App\ReturStock;
 use Carbon\Carbon;
@@ -56,26 +57,6 @@ class ReturPembelianController extends Controller
         return view('retur.pembelian.nota.indexCreate');
     }
 
-    public function createReturPayment()
-    {
-        //
-    }
-
-    public function createReturReceive()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     /**
      * Display the specified resource.
@@ -134,8 +115,9 @@ class ReturPembelianController extends Controller
         $ttl_order = ReturDetail::where('trx_id',$id)->sum(DB::raw('qty * harga_dist'));
         $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2.%')->orWhere('AccNo','LIKE','1.1.1.1.%')->orWhere('AccNo','LIKE','2.5%')->orWhere('AccNo','LIKE','1.10.%')->orderBy('AccName','asc')->get();
         $payment = ReturPayment::where('trx_id', $id)->get();
+        $page = MenuMapping::getMap(session('user_id'),"RBPP");
 
-        return view('retur.pembelian.payment.form', compact('retur', 'details', 'ttl_pay', 'ttl_order', 'coas', 'payment'));
+        return view('retur.pembelian.payment.form', compact('retur', 'details', 'ttl_pay', 'ttl_order', 'coas', 'payment','page'));
     }
 
     public function editReturReceive($id)
@@ -248,9 +230,78 @@ class ReturPembelianController extends Controller
 
     public function updateReturPayment(Request $request, $id)
     {
-        echo "<pre>";
-        print_r($request->all());
-        die();
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'trx_id' => 'required',
+            'amount' => 'required',
+            'AccNo' => 'required',
+            'date' => 'required',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            $id_jurnal = Jurnal::getJurnalID('RC');
+
+            $rest = $request->returned - $request->amount;
+            $returBeli = Retur::where('id',$request->trx_id)->first();
+
+            // Jurnal
+            $jurnal_desc = $returBeli->id_jurnal;
+
+            $payment = new ReturPayment(array(
+                'trx_id' => $request->trx_id,
+                'date' => $request->date,
+                'amount' => $request->amount,
+                'status' => 0,
+                'deduct_category' => $request->payment_deduction,
+                'creator' => session('user_id'),
+                'AccNo' => $request->AccNo,
+                'description' => $request->description,
+                'deduct_amount' =>$request->deduct_amount,
+                'id_jurnal' => $id_jurnal,
+            ));
+
+            $amount = $request->amount - $request->deduct_amount;
+
+            try {
+                // Jurnal Debet Hutang Dagang
+                Jurnal::addJurnal($id_jurnal,$request->amount,$request->date,$jurnal_desc,'2.1.1','Credit');
+
+                // Jurnal Credit Cash/Bank / Deposit Pembelian
+                Jurnal::addJurnal($id_jurnal,$request->amount,$request->date,$jurnal_desc,$request->AccNo,'Debet');
+
+                // Payment
+                $payment->save();
+
+                if($rest == 0){
+                    $returBeli->status_bayar = 1;
+
+                    $returBeli->save();
+                }
+
+                if($request->AccNo == "1.1.3.3"){
+                    $deposit = new Deposit(array(
+                        'supplier_id' => $returBeli->supplier,
+                        'status' => 1,
+                        'amount' => $request->amount,
+                        'keterangan' => $request->description,
+                        'creator' => session('user_id'),
+                        'date' => $request->date,
+                        'jurnal_id' => $id_jurnal,
+                        'AccNo' => $request->AccNo,
+                    ));
+
+                    $deposit->save();
+                }
+
+                Log::setLog('RBPPC','Create Retur Purchase Payment Jurnal ID: '.$id_jurnal);
+                return redirect()->back()->with('status', 'Data berhasil dibuat');
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors($e->getMessage());
+            }
+        }
     }
 
     public function updateReturReceive(Request $request, $id)
@@ -331,9 +382,8 @@ class ReturPembelianController extends Controller
     {
         try{
             $data = ReturPayment::where('id', $request->id)->first();
+            Log::setLog('RBPPD','Delete Retur Purchase Payment Jurnal ID: '.$data->id_jurnal);
             Jurnal::where('id_jurnal',$data->id_jurnal)->delete();
-            ReturPayment::where('id', $request->id)->delete();
-
             return "true";
         }catch(\Exception $a){
             return response()->json($a);

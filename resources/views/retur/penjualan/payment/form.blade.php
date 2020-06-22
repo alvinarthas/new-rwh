@@ -127,22 +127,13 @@
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Retur Payment Method</label>
                                 <div class="col-10">
-                                    <select class="form-control select2" parsley-trigger="change" name="payment_method" id="payment_method" onchange="ifSaldo(this.value)" required>
+                                    <select class="form-control select2" parsley-trigger="change" name="payment_method" id="payment_method" required>
                                         <option value="#" disabled>Pilih Method</option>
                                         @foreach ($coas as $coa)
                                             <option value="{{$coa->AccNo}}">{{$coa->AccName}}</option>
                                         @endforeach
                                         <option value="2.1.2">Deposit Customer</option>
                                     </select>
-                                </div>
-                            </div>
-                            <div id="saldo" style="display:none">
-                                <div class="form-group row">
-                                    <label class="col-2 col-form-label">Current Saldo</label>
-                                    <div class="col-10">
-                                        <input type="text" class="form-control" parsley-trigger="change" id="current_saldo" name="current_saldo" value="0" readonly>
-                                        <input type="hidden" id="current_saldoraw" name="current_saldoraw" value="0">
-                                    </div>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -303,26 +294,6 @@
         return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
     }
 
-    function ifSaldo(id){
-        customer = $('#customer_info').val();
-        if(id == "2.1.2"){
-            $.ajax({
-                url : "{{route('checkSaldo')}}",
-                type : "get",
-                dataType: 'json',
-                data:{
-                    customer: customer,
-                },
-            }).done(function (data) {
-                document.getElementById("saldo").style.display = 'block';
-                $('#current_saldo').val(formatNumber(data));
-                $('#current_saldoraw').val(data);
-            }).fail(function (msg) {
-                alert('Gagal menampilkan data, silahkan refresh halaman.');
-            });
-        }
-    }
-
     $("form").submit(function(){
         payamount = parseInt($('#payment_amount').val());
         topaid = parseInt($('#paid').val());
@@ -333,16 +304,7 @@
             toastr.error("Biaya yang akan dibayar melebihi jumlah yang seharusnya dibayar", 'Error!!!')
             event.preventDefault();
         }else{
-            if(method == "2.1.2"){
-                if(payamount > saldo){
-                    toastr.error("Saldo anda tidak cukup untuk melakukan pembayaran", 'Error!!!')
-                    event.preventDefault();
-                }else{
-                    document.getElementById("form").submit();
-                }
-            }else{
-                document.getElementById("form").submit();
-            }
+            document.getElementById("form").submit();
         }
     });
 </script>

@@ -37,7 +37,27 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
-    public function index(){
+    public function index_sodet(){
+        foreach (SalesDet::all() as $key) {
+            $query = SalesDet::where('trx_id',$key->trx_id)->where('prod_id',$key->prod_id)->count();
+            if($query > 1){
+                echo "<hr>";
+                echo "SO.".$key->trx_id." - ".$key->prod_id." : ".$query."<br>";
+            }
+        }
+    }
+
+    public function index_podet(){
+        foreach (PurchaseDetail::all() as $key) {
+            $query = PurchaseDetail::where('trx_id',$key->trx_id)->where('prod_id',$key->prod_id)->count();
+            if($query > 1){
+                echo "<hr>";
+                echo "PO.".$key->trx_id." - ".$key->prod_id." : ".$query."<br>";
+            }
+        }
+    }
+
+    public function indessx(){
         foreach (DeliveryOrder::all() as $key) {
             $sum = 0;
             $price = 0;

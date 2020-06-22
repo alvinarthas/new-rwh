@@ -8,7 +8,7 @@ class ReturPayment extends Model
 {
     protected $table ='tblreturpay';
     protected $fillable = [
-        'trx_id','amount', 'date', 'AccNo', 'description', 'status', 'creator', 'id_jurnal'
+        'trx_id','amount', 'date', 'AccNo', 'description', 'status', 'creator', 'id_jurnal','deduct_category'
     ];
 
     public function creator(){
