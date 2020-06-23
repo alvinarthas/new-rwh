@@ -45,21 +45,25 @@ class MemberController extends Controller
         if($jenis == 1){
             $array = array_values(array_column(DB::select("SELECT ktp FROM perusahaanmember WHERE perusahaan_id = $perusahaan"),'ktp'));
 
-            $datas = Member::whereIn('ktp',$array)->select('id','ktp','nama','scanktp','cetak');
+            $datas = Member::join('bankmember', 'tblmember.ktp', 'bankmember.ktp')->whereIn('tblmember.ktp',$array)->select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak', 'bankmember.norek');
         }elseif ($jenis == 2) {
             $array = array_values(array_column(DB::select("SELECT ktp FROM perusahaanmember WHERE perusahaan_id = $perusahaan"),'ktp'));
 
-            $datas = Member::whereNotIn('ktp',$array)->select('id','ktp','nama','scanktp','cetak');
+            $datas = Member::join('bankmember', 'tblmember.ktp', 'bankmember.ktp')->whereNotIn('tblmember.ktp',$array)->select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak', 'bankmember.norek');
         }elseif($jenis==3 || $jenis==null){
-            $datas = Member::select('id','ktp','nama','scanktp','cetak');
+            // $datas = Member::select('id','ktp','nama','scanktp','cetak');
+            $datas = Member::join('bankmember', 'tblmember.ktp', 'bankmember.ktp')->select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak','bankmember.norek');
         }elseif ($jenis == 4) {
             $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember WHERE bank_id =$bank"),'ktp'));
 
-            $datas = Member::whereIn('ktp',$array)->select('id','ktp','nama','scanktp','cetak');
+            // $datas = Member::whereIn('ktp',$array)->select('id','ktp','nama','scanktp','cetak');
+
+            $datas = Member::join('bankmember', 'tblmember.ktp', 'bankmember.ktp')->whereIn('tblmember.ktp',$array)->select('tblmember.id','tblmember.ktp','tblmember.nama','tblmember.scanktp','tblmember.cetak', 'bankmember.norek');
         }
 
         if($keyword <> ''){
-            $datas = $datas->where('nama','LIKE',$keyword.'%')->OrWhere('ktp','LIKE',$keyword.'%');
+            // $datas = $datas->where('nama','LIKE',$keyword.'%')->OrWhere('ktp','LIKE',$keyword.'%');
+            $datas = $datas->where('tblmember.nama','LIKE',$keyword.'%')->OrWhere('tblmember.ktp','LIKE',$keyword.'%')->orWhere('bankmember.norek', 'LIKE', $keyword.'%');
         }
 
         $datas = $datas->orderBy('nama')->paginate(10);
