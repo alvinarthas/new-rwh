@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use App\MenuMapping;
 use App\Coa;
 use App\Log;
+use App\Saldo;
 
 class ReturPenjualanController extends Controller
 {
@@ -59,27 +60,6 @@ class ReturPenjualanController extends Controller
     {
         $customer = Customer::orderBy('apname', 'asc')->get();
         return view('retur.penjualan.nota.indexCreate', compact('customer'));
-    }
-
-    public function createReturPayment()
-    {
-        //
-    }
-
-    public function createReturDelivery()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
     }
 
     /**
@@ -140,8 +120,9 @@ class ReturPenjualanController extends Controller
         $ttl_order = ReturDetail::where('trx_id',$id)->sum(DB::raw('qty * harga'));
         $coas = Coa::where('StatusAccount','Detail')->where('AccNo','LIKE','1.1.1.2.%')->orWhere('AccNo','LIKE','1.1.1.1.%')->orWhere('AccNo','LIKE','2.5%')->orWhere('AccNo','LIKE','1.10.%')->orderBy('AccName','asc')->get();
         $payment = ReturPayment::where('trx_id', $id)->get();
+        $page = MenuMapping::getMap(session('user_id'),"RJSP");
 
-        return view('retur.penjualan.payment.form', compact('retur', 'details', 'ttl_pay', 'ttl_order', 'coas', 'payment'));
+        return view('retur.penjualan.payment.form', compact('retur', 'details', 'ttl_pay', 'ttl_order', 'coas', 'payment','page'));
     }
 
     public function editReturDelivery($id)
@@ -264,9 +245,81 @@ class ReturPenjualanController extends Controller
 
     public function updateReturPayment(Request $request, $id)
     {
-        echo "<pre>";
-        print_r($request->all());
-        die();
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'trx_id' => 'required',
+            'payment_amount' => 'required',
+            'payment_method' => 'required',
+            'date' => 'required',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            $id_jurnal = Jurnal::getJurnalID('RK');
+
+            $rest = $request->paid - $request->payment_amount;
+            $returJual = Retur::where('id',$request->trx_id)->first();
+
+            // Jurnal
+            $jurnal_desc = $returJual->id_jurnal;
+
+            $payment = new ReturPayment(array(
+                'trx_id' => $request->trx_id,
+                'date' => $request->date,
+                'amount' => $request->payment_amount,
+                'status' => 0,
+                'deduct_category' => $request->payment_deduction,
+                'creator' => session('user_id'),
+                'AccNo' => $request->payment_method,
+                'description' => $request->payment_description,
+                'deduct_amount' =>$request->deduct_amount,
+                'id_jurnal' => $id_jurnal,
+            ));
+
+            $amount = $request->payment_amount - $request->deduct_amount;
+
+            try {
+                // Jurnal Debet kas/bank
+                    Jurnal::addJurnal($id_jurnal,$amount,$request->date,$jurnal_desc,$request->payment_method,'Credit');
+
+                if($request->payment_deduction != "No_Deduction"){
+                    // Jurnal Biaya Transfer Bank
+                    Jurnal::addJurnal($id_jurnal,$request->deduct_amount,$request->date,$jurnal_desc,$request->payment_deduction,'Debet');
+                }
+
+                // Jurnal Credit piutang konsumen
+                    Jurnal::addJurnal($id_jurnal,$request->payment_amount,$request->date,$jurnal_desc,'1.1.3.1','Debet');
+
+                // Payment
+                $payment->save();
+
+                if($rest == 0){
+                    $returJual->status_bayar = 1;
+
+                    $returJual->save();
+                }
+
+                if($request->payment_method == "2.1.2"){
+                    $saldo = new Saldo(array(
+                        'customer_id' => $returJual->customer,
+                        'status' => 1,
+                        'amount' => $request->payment_amount,
+                        'keterangan' => "Retur Sales Payment: ".$returJual->id_jurnal,
+                        'creator' => session('user_id'),
+                        'tanggal' => $request->date,
+                        'id_jurnal' => $id_jurnal,
+                    ));
+                    $saldo->save();
+                }
+
+                Log::setLog('RBPPC','Create Retur Sales Payment Jurnal ID: '.$id_jurnal);
+                return redirect()->back()->with('status', 'Data berhasil dibuat');
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors($e->getMessage());
+            }
+        }
     }
 
     public function updateReturDelivery(Request $request, $id)
@@ -356,10 +409,8 @@ class ReturPenjualanController extends Controller
     {
         try{
             $data = ReturPayment::where('id', $request->id)->first();
-            Jurnal::where('id_jurnal',$data->id_jurnal)->delete();
             Log::setLog('RJSPD','Delete Retur Sales Payment Jurnal ID: '.$data->id_jurnal);
-            ReturPayment::where('id', $request->id)->delete();
-
+            Jurnal::where('id_jurnal',$data->id_jurnal)->delete();
 
             return "true";
         }catch(\Exception $a){
@@ -368,9 +419,6 @@ class ReturPenjualanController extends Controller
     }
 
     public function destroyReturDelivery(Request $request){
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
         $id_jurnal = $request->jurnal_id;
         try {
             Jurnal::where('id_jurnal',$id_jurnal)->delete();

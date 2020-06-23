@@ -127,22 +127,13 @@
                             <div class="form-group row">
                                 <label class="col-2 col-form-label">Retur Payment Method</label>
                                 <div class="col-10">
-                                    <select class="form-control select2" parsley-trigger="change" name="AccNo" id="AccNo" onchange="ifSaldo(this.value)" required>
+                                    <select class="form-control select2" parsley-trigger="change" name="AccNo" id="AccNo" required>
                                         <option value="#" disabled>Pilih Method</option>
                                         @foreach ($coas as $coa)
                                             <option value="{{$coa->AccNo}}">{{$coa->AccName}}</option>
                                         @endforeach
                                         <option value="1.1.3.3">Deposit Pembelian</option>
                                     </select>
-                                </div>
-                            </div>
-                            <div id="deposit" style="display:none">
-                                <div class="form-group row">
-                                    <label class="col-2 col-form-label">Retur Saldo Deposit Pembelian</label>
-                                    <div class="col-10">
-                                        <input type="text" class="form-control" parsley-trigger="change" id="deposit_amount" value="0">
-                                        <input type="hidden" class="form-control" parsley-trigger="change" id="deposit_amountraw" name="deposit_amount" value="0">
-                                    </div>
                                 </div>
                             </div>
                             <div id="saldo"></div>
@@ -311,30 +302,6 @@
         return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
     }
 
-    function ifSaldo(id){
-        supplier = $('#supplier').val();
-        if(id == "1.1.3.3"){
-            $.ajax({
-                url : "{{route('checkDeposit')}}",
-                type : "get",
-                dataType: 'json',
-                data:{
-                    supplier: supplier,
-                },
-            }).done(function (data) {
-                document.getElementById("deposit").style.display = 'block';
-                $('#deposit_amount').val(formatNumber(data));
-                $('#deposit_amountraw').val(data);
-            }).fail(function (msg) {
-                alert('Gagal menampilkan data, silahkan refresh halaman.');
-            });
-        }else{
-            document.getElementById("deposit").style.display='none';
-            $('#deposit_amount').val(formatNumber(0));
-            $('#deposit_amountraw').val(0);
-        }
-    }
-
     $("form").submit(function(){
         payamount = parseInt($('#payment_amount').val());
         topaid = parseInt($('#paid').val());
@@ -345,16 +312,7 @@
             toastr.error("Biaya yang akan dibayar melebihi jumlah yang seharusnya dibayar", 'Error!!!')
             event.preventDefault();
         }else{
-            if(method == "1.1.3.3"){
-                if(payamount > saldo){
-                    toastr.error("Saldo anda tidak cukup untuk melakukan pembayaran", 'Error!!!')
-                    event.preventDefault();
-                }else{
-                    document.getElementById("form").submit();
-                }
-            }else{
-                document.getElementById("form").submit();
-            }
+            document.getElementById("form").submit();
         }
     });
 </script>

@@ -11,7 +11,7 @@ class Retur extends Model
 {
     protected $table ='tblretur';
     protected $fillable = [
-        'tgl','customer', 'supplier', 'status', 'creator'
+        'tgl','customer', 'supplier', 'status', 'creator','id_jurnal','status_bayar'
     ];
 
     public function customer(){

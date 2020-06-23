@@ -192,7 +192,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('/returbeli/payment/index', 'ReturPembelianController@indexReturPayment')->name('returbeli.indexpayment');
         Route::get('/returbeli/payment/edit/{id}', 'ReturPembelianController@editReturPayment')->name('returbeli.editpayment');
         Route::post('/returbeli/payment/edit/{id}', 'ReturPembelianController@updateReturPayment')->name('returbeli.updatepayment');
-        Route::get('/returbeli/payment/destroy','ReturPembelianController@destroyReturPayment')->name('returbeli.destroypayment');
+        Route::get('/returbeli/payment/destroy','ReturPembelianController@destroyPayment')->name('returbeli.destroypayment');
         Route::get('/returbeli/receive/index', 'ReturPembelianController@indexReturReceive')->name('returbeli.indexreceive');
         Route::get('/returbeli/receive/edit/{id}', 'ReturPembelianController@editReturReceive')->name('returbeli.editreceive');
         Route::post('/returbeli/receive/edit/{id}', 'ReturPembelianController@updateReturReceive')->name('returbeli.updatereceive');
@@ -205,7 +205,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('/returjual/payment/index', 'ReturPenjualanController@indexReturPayment')->name('returjual.indexpayment');
         Route::get('/returjual/payment/edit/{id}', 'ReturPenjualanController@editReturPayment')->name('returjual.editpayment');
         Route::post('/returjual/payment/edit/{id}', 'ReturPenjualanController@updateReturPayment')->name('returjual.updatepayment');
-        Route::get('/returjual/payment/destroy','ReturPenjualanController@destroyReturPayment')->name('returjual.destroypayment');
+        Route::get('/returjual/payment/destroy','ReturPenjualanController@destroyPayment')->name('returjual.destroypayment');
         Route::get('/returjual/delivery/index', 'ReturPenjualanController@indexReturDelivery')->name('returjual.indexdelivery');
         Route::get('/returjual/delivery/edit/{id}', 'ReturPenjualanController@editReturDelivery')->name('returjual.editdelivery');
         Route::post('/returjual/delivery/edit/{id}', 'ReturPenjualanController@updateReturDelivery')->name('returjual.updatedelivery');
