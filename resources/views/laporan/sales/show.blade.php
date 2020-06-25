@@ -67,8 +67,8 @@
                                 <tr>
                                     <td>{{ $i }}</td>
                                     <td>{{ $rep2['customer'] }}</td>
-                                    <td>Rp {{ number_format($rep2['bv'],2,',','.') }}</td>
-                                    <td>Rp {{ number_format($rep2['price'],2,',','.') }}</td>
+                                    <td>{{ $rep2['bv'] }}</td>
+                                    <td>{{ $rep2['price'] }}</td>
                                 </tr>
                                 @php($i++)
                             @endforeach
@@ -84,7 +84,14 @@
 <script>
     jQuery(document).ready(function() {
         $(".divide").divide();
-        $('#datatable').DataTable();
+        $('#datatable').DataTable({
+            "columns": [
+                { "data": "no"},
+                { "data": "customer"},
+                { "data": "bv", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' )},
+                { "data": "price", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' ) },
+            ],
+        });
     });
     $("#morris-bar-stacked").css("height","700");
     var count = $("#count").val();
