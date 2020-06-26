@@ -60,38 +60,38 @@
                     <div class="card-box table-responsive">
                         <table id="responsive-datatable2" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                             <thead>
-                                <th>No</th>
-                                <th>PO ID</th>
-                                <th>Receive ID</th>
+                                <th>Transaction ID</th>
+                                <th>RP ID</th>
+                                <th>Supplier</th>
                                 <th>Product ID</th>
                                 <th>Product Name</th>
                                 <th>Qty</th>
                                 <th>Unit</th>
-                                <th>Option</th>
+                                <th>Qty Receive</th>
                             </thead>
                             <tbody>
                                 @csrf
                                 @php($i=1)
                                 @foreach ($lists as $list)
                                     <tr>
-                                        <td>{{$i++ }}</td>
-                                        <td>PO.{{$list->trx_id}}</td>
-                                        <td>{{$list->id_jurnal }}</td>
+                                        <td><a href="{{route('receiveProdDet',['trx_id'=>$list->trx_id])}}" class="btn btn-primary btn-trans waves-effect w-xs waves-danger m-b-5 ">PO.{{$list->trx_id}}</a></td>
+                                        <td>{{$list->rp_id}}</td>
+                                        <td>{{$list->supplier}}</td>
                                         <td>{{$list->prod_id}}</td>
                                         <td>{{$list->prod_name}}</td>
-                                        @if ($list->qty == 0)
-                                            <td><a href="javascrip:;" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qty}}</a></td>
-                                        @elseif(($list->qty-$list->qtypur) == 0 )
-                                            <td><a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qty}}</a></td>
-                                        @elseif(($list->qty-$list->qtypur) < 0 )
-                                            <td><a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qty}}</a></td>
-                                        @elseif(($list->qty-$list->qtypur) > 0 )
-                                            <td><a href="javascrip:;" class="btn btn-custom btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qty}}</a></td>
+                                        <td>{{$list->qty}}</td>
+                                        <td>{{$list->unit}}</td>
+                                        @if ($list->qtyrec == 0)
+                                            <td><a href="javascrip:;" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                                        @elseif(($list->qtyrec-$list->qty) == 0 )
+                                            <td><a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                                        @elseif(($list->qtyrec-$list->qty) < 0 )
+                                            <td><a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                                        @elseif(($list->qtyrec-$list->qty) > 0 )
+                                            <td><a href="javascrip:;" class="btn btn-custom btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
                                         @else
-                                            <td><a href="javascrip:;" class="btn btn-info btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qty}}</a></td>
+                                            <td><a href="javascrip:;" class="btn btn-info btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
                                         @endif
-                                        <td>{{ $list->unit }}</td>
-                                        <td><a href="{{route('receiveProdDet',['trx_id'=>$list->trx_id])}}" class="btn btn-primary btn-trans waves-effect w-xs waves-danger m-b-5 ">Atur </a></td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -106,7 +106,14 @@
 <script>
 // Responsive Datatable
 $('#responsive-datatable').DataTable();
-$('#responsive-datatable2').DataTable();
+$('#responsive-datatable2').DataTable({
+    "columnDefs": [
+        {
+            "targets": [ 1 ],
+            "visible": false,
+        },
+    ]
+});
 
 function deletePurchase(id){
     var token = $("meta[name='csrf-token']").attr("content");

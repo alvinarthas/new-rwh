@@ -131,7 +131,7 @@ Form Receive Item
                         <select class="form-control select2" parsley-trigger="change" name="select_product" id="select_product" required>
                             <option value="#" disabled selected>Pilih Product</option>
                             @foreach ($producttrx as $product)
-                                <option value="{{$product->prod_id}}">{{$product->prod_id}} - {{$product->product->name}}</option>
+                                <option value="{{$product->id}}">{{$product->prod_id}} - {{$product->product->name}} (Rp {{ number_format($product->price, 2, ",", ".") }})</option>
                             @endforeach
                         </select>
                     </div>

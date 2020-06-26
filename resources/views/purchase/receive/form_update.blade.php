@@ -102,7 +102,7 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
                                         <select class="form-control select2" parsley-trigger="change" name="select_product" id="select_product" required>
                                             <option value="#" disabled selected>Pilih Product</option>
                                             @foreach ($producttrx as $product)
-                                                <option value="{{$product->prod_id}}">{{$product->prod_id}} - {{$product->product->name}}</option>
+                                                <option value="{{$product->id}}">{{$product->prod_id}} - {{$product->product->name}}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -169,6 +169,7 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
                     </div>
                 </div>
             </div>
+            <a type="hidden" id="refresh" href="{{route('receiveProdDet',['trx_id'=>$receive[0]->trx_id])}}"></a>
         </div>
     </div>
 </div>
@@ -226,7 +227,9 @@ function deleteItem(id){
                 'Your file has been deleted.',
                 'success'
             )
-            location.reload();
+            var route = document.getElementById("refresh");
+            console.log(route);
+            window.location.assign(route);
         }).fail(function (msg) {
             swal(
                 'Failed',
