@@ -37,13 +37,12 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
-    public function index_sodet(){
-        foreach (SalesDet::all() as $key) {
-            $query = SalesDet::where('trx_id',$key->trx_id)->where('prod_id',$key->prod_id)->count();
-            if($query > 1){
-                echo "<hr>";
-                echo "SO.".$key->trx_id." - ".$key->prod_id." : ".$query."<br>";
-            }
+    public function index(){
+        foreach (ReceiveDet::select('id','prod_id','trx_id')->get() as $key) {
+            $purchaseDet = PurchaseDetail::where('prod_id',$key->prod_id)->where('trx_id',$key->trx_id)->first();
+
+            $key->purchase_detail_id = $purchaseDet->id;
+            $key->save();
         }
     }
 

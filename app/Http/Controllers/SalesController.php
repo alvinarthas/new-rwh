@@ -196,7 +196,7 @@ class SalesController extends Controller
         // Validation success
         }else{
             if($request->method <> 0){
-                $count_trx = Sales::where('method',$request->method)->count();
+                $count_trx = Sales::where('method',$request->method)->orderBy('online_id','desc')->first()->online_id;
                 $online_id = $count_trx+1;
             }else{
                 $online_id = 0;
