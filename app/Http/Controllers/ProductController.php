@@ -22,6 +22,8 @@ use App\Log;
 use App\KonversiDetail;
 use App\Retur;
 use App\ReturDetail;
+use App\Gudang;
+use App\ReturStock;
 
 class ProductController extends Controller
 {
@@ -299,11 +301,12 @@ class ProductController extends Controller
                     'trx_id'  => $trx_id,
                     'status'  => $status,
                     'qty'     => $p->qty,
+                    'gudang' => '',
                 );
                 array_push($result, $stock);
             }
 
-            $ri = ReceiveDet::join('tblpotrx', 'tblreceivedet.trx_id', 'tblpotrx.id')->where('prod_id', $product->prod_id)->select('id_jurnal', 'receive_date', 'qty')->get();
+            $ri = ReceiveDet::join('tblpotrx', 'tblreceivedet.trx_id', 'tblpotrx.id')->where('prod_id', $product->prod_id)->select('id_jurnal', 'receive_date', 'qty','gudang_id')->get();
 
             foreach($ri AS $p){
                 $tgl = $p['receive_date'];
@@ -316,6 +319,7 @@ class ProductController extends Controller
                     'trx_id'  => $trx_id,
                     'status'  => $status,
                     'qty'     => $p->qty,
+                    'gudang' => $p->gudang->nama,
                 );
                 array_push($result, $stock);
             }
@@ -342,20 +346,7 @@ class ProductController extends Controller
             $result = array();
             $total = 0;
 
-            // STOCK AWAL, kata bos nggak usah
-            // $stock_awal = Product::where('prod_id',$product->prod_id)->first()->stock;
-            // $total = $total + $stock_awal;
-            // if($stock_awal!=0){
-            //     $stockawal = array(
-            //         'tanggal'   => "",
-            //         'trx_id'    => "Stok Awal",
-            //         'status'    => "IN",
-            //         'qty'       => $stock_awal,
-            //     );
-            //     array_push($result, $stockawal);
-            // }
-
-            $ri = ReceiveDet::join('tblpotrx', 'tblreceivedet.trx_id', 'tblpotrx.id')->where('prod_id', $product->prod_id)->select('id_jurnal', 'receive_date', 'qty')->get();
+            $ri = ReceiveDet::join('tblpotrx', 'tblreceivedet.trx_id', 'tblpotrx.id')->where('prod_id', $product->prod_id)->select('id_jurnal', 'receive_date', 'qty','gudang_id')->get();
 
             foreach($ri AS $p){
                 $tgl = $p['receive_date'];
@@ -368,6 +359,7 @@ class ProductController extends Controller
                     'trx_id'  => $trx_id,
                     'status'  => $status,
                     'qty'     => $p->qty,
+                    'gudang'     => $p->gudang->nama,
                 );
                 array_push($result, $stock);
             }
@@ -385,6 +377,7 @@ class ProductController extends Controller
                     'trx_id'  => $trx_id,
                     'status'  => $status,
                     'qty'     => $d->qty,
+                    'gudang'     => $p->gudang->nama,
                 );
                 array_push($result, $stock);
             }
@@ -418,8 +411,18 @@ class ProductController extends Controller
             array_multisort($date, SORT_DESC, $result);
 
             $konversidetail = KonversiDetail::where('product_id',$product->prod_id)->get();
-            // return view('product.controlling.mutasi_produk', compact('product','result', 'total'));
-            return response()->json(view('product.controlling.modal',compact('product','result','total','modal','konversidetail'))->render());
+
+            // Gudang Count
+            $gudangs = Gudang::select('id','nama')->get();
+            foreach ($gudangs as $key) {
+                $qty_receive = ReceiveDet::where('prod_id',$product->prod_id)->where('gudang_id',$key->id)->sum('qty');
+                $qty_delivered = DeliveryDetail::where('product_id',$product->prod_id)->where('gudang_id',$key->id)->sum('qty');
+                $qty_konversi = KonversiDetail::getTotalGudang($product->prod_id,$key->id);
+                $qty_retur_beli = ReturStock::totalGudang(0,$key->id,$product->prod_id);
+                $qty_retur_jual = ReturStock::totalGudang(1,$key->id,$product->prod_id);
+                $key->qty = ($qty_receive-$qty_delivered)+$qty_konversi+($qty_retur_beli-$qty_retur_jual);
+            }
+            return response()->json(view('product.controlling.modal',compact('product','result','total','modal','konversidetail','gudangs'))->render());
         }else{
             $products = Product::all();
 
@@ -449,11 +452,12 @@ class ProductController extends Controller
                     'status'  => $status,
                     'qty'     => $s->qty,
                     'customer' => $customer,
+                    'gudang' => '',
                 );
                 array_push($result, $stock);
             }
 
-            $do = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->join('tblproducttrx', 'delivery_order.sales_id', 'tblproducttrx.id')->where('product_id', $product->prod_id)->select('delivery_order.jurnal_id', 'delivery_order.date', 'delivery_detail.qty', 'tblproducttrx.customer_id')->get();
+            $do = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->join('tblproducttrx', 'delivery_order.sales_id', 'tblproducttrx.id')->where('product_id', $product->prod_id)->select('delivery_order.jurnal_id', 'delivery_order.date', 'delivery_detail.qty', 'tblproducttrx.customer_id','delivery_detail.gudang_id')->get();
 
             foreach($do AS $d){
                 $tgl = $d['date'];
@@ -468,6 +472,7 @@ class ProductController extends Controller
                     'status'  => $status,
                     'qty'     => $d->qty,
                     'customer' => $customer,
+                    'gudang' => $d->gudang->nama,
                 );
                 array_push($result, $stock);
             }

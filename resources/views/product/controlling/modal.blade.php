@@ -4,6 +4,14 @@
             <h4 class="text-dark">Product ID: <strong>{{$product->prod_id}}</strong> <h4>
             <h4 class="text-dark">Product Name: <strong>{{$product->name}}</strong> <h4>
             <h4 class="text-dark">Supplier : <strong>{{$product->supplier}}</strong> <h4>
+
+            @isset($gudangs)
+            <hr>
+                @foreach ($gudangs as $gds)
+                    <h4 class="text-dark">{{$gds->nama}}: <strong>{{$gds->qty}}</strong> <h4>
+                @endforeach
+            <hr>
+            @endisset
         </div>
     </div>
     <hr>
@@ -58,6 +66,7 @@
                         @endisset
                         <th>Status</th>
                         <th>Jumlah</th>
+                        <th>Gudang</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -74,6 +83,7 @@
                         @endisset
                         <td>{{ $r['status'] }}</td>
                         <td>{{ $r['qty'] }}</td>
+                        <td>{{ $r['gudang'] }}</td>
                     </tr>
                     @php
                         $i++;

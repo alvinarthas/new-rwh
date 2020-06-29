@@ -374,6 +374,7 @@ class ReturPenjualanController extends Controller
                         'id_jurnal' => $id_jurnal,
                         'status' => 1,
                         'creator' => session('user_id'),
+                        'gudang_id' => $request->gudang[$i],
                     ));
 
                     $stock->save();

@@ -346,6 +346,7 @@ class ReturPembelianController extends Controller
                         'creator' => session('user_id'),
                         'status' => 0,
                         'id_jurnal' => $id_jurnal,
+                        'gudang_id' => $request->gudang[$i],
                     ));
 
                     $receive->save();

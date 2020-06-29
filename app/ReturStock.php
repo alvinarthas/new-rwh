@@ -45,4 +45,10 @@ class ReturStock extends Model
 
         return $data;
     }
+
+    public static function totalGudang($jenis,$gudang,$product){
+        $retur = ReturStock::where('prod_id',$product)->where('status',$jenis)->where('gudang_id',$gudang)->sum('qty');
+
+        return $retur;
+    }
 }

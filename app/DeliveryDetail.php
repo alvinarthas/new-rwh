@@ -16,7 +16,7 @@ class DeliveryDetail extends Model
     }
 
     public function gudang(){
-        return $this->belongsTo('App\Gudang','gudang_id','id');
+        return $this->belongsTo('App\Gudang');
     }
 
     public function product(){

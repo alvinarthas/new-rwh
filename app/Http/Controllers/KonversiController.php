@@ -96,6 +96,7 @@ class KonversiController extends Controller
             'qtyChild' => 'required|array',
             'supplierKonversi' => 'required',
             'count' => 'required',
+            'gudang' => 'required',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -118,6 +119,7 @@ class KonversiController extends Controller
                         'product_id' => $request->productParent[$i],
                         'status' => 0,
                         'qty' => $request->qtyParent[$i],
+                        'gudang_id' => $request->gudang,
                     ));
                     $konversiDetailParent->save();
 
@@ -126,6 +128,7 @@ class KonversiController extends Controller
                         'product_id' => $request->productChild[$i],
                         'status' => 1,
                         'qty' => $request->qtyChild[$i],
+                        'gudang_id' => $request->gudang,
                     ));
                     $konversiDetailChild->save();
                 }
@@ -206,6 +209,7 @@ class KonversiController extends Controller
                             'product_id' => $request->productParent[$i],
                             'status' => 0,
                             'qty' => $request->qtyParent[$i],
+                            'gudang_id' => $request->gudang,
                         ));
                         $konversiDetailParent->save();
 
@@ -214,6 +218,7 @@ class KonversiController extends Controller
                             'product_id' => $request->productChild[$i],
                             'status' => 0,
                             'qty' => $request->qtyChild[$i],
+                            'gudang_id' => $request->gudang,
                         ));
                         $konversiDetailChild->save();
                     }
