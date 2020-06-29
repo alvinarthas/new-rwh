@@ -159,6 +159,8 @@ Route::middleware(['checkUser'])->group(function () {
         'ecommerce' => 'EcommerceController',
         // Piutang
         'piutang' => 'PiutangController',
+        // Gudang
+        'gudang' => 'GudangController',
     ]);
 
     // Member
