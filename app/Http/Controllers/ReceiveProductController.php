@@ -22,9 +22,6 @@ class ReceiveProductController extends Controller
     }
 
     public function view(Request $request){
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
         if ($request->ajax()) {
             $jurnal_id = $request->ri_id;
             $receives = ReceiveDet::where('id_jurnal',$jurnal_id)->get();
@@ -58,7 +55,7 @@ class ReceiveProductController extends Controller
     public function detail(Request $request){
         $trx = Purchase::where('id',$request->trx_id)->first();
         $details = json_decode (json_encode (ReceiveDet::detailPurchase($request->trx_id)), FALSE);
-        $producttrx = PurchaseDetail::where('trx_id',$request->trx_id)->select('prod_id')->get();
+        $producttrx = PurchaseDetail::where('trx_id',$request->trx_id)->select('id','prod_id', 'price')->get();
         $page = MenuMapping::getMap(session('user_id'),"PURP");
         $receives = ReceiveDet::where('trx_id',$request->trx_id)->groupBy('id_jurnal')->get();
 
@@ -68,14 +65,16 @@ class ReceiveProductController extends Controller
     public function addBrgReceive(Request $request){
         $qty = $request->qty;
         $count = $request->count+1;
-        $product = $request->select_product;
+        $purdet_id = $request->select_product;
         $expired = $request->expired;
 
-        $product = Product::where('prod_id',$product)->first();
+        $purdet = PurchaseDetail::where('id', $purdet_id)->select('prod_id')->first();
+
+        $product = Product::where('prod_id',$purdet->prod_id)->first();
 
         $append = '<tr style="width:100%" id="trow'.$count.'">
         <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$product->prod_id.'">'.$product->prod_id.'</td>
-        <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$product->name.'">'.$product->name.'</td>
+        <td><input type="hidden" name="purdet_id[]" id="purdet_id'.$count.'" value="'.$purdet_id.'">'.$product->name.'</td>
         <td><input type="hidden" name="qty[]" value="'.$qty.'" id="qty'.$count.'">'.$qty.'</td>
         <td><input type="hidden" name="expired_date[]" value="'.$expired.'" id="expired_date'.$count.'">'.$expired.'</td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
@@ -94,6 +93,7 @@ class ReceiveProductController extends Controller
         $validator = Validator::make($request->all(), [
             'trx_id' => 'required',
             'prod_id' => 'required|array',
+            'purdet_id' => 'required|array',
             'qty' => 'required|array',
             'receive_date' => 'required|date',
         ]);
@@ -108,7 +108,7 @@ class ReceiveProductController extends Controller
                 $count = count($request->prod_id);
 
                 for($i=0; $i < $count; $i++){
-                    $pricedet = PurchaseDetail::where('trx_id',$request->trx_id)->where('prod_id',$request->prod_id[$i])->first()->price;
+                    $pricedet = PurchaseDetail::where('id',$request->purdet_id[$i])->first()->price;
                     $price += $pricedet * $request->qty[$i];
                 }
 
@@ -124,6 +124,7 @@ class ReceiveProductController extends Controller
                     $receive = new ReceiveDet(array(
                         'trx_id' => $request->trx_id,
                         'prod_id' => $request->prod_id[$i],
+                        'purchasedetail_id' => $request->purdet_id[$i],
                         'qty' => $request->qty[$i],
                         'expired_date' => $request->expired_date[$i],
                         'creator' => session('user_id'),
@@ -145,16 +146,12 @@ class ReceiveProductController extends Controller
     public function edit($id)
     {
         $receive = ReceiveDet::where('id_jurnal', $id)->get();
-        $producttrx = PurchaseDetail::where('trx_id',$receive[0]->trx_id)->select('prod_id')->get();
+        $producttrx = PurchaseDetail::where('trx_id',$receive[0]->trx_id)->select('id', 'prod_id', 'price')->get();
 
         return view('purchase.receive.form_update', compact('receive', 'producttrx'));
     }
 
     public function update($id, Request $request){
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
-
         // Validate
         $validator = Validator::make($request->all(), [
             'receive_date' => 'required|date',
@@ -193,7 +190,6 @@ class ReceiveProductController extends Controller
     }
 
     public function addProduct(Request $request){
-
         $validator = Validator::make($request->all(), [
             'trx_id' => 'required',
             'select_product' => 'required',
@@ -206,23 +202,29 @@ class ReceiveProductController extends Controller
         // Validation success
         }else{
             try{
+                $product = PurchaseDetail::where('id', $request->select_product)->first();
+
                 $receive = new ReceiveDet(array(
                     'trx_id' => $request->trx_id,
-                    'prod_id' => $request->select_product,
+                    'prod_id' => $product->prod_id,
+                    'purchasedetail_id' => $request->select_product,
                     'qty' => $request->qty,
                     'expired_date' => $request->expired_date,
                     'creator' => session('user_id'),
                     'receive_date' => $request->receive_date,
                     'id_jurnal' => $request->id_jurnal,
                 ));
+
                 $receive->save();
                 $price = 0;
 
                 $datas = ReceiveDet::where('id_jurnal', $request->id_jurnal)->get();
+
                 foreach($datas as $data){
-                    $pricedet = PurchaseDetail::where('trx_id',$data->trx_id)->where('prod_id',$data->prod_id)->first()->price;
+                    $pricedet = PurchaseDetail::where('id', $data->purchasedetail_id)->first()->price;
                     $price += $pricedet * $data->qty;
                 }
+
                 $debet = Jurnal::where('id_jurnal',$request->id_jurnal)->where('AccPos', 'Debet')->first();
                 $debet->amount = $price;
                 $debet->update();
@@ -241,9 +243,6 @@ class ReceiveProductController extends Controller
     }
 
     public function delete(Request $request){
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
         // $receive = ReceiveDet::where('id_jurnal',$request->jurnal_id)->get();
         $id_jurnal = $request->jurnal_id;
         // $trx_id = $receive->trx_id;
@@ -258,36 +257,39 @@ class ReceiveProductController extends Controller
     }
 
     public function deleteProd(Request $request){
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
         $receive = ReceiveDet::where('id',$request->id)->first();
         $id_jurnal = $receive->id_jurnal;
         $idr = $request->id;
 
         try {
+            $receive->delete();
+
             $price = 0;
-            $datas = ReceiveDet::where('id_jurnal', $id_jurnal)->where('id', '!=', $idr)->get();
+            $datas = ReceiveDet::where('id_jurnal', $id_jurnal)->get();
 
             if(!empty($datas)){
                 foreach($datas as $data){
-                    $pricedet = PurchaseDetail::where('trx_id',$data->trx_id)->where('prod_id',$data->prod_id)->first()->price;
+                    $pricedet = PurchaseDetail::where('id', $data->purchasedetail_id)->first()->price;
                     $price += $pricedet * $data->qty;
                 }
-                $debet = Jurnal::where('id_jurnal',$receive->id_jurnal)->where('AccPos', 'Debet')->first();
-                $debet->amount = $price;
-                $debet->update();
 
-                $credit = Jurnal::where('id_jurnal',$receive->id_jurnal)->where('AccPos', 'Credit')->first();
-                $credit->amount = $price;
-                $credit->update();
+                if($price == 0){
+                    Jurnal::where('id_jurnal', $receive->id_jurnal)->delete();
+                }else{
+                    $debet = Jurnal::where('id_jurnal',$receive->id_jurnal)->where('AccPos', 'Debet')->first();
+                    $debet->amount = $price;
+                    $debet->update();
 
+                    $credit = Jurnal::where('id_jurnal',$receive->id_jurnal)->where('AccPos', 'Credit')->first();
+                    $credit->amount = $price;
+                    $credit->update();
+
+                }
                 Log::setLog('PURPD','Delete Receive Product ID='.$idr.', Jurnal ID: '.$id_jurnal);
             }else{
                 Jurnal::where('id_jurnal', $receive->id_jurnal)->delete();
                 Log::setLog('PURPD','Delete Receive Produc Jurnal ID: '.$id_jurnal);
             }
-            $receive->delete();
 
             return "true";
             // return redirect()->back()->with('status', 'Data berhasil dihapus');

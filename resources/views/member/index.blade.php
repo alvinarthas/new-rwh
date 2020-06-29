@@ -69,8 +69,23 @@
             <div class="card-box" id="member-list" style="display:none">
                 <div class="row">
                     <div class="col-12">
+                        <div class="p-20">
+                            <a tabindex="0" class="text-danger col-4" role="button" data-toggle="tooltip" data-placement="bottom" data-trigger="focus" title="nama (spasi) <Nama Member>" data-original-title="">
+                                <i class="fa fa-info-circle"> Petunjuk Mencari Member berdasar Nama</i>
+                            </a>
+                            <a tabindex="0" class="text-inverse col-4" role="button" data-toggle="tooltip" data-placement="bottom" data-trigger="focus" title="nktp (spasi) <No KTP Member>" data-original-title="">
+                                <i class="fa fa-info-circle"></i> Petunjuk Mencari Member berdasar No KTP
+                            </a>
+                            <a tabindex="0" class="text-purple col-4" role="button" data-toggle="tooltip" data-placement="bottom" data-trigger="focus" title="nrek (spasi) <No Rekening Member>" data-original-title="">
+                                <i class="fa fa-info-circle"></i> Petunjuk Mencari Member berdasar No Rekening
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
                         @csrf
-                        <input type="text" class="form-control" name="search" id="search" value="{{ $keyword }}" placeholder="Search..">
+                        <input type="text" class="form-control" name="search" id="search" value="{{ $keyword }}" placeholder="Masukan kata kunci pencarian..">
                     </div>
                 </div>
                 <section class="datas" id="ajxlist">
