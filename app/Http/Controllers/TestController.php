@@ -37,7 +37,17 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
+    public function indexinsertpodettoreceive(){
+        foreach(ReceiveDet::select('id', 'prod_id', 'trx_id')->get() as $key){
+            $purchasedet = PurchaseDetail::where('prod_id', $key->prod_id)->where('trx_id', $key->trx_id)->first();
+
+            $key->purchasedetail_id = $purchasedet->id;
+            $key->save();
+        }
+    }
+
     public function index_sodet(){
+        echo "lelele";
         foreach (SalesDet::all() as $key) {
             $query = SalesDet::where('trx_id',$key->trx_id)->where('prod_id',$key->prod_id)->count();
             if($query > 1){
@@ -48,6 +58,7 @@ class TestController extends Controller
     }
 
     public function index_podet(){
+        echo "lalala";
         foreach (PurchaseDetail::all() as $key) {
             $query = PurchaseDetail::where('trx_id',$key->trx_id)->where('prod_id',$key->prod_id)->count();
             if($query > 1){
