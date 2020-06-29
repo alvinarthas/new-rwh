@@ -8,6 +8,6 @@ class Gudang extends Model
 {
     protected $table ='gudang';
     protected $fillable = [
-        'nama', 'alamat',
+        'nama', 'alamat', 'creator',
     ];
 }

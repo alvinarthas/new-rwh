@@ -11,11 +11,15 @@ class ReceiveDet extends Model
 {
     protected $table ='tblreceivedet';
     protected $fillable = [
-        'trx_id','prod_id','qty','expired_date', 'creator', 'receive_date', 'id_jurnal', 'purchasedetail_id',
+        'trx_id','prod_id','qty','expired_date', 'gudang_id','creator', 'receive_date', 'id_jurnal', 'purchasedetail_id',
     ];
 
     public function prod(){
         return $this->belongsTo('App\Product','prod_id','prod_id');
+    }
+
+    public function gudang(){
+        return $this->belongsTo('App\Gudang','gudang_id','id');
     }
 
     public function creator(){

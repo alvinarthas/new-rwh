@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Ecommerce;
 use App\MenuMapping;
+use App\Log;
 
 class EcommerceController extends Controller
 {
@@ -68,7 +69,7 @@ class EcommerceController extends Controller
                 ));
                 // success
                 $data->save();
-                // Log::setLog('PRPDC','Create Product ID: '.$request->prod_id);
+                Log::setLog('MDECC','Create Ecommerce: '.$request->nama);
                 return redirect()->route('ecommerce.index')->with('status', 'Data berhasil dibuat');
             }catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->errorInfo);
@@ -141,6 +142,7 @@ class EcommerceController extends Controller
 
                 $data->save();
 
+                Log::setLog('MDECU','Update Ecommerce: '.$request->nama);
                 return redirect()->route('ecommerce.index')->with('status', 'Data berhasil diedit');
             }catch (\Exception $e) {
                 return redirect()->back()->withErrors($e->errorInfo);
@@ -160,9 +162,10 @@ class EcommerceController extends Controller
             $data = Ecommerce::where('id', $id)->first();
             $data->delete();
 
-            return redirect()->route('ecommerce.index')->with('status', 'Data berhasil dihapus');
+            Log::setLog('MDECD','Delete Ecommerce: '.$request->nama);
+            return "true";
         }catch (\Exception $e) {
-            return redirect()->back()->withErrors($e->errorInfo);
+            return response()->json($e);
         }
     }
 }

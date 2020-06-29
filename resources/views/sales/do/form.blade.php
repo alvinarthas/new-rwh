@@ -157,6 +157,17 @@ Form Sales Order
                                     <input type="number" min="0" class="form-control" name="qty" id="qty" parsley-trigger="change" required>
                                 </div>
                             </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Gudang</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="gudang" id="gudang" required>
+                                        <option value="#" disabled selected>Pilih Gudang</option>
+                                        @foreach ($gudangs as $gudang)
+                                            <option value="{{$gudang->id}}">{{$gudang->nama}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
                             <div class="form-group text-right m-b-0">
                                 <a href="javascript:;" class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5" onclick="addItem()">Tambah Item</a>
                             </div>
@@ -178,6 +189,7 @@ Form Sales Order
                                         <th>Product ID</th>
                                         <th>Product Name</th>
                                         <th>Qty</th>
+                                        <th>Gudang</th>
                                         <th>Action</th>
                                     </thead>
                                     <tbody id="do-list-body">
@@ -237,6 +249,7 @@ Form Sales Order
         select_product = $('#select_product').val();
         qty = $('#qty').val();
         count = $('#count').val();
+        gudang = $('#gudang').val();
 
         $.ajax({
             url : "{{route('addBrgDo')}}",
@@ -246,6 +259,7 @@ Form Sales Order
                 select_product: select_product,
                 qty: qty,
                 count:count,
+                gudang:gudang,
             },
         }).done(function (data) {
             $('#do-list-body').append(data.append);

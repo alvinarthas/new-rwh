@@ -153,6 +153,17 @@ Form Receive Item
                         </div><!-- input-group -->
                     </div>
                 </div>
+                <div class="form-group row">
+                    <label class="col-2 col-form-label">Gudang</label>
+                    <div class="col-10">
+                        <select class="form-control select2" parsley-trigger="change" name="gudang" id="gudang" required>
+                            <option value="#" disabled selected>Pilih Gudang</option>
+                            @foreach ($gudangs as $gudang)
+                                <option value="{{$gudang->id}}">{{$gudang->nama}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
                 <div class="form-group text-right m-b-0">
                     <a href="javascript:;" class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5" onclick="addItem()">Add Item</a>
                 </div>
@@ -171,6 +182,7 @@ Form Receive Item
                                         <th>Product Name</th>
                                         <th>Qty</th>
                                         <th>Expired Date</th>
+                                        <th>Gudang</th>
                                         <th>Action</th>
                                     </thead>
                                     <tbody id="ri-list-body">
@@ -235,6 +247,7 @@ Form Receive Item
         qty = $('#qty').val();
         count = $('#count').val();
         expired = $('#expired_date').val();
+        gudang = $('#gudang').val();
 
         $.ajax({
             url : "{{route('addBrgReceive')}}",
@@ -245,6 +258,7 @@ Form Receive Item
                 qty: qty,
                 count:count,
                 expired:expired,
+                gudang:gudang,
             },
         }).done(function (data) {
             $('#ri-list-body').append(data.append);

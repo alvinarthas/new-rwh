@@ -8,7 +8,7 @@
 @endsection
 
 @section('judul')
-Tambah Data Perusahaan
+Tambah Data E-Commerce
 @endsection
 
 @section('content')

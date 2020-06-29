@@ -111,6 +111,17 @@ Form Update Delivery Order {{$do->jurnal_id}}
                                         <input type="number" class="form-control" name="qty" id="qty" parsley-trigger="change" required>
                                     </div>
                                 </div>
+                                <div class="form-group row">
+                                    <label class="col-2 col-form-label">Gudang</label>
+                                    <div class="col-10">
+                                        <select class="form-control select2" parsley-trigger="change" name="gudang" id="gudang" required>
+                                            <option value="#" disabled selected>Pilih Gudang</option>
+                                            @foreach ($gudangs as $gudang)
+                                                <option value="{{$gudang->id}}">{{$gudang->nama}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="form-group text-right m-b-0">
                                     <button class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Tambah Item</button>
                                 </div>
@@ -131,6 +142,7 @@ Form Update Delivery Order {{$do->jurnal_id}}
                                     <th>Product ID</th>
                                     <th>Product Name</th>
                                     <th>Qty</th>
+                                    <th>Gudang</th>
                                     <th>Action</th>
                                 </thead>
                                 <tbody id="ri-list-body">
@@ -142,6 +154,7 @@ Form Update Delivery Order {{$do->jurnal_id}}
                                             <td>{{ $detail->product_id }}</td>
                                             <td>{{ $detail->product->name }}</td>
                                             <td>{{ $detail->qty }}</td>
+                                            <td>@isset($detail->gudang->nama){{ $detail->gudang->nama }}@endisset</td>
                                             <td>
                                                 <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem({{ $detail->id }}, {{ $detail->do_id }})" >Delete</a>
                                             </td>

@@ -28,48 +28,41 @@
     <div class="row">
         <div class="col-12">
             <div class="card-box table-responsive">
-                <h4 class="m-t-0 header-title">Index E-commerce</h4>
+                <h4 class="m-t-0 header-title">Index Gudang</h4>
                 <p class="text-muted font-14 m-b-30">
-                    @if (array_search("MDECC",$page))
-                        <a href="{{ route('ecommerce.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah E-Commerce</a>
+                    @if (array_search("MDGDC",$page))
+                        <a href="{{ route('gudang.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Gudang</a>
                     @endif
                 </p>
 
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive wrap" cellspacing="0" width="100%">
                     <thead>
                         <th>No</th>
-                        <th>Nama E-commerce</th>
-                        <th>Kode Transaksi</th>
-                        <th>Logo</th>
+                        <th>Nama Gudang</th>
+                        <th>Alamat</th>
                         <th>Actions</th>
                     </thead>
 
                     <tbody>
                         @php($i = 1)
-                        @foreach($ecommerce as $e)
+                        @foreach($gudang as $g)
                         <tr>
-                            <td>{{$i}}</td>
-                            <td>{{$e->nama}}</td>
-                            <td>{{$e->kode_trx}}</td>
+                            <td>{{$i++}}</td>
+                            <td>{{$g->nama}}</td>
+                            <td>{{$g->alamat}}</td>
                             <td>
-                                <a href="{{ asset('assets/images/ecommerce/'.$e->logo) }}" class="image-popup" alt="user-img" title="{{$e->logo}}">
-                                    <img src="{{ asset('assets/images/ecommerce/'.$e->logo) }}"  alt="user-img" title="{{ $e->logo }}" class="img-thumbnail img-responsive photo">
-                                </a>
-                            </td>
-                            <td>
-                                @if (array_search("MDECU",$page))
+                                @if (array_search("MDGDU",$page))
                                     <div class="row">
-                                        <a href="{{ route('ecommerce.edit', ['id' => $e->id]) }}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
+                                        <a href="{{ route('gudang.edit', ['id' => $g->id]) }}" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5">Edit</a>
                                     </div>
                                 @endif
-                                @if (array_search("MDECD",$page))
+                                @if (array_search("MDGDD",$page))
                                     <div class="row">
-                                        <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" onclick="deleteEcommerce({{$e->id}})">Delete</a>
+                                        <a href="javascript:;" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5" onclick="deleteGudang({{$g->id}})">Delete</a>
                                     </div>
                                 @endif
                             </td>
                         </tr>
-                        @php($i++)
                         @endforeach
                     </tbody>
                 </table>
@@ -112,8 +105,8 @@
         });
 
     });
-
-    function deleteEcommerce(id){
+    
+    function deleteGudang(id){
         var token = $("meta[name='csrf-token']").attr("content");
 
         swal({
@@ -128,7 +121,7 @@
             buttonsStyling: false
         }).then(function () {
             $.ajax({
-                url: "ecommerce/"+id,
+                url: "gudang/"+id,
                 type: 'DELETE',
                 data: {
                     "id": id,

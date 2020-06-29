@@ -20,6 +20,7 @@
                 <th>Product Name</th>
                 <th>Qty</th>
                 <th>Expired Date</th>
+                <th>Gudang</th>
             </thead>
             <tbody>
                 @foreach ($receives as $rec)
@@ -28,6 +29,7 @@
                         <td>{{$rec->prod->name}}</td>
                         <td>{{$rec->qty}}</td>
                         <td>{{$rec->expired_date}}</td>
+                        <td>@isset($rec->gudang->nama){{ $rec->gudang->nama }}@endisset</td>
                     </tr>
                 @endforeach
             </tbody>

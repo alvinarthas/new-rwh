@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+
+use App\MenuMapping;
+use App\Gudang;
+use App\Log;
 
 class GudangController extends Controller
 {
@@ -13,7 +18,10 @@ class GudangController extends Controller
      */
     public function index()
     {
-        //
+        $gudang = Gudang::all();
+        $page = MenuMapping::getMap(session('user_id'),"MDGD");
+
+        return view('gudang.index', compact('gudang', 'page'));
     }
 
     /**
@@ -23,7 +31,7 @@ class GudangController extends Controller
      */
     public function create()
     {
-        //
+        return view('gudang.form');
     }
 
     /**
@@ -34,7 +42,29 @@ class GudangController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'nama' => 'required|string',
+            'alamat' => 'required|string',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            try{
+                $data = new Gudang(array(
+                    'nama' => $request->nama,
+                    'alamat' => $request->alamat,
+                    'creator' => session('user_id'),
+                ));
+                $data->save();
+                Log::setLog('MDGDC','Create Gudang: '.$request->nama);
+                return redirect()->route('gudang.index')->with('status', 'Data berhasil dibuat');
+            }catch (\Exception $e) {
+                return redirect()->back()->withErrors($e->getMessage());
+            }
+        }
     }
 
     /**
@@ -56,7 +86,8 @@ class GudangController extends Controller
      */
     public function edit($id)
     {
-        //
+        $gudang = Gudang::where('id', $id)->first();
+        return view('gudang.form', compact('gudang'));
     }
 
     /**
@@ -68,7 +99,29 @@ class GudangController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        // Validate
+        $validator = Validator::make($request->all(), [
+            'nama' => 'required|string',
+            'alamat' => 'required|string',
+        ]);
+        // IF Validation fail
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        // Validation success
+        }else{
+            try{
+                $data = Gudang::where('id', $id)->first();
+                $data->nama = $request->nama;
+                $data->alamat = $request->alamat;
+                $data->creator = session('user_id');
+                // success
+                $data->save();
+                Log::setLog('MDGDU','Update Data Gudang : '.$request->nama);
+                return redirect()->route('gudang.index')->with('status', 'Data berhasil dibuat');
+            }catch (\Exception $e) {
+                return redirect()->back()->withErrors($e->getMessage());
+            }
+        }
     }
 
     /**
@@ -79,6 +132,15 @@ class GudangController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try{
+            $data = Gudang::where('id', $id)->first();
+            $nama = $data->nama;
+            $data->delete();
+
+            Log::setLog('MDGDD','Delete Gudang: '.$nama);
+            return "true";
+        }catch (\Exception $e) {
+            return response()->json($e);
+        }
     }
 }

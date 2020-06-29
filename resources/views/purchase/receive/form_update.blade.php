@@ -124,6 +124,17 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
                                         </div><!-- input-group -->
                                     </div>
                                 </div>
+                                <div class="form-group row">
+                                    <label class="col-2 col-form-label">Gudang</label>
+                                    <div class="col-10">
+                                        <select class="form-control select2" parsley-trigger="change" name="gudang" id="gudang" required>
+                                            <option value="#" disabled selected>Pilih Gudang</option>
+                                            @foreach ($gudangs as $gudang)
+                                                <option value="{{$gudang->id}}">{{$gudang->nama}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="form-group text-right m-b-0">
                                     <button class="btn btn-danger btn-rounded w-md waves-effect waves-light m-b-5">Tambah Item</button>
                                 </div>
@@ -145,6 +156,7 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
                                     <th>Product Name</th>
                                     <th>Qty</th>
                                     <th>Expired Date</th>
+                                    <th>Gudang</th>
                                     <th>Action</th>
                                 </thead>
                                 <tbody id="ri-list-body">
@@ -157,6 +169,7 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
                                             <td>{{ $rec->prod->name }}</td>
                                             <td>{{ $rec->qty }}</td>
                                             <td>{{ $rec->expired_date }}</td>
+                                            <td>@isset($rec->gudang->nama){{ $rec->gudang->nama }}@endisset</td>
                                             <td>
                                                 <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem({{ $rec->id }})" >Delete</a>
                                             </td>

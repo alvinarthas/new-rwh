@@ -14,6 +14,7 @@ use App\Jurnal;
 use App\MenuMapping;
 use App\Log;
 use App\Product;
+use App\Gudang;
 
 class ReceiveProductController extends Controller
 {
@@ -58,8 +59,9 @@ class ReceiveProductController extends Controller
         $producttrx = PurchaseDetail::where('trx_id',$request->trx_id)->select('id','prod_id', 'price')->get();
         $page = MenuMapping::getMap(session('user_id'),"PURP");
         $receives = ReceiveDet::where('trx_id',$request->trx_id)->groupBy('id_jurnal')->get();
+        $gudangs = Gudang::all();
 
-        return view('purchase.receive.form',compact('trx','details','producttrx','receives','page'));
+        return view('purchase.receive.form',compact('trx','details','producttrx','receives','page', 'gudangs'));
     }
 
     public function addBrgReceive(Request $request){
@@ -67,16 +69,20 @@ class ReceiveProductController extends Controller
         $count = $request->count+1;
         $purdet_id = $request->select_product;
         $expired = $request->expired;
+        $gudang_id = $request->gudang;
 
         $purdet = PurchaseDetail::where('id', $purdet_id)->select('prod_id')->first();
 
         $product = Product::where('prod_id',$purdet->prod_id)->first();
+
+        $gudang = Gudang::where('id', $gudang_id)->first();
 
         $append = '<tr style="width:100%" id="trow'.$count.'">
         <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$product->prod_id.'">'.$product->prod_id.'</td>
         <td><input type="hidden" name="purdet_id[]" id="purdet_id'.$count.'" value="'.$purdet_id.'">'.$product->name.'</td>
         <td><input type="hidden" name="qty[]" value="'.$qty.'" id="qty'.$count.'">'.$qty.'</td>
         <td><input type="hidden" name="expired_date[]" value="'.$expired.'" id="expired_date'.$count.'">'.$expired.'</td>
+        <td><input type="hidden" name="gudang[]" value="'.$gudang_id.'" id="gudang'.$count.'">'.$gudang->nama.'</td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
         </tr>';
 
@@ -96,6 +102,7 @@ class ReceiveProductController extends Controller
             'purdet_id' => 'required|array',
             'qty' => 'required|array',
             'receive_date' => 'required|date',
+            'gudang' => 'required|array',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -127,6 +134,7 @@ class ReceiveProductController extends Controller
                         'purchasedetail_id' => $request->purdet_id[$i],
                         'qty' => $request->qty[$i],
                         'expired_date' => $request->expired_date[$i],
+                        'gudang_id' => $request->gudang[$i],
                         'creator' => session('user_id'),
                         'receive_date' => $request->receive_date,
                         'id_jurnal' => $id_jurnal,
@@ -147,8 +155,9 @@ class ReceiveProductController extends Controller
     {
         $receive = ReceiveDet::where('id_jurnal', $id)->get();
         $producttrx = PurchaseDetail::where('trx_id',$receive[0]->trx_id)->select('id', 'prod_id', 'price')->get();
+        $gudangs = Gudang::all();
 
-        return view('purchase.receive.form_update', compact('receive', 'producttrx'));
+        return view('purchase.receive.form_update', compact('receive', 'producttrx', 'gudangs'));
     }
 
     public function update($id, Request $request){
@@ -195,6 +204,7 @@ class ReceiveProductController extends Controller
             'select_product' => 'required',
             'qty' => 'required',
             'receive_date' => 'required|date',
+            'gudang' => 'required',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -210,6 +220,7 @@ class ReceiveProductController extends Controller
                     'purchasedetail_id' => $request->select_product,
                     'qty' => $request->qty,
                     'expired_date' => $request->expired_date,
+                    'gudang_id' => $request->gudang,
                     'creator' => session('user_id'),
                     'receive_date' => $request->receive_date,
                     'id_jurnal' => $request->id_jurnal,

@@ -22,6 +22,7 @@ use App\DeliveryDetail;
 use App\PurchaseDetail;
 use App\Purchase;
 use App\Log;
+use App\Gudang;
 
 class DeliveryController extends Controller
 {
@@ -53,20 +54,26 @@ class DeliveryController extends Controller
         $dos = DeliveryOrder::where('sales_id',$id)->get();
         $page = MenuMapping::getMap(session('user_id'),"PSDO");
         $products = SalesDet::getProducts($id);
-        return view('sales.do.form',compact('sales','salesdets','dos','page','products'));
+        $gudangs = Gudang::all();
+
+        return view('sales.do.form',compact('sales','salesdets','dos','page','products', 'gudangs'));
     }
 
     public function addBrgDo(Request $request){
         $qty = $request->qty;
         $count = $request->count+1;
         $product = $request->select_product;
+        $gudang_id = $request->gudang;
 
         $product = Product::where('prod_id',$product)->first();
+
+        $gudang = Gudang::where('id', $gudang_id)->first();
 
         $append = '<tr style="width:100%" id="trow'.$count.'">
         <td><input type="hidden" name="prod_id[]" id="prod_id'.$count.'" value="'.$product->prod_id.'">'.$product->prod_id.'</td>
         <td><input type="hidden" name="prod_name[]" id="prod_name'.$count.'" value="'.$product->name.'">'.$product->name.'</td>
         <td><input type="hidden" name="qty[]" value="'.$qty.'" id="qty'.$count.'">'.$qty.'</td>
+        <td><input type="hidden" name="gudang[]" value="'.$gudang_id.'" id="gudang'.$count.'">'.$gudang->nama.'</td>
         <td><a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteItem('.$count.')" >Delete</a></td>
         </tr>';
 
@@ -85,6 +92,7 @@ class DeliveryController extends Controller
             'count' => 'required',
             'prod_id' => 'required|array',
             'qty' => 'required|array',
+            'gudang' => 'required|array',
             'do_date' => 'required|date',
         ]);
         // IF Validation fail
@@ -139,7 +147,8 @@ class DeliveryController extends Controller
                        'do_id' => $do->id,
                        'sales_id' => $request->sales_id,
                        'product_id' => $request->prod_id[$i],
-                       'qty' => $request->qty[$i]
+                       'qty' => $request->qty[$i],
+                       'gudang_id' => $request->gudang[$i],
                     ));
 
                     $dodet->save();
@@ -157,11 +166,9 @@ class DeliveryController extends Controller
         $do = DeliveryOrder::where('id', $id)->first();
         $details = DeliveryDetail::where('do_id', $id)->get();
         $producttrx = SalesDet::where('trx_id', $do->sales_id)->select('prod_id')->get();
-        // echo "<pre>";
-        // print_r($producttrx);
-        // die();
+        $gudangs = Gudang::all();
 
-        return view('sales.do.form_update', compact('do', 'details', 'producttrx'));
+        return view('sales.do.form_update', compact('do', 'details', 'producttrx', 'gudangs'));
     }
 
     public function update($id, Request $request){
@@ -210,6 +217,7 @@ class DeliveryController extends Controller
             'id_jurnal' => 'required',
             'select_product' => 'required',
             'qty' => 'required|integer',
+            'gudang' => 'required',
             'delivery_date' => 'required|date',
         ]);
         // IF Validation fail
@@ -223,6 +231,7 @@ class DeliveryController extends Controller
                 'sales_id' => $request->sales_id,
                 'qty' => $request->qty,
                 'product_id' => $request->select_product,
+                'gudang_id' => $request->gudang,
             ));
 
             try{

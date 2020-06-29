@@ -19,6 +19,7 @@
                 <th>Product ID</th>
                 <th>Product Name</th>
                 <th>Qty</th>
+                <th>Gudang</th>
             </thead>
             <tbody>
                 @foreach ($dodets as $dodet)
@@ -26,6 +27,7 @@
                         <td>{{$dodet->product_id}}</td>
                         <td>{{$dodet->product->name}}</td>
                         <td>{{$dodet->qty}}</td>
+                        <td>@isset($dodet->gudang->nama){{$dodet->gudang->nama}}@endisset</td>
                     </tr>
                 @endforeach
             </tbody>
