@@ -3,15 +3,15 @@
         <div class="form-row">
             <div class="form-group col-md-4">
                 <label for="salesid" class="col-form-label">Receive Item ID</label>
-                <input type="text" class="form-control" id="salesid" value="{{$receive->id_jurnal}}" readonly>
+                <input type="text" class="form-control" id="salesid" value="{{$delivery->id_jurnal}}" readonly>
             </div>
             <div class="form-group col-md-4">
                 <label for="salesdate" class="col-form-label">Receive Date</label>
-                <input type="text" class="form-control" id="salesdate" value="{{$receive->date}}" readonly>
+                <input type="text" class="form-control" id="salesdate" value="{{$delivery->date}}" readonly>
             </div>
             <div class="form-group col-md-4">
                 <label for="salesdate" class="col-form-label">Creator</label>
-                <input type="text" class="form-control" id="salesdate" value="{{$receive->creator()->first()->name}}" readonly>
+                <input type="text" class="form-control" id="salesdate" value="{{$delivery->creator()->first()->name}}" readonly>
             </div>
         </div>
         <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
@@ -20,15 +20,17 @@
                 <th>Product ID</th>
                 <th>Product Name</th>
                 <th>Qty</th>
+                <th>Gudang</th>
             </thead>
             <tbody>
                 @php($i=1)
-                @foreach ($receives as $rec)
+                @foreach ($deliverys as $del)
                     <tr>
                         <td>{{$i++}}</td>
-                        <td>{{$rec->prod_id}}</td>
-                        <td>{{$rec->prod->name}}</td>
-                        <td>{{$rec->qty}}</td>
+                        <td>{{$del->prod_id}}</td>
+                        <td>{{$del->prod->name}}</td>
+                        <td>{{$del->qty}}</td>
+                        <td>@isset($del->gudang->nama){{ $del->gudang->nama }}@endisset</td>
                     </tr>
                 @endforeach
             </tbody>

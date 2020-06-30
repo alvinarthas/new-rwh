@@ -20,6 +20,7 @@
                 <th>Product ID</th>
                 <th>Product Name</th>
                 <th>Qty</th>
+                <th>Gudang</th>
             </thead>
             <tbody>
                 @php($i=1)
@@ -29,6 +30,7 @@
                         <td>{{$rec->prod_id}}</td>
                         <td>{{$rec->prod->name}}</td>
                         <td>{{$rec->qty}}</td>
+                        <td>@isset($rec->gudang->nama){{ $rec->gudang->nama }}@endisset</td>
                     </tr>
                 @endforeach
             </tbody>

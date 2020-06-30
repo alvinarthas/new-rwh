@@ -212,6 +212,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('/returjual/delivery/edit/{id}', 'ReturPenjualanController@editReturDelivery')->name('returjual.editdelivery');
         Route::post('/returjual/delivery/edit/{id}', 'ReturPenjualanController@updateReturDelivery')->name('returjual.updatedelivery');
         Route::get('/returjual/delivery/destroy','ReturPenjualanController@destroyReturDelivery')->name('returjual.destroydelivery');
+        Route::get('/returjual/delivery/show', 'ReturPenjualanController@showReturDelivery')->name('showReturDelivery');
 
     // Security
         Route::get('/security', 'SecurityController@index')->name('security.index');

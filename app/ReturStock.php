@@ -11,11 +11,15 @@ class ReturStock extends Model
 {
     protected $table ='tblreturstock';
     protected $fillable = [
-        'trx_id','prod_id', 'qty', 'date', 'id_jurnal', 'status', 'creator'
+        'trx_id','prod_id', 'qty', 'date', 'id_jurnal', 'status', 'creator', 'gudang_id'
     ];
 
     public function prod(){
         return $this->belongsTo('App\Product','prod_id','prod_id');
+    }
+
+    public function gudang(){
+        return $this->belongsTo('App\Gudang');
     }
 
     public function creator(){
