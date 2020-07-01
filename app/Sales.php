@@ -50,8 +50,14 @@ class Sales extends Model
             }
 
         }else{
-            $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id')
-            ->where('method',$method)->whereBetween('trx_date',[$start,$end]);
+            if ($method == "*"){
+                $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id')->whereBetween('trx_date',[$start,$end]);
+            }elseif ($method == 0) {
+                $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id')->where('method', 0)->whereBetween('trx_date',[$start,$end]);
+            }elseif ($method == 1){
+                $order = Sales::join('tblproducttrxdet as x','tblproducttrx.id','=','x.trx_id')->where('method','NOT LIKE', 0)->whereBetween('trx_date',[$start,$end]);
+            }
+
         }
         $ttl_count = $order->sum('x.qty');
         $order->orderBy('tblproducttrx.id')->select('tblproducttrx.*');
@@ -68,7 +74,14 @@ class Sales extends Model
             }
 
         }else{
-            $ttl_trx = Sales::where('method',$method)->whereBetween('trx_date',[$start,$end])->count('id');
+            if ($method == "*"){
+                $ttl_trx = Sales::whereBetween('trx_date',[$start,$end])->count('id');
+            }elseif ($method == 0) {
+                $ttl_trx = Sales::where('method',0)->whereBetween('trx_date',[$start,$end])->count('id');
+            }elseif ($method == 1){
+                $ttl_trx = Sales::where('method','NOT LIKE', 0)->whereBetween('trx_date',[$start,$end])->count('id');
+            }
+
         }
 
 

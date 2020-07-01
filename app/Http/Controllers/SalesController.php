@@ -107,9 +107,11 @@ class SalesController extends Controller
 
 
         }else{
-            if ($request->method == 0) {
+            if ($request->method == "*"){
+                $sales = Sales::whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
+            }elseif ($request->method == 0) {
                 $sales = Sales::where('method',$request->method)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
-            }else{
+            }elseif ($request->method == 1){
                 $sales = Sales::where('method','NOT LIKE',0)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
             }
         }
