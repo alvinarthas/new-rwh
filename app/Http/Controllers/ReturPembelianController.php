@@ -17,6 +17,7 @@ use App\ReturStock;
 use Carbon\Carbon;
 use App\MenuMapping;
 use App\Coa;
+use App\Gudang;
 use App\Log;
 
 class ReturPembelianController extends Controller
@@ -127,8 +128,9 @@ class ReturPembelianController extends Controller
         $productretur = ReturDetail::where('trx_id',$id)->select('prod_id')->get();
         $page = MenuMapping::getMap(session('user_id'),"RBRP");
         $receives = ReturStock::where('trx_id',$id)->groupBy('id_jurnal')->get();
+        $gudangs = Gudang::all();
 
-        return view('retur.pembelian.stock.form',compact('trx','details','productretur','receives','page'));
+        return view('retur.pembelian.stock.form',compact('trx','details','productretur','receives','page', 'gudangs'));
     }
 
     /**
@@ -312,6 +314,7 @@ class ReturPembelianController extends Controller
             'prod_id' => 'required|array',
             'qty' => 'required|array',
             'receive_date' => 'required|date',
+            'gudang' => 'required|array',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -343,6 +346,7 @@ class ReturPembelianController extends Controller
                         'prod_id' => $request->prod_id[$i],
                         'qty' => $request->qty[$i],
                         'date' => $request->receive_date,
+                        'gudang_id' => $request->gudang[$i],
                         'creator' => session('user_id'),
                         'status' => 0,
                         'id_jurnal' => $id_jurnal,

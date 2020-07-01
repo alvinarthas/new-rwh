@@ -22,6 +22,7 @@ use App\MenuMapping;
 use App\Coa;
 use App\Log;
 use App\Saldo;
+use App\Gudang;
 
 class ReturPenjualanController extends Controller
 {
@@ -84,14 +85,14 @@ class ReturPenjualanController extends Controller
         //
     }
 
-    public function showReturDelivery($id, Request $request)
+    public function showReturDelivery(Request $request)
     {
         if ($request->ajax()) {
-            $jurnal_id = $request->ri_id;
-            $sales = ReturStock::where('id_jurnal',$jurnal_id)->where('status', 1)->get();
-            $sale = ReturStock::where('id_jurnal',$jurnal_id)->where('status', 1)->first();
+            $jurnal_id = $request->do_id;
+            $deliverys = ReturStock::where('id_jurnal',$jurnal_id)->where('status', 1)->get();
+            $delivery = ReturStock::where('id_jurnal',$jurnal_id)->where('status', 1)->first();
 
-            return response()->json(view('retur.penjualan.stock.modal',compact('sale', 'sales'))->render());
+            return response()->json(view('retur.penjualan.stock.modal',compact('delivery', 'deliverys'))->render());
         }
     }
 
@@ -132,11 +133,9 @@ class ReturPenjualanController extends Controller
         $productretur = ReturDetail::where('trx_id',$id)->select('prod_id')->get();
         $page = MenuMapping::getMap(session('user_id'),"RJDO");
         $delivered = ReturStock::where('trx_id',$id)->groupBy('id_jurnal')->get();
-        // echo "<pre>";
-        // print_r($details);
-        // die();
+        $gudangs = Gudang::all();
 
-        return view('retur.penjualan.stock.form',compact('trx','details','productretur','delivered','page'));
+        return view('retur.penjualan.stock.form',compact('trx','details','productretur','delivered','page', 'gudangs'));
     }
 
     /**
@@ -330,6 +329,7 @@ class ReturPenjualanController extends Controller
             'count' => 'required',
             'prod_id' => 'required|array',
             'qty' => 'required|array',
+            'gudang' => 'required|array',
             'delivery_date' => 'required|date',
         ]);
         // IF Validation fail
@@ -371,6 +371,7 @@ class ReturPenjualanController extends Controller
                         'prod_id' => $request->prod_id[$i],
                         'qty' => $request->qty[$i],
                         'date' => $request->delivery_date,
+                        'gudang_id' => $request->gudang[$i],
                         'id_jurnal' => $id_jurnal,
                         'status' => 1,
                         'creator' => session('user_id'),
