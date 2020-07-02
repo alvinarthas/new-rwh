@@ -89,7 +89,39 @@
                                     $total_bonus = 0;
                                     $selisih = 0;
                                 @endphp
-                                @foreach($bonus as $b)
+                                @foreach($member as $m)
+                                    <tr>
+                                        <td>{{$i++}}</td>
+                                        <td>{{$m['ktp']}}</td>
+                                        <td>{{$m['nama']}}</td>
+                                        <td>
+                                            @foreach($m['perhitungan'] as $mp)
+                                                {{ $mp['noid']}}<br>
+                                                <b>&ensp;&ensp;{{ $mp['bonus']}}</b><br>
+                                            @endforeach
+                                            <br><b>{{$m['ttl_perhitungan']}}</b>
+                                        </td>
+                                        <td>
+                                            @foreach($m['penerimaan'] as $mb)
+                                                {{ $mb['norek'] }}<br>
+                                                <b>&ensp;&ensp;{{ $mb['bonus'] }}</b><br>
+                                                &ensp;&ensp;{{ $mb['tgl'] }}<br>
+                                            @endforeach
+                                            <br><b>{{$m['ttl_penerimaan']}}</b>
+                                        </td>
+                                        @if($m['selisih'] <= 50000 AND $m['selisih'] > 0)
+                                            <td style="background-color:#ffdf7b">
+                                        @elseif($m['selisih'] > 50000)
+                                            <td style="background-color:#ff8484">
+                                        @elseif($m['selisih'] == 0)
+                                            <td style="background-color:#62ff60">
+                                        @elseif($m['selisih'] < 0)
+                                            <td style="background-color:#7d6dff">
+                                        @endif
+                                            Rp {{ number_format($m['selisih'], 2, ",", ".")}}</td>
+                                    </tr>
+                                @endforeach
+                                {{-- @foreach($bonus as $b)
                                     @php
                                         $no = 1;
                                         $total_perhitungan = 0;
@@ -154,7 +186,7 @@
                                             $i++;
                                         @endphp
                                     </tr>
-                                @endforeach
+                                @endforeach --}}
                             </tbody>
                         </table>
                     @endif
