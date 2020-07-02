@@ -55,6 +55,9 @@ Index Sales Order
                                 <div class="col-10">
                                     <select class="form-control select2" parsley-trigger="change" name="method" id="method">
                                         <option value="#" selected disabled>Pilih Method</option>
+                                        @if (array_search("PSSLVO",$page) && array_search("PSSLV",$page) )
+                                        <option value="*">All</option>
+                                        @endif
                                         @if (array_search("PSSLV",$page))
                                         <option value="0">Offline</option>
                                         @endif

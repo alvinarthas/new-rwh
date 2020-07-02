@@ -161,7 +161,6 @@ Form Sales Order
                                 <label class="col-2 col-form-label">Gudang</label>
                                 <div class="col-10">
                                     <select class="form-control select2" parsley-trigger="change" name="gudang" id="gudang" required>
-                                        <option value="#" disabled selected>Pilih Gudang</option>
                                         @foreach ($gudangs as $gudang)
                                             <option value="{{$gudang->id}}">{{$gudang->nama}}</option>
                                         @endforeach

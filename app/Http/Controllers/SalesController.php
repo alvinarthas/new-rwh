@@ -107,9 +107,11 @@ class SalesController extends Controller
 
 
         }else{
-            if ($request->method == 0) {
+            if ($request->method == "*"){
+                $sales = Sales::whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
+            }elseif ($request->method == 0) {
                 $sales = Sales::where('method',$request->method)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
-            }else{
+            }elseif ($request->method == 1){
                 $sales = Sales::where('method','NOT LIKE',0)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
             }
         }
@@ -148,6 +150,8 @@ class SalesController extends Controller
                 $sales->save();
 
                 $detail->delete();
+
+                Log::setLog('PSSLD','Delete Sales Detail SO.'.$sales->id);
             }else{
                 $detail = SalesDet::where('id',$request->detail)->first();
                 $sales = Sales::where('id',$detail->trx_id)->first();
@@ -155,6 +159,8 @@ class SalesController extends Controller
                 $sales->save();
 
                 $detail->delete();
+
+                Log::setLog('PSSLD','Delete Temp Sales Detail SO.'.$sales->id);
             }
 
             return "true";

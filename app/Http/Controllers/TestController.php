@@ -44,6 +44,11 @@ class TestController extends Controller
             $key->purchasedetail_id = $purchasedet->id;
             $key->save();
         }
+
+        $transaksi = Transaksi::where('id_user',$id_user)->first();
+
+        // dd($transaksi->barang()->first()); // buat cek datanya ada atau enggak
+        // dd($transaksi->barang->name); // buat get name nya, kalo emng datanya ada
     }
 
     public function index_sodet(){

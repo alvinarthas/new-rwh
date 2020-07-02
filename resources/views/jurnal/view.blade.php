@@ -1,3 +1,4 @@
+
 <div class="card-box table-responsive">
     <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
         <thead>
@@ -53,7 +54,6 @@
         </tbody>
     </table>
 </div>
-
 <div class="card-box">
     <h4 class="m-t-0 header-title">Total Jurnal</h4>
     <div class="col-12">
