@@ -73,7 +73,7 @@
             });
         }else if(jenis === "RJ"){
             $.ajax({
-                url : "{{route('showReturPj',['id'=>1])}}",
+                url : "{{route('returjual.show',['id'=>1])}}",
                 type : "get",
                 dataType: 'json',
                 data:{
