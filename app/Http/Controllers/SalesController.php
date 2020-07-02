@@ -150,6 +150,8 @@ class SalesController extends Controller
                 $sales->save();
 
                 $detail->delete();
+
+                Log::setLog('PSSLD','Delete Sales Detail SO.'.$sales->id);
             }else{
                 $detail = SalesDet::where('id',$request->detail)->first();
                 $sales = Sales::where('id',$detail->trx_id)->first();
@@ -157,6 +159,8 @@ class SalesController extends Controller
                 $sales->save();
 
                 $detail->delete();
+
+                Log::setLog('PSSLD','Delete Temp Sales Detail SO.'.$sales->id);
             }
 
             return "true";
