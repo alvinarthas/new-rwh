@@ -139,7 +139,7 @@
                     targets: '_all',
                     type: 'natural'
                 }
-            ]
+            ],oLanguage : {sProcessing: "<div id='loader'></div>"},
         });
     });
 
