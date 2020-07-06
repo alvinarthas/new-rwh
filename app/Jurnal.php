@@ -39,6 +39,7 @@ class Jurnal extends Model
 
     public static function viewJurnal($start,$end,$coa,$position,$param){
 
+        // ini_set('memory_limit', '256M');
         if ($param == "umum") {
             $jurnal = Jurnal::where('id_jurnal','LIKE','JN%');
             $jurdebet = Jurnal::where('id_jurnal','LIKE','JN%');

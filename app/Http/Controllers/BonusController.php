@@ -66,7 +66,7 @@ class BonusController extends Controller
     public function indexTopup(Request $request)
     {
         $page = MenuMapping::getMap(session('user_id'),"BMTU");
-        $bonus = TopUpBonus::join('tblcoa', 'tbltopupbonus.AccNo', 'tblcoa.AccNo')->groupBy('tgl')->select('id_bonus', 'tgl', 'AccName', DB::raw('SUM(bonus) as total_bonus'), 'id_jurnal')->orderBy('tgl', 'desc')->get();
+        $bonus = TopUpBonus::join('tblcoa', 'tbltopupbonus.AccNo', 'tblcoa.AccNo')->groupBy('tgl', 'tbltopupbonus.AccNo')->select('id_bonus', 'tgl', 'AccName', DB::raw('SUM(bonus) as total_bonus'), 'id_jurnal')->orderBy('tgl', 'desc')->get();
         $bonusapa = "topup";
         $jenis = "index";
         return view('bonus.index', compact('bonusapa','jenis', 'page', 'bonus'));
