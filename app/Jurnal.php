@@ -39,14 +39,15 @@ class Jurnal extends Model
 
     public static function viewJurnal($start,$end,$coa,$position,$param){
 
+        // ini_set('memory_limit', '256M');
         if ($param == "umum") {
             $jurnal = Jurnal::where('id_jurnal','LIKE','JN%');
             $jurdebet = Jurnal::where('id_jurnal','LIKE','JN%');
             $jurcredit = Jurnal::where('id_jurnal','LIKE','JN%');
         }elseif ($param == "mutasi") {
-            $jurnal = Jurnal::where('id_jurnal','LIKE','%%');
-            $jurdebet = Jurnal::where('id_jurnal','LIKE','%%');
-            $jurcredit = Jurnal::where('id_jurnal','LIKE','%%');
+            $jurnal = Jurnal::select('id','id_jurnal','AccNo','AccPos','Amount','date','description','creator','notes_item','created_at','updated_at')->where('id_jurnal','LIKE','%%');
+            $jurdebet = Jurnal::select('id','id_jurnal','AccNo','AccPos','Amount','date')->where('id_jurnal','LIKE','%%');
+            $jurcredit = Jurnal::select('id','id_jurnal','AccNo','AccPos','Amount','date')->where('id_jurnal','LIKE','%%');
         }
 
         if($coa <> "all"){

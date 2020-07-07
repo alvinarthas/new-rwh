@@ -10,6 +10,9 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+use App\Http\Controllers\JurnalController;
+
 Route::get('/testuser','TestController@index');
 Route::get('/user/json','MemberController@json');
 Route::get('/','HomeController@index')->name('getHome');
@@ -346,8 +349,9 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('checkdeposit','HelperController@checkDeposit')->name('checkDeposit');
 
     // Jurnal Helper
+    Route::get('jurnalDraft', 'JurnalController@indexDraft')->name('jurnalDraft');
     Route::get('jurnaladd','JurnalController@addJurnal')->name('addJurnal');
-    Route::get('jurnalshow2', 'JurnalController@show2')->name('jurnal.show2');
+    Route::get('getDataJurnal', 'JurnalController@getData')->name('getDataJurnal');
     Route::get('/jurnal_draft/index', 'JurnalController_draft@index')->name('jurnal_draft.index');
     Route::get('jurnal_draftshow2', 'JurnalController_draft@show2')->name('jurnal_draft.show2');
     Route::get('jurnaldetaildestroy','JurnalController@detailJuralDestroy')->name('detailJuralDestroy');
