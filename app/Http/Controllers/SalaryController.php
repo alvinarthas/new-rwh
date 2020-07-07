@@ -278,7 +278,7 @@ class SalaryController extends Controller
 
                 // Share Kendali Perusahaan
                 $poin_kendali_perusahaan = Purchase::sharePost($month,$year,$peg->id);
-                if(substr($peg->role_name,0,7) == "Manager" || substr($peg->role_name,0,7) == "General"){
+                if(substr($peg->role_name,0,7) == "Manager" || substr($peg->role_name,0,7) == "General" || substr($peg->role_name,0,9) == "Assistant"){
                     $poin_kendali_perusahaan = 0;
                 }
                 if($ttl_poin_kendali_perusahaan == 0){
@@ -311,7 +311,7 @@ class SalaryController extends Controller
                 if($value_share_internal == 0 || $ttl_poin_internal == 0){
                     $tunjangan_persentase = 0;
                 }else{
-                    if($peg->role_id == 47 || $peg->role_id == 48 || $peg->role_id == 49 || $peg->role_id == 50){
+                    if($peg->role_id == 47 || $peg->role_id == 48 || $peg->role_id == 49 || $peg->role_id == 50 || $peg->role_id == 59){
                         $tunjangan_persentase = 0;
                     }else{
                         $tunjangan_persentase = ((($bonus_divisi/$value_share_internal)/$ttl_poin_internal))/2;
@@ -378,7 +378,7 @@ class SalaryController extends Controller
                 ));
                 $bonus_pegawai_detail->save();
             }
-            
+
             // Tentukan EOM
             $sorted = $collectionEom->sortByDesc('value');
 
@@ -434,7 +434,7 @@ class SalaryController extends Controller
                 $saldet->take_home_pay = $tot_takehome;
                 $saldet->save();
             }
-            
+
                 // Check Bonus Manager
                 // count gaji yg > 5.6jt
                 $checkcount = SalaryDet::countGajiLebih($salary->id);
@@ -446,7 +446,7 @@ class SalaryController extends Controller
                         $bonus_manager = 1000000;
                     }
 
-                    // Save Bonus Manager 
+                    // Save Bonus Manager
                     SalaryDet::saveGajiManager($bonus_manager,$month,$year);
                 }
 
