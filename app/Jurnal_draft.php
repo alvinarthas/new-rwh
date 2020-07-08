@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 use App\Coa;
 use App\Product;
@@ -37,13 +38,27 @@ class Jurnal_draft extends Model
         return $id_jurnal;
     }
 
-    public static function viewJurnal($start,$end,$coa,$position,$param){
-        // ini_set('memory_limit', '368M');
+    public static function viewJurnal(Request $request){
+        
+        $page = MenuMapping::getMap(session('user_id'),"FIJB");
+        $param = $request->param;
+        $coa = $request->coa;
+        $position = $request->position;
+        $start = $request->start;
+        $end = $request->end;
+
+        $draw = $request->draw;
+        $row = $request->start;
+        $rowperpage = $request->length; // Rows display per page
+        $columnIndex = $request['order'][0]['column']; // Column index
+        $columnName = $_POST['columns'][$columnIndex]['data']; // Column name
+        $columnSortOrder = $_POST['order'][0]['dir']; // asc or desc
+        $searchValue = $_POST['search']['value']; // Search value
 
         if ($param == "umum") {
             $jurnal = Jurnal_draft::where('id_jurnal','LIKE','JN%');
         }elseif ($param == "mutasi") {
-            $jurnal = Jurnal_draft::select('id_jurnal','AccNo','AccPos','Amount','date','description','creator','notes_item')->where('id_jurnal','LIKE','%%');
+            $jurnal = Jurnal_draft::where('id_jurnal','LIKE','%%');
         }
 
         if($coa <> "all"){
@@ -58,13 +73,25 @@ class Jurnal_draft extends Model
             $jurnal->whereBetween('date',[$start,$end]);
         }
 
-        $jurnal = $jurnal->orderBy('date','asc')->get();
+        $totalRecords = $jurnal->count();
+
+        if($searchValue != ''){
+            $jurnal->where('id_jurnal', 'LIKE', '%'.$searchValue.'%')->orWhere('AccNo', 'LIKE', '%'.$searchValue.'%')->orWhere('Amount', 'LIKE', '%'.$searchValue.'%')->orWhere('date', 'LIKE', '%'.$searchValue.'%')->orWhere('description', 'LIKE', '%'.$searchValue.'%')->orWhere('notes_item', 'LIKE', '%'.$searchValue.'%');
+        }
+        $totalRecordwithFilter = $jurnal->count();
+        
+        if($columnName == "no"){
+            $jurnal = $jurnal->orderBy('id', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }elseif($columnName == "Debet" || $columnName == "Credit"){
+            $jurnal = $jurnal->orderBy('Amount', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }else{
+            $jurnal = $jurnal->orderBy($columnName, $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }
 
         $data = collect();
         $nomor = 1;
         foreach($jurnal as $jn){
             $row = collect();
-
             $row->put('no', $nomor++);            
             $row->put('id_jurnal', $jn->id_jurnal);
             $row->put('date', $jn->date);
@@ -79,11 +106,28 @@ class Jurnal_draft extends Model
             }
             $row->put('notes_item', $jn->notes_item);
             $row->put('description', $jn->description);
+            if($param == "umum"){
+                $button = "";
+                if(array_search("FIJBU", $page)){
+                    $button .= '<a href="/jurnal/'.$jn->id_jurnal.'/edit" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5"> Update</a>';
+                }
+    
+                if(array_search("FIJBD", $page)){
+                    $button .= '&nbsp;&nbsp;';
+                    $button .= '<a href="javascript:;" id="'.$jn->id_jurnal.'" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5 delete"> Delete</a>';
+                }
+                $row->put('option', $button);
+            }
             $data->push($row);
         }
-        // $data->put('data',$jurnal);
-        return $data;
-        // return $jurnal;
+        
+        $response = array(
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecordwithFilter,
+            'data' => $data,
+        );
+        return $response;
     }
 
     public static function getTotalJurnal($start,$end,$coa,$position,$param){
@@ -93,8 +137,8 @@ class Jurnal_draft extends Model
             $jurdebet = Jurnal_draft::where('id_jurnal','LIKE','JN%');
             $jurcredit = Jurnal_draft::where('id_jurnal','LIKE','JN%');
         }elseif ($param == "mutasi") {
-            $jurdebet = Jurnal_draft::select('id','id_jurnal','AccNo','AccPos','Amount','date')->where('id_jurnal','LIKE','%%');
-            $jurcredit = Jurnal_draft::select('id','id_jurnal','AccNo','AccPos','Amount','date')->where('id_jurnal','LIKE','%%');
+            $jurdebet = Jurnal_draft::where('id_jurnal','LIKE','%%');
+            $jurcredit = Jurnal_draft::where('id_jurnal','LIKE','%%');
         }
 
         if($coa <> "all"){

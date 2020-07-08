@@ -59,26 +59,8 @@ class JurnalController extends Controller
     public function getData(Request $request)
     {
         if($request->ajax()){
-            // $jurnals = Jurnal::select('id_jurnal', 'date')->limit(10)->get();
-            $jurnals = Jurnal_draft::viewJurnal($request->start_date,$request->end_date,$request->coa,$request->position,$request->param);
-            
-            if($request->param == "umum"){
-                return datatables()->of($jurnals)->addColumn('option', function($data){
-                    $page = MenuMapping::getMap(session('user_id'),"FIJB");
-                    $button = "";
-                    if(array_search("FIJBU", $page)){
-                        $button .= '<a href="/jurnal/'.$data['id_jurnal'].'/edit" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5"> Update</a>';
-                    }
-
-                    if(array_search("FIJBD", $page)){
-                        $button .= '&nbsp;&nbsp;';
-                        $button .= '<a href="javascript:;" id="'.$data['id_jurnal'].'" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5 delete"> Delete</a>';
-                    }
-                    return $button;
-                })->rawColumns(['option'])->make(true);
-            }elseif($request->param == "mutasi"){
-                return datatables()->of($jurnals)->make(true);
-            }
+            $jurnals = Jurnal_draft::viewJurnal($request);
+            echo json_encode($jurnals);
         }
     }
 

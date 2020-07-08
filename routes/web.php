@@ -351,7 +351,7 @@ Route::middleware(['checkUser'])->group(function () {
     // Jurnal Helper
     Route::get('jurnalDraft', 'JurnalController@indexDraft')->name('jurnalDraft');
     Route::get('jurnaladd','JurnalController@addJurnal')->name('addJurnal');
-    Route::get('getDataJurnal', 'JurnalController@getData')->name('getDataJurnal');
+    Route::post('getDataJurnal', 'JurnalController@getData')->name('getDataJurnal');
     Route::get('/jurnal_draft/index', 'JurnalController_draft@index')->name('jurnal_draft.index');
     Route::get('jurnal_draftshow2', 'JurnalController_draft@show2')->name('jurnal_draft.show2');
     Route::get('jurnaldetaildestroy','JurnalController@detailJuralDestroy')->name('detailJuralDestroy');
