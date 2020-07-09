@@ -28,22 +28,56 @@ class DeliveryOrder extends Model
         return $this->belongsTo('App\Product','product_id','prod_id');
     }
 
-    public static function checkDO($start,$end){
-        $sales = SalesDet::join('tblproducttrx','tblproducttrxdet.trx_id','=','tblproducttrx.id');
-        if($start <> NULL && $end <> NULL){
-            $sales = $sales->whereBetween('tblproducttrx.trx_date',[$start,$end])->select('tblproducttrxdet.trx_id','tblproducttrx.customer_id','tblproducttrx.online_id','tblproducttrxdet.prod_id','tblproducttrxdet.qty')->get();
+    public static function checkDO($start, $end){
+        // $sales = Sales::join('tblproducttrxdet','tblproducttrx.id','=','tblproducttrxdet.trx_id');
+        if($start <> NULL && $end<> NULL){
+            $sales = Sales::whereBetween('trx_date',[$start,$end])->where('approve',1)->get();
         }else{
-            $sales = $sales->select('tblproducttrxdet.trx_id','tblproducttrx.customer_id','tblproducttrx.online_id','tblproducttrxdet.prod_id','tblproducttrxdet.qty')->get();
+            $sales = Sales::where('approve',1)->get();
         }
+        $data = collect();
+        foreach($sales as $sal){
+            $salesdet = SalesDet::where('trx_id', $sal->id)->groupBy('prod_id')->get();
+            foreach($salesdet as $key){
+                $key->qty = SalesDet::where('trx_id', $sal->id)->where('prod_id', $key->prod_id)->sum('qty');
+                $detail = collect($key);
 
-        foreach ($sales as $key) {
-            $do = DeliveryDetail::where('sales_id',$key->trx_id)->where('product_id',$key->prod_id)->sum('qty');
-            $key->customer_name = $key->trx->customer->apname;
-            $key->product_name = $key->product->name;
-            $key->do_qty = $do;
+                $do_id = "";
+
+                $do = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('delivery_order.sales_id',$sal->id)->where('delivery_detail.product_id',$key->prod_id)->select('delivery_order.jurnal_id')->get();
+                foreach($do as $d){
+                    $do_id .= $d->jurnal_id." ";
+                }
+
+                $do_qty = DeliveryDetail::where('sales_id',$sal->id)->where('product_id',$key->prod_id)->sum('qty');
+                $prodname = Product::where('prod_id',$key->prod_id)->first()->name;
+
+                $detail->put('do_qty',$do_qty);
+                $detail->put('do_id', $do_id);
+                $detail->put('customer', $sal->customer()->first()->apname);
+                $detail->put('product_name',$prodname);
+                $data->push($detail);
+            }
         }
-        return $sales;
+        return $data;
     }
+
+    // public static function checkDO($start,$end){
+    //     $sales = SalesDet::join('tblproducttrx','tblproducttrxdet.trx_id','=','tblproducttrx.id');
+    //     if($start <> NULL && $end <> NULL){
+    //         $sales = $sales->whereBetween('tblproducttrx.trx_date',[$start,$end])->select('tblproducttrxdet.trx_id','tblproducttrx.customer_id','tblproducttrx.online_id','tblproducttrxdet.prod_id','tblproducttrxdet.qty')->get();
+    //     }else{
+    //         $sales = $sales->select('tblproducttrxdet.trx_id','tblproducttrx.customer_id','tblproducttrx.online_id','tblproducttrxdet.prod_id','tblproducttrxdet.qty')->get();
+    //     }
+
+    //     foreach ($sales as $key) {
+    //         $do = DeliveryDetail::where('sales_id',$key->trx_id)->where('product_id',$key->prod_id)->sum('qty');
+    //         $key->customer_name = $key->trx->customer->apname;
+    //         $key->product_name = $key->product->name;
+    //         $key->do_qty = $do;
+    //     }
+    //     return $sales;
+    // }
 
     public static function autoDO($sales_id,$date){
         $id_jurnal = Jurnal::getJurnalID('DO');

@@ -31,7 +31,7 @@ class DeliveryController extends Controller
             $start = $request->start;
             $end = $request->end;
             $sales = Sales::checkDO($start,$end);
-            $deliveries = DeliveryOrder::checkDO($start,$end);
+            $deliveries = json_decode (json_encode (DeliveryOrder::checkDO($start,$end)),FALSE);
             return response()->json(view('sales.do.view',compact('sales','deliveries'))->render());
         }else{
             return view('sales.do.index');

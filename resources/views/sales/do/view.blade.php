@@ -60,10 +60,11 @@
                             <thead>
                                 <th>No</th>
                                 <th>SO ID</th>
+                                <th>DO ID</th>
                                 <th>Customer</th>
                                 <th>Product ID</th>
                                 <th>Product Name</th>
-                                <th>Qty</th>
+                                <th>Qty DO</th>
                                 <th>Option</th>
                             </thead>
                             <tbody>
@@ -72,16 +73,29 @@
                                     <tr>
                                         <td>{{$x}}</td>
                                         <td>SO.{{$delivery->trx_id}}</td>
-                                        <td>{{$delivery->customer_name}}</td>
+                                        <td>{{ $delivery->do_id }}</td>
+                                        <td>{{$delivery->customer}}</td>
                                         <td>{{$delivery->prod_id}}</td>
                                         <td>{{$delivery->product_name}}</td>
-                                        @if ($delivery->qty == $delivery->do_qty)
+                                        {{-- @if ($delivery->qty == $delivery->do_qty)
                                             <td><a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->qty}}</a></td>
                                         @elseif ($delivery->qty > $delivery->do_qty)
                                             <td><a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->qty}}</a></td>
                                         @else
                                             <td><a href="javascrip:;" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->qty}}</a></td>
+                                        @endif --}}
+                                        @if ($delivery->do_qty == 0)
+                                            <td><a href="javascrip:;" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->do_qty}}</a></td>
+                                        @elseif(($delivery->do_qty-$delivery->qty) == 0 )
+                                            <td><a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->do_qty}}</a></td>
+                                        @elseif(($delivery->do_qty-$delivery->qty) < 0 )
+                                            <td><a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->do_qty}}</a></td>
+                                        @elseif(($delivery->do_qty-$delivery->qty) > 0 )
+                                            <td><a href="javascrip:;" class="btn btn-custom btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->do_qty}}</a></td>
+                                        @else
+                                            <td><a href="javascrip:;" class="btn btn-info btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->do_qty}}</a></td>
                                         @endif
+
                                         <td><a href="{{route('showDo',['id'=>$delivery->trx_id])}}" class="btn btn-primary btn-rounded waves-effect w-md waves-danger m-b-5">Atur DO</a></td>
                                     </tr>
                                 @php($x++)
@@ -97,5 +111,12 @@
 
 <script>
     $('#responsive-datatable-sales').DataTable();
-    $('#responsive-datatable-deliveries').DataTable();
+    $('#responsive-datatable-deliveries').DataTable({
+        "columnDefs": [
+            {
+                "targets": [ 2 ],
+                "visible": false,
+            },
+        ]
+    });
 </script>
