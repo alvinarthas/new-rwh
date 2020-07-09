@@ -76,65 +76,44 @@
 
 <script>
     $(document).ready(function () {
+        var param = $('#param').val();
+        if(param == "umum"){
+            var column = [{data : 'no', name : 'no', searchable : false},
+            {data : 'id_jurnal', name : 'id_jurnal'},
+            {data : "date",name : "date"},
+            {data : "AccNo", name : "AccNo"},
+            {data : "AccName", name : "AccName", orderable : false, searchable : false},
+            {data : "Debet", name : "Debet", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' )},
+            {data : "Credit", name : "Credit", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' )},
+            {data : "notes_item", name : "notes_item"},
+            {data : "description", name : "description"},
+            {data : "option", name : "option", orderable : false, searchable : false}];
+        }else{
+            var column = [{data : 'no', name : 'no', searchable : false},
+            {data : 'id_jurnal', name : 'id_jurnal'},
+            {data : "date",name : "date"},
+            {data : "AccNo", name : "AccNo"},
+            {data : "AccName", name : "AccName", orderable : false, searchable : false},
+            {data : "Debet", name : "Debet", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' )},
+            {data : "Credit", name : "Credit", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' )},
+            {data : "notes_item", name : "notes_item"},
+            {data : "description", name : "description"}];
+        }
         $('#datatable').DataTable({
             "processing" : true,
             "serverSide" : true,
             "ajax" : {
                 "url" : "{{ route('getDataJurnal') }}",
-                "type" : "GET",
+                "type" : "POST",
                 "data" : {
                     "start_date" : $("#start_date").val(),
                     "end_date" : $("#end_date").val(),
                     "position" : $("#position").val(),
                     "coa" : $("#coa").val(),
                     "param" : $("#param").val(),
+                    "_token" : $("meta[name='csrf-token']").attr("content"),
                 }
-            },"columns" : [
-                {
-                    data : 'no',
-                    name : 'no'
-                },
-                {
-                    data : 'id_jurnal',
-                    name : 'id_jurnal'
-                },
-                {
-                    data : "date",
-                    name : "date"
-                },
-                {
-                    data : "AccNo",
-                    name : "AccNo"
-                },
-                {
-                    data : "AccName",
-                    name : "AccName"
-                },
-                {
-                    data : "Debet",
-                    name : "Debet",
-                    render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' ),
-                },
-                {
-                    data : "Credit",
-                    name : "Credit",
-                    render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' ),
-                },
-                {
-                    data : "notes_item",
-                    name : "notes_item"
-                },
-                {
-                    data : "description",
-                    name : "description",
-                },
-                {
-                    data : "option",
-                    name : "option",
-                    orderable : false,
-                    searchable : false,
-                }
-            ],"columnDefs" : [
+            },"columns" : column,"columnDefs" : [
                 {
                     targets: '_all',
                     type: 'natural'
