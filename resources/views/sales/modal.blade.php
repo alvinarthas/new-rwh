@@ -78,19 +78,19 @@
             <div class="form-group-row">
                 <div class="form-group col-md-12">
                     <label for="salesid" class="col-form-label">Total Transaksi</label>
-                    <input type="text" class="form-control" id="ongkir" value="{{$temp_sales->ttl_harga + $temp_sales->ongkir}}" readonly>
+                    <input type="text" class="form-control" id="ongkir" value="Rp {{number_format($temp_sales->ttl_harga + $temp_sales->ongkir, 2, ",", ".")}}" readonly>
                 </div>
             </div>
             <div class="form-group-row">
                 <div class="form-group col-md-12">
                     <label for="salesid" class="col-form-label">Ongkir</label>
-                    <input type="text" class="form-control" id="ongkir" value="{{$temp_sales->ongkir}}" readonly>
+                    <input type="text" class="form-control" id="ongkir" value="Rp {{number_format($temp_sales->ongkir, 2, ",", ".")}}" readonly>
                 </div>
             </div>
             <div class="form-group-row">
                 <div class="form-group col-md-12">
                     <label for="salesid" class="col-form-label">Total yang sudah dibayar</label>
-                    <input type="text" class="form-control" id="ongkir" value="{{$salespay}}" readonly>
+                    <input type="text" class="form-control" id="ongkir" value="Rp {{number_format($salespay, 2, ",", ".")}}" readonly>
                 </div>
             </div>
         </div>
@@ -158,19 +158,19 @@
             <div class="form-group-row">
                 <div class="form-group col-md-12">
                     <label for="salesid" class="col-form-label">Total Transaksi</label>
-                    <input type="text" class="form-control" id="ongkir" value="{{$sales->ttl_harga+$sales->ongkir}}" readonly>
+                    <input type="text" class="form-control" id="ongkir" value="Rp {{number_format($sales->ttl_harga+$sales->ongkir,2, ",", ".")}}" readonly>
                 </div>
             </div>
             <div class="form-group-row">
                 <div class="form-group col-md-12">
                     <label for="salesid" class="col-form-label">Ongkir</label>
-                    <input type="text" class="form-control" id="ongkir" value="{{$sales->ongkir}}" readonly>
+                    <input type="text" class="form-control" id="ongkir" value="Rp {{number_format($sales->ongkir, 2,",",".")}}" readonly>
                 </div>
             </div>
             <div class="form-group-row">
                 <div class="form-group col-md-12">
                     <label for="salesid" class="col-form-label">Total yang sudah dibayar</label>
-                    <input type="text" class="form-control" id="ongkir" value="{{$salespay}}" readonly>
+                    <input type="text" class="form-control" id="ongkir" value="Rp {{number_format($salespay,2,",",".")}}" readonly>
                 </div>
             </div>
             {{-- </div> --}}
