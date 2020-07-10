@@ -52,6 +52,7 @@ class DeliveryOrder extends Model
                 $do_qty = DeliveryDetail::where('sales_id',$sal->id)->where('product_id',$key->prod_id)->sum('qty');
                 $prodname = Product::where('prod_id',$key->prod_id)->first()->name;
 
+                $detail->put('so_id', $sal->jurnal_id);
                 $detail->put('do_qty',$do_qty);
                 $detail->put('do_id', $do_id);
                 $detail->put('customer', $sal->customer()->first()->apname);

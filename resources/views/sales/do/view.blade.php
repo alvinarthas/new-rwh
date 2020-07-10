@@ -34,7 +34,7 @@
                                 @foreach ($sales as $sale)
                                     <tr>
                                         <td>{{$i}}</td>
-                                        <td>SO.{{$sale['sales_id']}}</td>
+                                        <td>{{$sale['jurnal_id']}}</td>
                                         <td>{{$sale['customer']}}</td>
                                         <td>Rp {{number_format($sale['ttl'],2,",",".")}}</td>
                                         @if ($sale['status_do'] == 1)
@@ -72,7 +72,7 @@
                                 @foreach ($deliveries as $delivery)
                                     <tr>
                                         <td>{{$x}}</td>
-                                        <td>SO.{{$delivery->trx_id}}</td>
+                                        <td>{{$delivery->so_id}}</td>
                                         <td>{{ $delivery->do_id }}</td>
                                         <td>{{$delivery->customer}}</td>
                                         <td>{{$delivery->prod_id}}</td>
