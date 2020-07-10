@@ -39,7 +39,7 @@ class Jurnal_draft extends Model
     }
 
     public static function viewJurnal(Request $request){
-        
+
         $page = MenuMapping::getMap(session('user_id'),"FIJB");
         $param = $request->param;
         $coa = $request->coa;
@@ -56,13 +56,13 @@ class Jurnal_draft extends Model
         $searchValue = $_POST['search']['value']; // Search value
 
         if ($param == "umum") {
-            $jurnal = Jurnal_draft::where('id_jurnal','LIKE','JN%');
+            $jurnal = Jurnal_draft::join('tblcoa', 'tbljurnal.AccNo', 'tblcoa.AccNo')->select('tbljurnal.id','id_jurnal','tbljurnal.AccNo','tblcoa.AccName','AccPos','Amount','date','description','creator','notes_item','tbljurnal.created_at','tbljurnal.updated_at')->where('id_jurnal','LIKE','JN%');
         }elseif ($param == "mutasi") {
-            $jurnal = Jurnal_draft::where('id_jurnal','LIKE','%%');
+            $jurnal = Jurnal_draft::join('tblcoa', 'tbljurnal.AccNo', 'tblcoa.AccNo')->select('tbljurnal.id','id_jurnal','tbljurnal.AccNo','tblcoa.AccName','AccPos','Amount','date','description','creator','notes_item','tbljurnal.created_at','tbljurnal.updated_at')->where('id_jurnal','LIKE','%%');
         }
 
         if($coa <> "all"){
-            $jurnal->where('AccNo',$coa);
+            $jurnal->where('tbljurnal.AccNo',$coa);
         }
 
         if($position <> "all"){
@@ -76,10 +76,10 @@ class Jurnal_draft extends Model
         $totalRecords = $jurnal->count();
 
         if($searchValue != ''){
-            $jurnal->where('id_jurnal', 'LIKE', '%'.$searchValue.'%')->orWhere('AccNo', 'LIKE', '%'.$searchValue.'%')->orWhere('Amount', 'LIKE', '%'.$searchValue.'%')->orWhere('date', 'LIKE', '%'.$searchValue.'%')->orWhere('description', 'LIKE', '%'.$searchValue.'%')->orWhere('notes_item', 'LIKE', '%'.$searchValue.'%');
+            $jurnal->where('id_jurnal', 'LIKE', '%'.$searchValue.'%')->orWhere('tbljurnal.AccNo', 'LIKE', '%'.$searchValue.'%')->orWhere('tblcoa.AccName', 'LIKE', '%'.$searchValue.'%')->orWhere('Amount', 'LIKE', '%'.$searchValue.'%')->orWhere('date', 'LIKE', '%'.$searchValue.'%')->orWhere('description', 'LIKE', '%'.$searchValue.'%')->orWhere('notes_item', 'LIKE', '%'.$searchValue.'%');
         }
         $totalRecordwithFilter = $jurnal->count();
-        
+
         if($columnName == "no"){
             $jurnal = $jurnal->orderBy('id', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
         }elseif($columnName == "Debet" || $columnName == "Credit"){
@@ -92,7 +92,7 @@ class Jurnal_draft extends Model
         $nomor = 1;
         foreach($jurnal as $jn){
             $row = collect();
-            $row->put('no', $nomor++);            
+            $row->put('no', $nomor++);
             $row->put('id_jurnal', $jn->id_jurnal);
             $row->put('date', $jn->date);
             $row->put('AccNo', $jn->AccNo);
@@ -111,7 +111,7 @@ class Jurnal_draft extends Model
                 if(array_search("FIJBU", $page)){
                     $button .= '<a href="/jurnal/'.$jn->id_jurnal.'/edit" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5"> Update</a>';
                 }
-    
+
                 if(array_search("FIJBD", $page)){
                     $button .= '&nbsp;&nbsp;';
                     $button .= '<a href="javascript:;" id="'.$jn->id_jurnal.'" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5 delete"> Delete</a>';
@@ -120,7 +120,7 @@ class Jurnal_draft extends Model
             }
             $data->push($row);
         }
-        
+
         $response = array(
             'draw' => intval($draw),
             'recordsTotal' => $totalRecords,
@@ -158,7 +158,7 @@ class Jurnal_draft extends Model
 
         $ttl_debet = $jurdebet->where('AccPos','Debet')->sum('Amount');
         $ttl_credit = $jurcredit->where('AccPos','Credit')->sum('Amount');
-        
+
         $data = collect();
         $data->put('ttl_debet',$ttl_debet);
         $data->put('ttl_credit',$ttl_credit);
