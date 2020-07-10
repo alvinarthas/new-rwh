@@ -38,6 +38,22 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
+    public function index(){
+        $dateA = "2020-01-01";
+        $dateB = "2020-01-31";
+        $jurnal = Jurnal::whereBetween('date',[$dateA,$dateB])->groupBy('id_jurnal')->get();
+        echo "Data Jurnal ".$dateA." - ".$dateB."<hr>";
+        foreach($jurnal as $key){
+            $debet = Jurnal::where('id_jurnal', $key->id_jurnal)->where('AccPos', 'Debet')->sum('Amount');
+            $credit = Jurnal::where('id_jurnal', $key->id_jurnal)->where('AccPos', 'Credit')->sum('Amount');
+
+            if($debet != $credit){
+                echo "<hr>";
+                echo $key->id_jurnal." - Debet : ".number_format($debet,2,",",".").", Credit : ".number_format($credit, 2, ",", ".")."<br>";
+            }
+        }
+    }
+
     public function indexinsertpodettoreceive(){
         foreach(ReceiveDet::select('id', 'prod_id', 'trx_id')->get() as $key){
             $purchasedet = PurchaseDetail::where('prod_id', $key->prod_id)->where('trx_id', $key->trx_id)->first();
