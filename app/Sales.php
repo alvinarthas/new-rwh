@@ -164,6 +164,7 @@ class Sales extends Model
                 $status = 0;
             }
             $collect->put('sales_id',$sale->id);
+            $collect->put('jurnal_id',$sale->jurnal_id);
             $collect->put('customer',$sale->customer->apname);
             $collect->put('ttl',$sale->ttl_harga+$sale->ongkir);
             $collect->put('status_do',$status);

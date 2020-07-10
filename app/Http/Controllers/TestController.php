@@ -31,6 +31,7 @@ use App\DeliveryOrder;
 use App\DeliveryDetail;
 use App\Role;
 use App\ReceiveDet;
+use App\Bonus;
 use GuzzleHttp\Client;
 
 use Carbon\Carbon;

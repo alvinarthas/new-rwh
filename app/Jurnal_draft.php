@@ -44,8 +44,8 @@ class Jurnal_draft extends Model
         $param = $request->param;
         $coa = $request->coa;
         $position = $request->position;
-        $start = $request->start;
-        $end = $request->end;
+        $start = $request->start_date;
+        $end = $request->end_date;
 
         $draw = $request->draw;
         $row = $request->start;
