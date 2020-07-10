@@ -242,10 +242,6 @@ class DeliveryController extends Controller
                 $details = DeliveryDetail::where('do_id', $request->do_id)->get();
                 $count = $details->count();
 
-                // echo "<pre>";
-                // print_r($details);
-                // die();
-
                 for ($i=0; $i < $count ; $i++) {
                     $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$details[$i]->product_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
 
@@ -260,10 +256,6 @@ class DeliveryController extends Controller
 
                     $price += $avcharga * $details[$i]->qty;
                 }
-
-                // echo "<pre>";
-                // print_r($price);
-                // die();
 
                 $debet = Jurnal::where('id_jurnal',$request->id_jurnal)->where('AccPos', 'Debet')->first();
                 $debet->amount = $price;

@@ -233,6 +233,42 @@ class Sales extends Model
             Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'2.1.3','Credit',$user_id);
     }
 
+    public static function recycleSales($id){
+        $sales = Sales::where('id',$id)->first();
+        // transfer new Detail
+        $total_transaksi = $sales->ttl_harga + $sales->ongkir;
+        $modal = 0;
+
+        foreach (SalesDet::where('trx_id',$id)->get() as $key) {
+            $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
+
+            $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum('tblpotrxdet.qty');
+
+            if($sumprice <> 0 && $sumqty <> 0){
+                $avcharga = $sumprice/$sumqty;
+            }else{
+                $avcharga = 0;
+            }
+
+            $modal += ($key->qty * $avcharga);
+        }
+        $jurnal_a = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','1.1.3.1')->first();
+        $jurnal_a->amount = $total_transaksi;
+        $jurnal_a->update();
+
+        $jurnal_b = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','4.1.1')->first();
+        $jurnal_b->amount = $total_transaksi;
+        $jurnal_b->update();
+
+        $jurnal_c = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','5.1')->first();
+        $jurnal_c->amount = $modal;
+        $jurnal_c->update();
+
+        $jurnal_d = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','2.1.3')->first();
+        $jurnal_d->amount = $modal;
+        $jurnal_d->update();
+    }
+
     public static function updateSales($id,$user_id){
         $temp_sales = TempSales::where('trx_id',$id)->first();
         $temp_sales_det = TempSalesDet::where('temp_id',$temp_sales->id)->get();
