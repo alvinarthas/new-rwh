@@ -39,6 +39,53 @@ use Carbon\Carbon;
 class TestController extends Controller
 {
     public function index(){
+        $produk = Product::all();
+        foreach($produk as $prod){
+            $no = 1;
+            $do = DeliveryDetail::where('product_id', $prod->prod_id)->get();
+            foreach($do as $key){
+                $sd = SalesDet::where('trx_id', $key->sales_id)->where('prod_id', $prod->prod_id)->sum('qty');
+                $dd = DeliveryDetail::where('sales_id', $key->sales_id)->where('product_id', $prod->prod_id)->sum('qty');
+
+                if($sd != $dd){
+                    echo $no++.". ".$prod->prod_id.", SO ".$key->sales_id." qty:".$sd."- DD ".$key->id.", qty:".$dd."<br>";
+                }
+            }
+            echo "<br>";
+        }
+    }
+
+    public function indexCheckDOEmpty(){
+        $sales = DeliveryOrder::all();
+        foreach($sales as $s){
+            $detail = DeliveryDetail::where('do_id', $s->id)->count();
+            if($detail == 0){
+                echo $s->id."-".$s->jurnal_id."<br>";
+            }
+        }
+    }
+
+    public function indexCheckSOEmpty(){
+        $sales = Sales::all();
+        foreach($sales as $s){
+            $detail = SalesDet::where('trx_id', $s->id)->count();
+            if($detail == 0){
+                echo $s->id."<br>";
+            }
+        }
+    }
+
+    public function indexcheckrelevant(){
+        $deliveries = DeliveryOrder::all();
+        foreach($deliveries as $do){
+            $saldet = SalesDet::where('trx_id', $do->sales_id)->count();
+            if($saldet == 0){
+                echo $do->sales_id." ".$do->id."<br>";
+            }
+        }
+    }
+
+    public function indexCekJurnalUnbalance(){
         $dateA = "2020-01-01";
         $dateB = "2020-01-31";
         $jurnal = Jurnal::whereBetween('date',[$dateA,$dateB])->groupBy('id_jurnal')->get();
