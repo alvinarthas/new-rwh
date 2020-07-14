@@ -26,6 +26,10 @@ class ReceiveDet extends Model
         return $this->belongsTo('App\Employee','creator','id');
     }
 
+    public function price(){
+        return $this->belongsTo('App\PurchaseDetail', 'purchasedetail_id', 'id');
+    }
+
     public static function listReceive($start,$end){
         // $purchase = Purchase::join('tblpotrxdet','tblpotrx.id','=','tblpotrxdet.trx_id')->whereBetween('tblpotrx.month',[$bulan_start,$bulan_end])->whereBetween('tblpotrx.year',[$tahun_start,$tahun_end])->where('tblpotrx.approve',1)->select('tblpotrx.id as trx_id','tblpotrx.supplier','tblpotrxdet.prod_id','tblpotrxdet.qty','tblpotrxdet.unit')->get();
         $purchase = Purchase::whereBetween('tblpotrx.tgl',[$start,$end])->where('tblpotrx.approve',1)->get();
@@ -91,18 +95,18 @@ class ReceiveDet extends Model
     }
 
     public static function detailPurchase($trx){
-        $purchase = Purchase::join('tblpotrxdet','tblpotrx.id','=','tblpotrxdet.trx_id')->select('tblpotrx.id as trx_id','tblpotrx.supplier','tblpotrxdet.prod_id','tblpotrxdet.qty','tblpotrxdet.unit')->where('tblpotrx.id',$trx)->get();
+        $purchase = Purchase::join('tblpotrxdet','tblpotrx.id','=','tblpotrxdet.trx_id')->select('tblpotrx.id as trx_id','tblpotrx.supplier','tblpotrxdet.prod_id','tblpotrxdet.qty','tblpotrxdet.unit','tblpotrxdet.id AS purchasedetail_id', 'tblpotrxdet.price')->where('tblpotrx.id',$trx)->get();
 
         $data = collect();
         foreach($purchase as $key){
             $key->supplier = $key->supplier()->first()->nama;
             $detail = collect($key);
 
-            $qtyrec = ReceiveDet::where('trx_id',$key->trx_id)->where('prod_id',$key->prod_id)->sum('qty');
+            $qtyrec = ReceiveDet::where('purchasedetail_id',$key->purchasedetail_id)->sum('qty');
             $prodname = Product::where('prod_id',$key->prod_id)->first()->name;
 
             $detail->put('qtyrec',$qtyrec);
-            $detail->put('prod_name',$prodname);
+            $detail->put('prod_name',$prodname." - (Rp ".number_format($key->price, 2, ",", ".").")");
             $data->push($detail);
         }
 

@@ -165,7 +165,7 @@ Form Update Receive Product {{$receive[0]->id_jurnal}}
                                         <tr>
                                             <td>{{ $i++ }}</td>
                                             <td>{{ $rec->prod_id }}</td>
-                                            <td>{{ $rec->prod->name }}</td>
+                                            <td>{{ $rec->prod->name }} - (Rp {{number_format($rec->price->price, 2, ",", ".")}})</td>
                                             <td>{{ $rec->qty }}</td>
                                             <td>{{ $rec->expired_date }}</td>
                                             <td>@isset($rec->gudang->nama){{ $rec->gudang->nama }}@endisset</td>
