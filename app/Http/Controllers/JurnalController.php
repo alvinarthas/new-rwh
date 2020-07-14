@@ -7,7 +7,6 @@ use App\Exceptions\Handler;
 use Illuminate\Http\Request;
 
 use App\Jurnal;
-use App\Jurnal_draft;
 use App\Coa;
 use App\MenuMapping;
 use DataTables;
@@ -26,15 +25,30 @@ class JurnalController extends Controller
             $end_date = $request->end_date;
             $coa = $request->coa;
             $position = $request->position;
-            $jurnals = Jurnal::viewJurnal($request->start_date,$request->end_date,$request->coa,$request->position,$request->param);
+            $total = Jurnal::getTotalJurnal($request->start_date,$request->end_date,$request->coa,$request->position,$request->param);
             $param = $request->param;
             $page = MenuMapping::getMap(session('user_id'),"FIJU");
-            return response()->json(view('jurnal.view',compact('jurnals','page','param'))->render());
+            // return response()->json(view('jurnal.view',compact('jurnals','page','param'))->render());
+            return response()->json(view('jurnal.view',compact('page','param','position','coa','start_date','end_date', 'total'))->render());
         }else{
             $coas = Coa::where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
             $page = MenuMapping::getMap(session('user_id'),"FIJU");
             return view('jurnal.index',compact('coas','page'));
         }
+        // if ($request->ajax()) {
+        //     $start_date = $request->start_date;
+        //     $end_date = $request->end_date;
+        //     $coa = $request->coa;
+        //     $position = $request->position;
+        //     $jurnals = Jurnal::viewJurnal($request->start_date,$request->end_date,$request->coa,$request->position,$request->param);
+        //     $param = $request->param;
+        //     $page = MenuMapping::getMap(session('user_id'),"FIJU");
+        //     return response()->json(view('jurnal.view',compact('jurnals','page','param'))->render());
+        // }else{
+        //     $coas = Coa::where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
+        //     $page = MenuMapping::getMap(session('user_id'),"FIJU");
+        //     return view('jurnal.index',compact('coas','page'));
+        // }
     }
 
     public function indexDraft(Request $request)
@@ -44,14 +58,14 @@ class JurnalController extends Controller
             $end_date = $request->end_date;
             $coa = $request->coa;
             $position = $request->position;
-            $total = Jurnal_draft::getTotalJurnal($request->start_date,$request->end_date,$request->coa,$request->position,$request->param);
+            $total = Jurnal::getTotalJurnal($request->start_date,$request->end_date,$request->coa,$request->position,$request->param);
             $param = $request->param;
-            $page = MenuMapping::getMap(session('user_id'),"FIJB");
+            $page = MenuMapping::getMap(session('user_id'),"FIJU");
             // return response()->json(view('jurnal.view',compact('jurnals','page','param'))->render());
             return response()->json(view('jurnal.view_draft',compact('page','param','position','coa','start_date','end_date', 'total'))->render());
         }else{
             $coas = Coa::where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
-            $page = MenuMapping::getMap(session('user_id'),"FIJB");
+            $page = MenuMapping::getMap(session('user_id'),"FIJU");
             return view('jurnal.index_draft',compact('coas','page'));
         }
     }
@@ -59,7 +73,7 @@ class JurnalController extends Controller
     public function getData(Request $request)
     {
         if($request->ajax()){
-            $jurnals = Jurnal_draft::viewJurnal($request);
+            $jurnals = Jurnal::viewJurnal($request);
             echo json_encode($jurnals);
         }
     }

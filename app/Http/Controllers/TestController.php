@@ -42,13 +42,30 @@ class TestController extends Controller
         $produk = Product::all();
         foreach($produk as $prod){
             $no = 1;
+            $receive = ReceiveDet::where('prod_id', $prod->prod_id)->get();
+            foreach($receive as $key){
+                $pd = PurchaseDetail::where('trx_id', $key->trx_id)->where('prod_id', $prod->prod_id)->sum('qty');
+                $rd = ReceiveDet::where('trx_id', $key->trx_id)->where('prod_id', $prod->prod_id)->sum('qty');
+
+                if($pd != $rd){
+                    echo $no++.". ".$prod->prod_id.", PO ".$key->trx_id." qty:".$pd." - RD ".$key->id.", qty:".$rd."<br>";
+                }
+            }
+            echo "<br>";
+        }
+    }
+
+    public function indexcheckSO(){
+        $produk = Product::all();
+        foreach($produk as $prod){
+            $no = 1;
             $do = DeliveryDetail::where('product_id', $prod->prod_id)->get();
             foreach($do as $key){
                 $sd = SalesDet::where('trx_id', $key->sales_id)->where('prod_id', $prod->prod_id)->sum('qty');
                 $dd = DeliveryDetail::where('sales_id', $key->sales_id)->where('product_id', $prod->prod_id)->sum('qty');
 
                 if($sd != $dd){
-                    echo $no++.". ".$prod->prod_id.", SO ".$key->sales_id." qty:".$sd."- DD ".$key->id.", qty:".$dd."<br>";
+                    echo $no++.". ".$prod->prod_id.", SO ".$key->sales_id." qty:".$sd." - DD ".$key->id.", qty:".$dd."<br>";
                 }
             }
             echo "<br>";

@@ -132,11 +132,12 @@ Index Jurnal Report
 
     $(".select2").select2();
 
-    function showData(param=null){
+    function showData(param){
         start_date = $('#start_date').val();
         end_date = $('#end_date').val();
         coa = $('#coa').val();
         position = $('#position').val();
+        console.log(param);
 
         $.ajax({
             url : "{{route('jurnal.index')}}",
