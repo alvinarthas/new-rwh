@@ -80,7 +80,7 @@ Index Jurnal Report
                 </div>
 
                 <div class="form-group text-left m-b-0">
-                    @if(array_search("FIJBC",$page))
+                    @if(array_search("FIJUC",$page))
                     <a href="{{ route('jurnal.create') }}" class="btn btn-success btn-rounded w-md waves-effect waves-light m-b-5">Tambah Jurnal</a>
                     @endif
                     <a href="javascript:;" class="btn btn-custom btn-rounded waves-effect waves-light w-md m-b-5" onclick="showData('umum')">Show Jurnal Umum</a>
@@ -132,15 +132,14 @@ Index Jurnal Report
 
     $(".select2").select2();
 
-    function showData(param){
+    function showData(param=null){
         start_date = $('#start_date').val();
         end_date = $('#end_date').val();
         coa = $('#coa').val();
         position = $('#position').val();
-        console.log(param);
 
         $.ajax({
-            url : "{{route('jurnalDraft')}}",
+            url : "{{route('jurnal.index')}}",
             type : "get",
             dataType: 'json',
             data:{

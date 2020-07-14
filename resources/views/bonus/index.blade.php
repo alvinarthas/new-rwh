@@ -395,7 +395,7 @@
                                                 @endphp
                                                 @foreach($bonus as $b)
                                                 <tr style="width:100%" id="trsd{{ $b->id_bonus }}" class="trow">
-                                                    <td><input type="hidden" name="id_bonus[]" value="{{ $b->id_bonus }}">{{$i}}</td>
+                                                    <td><input type="hidden" name="id_bonus[]" value="{{ $b->id_bonus }}">{{$i++}}</td>
                                                     <td>{{$b->ktp}}</td>
                                                     <td><input type="hidden" name="noid[]" value="{{ $b->noid }}">{{$b->noid}}</td>
                                                     <td>{{$b->nama}}</td>
@@ -410,9 +410,6 @@
                                                         <a href="javascript:;" type="button" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteRowPerhitungan({{ $b['id_bonus']}})">Delete</a>
                                                     </td>
                                                 </tr>
-                                                @php
-                                                    $i++;
-                                                @endphp
                                                 @endforeach
                                             </tbody>
                                         </table>

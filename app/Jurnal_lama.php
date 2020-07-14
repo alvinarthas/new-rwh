@@ -4,7 +4,6 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
 
 use App\Coa;
 use App\Product;
@@ -14,7 +13,7 @@ use App\Member;
 use App\BankMember;
 use App\BonusBayar;
 
-class Jurnal_draft extends Model
+class Jurnal extends Model
 {
     protected $table ='tbljurnal';
     protected $fillable = [
@@ -26,7 +25,7 @@ class Jurnal_draft extends Model
     }
 
     public static function getJurnalID($jenis){
-        $jurnal = Jurnal_draft::where('id_jurnal','LIKE',$jenis.'%')->orderBy(DB::raw('CAST(SUBSTRING(id_jurnal, 4, 10) AS INT)'),'desc')->select('id_jurnal')->distinct('id_jurnal');
+        $jurnal = Jurnal::where('id_jurnal','LIKE',$jenis.'%')->orderBy(DB::raw('CAST(SUBSTRING(id_jurnal, 4, 10) AS INT)'),'desc')->select('id_jurnal')->distinct('id_jurnal');
         $count_jurnal = $jurnal->count();
         if($count_jurnal == 0){
             $id_jurnal = $jenis.".1";
@@ -38,128 +37,43 @@ class Jurnal_draft extends Model
         return $id_jurnal;
     }
 
-    public static function viewJurnal(Request $request){
-
-        $page = MenuMapping::getMap(session('user_id'),"FIJB");
-        $param = $request->param;
-        $coa = $request->coa;
-        $position = $request->position;
-        $start = $request->start_date;
-        $end = $request->end_date;
-
-        $draw = $request->draw;
-        $row = $request->start;
-        $rowperpage = $request->length; // Rows display per page
-        $columnIndex = $request['order'][0]['column']; // Column index
-        $columnName = $_POST['columns'][$columnIndex]['data']; // Column name
-        $columnSortOrder = $_POST['order'][0]['dir']; // asc or desc
-        $searchValue = $_POST['search']['value']; // Search value
-
-        if ($param == "umum") {
-            $jurnal = Jurnal_draft::join('tblcoa', 'tbljurnal.AccNo', 'tblcoa.AccNo')->select('tbljurnal.id','id_jurnal','tbljurnal.AccNo','tblcoa.AccName','AccPos','Amount','date','description','creator','notes_item','tbljurnal.created_at','tbljurnal.updated_at')->where('id_jurnal','LIKE','JN%');
-        }elseif ($param == "mutasi") {
-            $jurnal = Jurnal_draft::join('tblcoa', 'tbljurnal.AccNo', 'tblcoa.AccNo')->select('tbljurnal.id','id_jurnal','tbljurnal.AccNo','tblcoa.AccName','AccPos','Amount','date','description','creator','notes_item','tbljurnal.created_at','tbljurnal.updated_at')->where('id_jurnal','LIKE','%%');
-        }
-
-        if($coa <> "all"){
-            $jurnal->where('tbljurnal.AccNo',$coa);
-        }
-
-        if($position <> "all"){
-            $jurnal->where('AccPos',$position);
-        }
-
-        if($start <> NULL && $end <> NULL){
-            $jurnal->whereBetween('date',[$start,$end]);
-        }
-
-        $totalRecords = $jurnal->count();
-
-        if($searchValue != ''){
-            $jurnal->where('id_jurnal', 'LIKE', '%'.$searchValue.'%')->orWhere('tbljurnal.AccNo', 'LIKE', '%'.$searchValue.'%')->orWhere('tblcoa.AccName', 'LIKE', '%'.$searchValue.'%')->orWhere('Amount', 'LIKE', '%'.$searchValue.'%')->orWhere('date', 'LIKE', '%'.$searchValue.'%')->orWhere('description', 'LIKE', '%'.$searchValue.'%')->orWhere('notes_item', 'LIKE', '%'.$searchValue.'%');
-        }
-        $totalRecordwithFilter = $jurnal->count();
-
-        if($columnName == "no"){
-            $jurnal = $jurnal->orderBy('id', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
-        }elseif($columnName == "Debet" || $columnName == "Credit"){
-            $jurnal = $jurnal->orderBy('Amount', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
-        }else{
-            $jurnal = $jurnal->orderBy($columnName, $columnSortOrder)->offset($row)->limit($rowperpage)->get();
-        }
-
-        $data = collect();
-        $nomor = 1;
-        foreach($jurnal as $jn){
-            $row = collect();
-            $row->put('no', $nomor++);
-            $row->put('id_jurnal', $jn->id_jurnal);
-            $row->put('date', $jn->date);
-            $row->put('AccNo', $jn->AccNo);
-            $row->put('AccName', $jn->coa->AccName);
-            if($jn->AccPos == "Debet"){
-                $row->put('Debet', $jn->Amount);
-                $row->put('Credit', "");
-            }elseif($jn->AccPos == "Credit"){
-                $row->put('Credit', $jn->Amount);
-                $row->put('Debet', "");
-            }
-            $row->put('notes_item', $jn->notes_item);
-            $row->put('description', $jn->description);
-            if($param == "umum"){
-                $button = "";
-                if(array_search("FIJBU", $page)){
-                    $button .= '<a href="/jurnal/'.$jn->id_jurnal.'/edit" class="btn btn-info btn-rounded waves-effect w-md waves-danger m-b-5"> Update</a>';
-                }
-
-                if(array_search("FIJBD", $page)){
-                    $button .= '&nbsp;&nbsp;';
-                    $button .= '<a href="javascript:;" id="'.$jn->id_jurnal.'" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5 delete"> Delete</a>';
-                }
-                $row->put('option', $button);
-            }
-            $data->push($row);
-        }
-
-        $response = array(
-            'draw' => intval($draw),
-            'recordsTotal' => $totalRecords,
-            'recordsFiltered' => $totalRecordwithFilter,
-            'data' => $data,
-        );
-        return $response;
-    }
-
-    public static function getTotalJurnal($start,$end,$coa,$position,$param){
+    public static function viewJurnal($start,$end,$coa,$position,$param){
 
         // ini_set('memory_limit', '256M');
         if ($param == "umum") {
-            $jurdebet = Jurnal_draft::where('id_jurnal','LIKE','JN%');
-            $jurcredit = Jurnal_draft::where('id_jurnal','LIKE','JN%');
+            $jurnal = Jurnal::where('id_jurnal','LIKE','JN%');
+            $jurdebet = Jurnal::where('id_jurnal','LIKE','JN%');
+            $jurcredit = Jurnal::where('id_jurnal','LIKE','JN%');
         }elseif ($param == "mutasi") {
-            $jurdebet = Jurnal_draft::where('id_jurnal','LIKE','%%');
-            $jurcredit = Jurnal_draft::where('id_jurnal','LIKE','%%');
+            $jurnal = Jurnal::select('id','id_jurnal','AccNo','AccPos','Amount','date','description','creator','notes_item','created_at','updated_at')->where('id_jurnal','LIKE','%%');
+            $jurdebet = Jurnal::select('id','id_jurnal','AccNo','AccPos','Amount','date')->where('id_jurnal','LIKE','%%');
+            $jurcredit = Jurnal::select('id','id_jurnal','AccNo','AccPos','Amount','date')->where('id_jurnal','LIKE','%%');
         }
 
         if($coa <> "all"){
+            $jurnal->where('AccNo',$coa);
             $jurdebet->where('AccNo',$coa);
             $jurcredit->where('AccNo',$coa);
         }
 
         if($position <> "all"){
+            $jurnal->where('AccPos',$position);
             $jurdebet->where('AccPos',$position);
             $jurcredit->where('AccPos',$position);
         }
 
         if($start <> NULL && $end <> NULL){
+            $jurnal->whereBetween('date',[$start,$end]);
             $jurdebet->whereBetween('date',[$start,$end]);
             $jurcredit->whereBetween('date',[$start,$end]);
         }
 
         $ttl_debet = $jurdebet->where('AccPos','Debet')->sum('Amount');
         $ttl_credit = $jurcredit->where('AccPos','Credit')->sum('Amount');
+        $jurnal = $jurnal->orderBy('date','asc')->get();
 
         $data = collect();
+        $data->put('data',$jurnal);
         $data->put('ttl_debet',$ttl_debet);
         $data->put('ttl_credit',$ttl_credit);
         return $data;
@@ -167,9 +81,9 @@ class Jurnal_draft extends Model
 
     public static function generalLedger($start,$end,$coa){
 
-        $jurnal = Jurnal_draft::where('AccNo',$coa);
-        $jurdebet = Jurnal_draft::where('AccNo',$coa);
-        $jurcredit = Jurnal_draft::where('AccNo',$coa);
+        $jurnal = Jurnal::where('AccNo',$coa);
+        $jurdebet = Jurnal::where('AccNo',$coa);
+        $jurcredit = Jurnal::where('AccNo',$coa);
 
         if($start <> NULL && $end <> NULL){
             $jurnal->whereBetween('date',[$start,$end]);
@@ -195,7 +109,7 @@ class Jurnal_draft extends Model
             $user = session('user_id');
         }
 
-        $jurnal = new Jurnal_draft(array(
+        $jurnal = new Jurnal(array(
             'id_jurnal' => $id_jurnal,
             'AccNo' => $coa,
             'AccPos' => $position,
@@ -219,7 +133,7 @@ class Jurnal_draft extends Model
                 $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
 
                 $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key2->prod_id)->where('tblpotrx.tgl','<=',$key->trx_date)->sum('tblpotrxdet.qty');
-
+                
                 if($sumprice <> 0 && $sumqty <> 0){
                     $avcost = $sumprice/$sumqty;
                 }else{
@@ -231,11 +145,11 @@ class Jurnal_draft extends Model
             // Update Jurnal Sales
             if($sales_jurnal <> 0){
                 // debet COGS
-                    $jurnal_sales_a = Jurnal_draft::where('id_jurnal',$sales_jurnal)->where('AccNo','5.1')->first();
+                    $jurnal_sales_a = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','5.1')->first();
                     $jurnal_sales_a->amount = $cogs;
                     $jurnal_sales_a->update();
                 // Credit Persediaan Barang milik customer
-                    $jurnal_sales_b = Jurnal_draft::where('id_jurnal',$sales_jurnal)->where('AccNo','2.1.3')->first();
+                    $jurnal_sales_b = Jurnal::where('id_jurnal',$sales_jurnal)->where('AccNo','2.1.3')->first();
                     $jurnal_sales_b->amount = $cogs;
                     $jurnal_sales_b->update();
             }
@@ -254,17 +168,17 @@ class Jurnal_draft extends Model
                     }else{
                         $do_avcost = 0;
                     }
-
+                    
                     $price = $do_avcost * $dodet->qty;
                     $do_sum+=$price;
                 }
                 // Update Jurnal DO
                     // debet Persediaan Barang milik Customer
-                        $jurnal_do_a = Jurnal_draft::where('id_jurnal',$dokey->jurnal_id)->where('AccNo','2.1.3')->first();
+                        $jurnal_do_a = Jurnal::where('id_jurnal',$dokey->jurnal_id)->where('AccNo','2.1.3')->first();
                         $jurnal_do_a->amount = $do_sum;
                         $jurnal_do_a->update();
                     // credit Persediaan Barang digudang
-                        $jurnal_do_b = Jurnal_draft::where('id_jurnal',$dokey->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
+                        $jurnal_do_b = Jurnal::where('id_jurnal',$dokey->jurnal_id)->where('AccNo','1.1.4.1.2')->first();
                         $jurnal_do_b->amount = $do_sum;
                         $jurnal_do_b->update();
             }

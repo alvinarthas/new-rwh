@@ -628,21 +628,47 @@ class BonusController extends Controller
                 // $id_jurnal = Jurnal::getJurnalID('BP');
                 $id_jurnal_lama = $request->id_jurnal_lama;
 
-                // debet Piutang Bonus
-                $debet = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', "1.1.3.5")->where('AccPos', "Debet")->first();
-                $debet->Amount      = $total_bonus;
-                $debet->date        = $tgl;
-                $debet->description = $ket;
-                $debet->creator     = session('user_id');
-                $debet->update();
+                if(count(Jurnal::where('id_jurnal', $id_jurnal_lama)->get()) != 0){
+                    // debet Piutang Bonus
+                    $debet = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', "1.1.3.5")->where('AccPos', "Debet")->first();
+                    $debet->Amount      = $total_bonus;
+                    $debet->date        = $tgl;
+                    $debet->description = $ket;
+                    $debet->creator     = session('user_id');
+                    $debet->update();
 
-                // credit Estimasi Bonus
-                $credit = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', "1.1.3.4")->where('AccPos', "Credit")->first();
-                $credit->Amount      = $total_bonus;
-                $credit->date        = $tgl;
-                $credit->description = $ket;
-                $credit->creator     = session('user_id');
-                $credit->update();
+                    // credit Estimasi Bonus
+                    $credit = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', "1.1.3.4")->where('AccPos', "Credit")->first();
+                    $credit->Amount      = $total_bonus;
+                    $credit->date        = $tgl;
+                    $credit->description = $ket;
+                    $credit->creator     = session('user_id');
+                    $credit->update();
+                }else{
+                    $debet = new Jurnal(array(
+                        'id_jurnal'     => $id_jurnal_lama,
+                        'AccNo'         => "1.1.3.5",
+                        'AccPos'        => "Debet",
+                        'Amount'        => $total_bonus,
+                        'company_id'    => 1,
+                        'date'          => $tgl,
+                        'description'   => $ket,
+                        'creator'       => session('user_id')
+                    ));
+                    $debet->save();
+                    // credit Estimasi Bonus
+                    $credit = new Jurnal(array(
+                        'id_jurnal'     => $id_jurnal_lama,
+                        'AccNo'         => "1.1.3.4",
+                        'AccPos'        => "Credit",
+                        'Amount'        => $total_bonus,
+                        'company_id'    => 1,
+                        'date'          => $tgl,
+                        'description'   => $ket,
+                        'creator'       => session('user_id')
+                    ));
+                    $credit->save();
+                }
 
                 // if($selisih!=0){
                 //     if($selisih < 0){
@@ -676,6 +702,16 @@ class BonusController extends Controller
                         }else{
                             $bonus = $bonus_lama;
                         }
+                        $id_bonus = $request->id_bonus[$i];
+                        $data = Bonus::where('id_bonus', $id_bonus)->first();
+                        $data->tgl = $tgl;
+                        $data->bulan = $bulan;
+                        $data->tahun = $tahun;
+                        $data->bonus = $bonus;
+                        $data->perusahaan_id = $perusahaan_id;
+                        $data->creator = session('user_id');
+                        $data->update();
+                    }elseif(isset($request->id_bonus[$i]) AND !empty(Bonus::where('id_bonus', $request->id_bonus[$i])->first())){
                         $id_bonus = $request->id_bonus[$i];
                         $data = Bonus::where('id_bonus', $id_bonus)->first();
                         $data->tgl = $tgl;
@@ -1249,14 +1285,44 @@ class BonusController extends Controller
     {
         try{
             $data = Bonus::where('id_bonus', $request->id)->first();
+            $total_bonus = Bonus::where('id_jurnal', $data->id_jurnal)->where('id_bonus', '!=', $request->id)->sum('bonus');
             $jurnal = Jurnal::where('id_jurnal', $data->id_jurnal)->get();
-            foreach($jurnal as $key){
-                $key->Amount -= $data->bonus;
-                if($key->Amount != 0){
-                    $key->update();
-                }else{
-                    $key->delete();
+            
+            if(!empty($jurnal)){
+                foreach($jurnal as $key){
+                    $key->Amount -= $total_bonus;
+                    if($key->Amount != 0){
+                        $key->update();
+                    }else{
+                        $key->delete();
+                    }
                 }
+            }else{
+                $perusahaan = Perusahaan::where('id',$data->perusahaan_id)->select('nama')->first();
+                $ket = 'perhitungan bonus '.$perusahaan['nama'].' - bulan '.$data->bulan.' '.$data->tahun;
+                $debet = new Jurnal(array(
+                    'id_jurnal'     => $data->id_jurnal,
+                    'AccNo'         => "1.1.3.5",
+                    'AccPos'        => "Debet",
+                    'Amount'        => $total_bonus,
+                    'company_id'    => 1,
+                    'date'          => $data->tgl,
+                    'description'   => $ket,
+                    'creator'       => session('user_id')
+                ));
+                $debet->save();
+                // credit Estimasi Bonus
+                $credit = new Jurnal(array(
+                    'id_jurnal'     => $data->jurnal,
+                    'AccNo'         => "1.1.3.4",
+                    'AccPos'        => "Credit",
+                    'Amount'        => $total_bonus,
+                    'company_id'    => 1,
+                    'date'          => $tgl,
+                    'description'   => $ket,
+                    'creator'       => session('user_id')
+                ));
+                $credit->save();
             }
             $data->delete();
             return response()->json($data);
