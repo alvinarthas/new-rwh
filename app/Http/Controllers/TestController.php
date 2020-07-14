@@ -87,7 +87,7 @@ class TestController extends Controller
 
     public function indexCekJurnalUnbalance(){
         $dateA = "2020-01-01";
-        $dateB = "2020-01-31";
+        $dateB = "2020-07-31";
         $jurnal = Jurnal::whereBetween('date',[$dateA,$dateB])->groupBy('id_jurnal')->get();
         echo "Data Jurnal ".$dateA." - ".$dateB."<hr>";
         foreach($jurnal as $key){

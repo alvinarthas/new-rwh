@@ -2,27 +2,31 @@
 
 namespace App\Http\Controllers;
 
+// Library
+use Excel;
+use Carbon\Carbon;
+use App\Exports\SOExport;
+use App\Exceptions\Handler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Exceptions\Handler;
-use Carbon\Carbon;
-use Excel;
-use App\Exports\SOExport;
 
-use App\Customer;
-use App\Product;
-use App\PriceDet;
-use App\Sales;
-use App\SalesPayment;
-use App\SalesDet;
-use App\PurchaseDetail;
-use App\Jurnal;
-use App\MenuMapping;
+// Models
 use App\Log;
+use App\Sales;
+use App\Jurnal;
+use App\Product;
+use App\Customer;
+use App\PriceDet;
+use App\SalesDet;
 use App\TempSales;
-use App\TempSalesDet;
-use App\DeliveryOrder;
 use App\Ecommerce;
+use App\MenuMapping;
+use App\TempSalesDet;
+use App\SalesPayment;
+use App\DeliveryOrder;
+use App\PurchaseDetail;
+use App\DeliveryDetail;
+
 
 class SalesController extends Controller
 {
@@ -151,16 +155,29 @@ class SalesController extends Controller
 
                 $detail->delete();
 
-                Log::setLog('PSSLD','Delete Sales Detail SO.'.$sales->id);
+                Log::setLog('PSSLD','Delete Temp Sales Detail SO.'.$sales->id);
             }else{
                 $detail = SalesDet::where('id',$request->detail)->first();
                 $sales = Sales::where('id',$detail->trx_id)->first();
-                $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
-                $sales->save();
 
+                $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
+
+                $sales->save();
+                // Check DO
+                $dos = DeliveryDetail::where('product_id',$detail->prod_id)->where('sales_id',$sales->id)->get();
                 $detail->delete();
 
-                Log::setLog('PSSLD','Delete Temp Sales Detail SO.'.$sales->id);
+                if ($sales->approve == 1) {
+                    // Recycle Jurnal
+                    Sales::recycleSales($sales->id);
+
+                    // Recycle DO
+                    foreach ($dos as $dodet) {
+                        DeliveryDetail::recycleDO($dodet->do_id,$dodet->id,$sales->trx_date);
+                    }
+                }
+
+                Log::setLog('PSSLD','Delete Sales Detail SO.'.$sales->id);
             }
 
             return "true";
