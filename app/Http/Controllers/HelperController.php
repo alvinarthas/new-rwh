@@ -51,4 +51,17 @@ class HelperController extends Controller
 
         return response()->json($data);
     }
+
+    public function recycleSO(Request $request){
+        // Loop All SO
+        foreach (Sales::where('jurnal_id','!=','0')->select('id','trx_date')->get() as $key) {
+            // Recyle Sales Jurnal
+            Sales::recycleSales($key->id);
+
+            // Get Delivery Order Data
+            foreach (DeliveryOrder::where('sales_id')->select('id')->get() as $key2) {
+                DeliveryOrder::recycleDO($key2->id,$key->trx_date);
+            }
+        }
+    }
 }
