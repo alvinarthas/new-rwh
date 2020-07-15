@@ -65,14 +65,20 @@ class DeliveryOrder extends Model
         return $data;
     }
 
-    public static function autoDO($sales_id,$date){
+    public static function autoDO($sales_id,$date,$user_id = null){
+        if($user_id != null){
+            $user = $user_id;
+        }else{
+            $user = session('user_id');
+        }
+
         $id_jurnal = Jurnal::getJurnalID('DO');
         $sales = Sales::where('id',$sales_id)->first();
 
         $do = new DeliveryOrder(array(
             'sales_id' => $sales_id,
             'date' => $date,
-            'petugas' => session('user_id'),
+            'petugas' => $user,
             'jurnal_id' => $id_jurnal,
         ));
 
@@ -93,13 +99,15 @@ class DeliveryOrder extends Model
         }
 
         $desc = "Delivery Order ".$sales->jurnal_id;
+
         // JURNAL
             //insert debet Persediaan Barang milik Customer
-            Jurnal::addJurnal($id_jurnal,$price,$date,$desc,'2.1.3','Debet');
+            Jurnal::addJurnal($id_jurnal,$price,$date,$desc,'2.1.3','Debet',$user);
             //insert credit Persediaan Barang digudang
-            Jurnal::addJurnal($id_jurnal,$price,$date,$desc,'1.1.4.1.2','Credit');
-
+            Jurnal::addJurnal($id_jurnal,$price,$date,$desc,'1.1.4.1.2','Credit',$user);
         $do->save();
+
+
 
         $desc = "Delivery Order ID=".$do->id." ".$sales->jurnal_id;
 
@@ -118,7 +126,7 @@ class DeliveryOrder extends Model
 
             $dodet->save();
         }
-        Log::setLog('PSDOC','Create Delivery Order '.$sales->jurnal_id.' Jurnal ID: '.$id_jurnal);
+        Log::setLog('PSDOC','Create Delivery Order '.$sales->jurnal_id.' Jurnal ID: '.$id_jurnal,$user);
     }
 
     public static function deleteDO($sales_id){

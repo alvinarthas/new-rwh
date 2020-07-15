@@ -327,6 +327,8 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/datakota','HelperController@getDataKota')->name('getDataKota');
     Route::get('/datacoa','HelperController@ajxCoa')->name('ajxCoa');
     Route::get('/recycleso','HelperController@recycleSO')->name('recyleSO');
+    Route::get('/inbalancejurnal','HelperController@inBalanceJurnal')->name('inBalanceJurnal');
+    Route::get('/inbalancedo','HelperController@inBalanceDO')->name('inBalanceDO');
     Route::get('coatable','CoaController@coaTable')->name('coaTable');
     Route::get('supplier', 'PerusahaanController@getSupplier')->name('getSupplier');
 

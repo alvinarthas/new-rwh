@@ -39,6 +39,18 @@ use Carbon\Carbon;
 class TestController extends Controller
 {
     public function index(){
+        foreach(Product::all() as $product){
+            foreach(DeliveryDetail::where('product_id',$product->prod_id)->get() as $dd){
+                $salesdet = SalesDet::where('prod_id',$dd->product_id)->where('trx_id',$dd->sales_id)->count();
+
+                if($salesdet == 0){
+                    echo "SO.".$dd->sales_id." DO.".$dd->do_id." DD.".$dd->id." Product: ".$dd->product_id."<br>";
+                }
+            }
+        }
+    }
+
+    public function indexcheckPO(){
         $produk = Product::all();
         foreach($produk as $prod){
             $no = 1;
@@ -55,7 +67,7 @@ class TestController extends Controller
         }
     }
 
-    public function indexcheckSO(){
+    public function indexCheckSO(){
         $produk = Product::all();
         foreach($produk as $prod){
             $no = 1;
@@ -65,7 +77,7 @@ class TestController extends Controller
                 $dd = DeliveryDetail::where('sales_id', $key->sales_id)->where('product_id', $prod->prod_id)->sum('qty');
 
                 if($sd != $dd){
-                    echo $no++.". ".$prod->prod_id.", SO ".$key->sales_id." qty:".$sd." - DD ".$key->id.", qty:".$dd."<br>";
+                    echo $no++.". ".$prod->prod_id.", SO ".$key->sales_id." qty:".$sd." - DO: ".$key->do_id." - DD ".$key->id.", qty:".$dd."<br>";
                 }
             }
             echo "<br>";

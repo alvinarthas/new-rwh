@@ -234,7 +234,7 @@ class Sales extends Model
 
         //  Auto DO
         if ($sales->method <> 0){
-            DeliveryOrder::autoDO($sales->id,$sales->trx_date);
+            DeliveryOrder::autoDO($sales->id,$sales->trx_date,$user_id);
         }
     }
 
