@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use App\SalesDet;
 use App\Sales;
 use App\Purchase;
+use App\Jurnal;
+use App\DeliveryDetail;
 
 class DeliveryOrder extends Model
 {
@@ -63,31 +65,20 @@ class DeliveryOrder extends Model
         return $data;
     }
 
-    // public static function checkDO($start,$end){
-    //     $sales = SalesDet::join('tblproducttrx','tblproducttrxdet.trx_id','=','tblproducttrx.id');
-    //     if($start <> NULL && $end <> NULL){
-    //         $sales = $sales->whereBetween('tblproducttrx.trx_date',[$start,$end])->select('tblproducttrxdet.trx_id','tblproducttrx.customer_id','tblproducttrx.online_id','tblproducttrxdet.prod_id','tblproducttrxdet.qty')->get();
-    //     }else{
-    //         $sales = $sales->select('tblproducttrxdet.trx_id','tblproducttrx.customer_id','tblproducttrx.online_id','tblproducttrxdet.prod_id','tblproducttrxdet.qty')->get();
-    //     }
+    public static function autoDO($sales_id,$date,$user_id = null){
+        if($user_id != null){
+            $user = $user_id;
+        }else{
+            $user = session('user_id');
+        }
 
-    //     foreach ($sales as $key) {
-    //         $do = DeliveryDetail::where('sales_id',$key->trx_id)->where('product_id',$key->prod_id)->sum('qty');
-    //         $key->customer_name = $key->trx->customer->apname;
-    //         $key->product_name = $key->product->name;
-    //         $key->do_qty = $do;
-    //     }
-    //     return $sales;
-    // }
-
-    public static function autoDO($sales_id,$date){
         $id_jurnal = Jurnal::getJurnalID('DO');
         $sales = Sales::where('id',$sales_id)->first();
 
         $do = new DeliveryOrder(array(
             'sales_id' => $sales_id,
             'date' => $date,
-            'petugas' => session('user_id'),
+            'petugas' => $user,
             'jurnal_id' => $id_jurnal,
         ));
 
@@ -108,13 +99,15 @@ class DeliveryOrder extends Model
         }
 
         $desc = "Delivery Order ".$sales->jurnal_id;
+
         // JURNAL
             //insert debet Persediaan Barang milik Customer
-            Jurnal::addJurnal($id_jurnal,$price,$date,$desc,'2.1.3','Debet');
+            Jurnal::addJurnal($id_jurnal,$price,$date,$desc,'2.1.3','Debet',$user);
             //insert credit Persediaan Barang digudang
-            Jurnal::addJurnal($id_jurnal,$price,$date,$desc,'1.1.4.1.2','Credit');
-
+            Jurnal::addJurnal($id_jurnal,$price,$date,$desc,'1.1.4.1.2','Credit',$user);
         $do->save();
+
+
 
         $desc = "Delivery Order ID=".$do->id." ".$sales->jurnal_id;
 
@@ -133,7 +126,7 @@ class DeliveryOrder extends Model
 
             $dodet->save();
         }
-        Log::setLog('PSDOC','Create Delivery Order '.$sales->jurnal_id.' Jurnal ID: '.$id_jurnal);
+        Log::setLog('PSDOC','Create Delivery Order '.$sales->jurnal_id.' Jurnal ID: '.$id_jurnal,$user);
     }
 
     public static function deleteDO($sales_id){
@@ -149,6 +142,43 @@ class DeliveryOrder extends Model
             } catch (\Exception $e) {
                 return response()->json($e);
             }
+        }
+    }
+
+    public static function recycleDO($do_id,$date,$det_id = null){
+        if ($det_id){
+            DeliveryDetail::where('id',$det_id)->delete();
+        }
+
+        $do = DeliveryOrder::where('id',$do_id)->first();
+
+        $price = 0;
+        $count = 0;
+        foreach(DeliveryDetail::where('do_id',$do_id)->get() as $key) {
+            $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->product_id)->where('tblpotrx.tgl','<=',$date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
+
+            $sumqty = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->product_id)->where('tblpotrx.tgl','<=',$date)->sum('tblpotrxdet.qty');
+
+            if($sumprice <> 0 && $sumqty <> 0){
+                $avcharga = $sumprice/$sumqty;
+            }else{
+                $avcharga = 0;
+            }
+
+            $price += $avcharga * $key->qty;
+            $count++;
+        }
+
+        if ($count > 0){
+            $debet = Jurnal::where('id_jurnal',$do->jurnal_id)->where('AccPos', 'Debet')->first();
+            $debet->amount = $price;
+            $debet->update();
+
+            $credit = Jurnal::where('id_jurnal',$do->jurnal_id)->where('AccPos', 'Credit')->first();
+            $credit->amount = $price;
+            $credit->update();
+        }else{
+            $jurnal = Jurnal::where('id_jurnal',$do->jurnal_id)->delete();
         }
     }
 }

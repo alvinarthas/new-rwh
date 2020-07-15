@@ -111,10 +111,6 @@ class PaymentController extends Controller
                     $sales->status = 1;
 
                     $sales->save();
-
-                    if($sales->method <> 0){
-                        DeliveryOrder::autoDO($sales->id,$request->payment_date);
-                    }
                 }
 
                 // Saldo

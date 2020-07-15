@@ -173,7 +173,7 @@ class SalesController extends Controller
 
                     // Recycle DO
                     foreach ($dos as $dodet) {
-                        DeliveryDetail::recycleDO($dodet->do_id,$dodet->id,$sales->trx_date);
+                        DeliveryOrder::recycleDO($dodet->do_id,$sales->trx_date,$dodet->id);
                     }
                 }
 

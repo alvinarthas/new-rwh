@@ -11,11 +11,17 @@ class Log extends Model
         'sub_id', 'keterangan','creator'
     ];
 
-    public static function setLog($sub,$desc){
+    public static function setLog($sub,$desc,$user_id=null){
+        if($user_id != null){
+            $user = $user_id;
+        }else{
+            $user = session('user_id');
+        }
+
         $log = new Log(array(
             'sub_id' => $sub,
             'keterangan' => $desc,
-            'creator' => session('user_id'),
+            'creator' => $user,
         ));
 
         $log->save();

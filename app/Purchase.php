@@ -280,4 +280,14 @@ class Purchase extends Model
         }
         return $data;
     }
+
+    public static function recylePurchase($id){
+        $purchase = Purchase::where('id',$id)->first();
+
+        $total_modal = $purchase->total_harga_modal;
+        $total_tertahan = PurchaseDetail::where('trx_id',$id)->sum(DB::Raw('(price_dist - price)* qty'));
+        $total_distributor = $purchase->total_harga_dist;
+
+        $jurnal_desc = "PO.".$id;
+    }
 }

@@ -231,14 +231,19 @@ class Sales extends Model
             Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'5.1','Debet',$user_id);
             //insert Credit Persediaan Barang milik customer
             Jurnal::addJurnal($id_jurnal,$modal,$sales->trx_date,$jurnal_desc,'2.1.3','Credit',$user_id);
+
+        //  Auto DO
+        if ($sales->method <> 0){
+            DeliveryOrder::autoDO($sales->id,$sales->trx_date,$user_id);
+        }
     }
 
     public static function recycleSales($id){
         $sales = Sales::where('id',$id)->first();
         // transfer new Detail
-        $total_transaksi = $sales->ttl_harga + $sales->ongkir;
-        $modal = 0;
 
+        $modal = 0;
+        $total_harga = 0;
         foreach (SalesDet::where('trx_id',$id)->get() as $key) {
             $sumprice = Purchase::join('tblpotrxdet','tblpotrxdet.trx_id','=','tblpotrx.id')->where('tblpotrxdet.prod_id',$key->prod_id)->where('tblpotrx.tgl','<=',$sales->trx_date)->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
 
@@ -251,13 +256,19 @@ class Sales extends Model
             }
 
             $modal += ($key->qty * $avcharga);
+            $total_harga += ($key->price * $key->qty);
         }
+        // Update Total Transaksi Sales
+        $sales->ttl_harga = $total_harga + $sales->ongkir;
+        $sales->update();
+
+        // Update Jurnal
         $jurnal_a = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','1.1.3.1')->first();
-        $jurnal_a->amount = $total_transaksi;
+        $jurnal_a->amount = $sales->ttl_harga;
         $jurnal_a->update();
 
         $jurnal_b = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','4.1.1')->first();
-        $jurnal_b->amount = $total_transaksi;
+        $jurnal_b->amount = $sales->ttl_harga;
         $jurnal_b->update();
 
         $jurnal_c = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','5.1')->first();

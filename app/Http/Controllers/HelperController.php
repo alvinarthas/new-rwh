@@ -9,8 +9,13 @@ use Illuminate\Support\Facades\DB;
 
 use App\DataKota;
 use App\Saldo;
+use App\Sales;
+use App\SalesDet;
+use App\DeliveryOrder;
+use App\DeliveryDetail;
 use App\Coa;
 use App\Deposit;
+use App\Jurnal;
 
 class HelperController extends Controller
 {
@@ -50,5 +55,47 @@ class HelperController extends Controller
         }
 
         return response()->json($data);
+    }
+
+    public function recycleSO(Request $request){
+        // Loop All SO
+        foreach (Sales::where('jurnal_id','!=','0')->select('id','trx_date')->get() as $key) {
+            // Recyle Sales Jurnal
+            Sales::recycleSales($key->id);
+
+            // Get Delivery Order Data
+            foreach (DeliveryOrder::where('sales_id')->select('id')->get() as $key2) {
+                DeliveryOrder::recycleDO($key2->id,$key->trx_date);
+            }
+        }
+    }
+
+    public function inBalanceJurnal(Request $request){
+        $start = $request->start;
+        $end = $request->end;
+
+        foreach(Jurnal::whereBetween('date',[$start,$end])->select('id_jurnal')->get() as $jurnal){
+            $debet = Jurnal::where('id_jurnal',$jurnal->id_jurnal)->where('AccPos','Debet')->sum('Amount');
+            $credit = Jurnal::where('id_jurnal',$jurnal->id_jurnal)->where('AccPos','Credit')->sum('Amount');
+
+            if ($debet != $credit){
+                echo "JURNAL: ".$jurnal->id_jurnal."<br>";
+            }
+        }
+    }
+
+    public function inBalanceDO(Request $request){
+        $product = $request->product;
+
+        $sales = Sales::join('tblproducttrxdet','tblproducttrxdet.trx_id','=','tblproducttrx.id')->where('jurnal_id','!=','0')->where('tblproducttrxdet.prod_id',$product)->select('tblproducttrx.id')->groupBy('tblproducttrx.id')->get();
+
+        foreach($sales as $sale){
+            $deliveryDetail = DeliveryDetail::where('sales_id',$sale->id)->where('product_id',$product)->sum('qty');
+            $salesDetail = SalesDet::where('trx_id',$sale->id)->where('prod_id',$product)->sum('qty');
+
+            if ($deliveryDetail != $salesDetail){
+                echo "SO.".$sale->id." Total DO: ".$deliveryDetail." Total SO: ".$salesDetail."<br>";
+            }
+        }
     }
 }
