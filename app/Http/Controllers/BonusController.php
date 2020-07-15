@@ -259,9 +259,6 @@ class BonusController extends Controller
 
     public function storeBayar(Request $request)
     {
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
         // Validate
         $validator = Validator::make($request->all(), [
             'tahun' => 'required',
@@ -1161,7 +1158,11 @@ class BonusController extends Controller
             'sub_ttl' => $sub_ttl,
         );
 
-        return response()->json($data);
+        if(PerusahaanMember::where('noid', $perusahaanmember['noid'])->count() > 1){
+            return "NOID Kembar";
+        }else{
+            return response()->json($data);
+        }
     }
 
     // upload EXCEL yang baru
@@ -1208,17 +1209,14 @@ class BonusController extends Controller
                         $reason .= "No ID Member tidak ditemukan di perusahaan, ";
                     }
 
+                    if(PerusahaanMember::where('noid', $noid)->where('perusahaan_id', $perusahaan_id)->count() > 1){
+                        $reason .= "No ID Member ditemukan kembar di perusahaan, ";
+                    }
+
                     if(PerusahaanMember::join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('perusahaanmember.noid', $noid)->where('tblmember.nama',"LIKE", $nama)->count() == 0){
                         $reason .= "Nama Member tidak sesuai/tidak ditemukan, ";
                     }
 
-                    // $member = array(
-                    //     'noid'  => $noid,
-                    //     'norek' => $norek,
-                    //     'nama'  => $nama,
-                    //     'bonus' => $bonus
-                    // );
-                    // array_push($datas, $member);
                     $ktp = PerusahaanMember::where('perusahaanmember.noid', $noid)->select('perusahaanmember.ktp')->first();
                     // $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
                     // <td><input type="hidden" name="nogagal[]" value="'.$r.'">'.$r.'</td>
@@ -1270,13 +1268,6 @@ class BonusController extends Controller
                 }
             }
         }
-        // if(!empty($datas)){
-        //     $pdf = PDF::loadview('bonus.pdfbonusgagal',['member'=>$datas, 'bulan'=>$request->bulan, 'tahun'=>$request->tahun, 'jenis'=>"perhitungan"])->setPaper('a4', 'potrait');
-        //     $namafile = "gagal upload perhitungan bonus bulan $request->bulan $request->tahun.pdf";
-        //     $pdf->save(public_path('download/'.$namafile));
-        //     // return $pdf->download('gagal upload bonus bulan '.$request->bulan.' '.$request->tahun.'.pdf');
-        //     response()->download(public_path('download/'.$namafile));
-        // }
 
         return response()->json($result);
     }
@@ -1287,7 +1278,7 @@ class BonusController extends Controller
             $data = Bonus::where('id_bonus', $request->id)->first();
             $total_bonus = Bonus::where('id_jurnal', $data->id_jurnal)->where('id_bonus', '!=', $request->id)->sum('bonus');
             $jurnal = Jurnal::where('id_jurnal', $data->id_jurnal)->get();
-            
+
             if(!empty($jurnal)){
                 foreach($jurnal as $key){
                     $key->Amount -= $total_bonus;
@@ -1438,7 +1429,11 @@ class BonusController extends Controller
             'count' => $count,
         );
 
-        return response()->json($data);
+        if(BankMember::where('norek', $bankmember->norek)->count() > 1){
+            return "No rekening kembar";
+        }else{
+            return response()->json($data);
+        }
     }
 
     // upload EXCEL pembayaran/penerimaan bonus yang baru
@@ -1487,6 +1482,10 @@ class BonusController extends Controller
 
                     if(BankMember::where('norek', $norek)->count() == 0){
                         $reason .= "No Rekening tidak ditemukan, ";
+                    }
+
+                    if(BankMember::where('norek', $norek)->count() > 1){
+                        $reason .= "No Rekening ditemukan kembar, ";
                     }
 
                     if(BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek', $norek)->where('tblmember.nama',"LIKE", $nama)->count() == 0){
@@ -1542,13 +1541,6 @@ class BonusController extends Controller
                 }
             }
         }
-        // if(!empty($datas)){
-        //     $pdf = PDF::loadview('bonus.pdfbonusgagal',['member'=>$datas, 'bulan'=>$request->bulan, 'tahun'=>$request->tahun, 'jenis'=>"pembayaran"])->setPaper('a4', 'potrait');
-        //     $namafile = "gagal upload penerimaan bonus bulan $request->bulan $request->tahun.pdf";
-        //     $pdf->save(public_path('download/'.$namafile));
-        //     // return $pdf->download('gagal upload bonus bulan '.$request->bulan.' '.$request->tahun.'.pdf');
-        //     response()->download(public_path('download/'.$namafile));
-        // }
         return response()->json($result);
     }
 
@@ -1645,15 +1637,13 @@ class BonusController extends Controller
                         $reason .= "No Rekening tidak ditemukan, ";
                     }
 
+                    if(BankMember::where('norek', $norek)->count() > 1){
+                        $reason .= "No Rekening ditemukan kembar, ";
+                    }
+
                     if(BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek', $norek)->where('tblmember.nama',"LIKE", $nama)->count() == 0){
                         $reason .= "Nama Member tidak sesuai/tidak ditemukan, ";
                     }
-                    // $member = array(
-                    //     'norek' => $norek,
-                    //     'nama'  => $nama,
-                    //     'bonus' => $bonus
-                    // );
-                    // array_push($datas, $member);
                     $member = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('bankmember.norek', $norek)->select('tblmember.ktp AS ktp')->first();
                     // $append = '<tr style="width:100%" id="trow'.$r.'" class="trow">
                     // <td><input type="hidden" name="no[]" value="'.$r.'">'.$r.'</td>
@@ -1702,13 +1692,6 @@ class BonusController extends Controller
                 }
             }
         }
-        // if(!empty($datas)){
-        //     $pdf = PDF::loadview('bonus.pdfbonusgagal',['member'=>$datas, 'tgl'=>$tgl, 'jenis'=>"topup"])->setPaper('a4', 'potrait');
-        //     $namafile = "gagal upload top up bonus tanggal $tgl.pdf";
-        //     $pdf->save(public_path('download/'.$namafile));
-        //     // return $pdf->download('gagal upload bonus bulan '.$request->bulan.' '.$request->tahun.'.pdf');
-        //     response()->download(public_path('download/'.$namafile));
-        // }
         return response()->json($result);
     }
 
@@ -1750,7 +1733,11 @@ class BonusController extends Controller
             'sub_ttl' => $sub_ttl,
         );
 
-        return response()->json($data);
+        if(BankMember::where('norek', $bankmember->norek)->count() > 1){
+            return "No rekening kembar";
+        }else{
+            return response()->json($data);
+        }
     }
 
     public function deleteRowTopup(Request $request)
@@ -2151,7 +2138,7 @@ class BonusController extends Controller
             }
 
             // $bonus = Bonus::join('perusahaanmember', 'tblbonus.noid', 'perusahaanmember.noid')->join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('tblbonus.tahun',$tahun)->where('tblbonus.bulan',$bulan)->select('tblmember.nama', 'tblmember.ktp')->groupBy('tblmember.ktp')->get();
-            
+
             // $i = 1;
 
             // foreach($bonus as $b){
