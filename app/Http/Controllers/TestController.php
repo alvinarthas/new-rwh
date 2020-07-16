@@ -32,6 +32,8 @@ use App\DeliveryDetail;
 use App\Role;
 use App\ReceiveDet;
 use App\Bonus;
+use App\BonusBayar;
+use App\TopUpBonus;
 use GuzzleHttp\Client;
 
 use Carbon\Carbon;
@@ -75,9 +77,84 @@ class TestController extends Controller
     }
 
     public function indexRP(){
-        foreach(ReceiveDet::groupBy('prod_id')->select('prod_id')->get() as $product){
-            foreach(ReceiveDet::where('prod_id',$product->prod_id)->get() as $detail){
-                $checkPO = PurchaseDetail::where('prod_id',$detail->prod_id)->where('trx_id',$detail->trx_id)->count();
+            foreach(ReceiveDet::groupBy('prod_id')->select('prod_id')->get() as $product){
+                    foreach(ReceiveDet::where('prod_id',$product->prod_id)->get() as $detail){
+                        $checkPO = PurchaseDetail::where('prod_id',$detail->prod_id)->where('trx_id',$detail->trx_id)->count();
+                $jurnal = Jurnal::where('id_jurnal', 'BP.%')->orWhere('id_jurnal', 'BB.%')->orWhere('id_jurnal', 'BT.%')->get();
+                foreach($jurnal as $key){
+                    $debet = Jurnal::where('id_jurnal', $key->id_jurnal)->where('AccPos', 'Debet')->sum('Amount');
+                    $credit = Jurnal::where('id_jurnal', $key->id_jurnal)->where('AccPos', 'Credit')->sum('Amount');
+
+                    if($debet != $credit){
+                        echo $key->id_jurnal." - Debet:".$debet.", Credit:".$credit."<br>";
+                    }
+                }
+            }
+        }
+    }
+
+    public function indexCheckBonustoEmptyIDMember(){
+        $rekening = BankMember::all();
+        $no = 1;
+        foreach($rekening as $rek){
+            $count = BankMember::where('norek', $rek->norek)->count();
+            if($count>1){
+                $bonusa = BonusBayar::where('no_rek', $rek->norek)->get();
+                foreach($bonusa as $a){
+                    echo $no++.". ".$a->no_rek." - ".$a->id_jurnal." - ".Member::where('ktp', $rek->ktp)->first()->nama."<br>";
+                }
+                echo "<br>";
+
+                $bonusb = TopUpBonus::where('no_rek', $rek->norek)->get();
+                foreach($bonusb as $b){
+                    echo $no++.". ".$b->no_rek." - ".$b->id_jurnal." - ".Member::where('ktp', $rek->ktp)->first()->nama."<br>";
+                }
+                echo "<br>";
+            }
+        }
+        echo "<br>";
+
+        $permem = PerusahaanMember::all();
+        $no = 1;
+        foreach($permem as $pm){
+            $count = PerusahaanMember::where('noid', $pm->noid)->count();
+            if($count>1){
+                $bonus = Bonus::where('noid', $pm->noid)->get();
+                foreach($bonus as $b){
+                    echo $no++.". ".$b->noid." - ".$b->id_jurnal." - ".Member::where('ktp', $pm->ktp)->first()->nama."<br>";
+                }
+                echo "<br>";
+            }
+        }
+        echo "<br>";
+    }
+
+    public function indexCheckDuplicateNorekNoid(){
+        $rekening = BankMember::all();
+        $no = 1;
+        foreach($rekening as $rek){
+            $count = BankMember::where('norek', $rek->norek)->count();
+            if($count>1){
+                echo $no++.". ".$rek->ktp." - ".$rek->norek." - ".Member::where('ktp', $rek->ktp)->first()->nama."<br>";
+            }
+        }
+        echo "<br>";
+
+        $permem = PerusahaanMember::all();
+        $no = 1;
+        foreach($permem as $pm){
+            $count = PerusahaanMember::where('noid', $pm->noid)->count();
+            if($count>1){
+                echo $no++.". ".$pm->ktp." - ".$pm->noid." - ".Member::where('ktp', $pm->ktp)->first()->nama."<br>";
+            }
+        }
+        echo "<br>";
+    }
+
+    public function indexCheckPO(){
+        foreach(Product::all() as $product){
+            foreach(DeliveryDetail::where('product_id',$product->prod_id)->get() as $dd){
+                $salesdet = SalesDet::where('prod_id',$dd->product_id)->where('trx_id',$dd->sales_id)->count();
 
                 if($checkPO == 0){
                     echo "RD.".$detail->id." Check PO: ".$checkPO." Product: ".$product->prod_id."<br>";
@@ -86,7 +163,7 @@ class TestController extends Controller
         }
     }
 
-    public function indexcheckPO(){
+    public function indexcheckPOlama(){
         $produk = Product::all();
         foreach($produk as $prod){
             $no = 1;

@@ -50,13 +50,6 @@
         </div><!-- /.modal-dialog -->
     </div>
 </form>
-{{-- @if($bonusapa=="perhitungan" OR $bonusapa=="pembayaran") --}}
-    {{-- @if($bonusapa=="perhitungan")
-        <form method="post" action="{{ route('uploadBonusPerhitungan') }}" enctype="multipart/form-data"> --}}
-    {{-- @if($bonusapa=="pembayaran")
-        <form method="post" action="{{ route('uploadBonusPembayaran') }}" enctype="multipart/form-data">
-        {{ csrf_field() }}
-    @endif --}}
 @if($bonusapa == "pembayaran" AND $AccNo=="1.1.1.1.000003")
 <br>
 @else
@@ -107,10 +100,6 @@
         </div>
     </div>
 @endif
-{{-- @if($bonusapa=="pembayaran")
-    </form>
-@endif
-@endif --}}
 
 @if($bonusapa=="perhitungan")
     <form class="form-horizontal" role="form" action="{{ route('bonus.store') }}" enctype="multipart/form-data" method="POST" onsubmit="return checkNull();">
@@ -233,20 +222,23 @@
                 <div class="form-group row">
                     <label class="col-2 col-form-label">Total Bonus</label>
                     <div class="col-10">
-                        <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="total_bonus" id="total_bonus" value="{{ $total_bonus }}" readonly="readonly">
+                        <input type="hidden" required name="total_bonus" id="total" value="{{ $total_bonus }}" readonly="readonly">
+                        <input type="text" class="form-control" min="0" parsley-trigger="change" required id="total_bonus" value="{{ $total_bonus }}" readonly="readonly">
                     </div>
                 </div>
                 @if($bonusapa=="perhitungan")
                     <div class="form-group row">
                         <label class="col-2 col-form-label">Estimasi Bonus</label>
                         <div class="col-10">
-                            <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="estimasi_bonus" id="estimasi_bonus" value="{{ $estimasi_bonus }}" readonly="readonly">
+                            <input type="hidden" required name="estimasi_bonus" id="estimasi" value="{{ $estimasi_bonus }}" readonly="readonly">
+                            <input type="text" class="form-control" min="0" parsley-trigger="change" required id="estimasi_bonus" value="{{ $estimasi_bonus }}" readonly="readonly">
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-2 col-form-label">Selisih (Laba/Rugi)</label>
                         <div class="col-10">
-                            <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="selisih_bonus" id="selisih_bonus" value="0" readonly="readonly">
+                            <input type="hidden" required name="selisih_bonus" id="selisih" value="0" readonly="readonly">
+                            <input type="text" class="form-control" min="0" parsley-trigger="change" required id="selisih_bonus" value="0" readonly="readonly">
                         </div>
                     </div>
                     <input type="hidden" name="perusahaan_id" id="perusahaan_id" value="{{ $perusahaan }}">
@@ -257,13 +249,15 @@
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Piutang Bonus Tertahan</label>
                             <div class="col-10">
-                                <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="bonus_tertahan" id="bonus_tertahan" value="{{ $bonus_tertahan }}" readonly="readonly">
+                                <input type="hidden" required name="bonus_tertahan" id="tertahan" value="{{ $bonus_tertahan }}" readonly="readonly">
+                                <input type="text" class="form-control" min="0" parsley-trigger="change" required id="bonus_tertahan" value="{{ $bonus_tertahan }}" readonly="readonly">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-2 col-form-label">Selisih (Laba/Rugi)</label>
                             <div class="col-10">
-                                <input type="text" class="form-control number" min="0" parsley-trigger="change" required name="selisih_bonus" id="selisih_bonus" value="0" readonly="readonly">
+                                <input type="hidden" required name="selisih_bonus" id="selisih" value="0" readonly="readonly">
+                                <input type="text" class="form-control" min="0" parsley-trigger="change" required id="selisih_bonus" value="0" readonly="readonly">
                             </div>
                         </div>
                         <input type="hidden" name="supplier" id="supplier" value="{{ $supplier }}">
@@ -470,7 +464,7 @@
             checkTotal();
             // changeTotalHarga(data.sub_ttl);
         }).fail(function (msg) {
-            alert('Gagal menampilkan data, silahkan refresh halaman.');
+            alert('NOID ditemukan Kembar, silahkan perbaiki data Member terlebih dahulu.');
         });
     }
 
@@ -548,7 +542,7 @@
             checkTotal();
             // changeTotalHarga(data.sub_ttl);
         }).fail(function (msg) {
-            alert('Gagal menampilkan data, silahkan refresh halaman.');
+            alert('No Rekening ditemukan Kembar, silahkan perbaiki data Member terlebih dahulu.');
         });
     }
 
@@ -616,7 +610,7 @@
             checkTotal();
             // changeTotalHarga(data.sub_ttl);
         }).fail(function (msg) {
-            alert('Gagal menampilkan data, silahkan refresh halaman.');
+            alert('No Rekening ditemukan Kembar, silahkan perbaiki data Member terlebih dahulu.');
         });
     }
 
@@ -686,23 +680,35 @@
         var bonus = $("input[name='bonus[]']").map(function(){return $(this).val();}).get();
         // console.log(rows)
         for(i=0;i<rows;i++){
-            b = bonus[i];
+            b = parseFloat(bonus[i]);
 
             if(b == NaN || b == ""){
                 b = 0;
             }
 
-            totalharga = totalharga + parseInt(b);
+            totalharga = totalharga + parseFloat(b);
         }
+
+        var nf = new Intl.NumberFormat('de-DE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
         if(bonusapa=="perhitungan"){
-            var selisih = totalharga - parseInt($('#estimasi_bonus').val());
+            var estimasi = parseInt($('#estimasi').val());
+            var selisih = totalharga - estimasi;
+            $('#estimasi_bonus').val(nf.format(estimasi));
         }else if(bonusapa=="pembayaran"){
-            var selisih = parseInt($('#bonus_tertahan').val()) - totalharga;
+            var tertahan = parseInt($('#tertahan').val());
+            var selisih = tertahan - totalharga;
+            $('#bonus_tertahan').val(nf.format(tertahan));
         }
 
         // console.log(bonus)
-        $('#total_bonus').val(totalharga);
-        $('#selisih_bonus').val(selisih);
+        $('#total').val(totalharga);
+        $('#total_bonus').val(nf.format(totalharga));
+        $('#selisih').val(selisih);
+        $('#selisih_bonus').val(nf.format(selisih));
     }
 
     function cetakXls(){
