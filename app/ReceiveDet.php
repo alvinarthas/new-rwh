@@ -112,4 +112,29 @@ class ReceiveDet extends Model
 
         return $data;
     }
+
+    public static function recycleRP($id,$purchasedetail_id=null){
+        if ($purchasedetail_id){
+            ReceiveDet::where('purchasedetail_id',$purchasedetail_id)->delete();
+        }
+
+        // Refesh and Loop
+        foreach(ReceiveDet::where('trx_id', $id)->select('id_jurnal')->groupBy('id_jurnal')->get() as $key){
+            $price = 0;
+            foreach (ReceiveDet::where('id_jurnal', $key->id_jurnal)->get() as $data) {
+                $pricedet = PurchaseDetail::where('id', $data->purchasedetail_id)->first();
+                if(!$pricedet){
+                    $pricedet = PurchaseDetail::where('prod_id',$data->prod_id)->where('trx_id',$data->trx_id)->first();
+                }
+                $price += $pricedet->price * $data->qty;
+            }
+            $debet = Jurnal::where('id_jurnal',$key->id_jurnal)->where('AccPos', 'Debet')->first();
+            $debet->amount = $price;
+            $debet->update();
+
+            $credit = Jurnal::where('id_jurnal',$key->id_jurnal)->where('AccPos', 'Credit')->first();
+            $credit->amount = $price;
+            $credit->update();
+        }
+    }
 }

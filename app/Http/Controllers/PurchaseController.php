@@ -127,6 +127,14 @@ class PurchaseController extends Controller
             $purchase->total_harga_dist = $purchase->total_harga_dist - ($detail->qty * $detail->price_dist);
             $purchase->update();
             $detail->delete();
+
+            if ($purchase->approve == 1) {
+                // Recycle Purchase Jurnal
+                Purchase::recylePurchase($purchase->id);
+
+                // Recycle Receive Detail
+                ReceiveDet::recycleRP($purchase->id,$request->detail);
+            }
         }
         return "true";
     }

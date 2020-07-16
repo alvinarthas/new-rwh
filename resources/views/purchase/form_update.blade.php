@@ -412,7 +412,7 @@ function deleteItemOld(id,purdet){
     status_po = $('#status').val();
     swal({
         title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        text: "SANGAT TIDAK DISARANKAN UNTUK MENGHAPUS DATA INI. Menghapus data ini akan merubah ulang jurnal yang telah dibikin, merubah jumlah pembayaran yang mengakibatkan perbedaan nominal, Jika telah melakukan Terima Barang menggunakan Product ini, maka Terima Barang Tersebut akan terhapuskan dari semesta sistem ini",
         type: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Yes, delete it!',

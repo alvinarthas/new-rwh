@@ -16,6 +16,8 @@ use App\DeliveryDetail;
 use App\Coa;
 use App\Deposit;
 use App\Jurnal;
+use App\Purchase;
+use App\ReceiveDet;
 
 class HelperController extends Controller
 {
@@ -70,6 +72,18 @@ class HelperController extends Controller
         }
     }
 
+    public function recyclePO(Request $request){
+        ini_set('max_execution_time', 900);
+        // Loop All PO
+        foreach (Purchase::where('jurnal_id','!=','0')->get() as $key) {
+            // Recycle Purchase Jurnal
+            Purchase::recylePurchase($key->id);
+
+            // Recycle Receive Detail
+            ReceiveDet::recycleRP($key->id);
+        }
+    }
+
     public function inBalanceJurnal(Request $request){
         $start = $request->start;
         $end = $request->end;
@@ -86,15 +100,26 @@ class HelperController extends Controller
 
     public function inBalanceDO(Request $request){
         $product = $request->product;
+        $type = $request->type;
 
-        $sales = Sales::join('tblproducttrxdet','tblproducttrxdet.trx_id','=','tblproducttrx.id')->where('jurnal_id','!=','0')->where('tblproducttrxdet.prod_id',$product)->select('tblproducttrx.id')->groupBy('tblproducttrx.id')->get();
+        if ($type == "inbalance"){
+            $sales = Sales::join('tblproducttrxdet','tblproducttrxdet.trx_id','=','tblproducttrx.id')->where('jurnal_id','!=','0')->where('tblproducttrxdet.prod_id',$product)->select('tblproducttrx.id')->groupBy('tblproducttrx.id')->get();
 
-        foreach($sales as $sale){
-            $deliveryDetail = DeliveryDetail::where('sales_id',$sale->id)->where('product_id',$product)->sum('qty');
-            $salesDetail = SalesDet::where('trx_id',$sale->id)->where('prod_id',$product)->sum('qty');
+            foreach($sales as $sale){
+                $deliveryDetail = DeliveryDetail::where('sales_id',$sale->id)->where('product_id',$product)->sum('qty');
+                $salesDetail = SalesDet::where('trx_id',$sale->id)->where('prod_id',$product)->sum('qty');
 
-            if ($deliveryDetail != $salesDetail){
-                echo "SO.".$sale->id." Total DO: ".$deliveryDetail." Total SO: ".$salesDetail."<br>";
+                if ($deliveryDetail != $salesDetail){
+                    echo "SO.".$sale->id." Total DO: ".$deliveryDetail." Total SO: ".$salesDetail."<br>";
+                }
+            }
+        }else{
+            foreach(DeliveryDetail::where('product_id',$product)->get() as $detail){
+                $checkSO = SalesDet::where('trx_id',$detail->sales_id)->where('prod_id',$product)->count();
+
+                if($checkSO == 0){
+                    echo "DD.".$detail->id."<br>";
+                }
             }
         }
     }

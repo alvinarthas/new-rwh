@@ -40,7 +40,6 @@ class Product extends Model
         $konversi = KonversiDetail::getTotal($prod_id);
         $retur = Retur::getTotal($prod_id, null);
         $gudang = ($qty_receive-$qty_delivered)+$konversi+$retur;
-        // $gudang = ($qty_receive-$qty_delivered)+$konversi;
 
         return $gudang;
     }

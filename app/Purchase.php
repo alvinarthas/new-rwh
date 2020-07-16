@@ -284,10 +284,45 @@ class Purchase extends Model
     public static function recylePurchase($id){
         $purchase = Purchase::where('id',$id)->first();
 
-        $total_modal = $purchase->total_harga_modal;
-        $total_tertahan = PurchaseDetail::where('trx_id',$id)->sum(DB::Raw('(price_dist - price)* qty'));
-        $total_distributor = $purchase->total_harga_dist;
+        // Penjurnalan
+        $total_modal=0;
+        $total_tertahan=0;
+        $total_distributor=0;
 
-        $jurnal_desc = "PO.".$id;
+        $prodarray = collect();
+
+        foreach (PurchaseDetail::where('trx_id',$id)->get() as $key) {
+            $selisih = $key->price_dist - $key->price;
+            $total_modal += ($key->price * $key->qty);
+            $total_tertahan+=($selisih*$key->qty);
+            $total_distributor+=($key->price_dist*$key->qty);
+
+            $prodarray->push($key->prod_id);
+        }
+
+        //Update debet Persediaan Barang Indent ( harga modal x qty )
+            $jurnal1 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.4.1.1')->first();
+            $jurnal1->amount = $jurnal1->amount+$total_modal;
+            $jurnal1->update();
+        //Update debet Estimasi Bonus
+            if($total_tertahan < 0){
+                $total_tertahan = $total_tertahan *-1;
+                $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
+                $jurnal2->amount = $jurnal2->amount+$total_tertahan;
+                $jurnal2->AccPos = "Credit";
+                $jurnal2->update();
+            }else{
+                $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
+                $jurnal2->amount = $jurnal2->amount+$total_tertahan;
+                $jurnal2->update();
+            }
+
+        //Update credit hutang Dagang
+            $jurnal3 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','2.1.1')->first();
+            $jurnal3->amount = $jurnal3->amount+$total_distributor;
+            $jurnal3->update();
+
+        // Refresh COGS
+            Jurnal::refreshCogs($prodarray);
     }
 }
