@@ -31,64 +31,49 @@ class ReceiveDet extends Model
     }
 
     public static function listReceive($start,$end){
-        // $purchase = Purchase::join('tblpotrxdet','tblpotrx.id','=','tblpotrxdet.trx_id')->whereBetween('tblpotrx.month',[$bulan_start,$bulan_end])->whereBetween('tblpotrx.year',[$tahun_start,$tahun_end])->where('tblpotrx.approve',1)->select('tblpotrx.id as trx_id','tblpotrx.supplier','tblpotrxdet.prod_id','tblpotrxdet.qty','tblpotrxdet.unit')->get();
-        $purchase = Purchase::whereBetween('tblpotrx.tgl',[$start,$end])->where('tblpotrx.approve',1)->get();
+        $purchase = Purchase::join('tblpotrxdet','tblpotrx.id','=','tblpotrxdet.trx_id')->whereBetween('tblpotrx.tgl',[$start,$end])->where('tblpotrx.approve',1)->select('tblpotrx.id as trx_id','tblpotrx.supplier','tblpotrxdet.prod_id','tblpotrxdet.qty','tblpotrxdet.unit', 'tblpotrxdet.id as purdet_id','tblpotrxdet.price')->get();
+        // $purchase = Purchase::whereBetween('tblpotrx.tgl',[$start,$end])->where('tblpotrx.approve',1)->get();
 
         $data = collect();
         foreach($purchase as $pur){
-            $purdet = PurchaseDetail::where('trx_id', $pur->id)->groupBy('prod_id')->get();
-
-            foreach($purdet as $key){
-                $key->qty = PurchaseDetail::where('trx_id', $pur->id)->where('prod_id', $key->prod_id)->sum('qty');
-                $detail = collect($key);
-
-                $rp_id = "";
-                $receive = ReceiveDet::where('trx_id', $pur->id)->where('prod_id', $key->prod_id)->select('id_jurnal')->get();
-                foreach($receive as $r){
-                    $rp_id .= $r->id_jurnal." ";
-                }
-
-                $qtyrec = ReceiveDet::where('trx_id',$pur->id)->where('prod_id',$key->prod_id)->sum('qty');
-                $prodname = Product::where('prod_id',$key->prod_id)->first()->name;
-
-                $detail->put('rp_id', $rp_id);
-                $detail->put('supplier', $pur->supplier()->first()->nama);
-                $detail->put('qtyrec',$qtyrec);
-                $detail->put('prod_name',$prodname);
-                $data->push($detail);
+            $detail = collect($pur);
+            $rp_id = "";
+            $receive = ReceiveDet::where('trx_id', $pur->id)->where('prod_id', $pur->prod_id)->select('id_jurnal')->get();
+            foreach($receive as $r){
+                $rp_id .= $r->id_jurnal." ";
             }
+            $qtyrec = ReceiveDet::where('purchasedetail_id',$pur->purdet_id)->sum('qty');
+            $prodname = Product::where('prod_id',$pur->prod_id)->first()->name;
+
+            $detail->put('rp_id', $rp_id);
+            $detail->put('supplier', $pur->supplier()->first()->nama);
+            $detail->put('qtyrec',$qtyrec);
+            $detail->put('prod_name',$prodname." - (Rp ".number_format($pur->price, 2, ",", ".").")");
+            $data->push($detail);
         }
 
         return $data;
     }
 
     public static function listReceiveAll(){
-        // $purchase = Purchase::join('tblpotrxdet','tblpotrx.id','=','tblpotrxdet.trx_id')->where('tblpotrx.approve',1)->select('tblpotrx.id as trx_id','tblpotrx.supplier','tblpotrxdet.prod_id','tblpotrxdet.qty','tblpotrxdet.unit')->get();
-        $purchase = Purchase::where('tblpotrx.approve',1)->get();
+        $purchase = Purchase::join('tblpotrxdet','tblpotrx.id','=','tblpotrxdet.trx_id')->where('tblpotrx.approve',1)->select('tblpotrx.id as trx_id','tblpotrx.supplier','tblpotrxdet.prod_id','tblpotrxdet.qty','tblpotrxdet.unit', 'tblpotrxdet.id as purdet_id', 'tblpotrxdet.price')->get();
 
         $data = collect();
         foreach($purchase as $pur){
-            $purdet = PurchaseDetail::where('trx_id', $pur->id)->groupBy('prod_id')->get();
-
-            foreach($purdet as $key){
-                $key->qty = PurchaseDetail::where('trx_id', $pur->id)->where('prod_id', $key->prod_id)->sum('qty');
-                $detail = collect($key);
-
-                $rp_id = "";
-                $receive = ReceiveDet::where('trx_id', $pur->id)->where('prod_id', $key->prod_id)->select('id_jurnal')->get();
-                foreach($receive as $r){
-                    $rp_id .= $r->id_jurnal." ";
-                }
-
-                $qtyrec = ReceiveDet::where('trx_id',$pur->id)->where('prod_id',$key->prod_id)->sum('qty');
-                $prodname = Product::where('prod_id',$key->prod_id)->first()->name;
-
-                $detail->put('rp_id', $rp_id);
-                $detail->put('supplier', $pur->supplier()->first()->nama);
-                $detail->put('qtyrec',$qtyrec);
-                $detail->put('prod_name',$prodname);
-                $data->push($detail);
+            $detail = collect($pur);
+            $rp_id = "";
+            $receive = ReceiveDet::where('trx_id', $pur->id)->where('prod_id', $pur->prod_id)->select('id_jurnal')->get();
+            foreach($receive as $r){
+                $rp_id .= $r->id_jurnal." ";
             }
+            $qtyrec = ReceiveDet::where('purchasedetail_id',$pur->purdet_id)->sum('qty');
+            $prodname = Product::where('prod_id',$pur->prod_id)->first()->name;
+
+            $detail->put('rp_id', $rp_id);
+            $detail->put('supplier', $pur->supplier()->first()->nama);
+            $detail->put('qtyrec',$qtyrec);
+            $detail->put('prod_name',$prodname." - (Rp ".number_format($pur->price, 2, ",", ".").")");
+            $data->push($detail);
         }
 
         return $data;

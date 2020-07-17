@@ -12,7 +12,7 @@ class BankMember extends Model
     ];
 
     public static function getData($ktp){
-        return BankMember::where('ktp',$ktp)->select('norek','scantabungan','scanatm')->first();
+        return BankMember::where('ktp',$ktp)->select('norek','scantabungan','scanatm','status')->first();
     }
 
     public function bank(){
