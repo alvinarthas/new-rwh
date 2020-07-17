@@ -103,8 +103,11 @@
                     @else
                         <td>Have Filled</td>
                     @endif
-
-                    <td>Aktif</td>
+                    @if($tabungan->status == "Aktif")
+                        <td>Aktif</td>
+                    @else
+                        <td>Tidak Aktif</td>
+                    @endif
                 @else
                     <td>No Primary</td>
                     <td>No Primary</td>
