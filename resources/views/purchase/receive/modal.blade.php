@@ -26,7 +26,7 @@
                 @foreach ($receives as $rec)
                     <tr>
                         <td>{{$rec->prod_id}}</td>
-                        <td>{{$rec->prod->name}} - (Rp {{number_format($rec->price->price, 2, ",", ".")}})</td>
+                        <td>{{$rec->prod->name}} - @isset($rec->price->price)(Rp {{number_format($rec->price->price, 2, ",", ".")}})@else() (Purchase Detail tidak ditemukan)@endisset</td>
                         <td>{{$rec->qty}}</td>
                         <td>{{$rec->expired_date}}</td>
                         <td>@isset($rec->gudang->nama){{ $rec->gudang->nama }}@endisset</td>

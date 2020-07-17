@@ -256,11 +256,11 @@ class Purchase extends Model
         $data = collect();
         foreach ($purchases as $purchase) {
             $collect = collect();
-            $purchasedet = PurchaseDetail::where('trx_id',$purchase->id)->select('*',DB::Raw('SUM(qty) as sum_qty'))->groupBy('prod_id')->get();
+            $purchasedet = PurchaseDetail::where('trx_id',$purchase->id)->select('*',DB::Raw('SUM(qty) as sum_qty'))->groupBy('prod_id', 'price')->get();
             $detcount = $purchasedet->count();
             $count = 0;
             foreach($purchasedet as $key){
-                $count_receive_product = ReceiveDet::where('trx_id',$purchase->id)->where('prod_id',$key->prod_id)->sum('qty');
+                $count_receive_product = ReceiveDet::where('purchasedetail_id', $key->id)->sum('qty');
                 if($key->sum_qty == $count_receive_product){
                     $count++;
                 }
