@@ -259,16 +259,18 @@ class Sales extends Model
             $total_harga += ($key->price * $key->qty);
         }
         // Update Total Transaksi Sales
-        $sales->ttl_harga = $total_harga + $sales->ongkir;
+        $sales->ttl_harga = $total_harga;
         $sales->update();
+
+        $total_transaksi = $total_harga + $sales->ongkir;
 
         // Update Jurnal
         $jurnal_a = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','1.1.3.1')->first();
-        $jurnal_a->amount = $sales->ttl_harga;
+        $jurnal_a->amount = $total_transaksi;
         $jurnal_a->update();
 
         $jurnal_b = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','4.1.1')->first();
-        $jurnal_b->amount = $sales->ttl_harga;
+        $jurnal_b->amount = $total_transaksi;
         $jurnal_b->update();
 
         $jurnal_c = Jurnal::where('id_jurnal',$sales->jurnal_id)->where('AccNo','5.1')->first();

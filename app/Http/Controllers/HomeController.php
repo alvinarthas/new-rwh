@@ -66,9 +66,12 @@ class HomeController extends Controller
                 $depsales = 0;
                 $bonus = Salary::currentBonus(session('user_id'));
             }
+            if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Assistant General Manager"){
+                return view('welcome.welcome',compact('user','bonus','hutang','piutang','data','deppurchase','depsales','birth'));
+            }else{
+                return view('home.maintenance');
+            }
 
-            // die("asu");
-            return view('welcome.welcome',compact('user','bonus','hutang','piutang','data','deppurchase','depsales','birth'));
         }else{
             return view('login.login');
         }
