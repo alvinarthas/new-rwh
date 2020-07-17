@@ -8,6 +8,6 @@ class Role extends Model
 {
     protected $table ='tblrole';
     protected $fillable = [
-        'role_name', 'company_id','creator','gaji_pokok','tunjangan_jabatan'
+        'id','role_name', 'company_id','creator','gaji_pokok','tunjangan_jabatan'
     ];
 }

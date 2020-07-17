@@ -133,20 +133,44 @@ class Purchase extends Model
 
         // transfer new Detail
         foreach ($temp_po_det as $key) {
-            $purchasedet = new PurchaseDetail(array(
-                'trx_id' => $purchase->id,
-                'prod_id' => $key->prod_id,
-                'qty' => $key->qty,
-                'unit' => $key->unit,
-                'creator' => $key->creator,
-                'price' => $key->price,
-                'price_dist' => $key->price_dist,
-            ));
-            $purchasedet->save();
+            if ($key->purchasedetail_id == "baru"){
+                $purchasedet = new PurchaseDetail(array(
+                    'trx_id' => $purchase->id,
+                    'prod_id' => $key->prod_id,
+                    'qty' => $key->qty,
+                    'unit' => $key->unit,
+                    'creator' => $key->creator,
+                    'price' => $key->price,
+                    'price_dist' => $key->price_dist,
+                ));
+                $purchasedet->save();
+            }else{
+                $purchasedet = new PurchaseDetail(array(
+                    'id' => $key->purchasedetail_id,
+                    'trx_id' => $purchase->id,
+                    'prod_id' => $key->prod_id,
+                    'qty' => $key->qty,
+                    'unit' => $key->unit,
+                    'creator' => $key->creator,
+                    'price' => $key->price,
+                    'price_dist' => $key->price_dist,
+                ));
+                $purchasedet->save();
+            }
         }
 
         // Matikan status temp po
         $temp_po->delete();
+
+        // Re Check Receive ITEM and Recycle
+        foreach (ReceiveDet::select('id','purchasedetail_id')->where('trx_id',$purchase->id)->get() as $key) {
+            $checkPodet = PurchaseDetail::where('id',$key->purchasedetail_id)->count();
+
+            if ($checkPodet == 0){
+                $key->delete();
+            }
+        }
+        ReceiveDet::recycleRP($purchase->id);
 
         // Update Jurnal
 

@@ -120,6 +120,7 @@ class PurchaseController extends Controller
             $purchase->total_harga_dist = $purchase->total_harga_dist - ($detail->qty * $detail->price_dist);
             $purchase->update();
             $detail->delete();
+            Log::setLog('PUPUD','Delete  PO Temp Detail TEMP PO = .'.$purchase->id);
         }else{
             $detail = PurchaseDetail::where('id',$request->detail)->first();
             $purchase = Purchase::where('id',$detail->trx_id)->first();
@@ -135,7 +136,9 @@ class PurchaseController extends Controller
                 // Recycle Receive Detail
                 ReceiveDet::recycleRP($purchase->id,$request->detail);
             }
+            Log::setLog('PUPUD','Delete  PO Detail PO = .'.$purchase->id);
         }
+
         return "true";
     }
 
@@ -315,6 +318,7 @@ class PurchaseController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // dd($request->all());
         // Validate
         $validator = Validator::make($request->all(), [
             'bulanpost' => 'required',
@@ -367,6 +371,7 @@ class PurchaseController extends Controller
                 for ($i=0; $i < $request->count ; $i++) {
                     $temp_po_det = new TempPODet(array(
                         'temp_id' => $temp_purchase->id,
+                        'purchasedetail_id' => $request->detail[$i],
                         'prod_id' => $request->prod_id[$i],
                         'qty' => $request->qty[$i],
                         'unit' => $request->unit[$i],

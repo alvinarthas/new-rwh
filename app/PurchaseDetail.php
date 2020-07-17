@@ -11,7 +11,7 @@ class PurchaseDetail extends Model
 {
     protected $table ='tblpotrxdet';
     protected $fillable = [
-        'trx_id','prod_id','qty','unit','price','price_dist','creator'
+        'id','trx_id','prod_id','qty','unit','price','price_dist','creator'
     ];
 
     public function product(){
@@ -31,11 +31,11 @@ class PurchaseDetail extends Model
             $sumprice= $sumprice->where('tblpotrx.tgl','<=',$trx_date);
             $sumqty= $sumqty->where('tblpotrx.tgl','<=',$trx_date);
         }
-        
+
 
         $sumprice= $sumprice->sum(DB::raw('tblpotrxdet.price*tblpotrxdet.qty'));
         $sumqty= $sumqty->sum('tblpotrxdet.qty');
-        
+
 
         if($sumprice <> 0 && $sumqty <> 0){
             $avcharga = $sumprice/$sumqty;
