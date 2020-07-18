@@ -41,14 +41,15 @@ use Carbon\Carbon;
 class TestController extends Controller
 {
     // Check Missing Receive Detail
-    public function indexjangock(){
-        foreach (ReceiveDet::select('id','purchasedetail_id')->get() as $key) {
-            $checkPodet = PurchaseDetail::where('id',$key->purchasedetail_id)->count();
+    public function index(Request $request){
+        // foreach (ReceiveDet::select('id','purchasedetail_id')->get() as $key) {
+        //     $checkPodet = PurchaseDetail::where('id',$key->purchasedetail_id)->count();
 
-            if ($checkPodet == 0){
-                echo "RP.".$key->id." PODET.".$key->purchasedetail_id."<br>";
-            }
-        }
+        //     if ($checkPodet == 0){
+        //         echo "RP.".$key->id." PODET.".$key->purchasedetail_id."<br>";
+        //     }
+        // }
+        Product::getGudang($request->prod_id);
     }
 
     // Check ReceiveDet Null
