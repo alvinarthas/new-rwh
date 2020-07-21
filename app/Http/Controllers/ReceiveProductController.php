@@ -271,6 +271,7 @@ class ReceiveProductController extends Controller
         $receive = ReceiveDet::where('id',$request->id)->first();
         $id_jurnal = $receive->id_jurnal;
         $idr = $request->id;
+        $trx_id = $receive->trx_id;
 
         try {
             $receive->delete();
@@ -279,28 +280,12 @@ class ReceiveProductController extends Controller
             $datas = ReceiveDet::where('id_jurnal', $id_jurnal)->get();
 
             if(!empty($datas)){
-                foreach($datas as $data){
-                    $pricedet = PurchaseDetail::where('id', $data->purchasedetail_id)->first()->price;
-                    $price += $pricedet * $data->qty;
-                }
-
-                if($price == 0){
-                    Jurnal::where('id_jurnal', $receive->id_jurnal)->delete();
-                }else{
-                    $debet = Jurnal::where('id_jurnal',$receive->id_jurnal)->where('AccPos', 'Debet')->first();
-                    $debet->amount = $price;
-                    $debet->update();
-
-                    $credit = Jurnal::where('id_jurnal',$receive->id_jurnal)->where('AccPos', 'Credit')->first();
-                    $credit->amount = $price;
-                    $credit->update();
-
-                }
-                Log::setLog('PURPD','Delete Receive Product ID='.$idr.', Jurnal ID: '.$id_jurnal);
+                ReceiveDet::recycleRP($trx_id);
             }else{
                 Jurnal::where('id_jurnal', $receive->id_jurnal)->delete();
-                Log::setLog('PURPD','Delete Receive Produc Jurnal ID: '.$id_jurnal);
             }
+
+            Log::setLog('PURPD','Delete Receive Product ID='.$idr.', trx_id :'.$trx_id.', Jurnal ID: '.$id_jurnal);
 
             return "true";
             // return redirect()->back()->with('status', 'Data berhasil dihapus');

@@ -128,6 +128,10 @@ class Jurnal extends Model
             $data->push($row);
         }
 
+        echo "<pre>";
+        print_r($data);
+        die();
+
         $response = array(
             'draw' => intval($draw),
             'recordsTotal' => $totalRecords,

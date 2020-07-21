@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 use App\SalesDet;
 use App\DeliveryOrder;
@@ -138,16 +139,64 @@ class Sales extends Model
         return $data;
     }
 
-    public static function checkDO($start,$end){
+    public static function checkDO(Request $request){
+        $start = $request->start_date;
+        $end = $request->end_date;
+        $customer = $request->customer;
+        $prod_id = $request->prod_id;
+        $draw = $request->draw;
+        $row = $request->start;
+        $rowperpage = $request->length; // Rows display per page
+        $columnIndex = $request['order'][0]['column']; // Column index
+        $columnName = $request['columns'][$columnIndex]['data']; // Column name
+        $columnSortOrder = $request['order'][0]['dir']; // asc or desc
+        $searchValue = $request['search']['value']; // Search value
+
+        $sales = Sales::join('tblproducttrxdet', 'tblproducttrxdet.trx_id', 'tblproducttrx.id')->join('tblcustomer', 'tblproducttrx.customer_id', 'tblcustomer.id')->select('tblproducttrx.id', 'tblcustomer.apname AS customer_name','tblproducttrx.jurnal_id', DB::Raw('tblproducttrx.ttl_harga + tblproducttrx.ongkir AS ttl_harga_ongkir'), 'tblproducttrx.ttl_harga', 'tblproducttrx.ongkir','tblproducttrx.trx_date')->where('tblproducttrx.approve', 1);
+
         if($start <> NULL && $end <> NULL){
-            $sales = Sales::whereBetween('trx_date',[$start,$end])->where('approve',1)->get();
+            $sales->whereBetween('tblproducttrx.trx_date',[$start,$end]);
+        }
+
+        if($customer <> "#"){
+            $sales->where('tblproducttrx.customer_id', $customer);
+        }
+
+        if($prod_id <> "#"){
+            $sales->where('tblproducttrxdet.prod_id', $prod_id);
+        }
+
+        $sales->groupBy('tblproducttrxdet.trx_id');
+
+        $totalRecords = 0;
+        foreach($sales->get() as $count){
+            $totalRecords++;
+        }
+
+        if($searchValue != ''){
+            $sales = $sales->where('tblproducttrx.jurnal_id', 'LIKE', '%'.$searchValue.'%')->orWhere('tblproducttrx.trx_date', 'LIKE', '%'.$searchValue.'%')->orWhere('tblcustomer.apname', 'LIKE', '%'.$searchValue.'%')->orWhereRaw('(tblproducttrx.ttl_harga + tblproducttrx.ongkir) LIKE ?', '%'.$searchValue.'%');
+        }
+
+        $totalRecordwithFilter = 0;
+        foreach($sales->get() as $count){
+            $totalRecordwithFilter++;
+        }
+
+        if($columnName == "no"){
+            $sales = $sales->orderBy('id', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }elseif($columnName == "sales_id"){
+            $sales = $sales->orderBy('jurnal_id', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }elseif($columnName == "customer"){
+            $sales = $sales->orderBy('customer_name', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }elseif($columnName == "total_harga"){
+            $sales = $sales->orderBy('ttl_harga_ongkir', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
         }else{
-            $sales = Sales::where('approve',1)->get();
+            $sales = $sales->orderBy($columnName, $columnSortOrder)->offset($row)->limit($rowperpage)->get();
         }
 
         $data = collect();
-        foreach ($sales as $sale) {
-            $collect = collect();
+        $nomor = 1;
+        foreach($sales as $sale){
             $salesdet = SalesDet::where('trx_id',$sale->id)->select('*',DB::Raw('SUM(qty) as sum_qty'))->groupBy('prod_id')->get();
             $detcount = $salesdet->count();
             $count = 0;
@@ -157,20 +206,33 @@ class Sales extends Model
                     $count++;
                 }
             }
-
             if($detcount == $count){
-                $status = 1;
+                $status = '<a href="javascrip:;" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Sudah selesai melakukan Delivery</a>';
             }else{
-                $status = 0;
+                $status = '<a href="javascrip:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5">Belum selesai melakukan Delivery</a>';
             }
-            $collect->put('sales_id',$sale->id);
-            $collect->put('jurnal_id',$sale->jurnal_id);
-            $collect->put('customer',$sale->customer->apname);
-            $collect->put('ttl',$sale->ttl_harga+$sale->ongkir);
-            $collect->put('status_do',$status);
-            $data->push($collect);
+
+            $button = '<a href="do/show/'.$sale->id.'" class="btn btn-primary btn-rounded waves-effect w-md waves-danger m-b-5">Atur</a>';
+
+            $detail = collect();
+            $detail->put('no', $nomor++);
+            $detail->put('sales_id', $sale->jurnal_id);
+            $detail->put('trx_date', $sale->trx_date);
+            $detail->put('customer', $sale->customer_name);
+            $detail->put('total_harga', $sale->ttl_harga_ongkir);
+            $detail->put('status_do', $status);
+            $detail->put('option', $button);
+            $data->push($detail);
         }
-        return $data;
+
+        $response = array(
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecordwithFilter,
+            'data' => $data,
+        );
+
+        return $response;
     }
 
     public static function checkSent($product,$trx){

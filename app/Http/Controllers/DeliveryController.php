@@ -28,13 +28,39 @@ class DeliveryController extends Controller
 {
     public function index(Request $request){
         if ($request->ajax()) {
-            $start = $request->start;
-            $end = $request->end;
-            $sales = Sales::checkDO($start,$end);
-            $deliveries = json_decode (json_encode (DeliveryOrder::checkDO($start,$end)),FALSE);
-            return response()->json(view('sales.do.view',compact('sales','deliveries'))->render());
+            $start_date = $request->start_date;
+            $end_date = $request->end_date;
+            $customer = $request->customer;
+            $prod_id = $request->prod_id;
+            // $sales = Sales::checkDO($start_date,$end_date);
+            // $deliveries = json_decode (json_encode (DeliveryOrder::checkDO($request)),FALSE);
+            return response()->json(view('sales.do.view', compact('start_date', 'end_date', 'customer', 'prod_id'))->render());
         }else{
-            return view('sales.do.index');
+            $customers = Customer::select('id', 'apname')->orderBy('apname', 'asc')->get();
+            $products = Product::select('prod_id', 'name')->orderBy('name', 'asc')->get();
+            return view('sales.do.index', compact('customers', 'products'));
+        }
+    }
+
+    public function getDataDO(Request $request)
+    {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        if($request->ajax()){
+            $datas = DeliveryOrder::checkDO($request);
+            echo json_encode($datas);
+        }
+    }
+
+    public function getDataSO(Request $request)
+    {
+        // echo "<pre>";
+        // print_r($request->all());
+        // die();
+        if($request->ajax()){
+            $datas = Sales::checkDO($request);
+            echo json_encode($datas);
         }
     }
 

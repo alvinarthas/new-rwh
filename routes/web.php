@@ -264,6 +264,8 @@ Route::middleware(['checkUser'])->group(function () {
 
     // Delivery Order
         Route::get('do','DeliveryController@index')->name('indexDo');
+        Route::post('getDataDO','DeliveryController@getDataDO')->name('getDataDO');
+        Route::post('getDataSO','DeliveryController@getDataSO')->name('getDataSO');
         Route::get('do/add','DeliveryController@addBrgDo')->name('addBrgDo');
         Route::get('do/view','DeliveryController@view')->name('viewDo');
         Route::get('do/print','DeliveryController@print')->name('printDo');

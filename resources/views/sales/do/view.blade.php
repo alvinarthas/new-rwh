@@ -1,7 +1,27 @@
-@php
-    use App\DeliveryDetail;
-    use App\SalesDet;
-@endphp
+<style>
+    #loader {
+        border: 16px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 16px solid #3498db;
+        width: 50px;
+        height: 50px;
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+        margin-left:10px;
+        margin-right:10px;
+        margin-top:10px;
+    }
+    @-webkit-keyframes spin {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
 <div class="card-box table-responsive">
     <ul class="nav nav-tabs">
         <li class="nav-item">
@@ -24,29 +44,12 @@
                             <thead>
                                 <th>No</th>
                                 <th>Sales ID</th>
+                                <th>Tanggal</th>
                                 <th>Customer</th>
                                 <th>Total Harga</th>
                                 <th>Status Delivery</th>
                                 <th>Option</th>
                             </thead>
-                            <tbody>
-                                @php($i=1)
-                                @foreach ($sales as $sale)
-                                    <tr>
-                                        <td>{{$i}}</td>
-                                        <td>{{$sale['jurnal_id']}}</td>
-                                        <td>{{$sale['customer']}}</td>
-                                        <td>Rp {{number_format($sale['ttl'],2,",",".")}}</td>
-                                        @if ($sale['status_do'] == 1)
-                                            <td><a href="javascrip:;" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Sudah selesai melakukan Delivery</a></td>
-                                        @else
-                                            <td><a href="javascrip:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5">Belum selesai melakukan Delivery</a></td>
-                                        @endif
-                                        <td><a href="{{route('showDo',['id'=>$sale['sales_id']])}}" class="btn btn-primary btn-rounded waves-effect w-md waves-danger m-b-5">Atur</a></td>
-                                    </tr>
-                                @php($i++)
-                                @endforeach
-                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -67,40 +70,6 @@
                                 <th>Qty DO</th>
                                 <th>Option</th>
                             </thead>
-                            <tbody>
-                                @php($x=1)
-                                @foreach ($deliveries as $delivery)
-                                    <tr>
-                                        <td>{{$x}}</td>
-                                        <td>{{$delivery->so_id}}</td>
-                                        <td>{{ $delivery->do_id }}</td>
-                                        <td>{{$delivery->customer}}</td>
-                                        <td>{{$delivery->prod_id}}</td>
-                                        <td>{{$delivery->product_name}}</td>
-                                        {{-- @if ($delivery->qty == $delivery->do_qty)
-                                            <td><a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->qty}}</a></td>
-                                        @elseif ($delivery->qty > $delivery->do_qty)
-                                            <td><a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->qty}}</a></td>
-                                        @else
-                                            <td><a href="javascrip:;" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->qty}}</a></td>
-                                        @endif --}}
-                                        @if ($delivery->do_qty == 0)
-                                            <td><a href="javascrip:;" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->do_qty}}</a></td>
-                                        @elseif(($delivery->do_qty-$delivery->qty) == 0 )
-                                            <td><a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->do_qty}}</a></td>
-                                        @elseif(($delivery->do_qty-$delivery->qty) < 0 )
-                                            <td><a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->do_qty}}</a></td>
-                                        @elseif(($delivery->do_qty-$delivery->qty) > 0 )
-                                            <td><a href="javascrip:;" class="btn btn-custom btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->do_qty}}</a></td>
-                                        @else
-                                            <td><a href="javascrip:;" class="btn btn-info btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$delivery->do_qty}}</a></td>
-                                        @endif
-
-                                        <td><a href="{{route('showDo',['id'=>$delivery->trx_id])}}" class="btn btn-primary btn-rounded waves-effect w-md waves-danger m-b-5">Atur DO</a></td>
-                                    </tr>
-                                @php($x++)
-                                @endforeach
-                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -108,15 +77,68 @@
         </div>
     </div>
 </div>
+<input type="hidden" id="start_date" value="{{$start_date}}">
+<input type="hidden" id="end_date" value="{{$end_date}}">
+<input type="hidden" id="customer" value="{{$customer}}">
+<input type="hidden" id="prod_id" value="{{$prod_id}}">
 
 <script>
-    $('#responsive-datatable-sales').DataTable();
-    $('#responsive-datatable-deliveries').DataTable({
-        "columnDefs": [
-            {
-                "targets": [ 2 ],
-                "visible": false,
-            },
-        ]
+    $(document).ready(function () {
+        $('#responsive-datatable-sales').DataTable({
+            "processing" : true,
+            "serverSide" : true,
+            "ajax" : {
+                "url" : "{{ route('getDataSO') }}",
+                "type" : "POST",
+                "data" : {
+                    "start_date" : $("#start_date").val(),
+                    "end_date" : $("#end_date").val(),
+                    "customer" : $("#customer").val(),
+                    "prod_id" : $("#prod_id").val(),
+                    "_token" : $("meta[name='csrf-token']").attr("content"),
+                }
+            },"columns" : [{data : "no", name : "no", searchable : false},
+                    {data : "sales_id", name : "sales_id"},
+                    {data : "trx_date", name : "trx_date"},
+                    {data : "customer", name : "customer"},
+                    {data : "total_harga", name : "total_harga", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' )},
+                    {data : "status_do", name : "status_do", orderable : false, searchable :false},
+                    {data : "option", name : "option", orderable : false, searchable : false}
+            ],"columnDefs" : [
+                {
+                    targets: '_all',
+                    type: 'natural'
+                }
+            ],oLanguage : {sProcessing: "<div id='loader'></div>"},
+        });
+        $('#responsive-datatable-deliveries').DataTable({
+            "processing" : true,
+                "serverSide" : true,
+                "ajax" : {
+                    "url" : "{{ route('getDataDO') }}",
+                    "type" : "POST",
+                    "data" : {
+                        "start_date" : $("#start_date").val(),
+                        "end_date" : $("#end_date").val(),
+                        "customer" : $("#customer").val(),
+                        "prod_id" : $("#prod_id").val(),
+                        "_token" : $("meta[name='csrf-token']").attr("content"),
+                    }
+                },"columns" : [{data : "no", name : "no", searchable : false},
+                    {data : "so_id", name : "so_id"},
+                    {data : "do_id",name : "do_id"},
+                    {data : "customer", name : "customer"},
+                    {data : "prod_id", name : "prod_id"},
+                    {data : "prod_name", name : "prod_name"},
+                    {data : "qtydo", name : "qtydo", orderable : false, searchable : false},
+                    {data : "option", name : "option", orderable : false, searchable : false}
+                ],"columnDefs": [
+                {
+                    "targets": [ 2 ],
+                    "visible": false,
+                },
+            ],oLanguage : {sProcessing: "<div id='loader'></div>"},
+
+        });
     });
 </script>

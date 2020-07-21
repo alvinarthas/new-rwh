@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 use App\SalesDet;
 use App\Sales;
@@ -30,39 +31,116 @@ class DeliveryOrder extends Model
         return $this->belongsTo('App\Product','product_id','prod_id');
     }
 
-    public static function checkDO($start, $end){
-        // $sales = Sales::join('tblproducttrxdet','tblproducttrx.id','=','tblproducttrxdet.trx_id');
+    public static function checkDO(Request $request){
+        $start = $request->start_date;
+        $end = $request->end_date;
+        $customer = $request->customer;
+        $prod_id = $request->prod_id;
+        $draw = $request->draw;
+        $row = $request->start;
+        $rowperpage = $request->length; // Rows display per page
+        $columnIndex = $request['order'][0]['column']; // Column index
+        $columnName = $request['columns'][$columnIndex]['data']; // Column name
+        $columnSortOrder = $request['order'][0]['dir']; // asc or desc
+        $searchValue = $request['search']['value']; // Search value
+
+        $sales = Sales::join('tblproducttrxdet','tblproducttrx.id','tblproducttrxdet.trx_id')->join('tblcustomer', 'tblproducttrx.customer_id', 'tblcustomer.id')->join('tblproduct', 'tblproducttrxdet.prod_id', 'tblproduct.prod_id')->select('tblproducttrx.id', 'tblproducttrx.trx_date', 'tblproducttrxdet.prod_id', 'tblproducttrx.jurnal_id', 'tblproducttrxdet.trx_id', 'tblproduct.name AS prodname', 'tblcustomer.apname AS customer_name', DB::raw('SUM(tblproducttrxdet.qty) as qtyso'))->where('tblproducttrx.approve', 1);
+
         if($start <> NULL && $end<> NULL){
-            $sales = Sales::whereBetween('trx_date',[$start,$end])->where('approve',1)->get();
+            $sales->whereBetween('tblproducttrx.trx_date',[$start,$end]);
+        }
+
+        if($customer <> "#"){
+            $sales->where('tblproducttrx.customer_id', $customer);
+        }
+
+        if($prod_id <> "#"){
+            $sales->where('tblproducttrxdet.prod_id', $prod_id);
+        }
+        $sales->groupBy('tblproducttrxdet.trx_id','tblproducttrxdet.prod_id');
+
+        $totalRecords = 0;
+        foreach($sales->get() as $count){
+            $totalRecords++;
+        }
+
+        if($searchValue != ''){
+            $raw = DeliveryOrder::select('sales_id')->where('jurnal_id', 'LIKE', '%'.$searchValue)->get();
+            // echo $raw;
+            $sales->where('tblproducttrx.jurnal_id', 'LIKE', '%'.$searchValue.'%')->orWhere('tblcustomer.apname', 'LIKE', '%'.$searchValue.'%')->orWhere('tblproducttrxdet.prod_id', 'LIKE', '%'.$searchValue.'%')->orWhere('tblproduct.name', 'LIKE', '%'.$searchValue.'%')->orWhereIn('tblproducttrx.id', $raw);
+        }
+
+        $totalRecordwithFilter = 0;
+        foreach($sales->get() as $count){
+            $totalRecordwithFilter++;
+        }
+
+        if($columnName == "no"){
+            $sales->orderBy('tblproducttrxdet.trx_id', $columnSortOrder);
+        }elseif($columnName == "so_id"){
+            $sales->orderBy('tblproducttrx.jurnal_id', $columnSortOrder);
+        }elseif($columnName == "customer"){
+            $sales->orderBy('customer_name', $columnSortOrder);
+        }elseif($columnName == "prod_name"){
+            $sales->orderBy('prodname', $columnSortOrder);
         }else{
-            $sales = Sales::where('approve',1)->get();
+            $sales->orderBy($columnName, $columnSortOrder);
         }
+
+        $sales = $sales->offset($row)->limit($rowperpage)->get();
+
         $data = collect();
-        foreach($sales as $sal){
-            $salesdet = SalesDet::where('trx_id', $sal->id)->groupBy('prod_id')->get();
-            foreach($salesdet as $key){
-                $key->qty = SalesDet::where('trx_id', $sal->id)->where('prod_id', $key->prod_id)->sum('qty');
-                $detail = collect($key);
+        $i = 1;
 
-                $do_id = "";
+        foreach($sales as $key){
+            $detail = collect();
 
-                $do = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('delivery_order.sales_id',$sal->id)->where('delivery_detail.product_id',$key->prod_id)->select('delivery_order.jurnal_id')->get();
-                foreach($do as $d){
-                    $do_id .= $d->jurnal_id." ";
-                }
+            $do_id = "";
 
-                $do_qty = DeliveryDetail::where('sales_id',$sal->id)->where('product_id',$key->prod_id)->sum('qty');
-                $prodname = Product::where('prod_id',$key->prod_id)->first()->name;
-
-                $detail->put('so_id', $sal->jurnal_id);
-                $detail->put('do_qty',$do_qty);
-                $detail->put('do_id', $do_id);
-                $detail->put('customer', $sal->customer()->first()->apname);
-                $detail->put('product_name',$prodname);
-                $data->push($detail);
+            $do = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('delivery_order.sales_id',$key->trx_id)->where('delivery_detail.product_id',$key->prod_id)->select('delivery_order.jurnal_id')->get();
+            foreach($do as $d){
+                $do_id .= $d->jurnal_id." ";
             }
+
+            $do_qty = DeliveryDetail::where('sales_id',$key->id)->where('product_id',$key->prod_id)->sum('qty');
+
+            if($do_qty == 0){
+                $qtydo = '<a href="javascrip:;" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">'.$do_qty.'</a>';
+            }elseif(($do_qty-$key->qtyso) == 0){
+                $qtydo = '<a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">'.$do_qty.'</a>';
+            }elseif(($do_qty-$key->qtyso) < 0){
+                $qtydo = '<a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">'.$do_qty.'</a>';
+            }elseif(($do_qty-$key->qtyso) > 0){
+                $qtydo = '<a href="javascrip:;" class="btn btn-custom btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">'.$do_qty.'</a>';
+            }else{
+                $qtydo = '<a href="javascrip:;" class="btn btn-info btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">'.$do_qty.'</a>';
+            }
+
+            $button = '<a href="do/show/'.$key->id.'" class="btn btn-primary btn-rounded waves-effect w-md waves-danger m-b-5">Atur</a>';
+
+            $detail->put('no', $i++);
+            $detail->put('so_id', $key->jurnal_id);
+            $detail->put('do_id', $do_id);
+            $detail->put('customer', $key->customer_name);
+            $detail->put('prod_id', $key->prod_id);
+            $detail->put('prod_name', $key->prodname);
+            $detail->put('qtydo',$qtydo);
+            $detail->put('option', $button);
+            $data->push($detail);
         }
-        return $data;
+
+        // echo "<pre>";
+        // print_r($data);
+        // die();
+
+        $response = array(
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecordwithFilter,
+            'data' => $data,
+        );
+
+        return $response;
     }
 
     public static function autoDO($sales_id,$date,$user_id = null){
