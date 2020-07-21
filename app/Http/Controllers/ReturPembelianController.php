@@ -389,6 +389,7 @@ class ReturPembelianController extends Controller
             $data = ReturPayment::where('id', $request->id)->first();
             Log::setLog('RBPPD','Delete Retur Purchase Payment Jurnal ID: '.$data->id_jurnal);
             Jurnal::where('id_jurnal',$data->id_jurnal)->delete();
+            $data->delete();
             return "true";
         }catch(\Exception $a){
             return response()->json($a);
@@ -398,7 +399,7 @@ class ReturPembelianController extends Controller
     public function destroyReturReceive(Request $request){
         $id_jurnal = $request->jurnal_id;
         try {
-            // Jurnal::where('id_jurnal',$id_jurnal)->delete();
+            Jurnal::where('id_jurnal',$id_jurnal)->delete();
             ReturStock::where('id_jurnal', $id_jurnal)->delete();
             Log::setLog('RBRPD','Delete Retur Receive Product Jurnal ID: '.$id_jurnal);
             return "true";

@@ -413,7 +413,7 @@ class ReturPenjualanController extends Controller
             $data = ReturPayment::where('id', $request->id)->first();
             Log::setLog('RJSPD','Delete Retur Sales Payment Jurnal ID: '.$data->id_jurnal);
             Jurnal::where('id_jurnal',$data->id_jurnal)->delete();
-
+            $data->delete();
             return "true";
         }catch(\Exception $a){
             return response()->json($a);
