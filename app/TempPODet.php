@@ -8,7 +8,7 @@ class TempPODet extends Model
 {
     protected $table ='temp_tblpotrxdet';
     protected $fillable = [
-        'temp_id','prod_id','qty','unit','price','price_dist','creator'
+        'temp_id','prod_id','qty','unit','price','price_dist','creator','purchasedetail_id'
     ];
 
     public function product(){

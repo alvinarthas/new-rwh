@@ -40,8 +40,20 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
+    // Check Missing Receive Detail
+    public function index(Request $request){
+        // foreach (ReceiveDet::select('id','purchasedetail_id')->get() as $key) {
+        //     $checkPodet = PurchaseDetail::where('id',$key->purchasedetail_id)->count();
+
+        //     if ($checkPodet == 0){
+        //         echo "RP.".$key->id." PODET.".$key->purchasedetail_id."<br>";
+        //     }
+        // }
+        Product::getGudang($request->prod_id);
+    }
+
     // Check ReceiveDet Null
-    public function index(){
+    public function indexSSSSS(){
         foreach (ReceiveDet::whereNull('purchasedetail_id')->get() as $key) {
             echo "RD.".$key->id." Product: ".$key->prod_id."<br>";
             // Get Purchase Detail

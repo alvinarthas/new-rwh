@@ -364,7 +364,7 @@ class ProductController extends Controller
                 array_push($result, $stock);
             }
 
-            $do = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('product_id', $product->prod_id)->select('jurnal_id', 'date', 'qty')->get();
+            $do = DeliveryDetail::join('delivery_order', 'delivery_detail.do_id', 'delivery_order.id')->where('product_id', $product->prod_id)->select('jurnal_id', 'date', 'qty','gudang_id')->get();
 
             foreach($do AS $d){
                 $tgl = $d['date'];
@@ -377,7 +377,7 @@ class ProductController extends Controller
                     'trx_id'  => $trx_id,
                     'status'  => $status,
                     'qty'     => $d->qty,
-                    'gudang'     => $p->gudang->nama,
+                    'gudang'     => $d->gudang->nama,
                 );
                 array_push($result, $stock);
             }

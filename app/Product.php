@@ -39,6 +39,7 @@ class Product extends Model
         $qty_delivered = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
         $konversi = KonversiDetail::getTotal($prod_id);
         $retur = Retur::getTotal($prod_id, null);
+
         $gudang = ($qty_receive-$qty_delivered)+$konversi+$retur;
 
         return $gudang;

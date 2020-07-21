@@ -133,27 +133,53 @@ class Purchase extends Model
 
         // transfer new Detail
         foreach ($temp_po_det as $key) {
-            $purchasedet = new PurchaseDetail(array(
-                'trx_id' => $purchase->id,
-                'prod_id' => $key->prod_id,
-                'qty' => $key->qty,
-                'unit' => $key->unit,
-                'creator' => $key->creator,
-                'price' => $key->price,
-                'price_dist' => $key->price_dist,
-            ));
-            $purchasedet->save();
+            if ($key->purchasedetail_id == "baru"){
+                $purchasedet = new PurchaseDetail(array(
+                    'trx_id' => $purchase->id,
+                    'prod_id' => $key->prod_id,
+                    'qty' => $key->qty,
+                    'unit' => $key->unit,
+                    'creator' => $key->creator,
+                    'price' => $key->price,
+                    'price_dist' => $key->price_dist,
+                ));
+                $purchasedet->save();
+            }else{
+                $purchasedet = new PurchaseDetail(array(
+                    'id' => $key->purchasedetail_id,
+                    'trx_id' => $purchase->id,
+                    'prod_id' => $key->prod_id,
+                    'qty' => $key->qty,
+                    'unit' => $key->unit,
+                    'creator' => $key->creator,
+                    'price' => $key->price,
+                    'price_dist' => $key->price_dist,
+                ));
+                $purchasedet->save();
+            }
         }
 
         // Matikan status temp po
         $temp_po->delete();
 
+        // Re Check Receive ITEM and Recycle
+        foreach (ReceiveDet::select('id','purchasedetail_id')->where('trx_id',$purchase->id)->get() as $key) {
+            $checkPodet = PurchaseDetail::where('id',$key->purchasedetail_id)->count();
+
+            if ($checkPodet == 0){
+                $key->delete();
+            }
+        }
+        ReceiveDet::recycleRP($purchase->id);
+
         // Update Jurnal
+
         // Penjurnalan
         $total_modal=0;
         $total_tertahan=0;
         $total_distributor=0;
         $prodarray = collect();
+
         foreach (PurchaseDetail::where('trx_id',$id)->get() as $key) {
             $selisih = $key->price_dist - $key->price;
             $total_modal += ($key->price * $key->qty);
@@ -166,27 +192,27 @@ class Purchase extends Model
         if($purchase->jurnal_id <> 0 || $purchase->jurnal_id <> '0'){
             //Update debet Persediaan Barang Indent ( harga modal x qty )
                 $jurnal1 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.4.1.1')->first();
-                $jurnal1->amount = $jurnal1->amount+$total_modal;
+                $jurnal1->amount = $total_modal;
                 $jurnal1->date = $purchase->tgl;
                 $jurnal1->update();
             //Update debet Estimasi Bonus
                 if($total_tertahan < 0){
                     $total_tertahan = $total_tertahan *-1;
                     $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
-                    $jurnal2->amount = $jurnal2->amount+$total_tertahan;
+                    $jurnal2->amount = $total_tertahan;
                     $jurnal2->date = $purchase->tgl;
                     $jurnal2->AccPos = "Credit";
                     $jurnal2->update();
                 }else{
                     $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
-                    $jurnal2->amount = $jurnal2->amount+$total_tertahan;
+                    $jurnal2->amount = $total_tertahan;
                     $jurnal2->date = $purchase->tgl;
                     $jurnal2->update();
                 }
 
             //Update credit hutang Dagang
                 $jurnal3 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','2.1.1')->first();
-                $jurnal3->amount = $jurnal3->amount+$total_distributor;
+                $jurnal3->amount = $total_distributor;
                 $jurnal3->date = $purchase->tgl;
                 $jurnal3->update();
         }else{
@@ -302,24 +328,24 @@ class Purchase extends Model
 
         //Update debet Persediaan Barang Indent ( harga modal x qty )
             $jurnal1 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.4.1.1')->first();
-            $jurnal1->amount = $jurnal1->amount+$total_modal;
+            $jurnal1->amount = $total_modal;
             $jurnal1->update();
         //Update debet Estimasi Bonus
             if($total_tertahan < 0){
                 $total_tertahan = $total_tertahan *-1;
                 $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
-                $jurnal2->amount = $jurnal2->amount+$total_tertahan;
+                $jurnal2->amount = $total_tertahan;
                 $jurnal2->AccPos = "Credit";
                 $jurnal2->update();
             }else{
                 $jurnal2 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','1.1.3.4')->first();
-                $jurnal2->amount = $jurnal2->amount+$total_tertahan;
+                $jurnal2->amount = $total_tertahan;
                 $jurnal2->update();
             }
 
         //Update credit hutang Dagang
             $jurnal3 = Jurnal::where('id_jurnal',$purchase->jurnal_id)->where('AccNo','2.1.1')->first();
-            $jurnal3->amount = $jurnal3->amount+$total_distributor;
+            $jurnal3->amount = $total_distributor;
             $jurnal3->update();
 
         // Refresh COGS

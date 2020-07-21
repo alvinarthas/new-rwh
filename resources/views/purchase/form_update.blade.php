@@ -182,7 +182,11 @@ Form Update Purchasing #{{$purchase->id}}
                                             @isset($detail->product->name)
                                             <tr style="width:100%" id="trow{{$i}}">
                                                 <td>{{$i}}</td>
-                                                <input type="hidden" name="detail[]" id="detail{{$i}}" value="{{$detail->id}}">
+                                                @if ($status == 0)
+                                                    <input type="hidden" name="detail[]" id="detail{{$i}}" value="{{$detail->id}}">
+                                                @else
+                                                <input type="hidden" name="detail[]" id="detail{{$i}}" value="{{$detail->purchasedetail_id}}">
+                                                @endif
                                                 <td><input type="hidden" name="prod_id[]" id="prod_id{{$i}}" value="{{$detail->prod_id}}">{{$detail->prod_id}}</td>
                                                 <td><input type="hidden" name="prod_name[]" id="prod_name{{$i}}" value="{{$detail->product->name}}">{{$detail->product->name}}</td>
                                                 <td><input type="number" name="qty[]" id="qty{{$i}}" value="{{$detail->qty}}" onchange="changeTotal({{$i}})" onkeyup="changeTotal({{$i}})"></td>
