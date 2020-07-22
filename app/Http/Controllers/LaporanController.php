@@ -19,12 +19,21 @@ class LaporanController extends Controller
     // General Ledger
     public function generalLedger(Request $request){
         if($request->ajax()){
+            $start_date = $request->start_date;
+            $end_date = $request->end_date;
             $coa = Coa::where('AccNo',$request->coa)->first();
-            $jurnals = Jurnal::generalLedger($request->start_date,$request->end_date,$request->coa);
-            return response()->json(view('laporan.general_ledger.view',compact('jurnals','coa'))->render());
+            $jurnals = Jurnal::getTotalGeneralLedger($request->start_date,$request->end_date,$request->coa);
+            return response()->json(view('laporan.general_ledger.view',compact('jurnals','coa','start_date','end_date'))->render());
         }else{
             $coas = Coa::where('StatusAccount','Detail')->orderBy('AccNo','asc')->get();
             return view('laporan.general_ledger.index',compact('coas'));
+        }
+    }
+
+    public function getDataGeneralLedger(Request $request){
+        if($request->ajax()){
+            $jurnals = Jurnal::generalLedger($request);
+            echo json_encode($jurnals);
         }
     }
 

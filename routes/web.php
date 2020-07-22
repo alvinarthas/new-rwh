@@ -283,6 +283,7 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('neraca','LaporanController@neraca')->name('neraca');
         // General Ledger
         Route::get('generalledger','LaporanController@generalLedger')->name('generalLedger');
+        Route::post('getDataGeneralLedger', 'LaporanController@getDataGeneralLedger')->name('getDataGeneralLedger');
         // Perubahan Modal
         Route::get('perubahanmodal','LaporanController@perubahanModal')->name('perubahanModal');
         // Profit Loss

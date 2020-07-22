@@ -128,10 +128,6 @@ class Jurnal extends Model
             $data->push($row);
         }
 
-        echo "<pre>";
-        print_r($data);
-        die();
-
         $response = array(
             'draw' => intval($draw),
             'recordsTotal' => $totalRecords,
@@ -176,24 +172,107 @@ class Jurnal extends Model
         return $data;
     }
 
-    public static function generalLedger($start,$end,$coa){
+    public static function generalLedger(Request $request){
+        $coa = $request->coa;
+        $start = $request->start_date;
+        $end = $request->end_date;
+
+        $draw = $request->draw;
+        $row = $request->start;
+        $rowperpage = $request->length; // Rows display per page
+        $columnIndex = $request['order'][0]['column']; // Column index
+        $columnName = $request['columns'][$columnIndex]['data']; // Column name
+        $columnSortOrder = $request['order'][0]['dir']; // asc or desc
+        $searchValue = $request['search']['value']; // Search value
 
         $jurnal = Jurnal::where('AccNo',$coa);
+
+        if($start <> NULL && $end <> NULL){
+            $jurnal->whereBetween('date',[$start,$end]);
+        }
+        $totalRecords = $jurnal->count();
+
+        if($searchValue != ''){
+            $jurnal->where('id_jurnal', 'LIKE', '%'.$searchValue.'%')->orWhere('Amount', 'LIKE', '%'.$searchValue.'%')->orWhere('date', 'LIKE', '%'.$searchValue.'%')->orWhere('description', 'LIKE', '%'.$searchValue.'%')->orWhere('notes_item', 'LIKE', '%'.$searchValue.'%');
+        }
+
+        $totalRecordwithFilter = $jurnal->count();
+
+        if($columnName == "no"){
+            $jurnal->orderBy('id', $columnSortOrder);
+        }elseif($columnName == "Debet" || $columnName == "Credit"){
+            $jurnal->orderBy('Amount', $columnSortOrder);
+        }else{
+            $jurnal->orderBy($columnName, $columnSortOrder);
+        }
+        $data = collect();
+        $no = 1;
+        $balance = Jurnal::balanceOffsetGeneralLedger($jurnal, $row, $rowperpage);
+        $jurnal = $jurnal->offset($row)->limit($rowperpage)->get();
+
+        foreach($jurnal as $jn){
+            $row = collect();
+            $row->put('no', $no++);
+            $row->put('id_jurnal', $jn->id_jurnal);
+            $row->put('date', $jn->date);
+            $row->put('notes_item', $jn->notes_item);
+            $row->put('description', $jn->description);
+            if($jn->AccPos == "Debet"){
+                $row->put('Debet', $jn->Amount);
+                $row->put('Credit', "");
+                $balance+=$jn->Amount;
+            }elseif($jn->AccPos == "Credit"){
+                $row->put('Credit', $jn->Amount);
+                $row->put('Debet', "");
+                $balance-=$jn->Amount;
+            }
+            $row->put('balance', $balance);
+            $data->push($row);
+        }
+
+        $response = array(
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecordwithFilter,
+            'data' => $data,
+        );
+        return $response;
+    }
+
+    public static function balanceOffsetGeneralLedger($query, $row, $limit){
+        if($row==0){
+            $balance = 0;
+        }else{
+            $balance = 0;
+
+            $datas = $query->limit($row)->get();
+
+            foreach($datas as $data){
+                if($data->AccPos == "Debet"){
+                    $balance+=$data->Amount;
+                }elseif($data->AccPos == "Credit"){
+                    $balance-=$data->Amount;
+                }
+            }
+        }
+
+        return $balance;
+    }
+
+    public static function getTotalGeneralLedger($start,$end,$coa){
+
         $jurdebet = Jurnal::where('AccNo',$coa);
         $jurcredit = Jurnal::where('AccNo',$coa);
 
         if($start <> NULL && $end <> NULL){
-            $jurnal->whereBetween('date',[$start,$end]);
             $jurdebet->whereBetween('date',[$start,$end]);
             $jurcredit->whereBetween('date',[$start,$end]);
         }
 
         $ttl_debet = $jurdebet->where('AccPos','Debet')->sum('Amount');
         $ttl_credit = $jurcredit->where('AccPos','Credit')->sum('Amount');
-        $jurnal = $jurnal->orderBy('date','asc')->get();
 
         $data = collect();
-        $data->put('data',$jurnal);
         $data->put('ttl_debet',$ttl_debet);
         $data->put('ttl_credit',$ttl_credit);
         return $data;
