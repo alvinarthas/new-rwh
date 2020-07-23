@@ -40,8 +40,32 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
-    // Check Missing Receive Detail
+    // querying from eloquent relationship
     public function index(Request $request){
+        $keyword = $request->keyword;
+        // dd(Sales::has('customer',25)->limit(5)->get());
+        $sales = Sales::orWhereHas('customer', function ($query) use ($keyword) {
+            $query->where('apname', 'like', $keyword.'%');
+        });
+
+        $sales = $sales->orWhereHas('creator', function ($query) use ($keyword) {
+            $query->where('name', 'like', $keyword.'%');
+        });
+
+        // Search aplhanumeric get integer
+        $string = "TOKO 1592t5";
+        $str = preg_replace('/[^0-9]/', '', $string);
+        echo $str;
+
+        // Search Alphanumeric get string only
+        $str = '23123.TO232KO.203';
+        $outcome = preg_replace("/[^a-zA-Z]/", "", $str);
+        echo $outcome;
+
+        dd($sales->limit(10)->get());
+    }
+    // Check Missing Receive Detail
+    public function indexmiss(Request $request){
         // foreach (ReceiveDet::select('id','purchasedetail_id')->get() as $key) {
         //     $checkPodet = PurchaseDetail::where('id',$key->purchasedetail_id)->count();
 
@@ -51,7 +75,6 @@ class TestController extends Controller
         // }
         Product::getGudang($request->prod_id);
     }
-
     // Check ReceiveDet Null
     public function indexSSSSS(){
         foreach (ReceiveDet::whereNull('purchasedetail_id')->get() as $key) {

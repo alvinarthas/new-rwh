@@ -503,4 +503,66 @@ class Sales extends Model
         }
         return $data;
     }
+
+    // Get Data for Serverless SO
+    public static function salesData(Request $request){
+        // Datatables Parameter POST
+        $draw = $request->draw;
+        $row = $request->start;
+        $rowperpage = $request->length; // Rows display per page
+        $columnIndex = $request['order'][0]['column']; // Column index
+        $columnName = $request['columns'][$columnIndex]['data']; // Column name
+        $columnSortOrder = $request['order'][0]['dir']; // asc or desc
+        $searchValue = $request['search']['value']; // Search value
+
+        // Custom Parameter Post
+        $start = $request->start_date;
+        $end = $request->end_date;
+        $method = $request->trx_method;
+        $param = $request->param;
+
+        // Start Query
+        $page = MenuMapping::getMap(session('user_id'),"PSSL");
+
+        // Sales Initialization
+        $sales = Sales::select('id','trx_date','creator','ttl_harga','customer_id','ongkir','approve','method','online_id');
+
+        // Query By Param
+        if($param == "all"){
+            if(array_search("PSSLV",$page) && array_search("PSSLVO",$page)){
+
+            }else if(array_search("PSSLV",$page)){
+                $sales = $sales->where('method',0);
+            }else if(array_search("PSSLVO",$page)){
+                $sales = $sales->where('method','NOT LIKE',0);
+            }
+        }else{
+            // Query By Date Range & Method
+            if ($method == "*"){
+                $sales = $sales->whereBetween('trx_date',[$start,$end]);
+            }elseif ($method == 0) {
+                $sales = $sales->where('method',$method)->whereBetween('trx_date',[$start,$end]);
+            }elseif ($method == 1){
+                $sales = $sales->where('method','NOT LIKE',0)->whereBetween('trx_date',[$start,$end]);
+            }
+        }
+
+        $totalRecords = $sales->count();
+
+        // Search based on param
+        if($searchValue != ''){
+            // Search Based on Customer Name
+
+            // or Search Based on Creator Name
+
+            // or Search Based on TRX ID
+
+            // or Search Based on TRX DATE
+
+            // or Search Based on Total Transaction
+
+        }
+
+        // Sort and Pagination
+    }
 }

@@ -31,20 +31,120 @@ use App\DeliveryDetail;
 class SalesController extends Controller
 {
 
-    public function index()
-    {
+    // GET DATA
+
+    public function index(){
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
         return view('sales.index',compact('page'));
     }
 
-    public function showSales(Request $request){
-        // $products = PriceDet::where('customer_id',$request->customer)->select('prod_id')->orderBy('prod_id','asc')->get();
-        $products = Product::select('prod_id','name')->get();
+    public function showIndexSales(Request $request){
+        $page = MenuMapping::getMap(session('user_id'),"PSSL");
         $method = $request->method;
-        $customer = Customer::where('id',$request->customer)->select('id','apname','apphone','cicn','ciphone')->first();
-        if ($request->ajax()) {
-            return response()->json(view('sales.showsales',compact('products','customer','method'))->render());
+        $param = $request->param;
+        if($request->param == "all"){
+            if(array_search("PSSLV",$page) && array_search("PSSLVO",$page)){
+                $sales = Sales::orderBy('trx_date','desc')->get();
+            }else if(array_search("PSSLV",$page)){
+                $sales = Sales::where('method',0)->orderBy('trx_date','desc')->get();
+            }else if(array_search("PSSLVO",$page)){
+                $sales = Sales::where('method','NOT LIKE',0)->orderBy('trx_date','desc')->get();
+            }
+
+
+        }else{
+            if ($request->method == "*"){
+                $sales = Sales::whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
+            }elseif ($request->method == 0) {
+                $sales = Sales::where('method',$request->method)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
+            }elseif ($request->method == 1){
+                $sales = Sales::where('method','NOT LIKE',0)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
+            }
         }
+
+        $transaksi = Sales::getOrder($request->start,$request->end,$request->param,$request->method,$page);
+
+        if ($request->ajax()) {
+            // return response()->json(view('sales.indexsales',compact('sales','page','transaksi'))->render());
+            return response()->json(view('sales.viewsales',compact('sales','page','transaksi','method','param'))->render());
+        }
+    }
+
+    public function showIndexSalesNew(Request $request){
+        $page = MenuMapping::getMap(session('user_id'),"PSSL");
+        $method = $request->method;
+        $param = $request->param;
+
+        $transaksi = Sales::getOrder($request->start,$request->end,$request->param,$request->method,$page);
+
+        if ($request->ajax()) {
+            // return response()->json(view('sales.indexsales',compact('sales','page','transaksi'))->render());
+            return response()->json(view('sales.viewsales',compact('page','transaksi','method','param'))->render());
+        }
+    }
+
+    public function salesData(Request $request){
+        if($request->ajax()){
+            $datas = Sales::salesData($request);
+            echo json_encode($datas);
+        }
+    }
+
+    public function customerSales(Request $request){
+        if($request->method == '*'){
+            $customers = Customer::select('id','apname')->get();
+            $append = '<option value="#" disabled selected>Pilih Customer</option>';
+        }elseif($request->method == 0){
+            $customers = Customer::where('cust_type',0)->orwhere('cust_type',2)->select('id','apname')->get();
+            $append = '<option value="#" disabled selected>Pilih Customer Offline</option>';
+        }else{
+            $customers = Customer::where('cust_type',1)->orwhere('cust_type',2)->select('id','apname')->get();
+            $append = '<option value="#">Pilih Customer Online</option>';
+        }
+
+        foreach($customers as $key){
+            $append.='<option value="'.$key->id.'">'.$key->apname.'</option>';
+        }
+
+        return response()->json($append);
+    }
+
+    public function show(Request $request,$id){
+        if ($request->ajax()) {
+            $sales = Sales::where('id',$request->id)->first();
+            $salesdet = SalesDet::where('trx_id',$request->id)->get();
+            $salespay = SalesPayment::where('trx_id',$request->id)->sum('payment_amount');
+
+            $count = TempSales::where('trx_id', $request->id)->count();
+
+            if($count != 0){
+                $temp_sales = TempSales::where('trx_id', $request->id)->first();
+                $temp_salesdet = TempSalesDet::where('temp_id', $temp_sales->id)->get();
+                $jenis = "double";
+                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'temp_sales', 'temp_salesdet', 'jenis'))->render());
+            }else{
+                $jenis = "double";
+                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'jenis'))->render());
+            }
+        }
+    }
+
+    // CREATE DATA
+
+    public function create(){
+        $page = MenuMapping::getMap(session('user_id'),"PSSL");
+        if(array_search("PSSLC",$page) && array_search("PSSLCO",$page)){
+            $ecoms = Ecommerce::all();
+            $customers = "";
+        }else if(array_search("PSSLC",$page)){
+            $ecoms = "";
+            $customers = Customer::where('cust_type',0)->orwhere('cust_type',2)->select('id','apname')->get();
+        }else if(array_search("PSSLCO",$page)){
+            $ecoms = Ecommerce::all();
+            $customers = Customer::where('cust_type',1)->orwhere('cust_type',2)->select('id','apname')->get();
+        }
+
+        return view('sales.form', compact('page','ecoms','customers'));
     }
 
     public function addSales(Request $request){
@@ -98,113 +198,17 @@ class SalesController extends Controller
         return response()->json($data);
     }
 
-    public function showIndexSales(Request $request){
-        $page = MenuMapping::getMap(session('user_id'),"PSSL");
-        if($request->param == "all"){
-            if(array_search("PSSLV",$page) && array_search("PSSLVO",$page)){
-                $sales = Sales::orderBy('trx_date','desc')->get();
-            }else if(array_search("PSSLV",$page)){
-                $sales = Sales::where('method',0)->orderBy('trx_date','desc')->get();
-            }else if(array_search("PSSLVO",$page)){
-                $sales = Sales::where('method','NOT LIKE',0)->orderBy('trx_date','desc')->get();
-            }
-
-
-        }else{
-            if ($request->method == "*"){
-                $sales = Sales::whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
-            }elseif ($request->method == 0) {
-                $sales = Sales::where('method',$request->method)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
-            }elseif ($request->method == 1){
-                $sales = Sales::where('method','NOT LIKE',0)->whereBetween('trx_date',[$request->start,$request->end])->orderBy('trx_date','desc')->get();
-            }
-        }
-
-        $transaksi = Sales::getOrder($request->start,$request->end,$request->param,$request->method,$page);
+    public function showSales(Request $request){
+        // $products = PriceDet::where('customer_id',$request->customer)->select('prod_id')->orderBy('prod_id','asc')->get();
+        $products = Product::select('prod_id','name')->get();
+        $method = $request->method;
+        $customer = Customer::where('id',$request->customer)->select('id','apname','apphone','cicn','ciphone')->first();
         if ($request->ajax()) {
-            return response()->json(view('sales.indexsales',compact('sales','page','transaksi'))->render());
+            return response()->json(view('sales.showsales',compact('products','customer','method'))->render());
         }
     }
 
-    public function customerSales(Request $request){
-        if($request->method == '*'){
-            $customers = Customer::select('id','apname')->get();
-            $append = '<option value="#" disabled selected>Pilih Customer</option>';
-        }elseif($request->method == 0){
-            $customers = Customer::where('cust_type',0)->orwhere('cust_type',2)->select('id','apname')->get();
-            $append = '<option value="#" disabled selected>Pilih Customer Offline</option>';
-        }else{
-            $customers = Customer::where('cust_type',1)->orwhere('cust_type',2)->select('id','apname')->get();
-            $append = '<option value="#">Pilih Customer Online</option>';
-        }
-
-        foreach($customers as $key){
-            $append.='<option value="'.$key->id.'">'.$key->apname.'</option>';
-        }
-
-        return response()->json($append);
-    }
-
-    public function destroySalesDetail(Request $request){
-        try {
-            if($request->status == 1){
-                $detail = TempSalesDet::where('id',$request->detail)->first();
-                $sales = TempSales::where('id',$detail->temp_id)->first();
-                $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
-                $sales->save();
-
-                $detail->delete();
-
-                Log::setLog('PSSLD','Delete Temp Sales Detail SO.'.$sales->id);
-            }else{
-                $detail = SalesDet::where('id',$request->detail)->first();
-                $sales = Sales::where('id',$detail->trx_id)->first();
-
-                $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
-
-                $sales->save();
-                // Check DO
-                $dos = DeliveryDetail::where('product_id',$detail->prod_id)->where('sales_id',$sales->id)->get();
-                $detail->delete();
-
-                if ($sales->approve == 1) {
-                    // Recycle Jurnal
-                    Sales::recycleSales($sales->id);
-
-                    // Recycle DO
-                    foreach ($dos as $dodet) {
-                        DeliveryOrder::recycleDO($dodet->do_id,$sales->trx_date,$dodet->id);
-                    }
-                }
-
-                Log::setLog('PSSLD','Delete Sales Detail SO.'.$sales->id);
-            }
-
-            return "true";
-        } catch (\Exception $e) {
-            return response()->json($e);
-        }
-    }
-
-    public function create()
-    {
-        $page = MenuMapping::getMap(session('user_id'),"PSSL");
-        if(array_search("PSSLC",$page) && array_search("PSSLCO",$page)){
-            $ecoms = Ecommerce::all();
-            $customers = "";
-        }else if(array_search("PSSLC",$page)){
-            $ecoms = "";
-            $customers = Customer::where('cust_type',0)->orwhere('cust_type',2)->select('id','apname')->get();
-        }else if(array_search("PSSLCO",$page)){
-            $ecoms = Ecommerce::all();
-            $customers = Customer::where('cust_type',1)->orwhere('cust_type',2)->select('id','apname')->get();
-        }
-
-        return view('sales.form', compact('page','ecoms','customers'));
-    }
-
-    public function store(Request $request)
-    {
+    public function store(Request $request){
         // Validate
         $validator = Validator::make($request->all(), [
             'customer' => 'required',
@@ -263,29 +267,9 @@ class SalesController extends Controller
         }
     }
 
-    public function show(Request $request,$id)
-    {
-        if ($request->ajax()) {
-            $sales = Sales::where('id',$request->id)->first();
-            $salesdet = SalesDet::where('trx_id',$request->id)->get();
-            $salespay = SalesPayment::where('trx_id',$request->id)->sum('payment_amount');
+    // UPDATE DATA
 
-            $count = TempSales::where('trx_id', $request->id)->count();
-
-            if($count != 0){
-                $temp_sales = TempSales::where('trx_id', $request->id)->first();
-                $temp_salesdet = TempSalesDet::where('temp_id', $temp_sales->id)->get();
-                $jenis = "double";
-                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'temp_sales', 'temp_salesdet', 'jenis'))->render());
-            }else{
-                $jenis = "double";
-                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'jenis'))->render());
-            }
-        }
-    }
-
-    public function edit($id)
-    {
+    public function edit($id){
         $customer = Customer::all();
         $count_temp = TempSales::where('trx_id',$id)->count('trx_id');
         $status_temp = TempSales::where('trx_id',$id)->where('status',1)->count('trx_id');
@@ -311,8 +295,7 @@ class SalesController extends Controller
         return view('sales.form_update', compact('salesdet','sales','products','page','status', 'customer'));
     }
 
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id){
         // Validate
         $validator = Validator::make($request->all(), [
             'customer' => 'required',
@@ -381,8 +364,50 @@ class SalesController extends Controller
         }
     }
 
-    public function destroy($id)
-    {
+    // DELETE DATA
+
+    public function destroySalesDetail(Request $request){
+        try {
+            if($request->status == 1){
+                $detail = TempSalesDet::where('id',$request->detail)->first();
+                $sales = TempSales::where('id',$detail->temp_id)->first();
+                $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
+                $sales->save();
+
+                $detail->delete();
+
+                Log::setLog('PSSLD','Delete Temp Sales Detail SO.'.$sales->id);
+            }else{
+                $detail = SalesDet::where('id',$request->detail)->first();
+                $sales = Sales::where('id',$detail->trx_id)->first();
+
+                $sales->ttl_harga = $sales->ttl_harga - $detail->sub_ttl;
+
+                $sales->save();
+                // Check DO
+                $dos = DeliveryDetail::where('product_id',$detail->prod_id)->where('sales_id',$sales->id)->get();
+                $detail->delete();
+
+                if ($sales->approve == 1) {
+                    // Recycle Jurnal
+                    Sales::recycleSales($sales->id);
+
+                    // Recycle DO
+                    foreach ($dos as $dodet) {
+                        DeliveryOrder::recycleDO($dodet->do_id,$sales->trx_date,$dodet->id);
+                    }
+                }
+
+                Log::setLog('PSSLD','Delete Sales Detail SO.'.$sales->id);
+            }
+
+            return "true";
+        } catch (\Exception $e) {
+            return response()->json($e);
+        }
+    }
+
+    public function destroy($id){
         $sales = Sales::where('id',$id)->first();
         foreach (DeliveryOrder::where('sales_id',$id)->select('jurnal_id')->get() as $key) {
             Jurnal::where('id_jurnal',$key->jurnal_id)->delete();
@@ -403,8 +428,9 @@ class SalesController extends Controller
         }
     }
 
-    public function export(Request $request)
-    {
+    // EXPORT DATA
+
+    public function export(Request $request){
         // echo "<pre>";
         // print_r($request->all());
         // die();

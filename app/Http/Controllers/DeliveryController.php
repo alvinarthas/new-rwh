@@ -32,8 +32,6 @@ class DeliveryController extends Controller
             $end_date = $request->end_date;
             $customer = $request->customer;
             $prod_id = $request->prod_id;
-            // $sales = Sales::checkDO($start_date,$end_date);
-            // $deliveries = json_decode (json_encode (DeliveryOrder::checkDO($request)),FALSE);
             return response()->json(view('sales.do.view', compact('start_date', 'end_date', 'customer', 'prod_id'))->render());
         }else{
             $customers = Customer::select('id', 'apname')->orderBy('apname', 'asc')->get();
@@ -44,9 +42,6 @@ class DeliveryController extends Controller
 
     public function getDataDO(Request $request)
     {
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
         if($request->ajax()){
             $datas = DeliveryOrder::checkDO($request);
             echo json_encode($datas);
@@ -55,9 +50,6 @@ class DeliveryController extends Controller
 
     public function getDataSO(Request $request)
     {
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
         if($request->ajax()){
             $datas = Sales::checkDO($request);
             echo json_encode($datas);
