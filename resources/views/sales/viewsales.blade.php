@@ -115,11 +115,11 @@
 <script>
     $(document).ready(function () {
         var column = [{data : 'no', name : 'no', searchable : false},
-            {data : 'Transaction ID', name : 'transaction_id'},
-            {data : "Transaction Date",name : "transaction_date"},
-            {data : "Customer", name : "customer"},
-            {data : "Creator", name : "creator"},
-            {data : "Total", name : "total", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' )},
+            {data : 'trx_id', name : 'trx_id'},
+            {data : "trx_date",name : "trx_date"},
+            {data : "customer", name : "customer"},
+            {data : "creator", name : "creator"},
+            {data : "total", name : "total", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' )},
             {data : "option", name : "option", orderable : false, searchable : false}];
         $('#responsive-datatable').DataTable({
             "processing" : true,
@@ -128,8 +128,8 @@
                 "url" : "{{ route('salesData') }}",
                 "type" : "POST",
                 "data" : {
-                    "start" : $("#start").val(),
-                    "end" : $("#end").val(),
+                    "start_date" : $("#start").val(),
+                    "end_date" : $("#end").val(),
                     "param" : $("#param").val(),
                     "trx_method" : $("#trx_method").val(),
                     "_token" : $("meta[name='csrf-token']").attr("content"),

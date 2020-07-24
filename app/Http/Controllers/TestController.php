@@ -35,6 +35,7 @@ use App\Bonus;
 use App\BonusBayar;
 use App\TopUpBonus;
 use GuzzleHttp\Client;
+use App\Ecommerce;
 
 use Carbon\Carbon;
 
@@ -42,27 +43,62 @@ class TestController extends Controller
 {
     // querying from eloquent relationship
     public function index(Request $request){
+        $sales = Sales::limit(10)->get();
+        $new = $sales->replicate();
+        $new->save();
+        dd($new);
         $keyword = $request->keyword;
-        // dd(Sales::has('customer',25)->limit(5)->get());
-        $sales = Sales::orWhereHas('customer', function ($query) use ($keyword) {
-            $query->where('apname', 'like', $keyword.'%');
-        });
+        $tempCount = 0;
 
-        $sales = $sales->orWhereHas('creator', function ($query) use ($keyword) {
-            $query->where('name', 'like', $keyword.'%');
-        });
+        // GET Char of TRX ID
+        $charID = preg_replace("/[^a-zA-Z]/", "", $keyword);
+        $numID = preg_replace('/[^0-9]/', '', $keyword);
 
-        // Search aplhanumeric get integer
-        $string = "TOKO 1592t5";
-        $str = preg_replace('/[^0-9]/', '', $string);
-        echo $str;
+        // Sales Initialization
+        $sales = Sales::select('id','trx_date','creator','ttl_harga','customer_id','ongkir','approve','method','online_id', DB::raw('SUM(ttl_harga+ongkir) as ttl_trx'));
 
-        // Search Alphanumeric get string only
-        $str = '23123.TO232KO.203';
-        $outcome = preg_replace("/[^a-zA-Z]/", "", $str);
-        echo $outcome;
+        // or Search Based on Total Transaction
+        if (is_numeric($numID) && $charID==''){
+            $tempSales = $sales->replicate();
+            $tempSales->push();
+            $tempSales = $tempSales->groupBy('id')->orHavingRaw('SUM(ttl_harga+ongkir) = ?',[$numID]);
+            $tempCount = $tempSales->count();
+            echo $tempCount;
+        }
 
-        dd($sales->limit(10)->get());
+        if ($tempCount > 0){
+            $sales = $tempSales;
+        }else{
+            dd($sales->limit(10)->toSql());
+            // Search Based on Customer Name
+            $sales = $sales->orWhereHas('customer', function ($query) use ($keyword) {
+                $query->where('apname', 'like', $keyword.'%');
+            });
+            // or Search Based on Creator Name
+            $sales = $sales->orWhereHas('creator', function ($query) use ($keyword) {
+                $query->where('name', 'like', $keyword.'%');
+            });
+
+            // or Search Based on TRX DATE
+            $sales = $sales->orWhere('trx_date','like',$keyword.'%');
+
+            // or Search Based on TRX ID
+                // Check in TOKO ONLINE
+                if (is_numeric($numID) && $charID!=''){
+                    $ecom = Ecommerce::select('id','kode_trx')->where('kode_trx','like',$charID.'%');
+
+                    if ($ecom->count() > 0) {
+                        $ecom = $ecom->first();
+
+                        $sales = $sales->where('method',$ecom->id)->orWhere('online_id',$numID);
+                    }
+                }
+
+            $sales = $sales->orWhere('id',$numID);
+        }
+
+        dd($sales->limit(10)->toSql());
+        // dd($sales->groupBy('id')->orderBy('ttl_trx','desc')->limit(10)->get());
     }
     // Check Missing Receive Detail
     public function indexmiss(Request $request){
