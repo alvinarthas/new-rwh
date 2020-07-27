@@ -74,10 +74,15 @@ class BonusController extends Controller
 
     public function indexLaporan(Request $request)
     {
-        $page = MenuMapping::getMap(session('user_id'),"BMRU");
-        $bonusapa = "laporan";
-        $jenis = "index";
-        return view('bonus.index', compact('bonusapa','jenis', 'page'));
+        if($request->ajax()){
+            $member = Bonus::getRealsisasiBonus($request);
+            echo json_encode($datas);
+        }else{
+            $page = MenuMapping::getMap(session('user_id'),"BMRU");
+            $bonusapa = "laporan";
+            $jenis = "index";
+            return view('bonus.index', compact('bonusapa','jenis', 'page'));
+        }
     }
 
     public function indexBonusGagal(Request $request)
@@ -1774,14 +1779,8 @@ class BonusController extends Controller
     {
         $tahun = $request->tahun;
         $bulan = $request->bulan;
-        $member = Bonus::getRealsisasiBonus($bulan, $tahun);
-        // echo "<pre>";
-        // print_r($member);
-        // die();
-        // $member = Member::select('ktp','nama')->orderBy('nama','asc')->get();
+        // $member = Bonus::getRealsisasiBonus($bulan, $tahun);
         $bonusapa = "laporan";
-        // $bonus = Bonus::join('perusahaanmember', 'tblbonus.noid', 'perusahaanmember.noid')->join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('tblbonus.tahun',$tahun)->where('tblbonus.bulan',$bulan)->select('tblmember.nama', 'tblmember.ktp')->groupBy('tblmember.ktp')->get();
-        // $bonusbayar = BonusBayar::where('tahun', $tahun)->where('bulan', $bulan)->get();
 
         return view('bonus.ajxShowBonus', compact('member', 'tahun','bulan','bonusapa'));
     }
