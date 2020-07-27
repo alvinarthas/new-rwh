@@ -420,7 +420,8 @@ class MemberController extends Controller
                     foreach($bankmember as $bm){
                         $bank = Bank::where('id', $bm->bank_id)->first()->nama;
                         $rekening = $bank.' '.$bm->norek;
-                        $rekenings = $rekenings."".$rekening.", \n";
+                        $statusrek = $bm->status;
+                        $rekenings = $rekenings."".$rekening."(".$statusrek."), \n";
                     }
 
                     $ttl = $m['tempat_lahir'].", ".$m['tgl_lahir'];
@@ -462,7 +463,8 @@ class MemberController extends Controller
                     foreach($bankmember as $bm){
                         $bank = Bank::where('id', $bm->bank_id)->first()->nama;
                         $rekening = $bank.' '.$bm->norek;
-                        $rekenings = $rekenings."".$rekening.", \n";
+                        $statusrek = $bm->status;
+                        $rekenings = $rekenings."".$rekening."(".$statusrek."), \n";
                     }
 
                     if(!empty($member->koordinator)){
