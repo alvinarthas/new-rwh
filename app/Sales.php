@@ -525,7 +525,7 @@ class Sales extends Model
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
 
         // Sales Initialization
-        $sales = Sales::select('id','trx_date','creator','ttl_harga','customer_id','ongkir','approve','method','online_id');
+        $sales = Sales::select('id','trx_date','creator','ttl_harga','customer_id','ongkir','approve','method','online_id', DB::raw('SUM(ttl_harga+ongkir) as ttl_trx'));
 
         // Query By Param
         if($param == "all"){
@@ -551,18 +551,97 @@ class Sales extends Model
 
         // Search based on param
         if($searchValue != ''){
-            // Search Based on Customer Name
+            $tempCount = 0;
 
-            // or Search Based on Creator Name
-
-            // or Search Based on TRX ID
-
-            // or Search Based on TRX DATE
+            // GET Char of TRX ID
+            $charID = preg_replace("/[^a-zA-Z]/", "", $searchValue);
+            $numID = preg_replace('/[^0-9]/', '', $searchValue);
 
             // or Search Based on Total Transaction
+            if (is_numeric($numID) && $charID==''){
+                $tempSales = $sales->groupBy('id')->orHavingRaw('SUM(ttl_harga+ongkir) = ?',[$numID]);
+                $tempCount = $tempSales->count();
+            }
+
+            if ($tempCount > 0){
+                $sales = $tempSales;
+            }else{
+                // Search Based on Customer Name
+                $sales = $sales->orWhereHas('customer', function ($query) use ($searchValue) {
+                    $query->where('apname', 'like', $searchValue.'%');
+                });
+                // or Search Based on Creator Name
+                $sales = $sales->orWhereHas('creator', function ($query) use ($searchValue) {
+                    $query->where('name', 'like', $searchValue.'%');
+                });
+
+                // or Search Based on TRX DATE
+                $sales = $sales->orWhere('trx_date','like',$searchValue.'%');
+
+                // or Search Based on TRX ID
+                    // Check in TOKO ONLINE
+                    if (is_numeric($numID) && $charID!=''){
+                        $ecom = Ecommerce::select('id','kode_trx')->where('kode_trx','like',$charID.'%');
+
+                        if ($ecom->count() > 0) {
+                            $ecom = $ecom->first();
+
+                            $sales = $sales->where('method',$ecom->id)->orWhere('online_id',$numID);
+                        }
+                    }
+
+                $sales = $sales->orWhere('id',$numID);
+            }
 
         }
 
+        $totalRecordwithFilter = $sales->count();
+
         // Sort and Pagination
+        $sales = $sales->groupBy('id');
+        if($columnName == "no" || $columnName == "trx_id"){
+            $sales->orderBy('id', $columnSortOrder);
+        }elseif($columnName == "trx_date"){
+            $sales->orderBy('trx_date', $columnSortOrder);
+        }elseif($columnName == "customer"){
+            $sales->orderBy('customer_id', $columnSortOrder);
+        }elseif($columnName == "creator"){
+            $sales->orderBy('creator', $columnSortOrder);
+        }elseif($columnName == "total"){
+            $sales->orderBy('ttl_trx', $columnSortOrder);
+        }else{
+            $sales->orderBy($columnName, $columnSortOrder);
+        }
+
+        $sales = $sales->offset($row)->limit($rowperpage)->get();
+        $data = collect();
+        $i = 1;
+
+        foreach($sales as $key){
+            $detail = collect();
+
+            $detail->put('no', $i++);
+            if ($key->method <> 0){
+                $detail->put('trx_id', $key->online->kode_trx.".".$key->online_id);
+            }else{
+                $detail->put('trx_id', "SO.".$key->id);
+            }
+
+            $detail->put('trx_date', $key->trx_date);
+            $detail->put('customer', $key->customer->apname);
+            $detail->put('creator', $key->creator()->first()->name);
+            $detail->put('total',$key->ttl_trx);
+            $detail->put('option', "BUTTON");
+            $data->push($detail);
+        }
+
+        $response = array(
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecordwithFilter,
+            'data' => $data,
+        );
+
+        return $response;
     }
 }
