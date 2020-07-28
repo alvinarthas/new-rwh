@@ -41,12 +41,19 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
+    public function index(){
+        $nomor = 1;
+        $bonusbayar = BonusBayar::where('id_jurnal', 'BB.213')->get();
+        foreach($bonusbayar as $key){
+            $bm = Bankmember::where('norek', $key->no_rek)->count();
+            if($bm == 0){
+                echo $nomor++.". ".$key->no_rek." - Rp ".number_format($key->bonus, 2, ",", ".")."<br>";
+            }
+        }
+    }
+
     // querying from eloquent relationship
-    public function index(Request $request){
-        $sales = Sales::limit(10)->get();
-        $new = $sales->replicate();
-        $new->save();
-        dd($new);
+    public function indextai(Request $request){
         $keyword = $request->keyword;
         $tempCount = 0;
 
