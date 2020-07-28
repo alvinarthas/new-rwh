@@ -81,11 +81,12 @@ class Customer extends Model
 
     public static function getBirthday(){
         Carbon::setLocale('id');
-        $getTime = date('Y-m-d', strtotime(Carbon::now()));
+        $getTime = date('m', strtotime(Carbon::now()));
+
         // $getTime = date('Y-m-d', strtotime("1994-10-18"));
         $data = array();
 
-        $customer = Customer::where('apbirthdate', $getTime)->get();
+        $customer = Customer::whereMonth('apbirthdate', $getTime)->get();
 
         if(!empty($customer)){
             foreach($customer as $c){
@@ -98,8 +99,7 @@ class Customer extends Model
             }
         }
 
-        $employee = Employee::where('tgl_lhr', $getTime)->get();
-
+        $employee = Employee::whereMonth('tgl_lhr', $getTime)->get();
         if(!empty($employee)){
             foreach($employee as $e){
                 $array = array(
