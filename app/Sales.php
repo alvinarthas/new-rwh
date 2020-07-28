@@ -551,7 +551,6 @@ class Sales extends Model
 
         // Search based on param
         if($searchValue != ''){
-            $tempCount = 0;
 
             // GET Char of TRX ID
             $charID = preg_replace("/[^a-zA-Z]/", "", $searchValue);

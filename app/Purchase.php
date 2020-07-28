@@ -351,4 +351,159 @@ class Purchase extends Model
         // Refresh COGS
             Jurnal::refreshCogs($prodarray);
     }
+
+    // Get Data for Serverless PO
+    public static function purchaseData(Request $request){
+        // Datatables Parameter POST
+        $draw = $request->draw;
+        $row = $request->start;
+        $rowperpage = $request->length; // Rows display per page
+        $columnIndex = $request['order'][0]['column']; // Column index
+        $columnName = $request['columns'][$columnIndex]['data']; // Column name
+        $columnSortOrder = $request['order'][0]['dir']; // asc or desc
+        $searchValue = $request['search']['value']; // Search value
+
+        // Custom Parameter Post
+        $month = $request->month;
+        $year = $request->year;
+        $param = $request->param;
+
+        // Start Query
+        $page = MenuMapping::getMap(session('user_id'),"PSSL");
+
+        // Sales Initialization
+        $purchase = Purchase::select('id','month','creator','year','supplier','notes','approve','tgl');
+
+        // Query By Param
+        if($param != "all"){
+            $purchase = $purchase->where('month',$month)->where('year',$year);
+        }
+
+        $totalRecords = $purchase->count();
+
+        // Search based on param
+        if($searchValue != ''){
+            $tempCount = 0;
+
+            // GET Char of TRX ID
+            $charID = preg_replace("/[^a-zA-Z]/", "", $searchValue);
+            $numID = preg_replace('/[^0-9]/', '', $searchValue);
+
+            // Search based on Posting Period
+            $parseDate = date_parse($charID);
+
+            if ($parseDate['month']){
+                $purchase = $purchase->orWhere('month',$parseDate['month'])->orWhere('year',$numID);
+            }
+
+            // Search Based on Supplier Name
+            $purchase = $purchase->orWhereHas('supplier', function ($query) use ($searchValue) {
+                $query->where('nama', 'like', $searchValue.'%');
+            });
+            // or Search Based on Creator Name
+            $purchase = $purchase->orWhereHas('creator', function ($query) use ($searchValue) {
+                $query->where('name', 'like', $searchValue.'%');
+            });
+
+            // or Search Based on TRX DATE
+            $purchase = $purchase->orWhere('tgl','like',$searchValue.'%');
+
+            // or Search Based on Notes
+            $purchase = $purchase->orWhere('notes','like',$searchValue.'%');
+
+            // or Search Based on TRX ID
+            $purchase = $purchase->orWhere('id',$numID);
+        }
+
+        $totalRecordwithFilter = $purchase->count();
+
+        // Sort and Pagination
+        $purchase = $purchase->groupBy('id');
+        if($columnName == "no" || $columnName == "trx_id"){
+            $purchase->orderBy('id', $columnSortOrder);
+        }elseif($columnName == "period"){
+            $purchase->orderBy('month', $columnSortOrder);
+        }elseif($columnName == "supplier"){
+            $purchase->orderBy('supplier', $columnSortOrder);
+        }elseif($columnName == "creator"){
+            $purchase->orderBy('creator', $columnSortOrder);
+        }elseif($columnName == "tgl"){
+            $purchase->orderBy('tgl', $columnSortOrder);
+        }elseif($columnName == "notes"){
+            $purchase->orderBy('notes', $columnSortOrder);
+        }else{
+            $purchase->orderBy($columnName, $columnSortOrder);
+        }
+
+        $purchase = $purchase->offset($row)->limit($rowperpage)->get();
+        $data = collect();
+        $i = 1;
+
+        foreach($purchase as $key){
+            $detail = collect();
+            $options = '';
+            $trxModal = '';
+
+                if ($key->method <> 0){
+                    $trxModal .= '<td><a href="javascript:;" onclick="getDetail('.$key->id.')" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">'.$key->online()->first()->kode_trx.$key->online_id.'</a></td>';
+                }else{
+                    $trxModal .= '<td><a href="javascript:;" onclick="getDetail('.$key->id.')" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">SO.'.$key->id.'</a></td>';
+                }
+
+                if (array_search("PSSLU",$page)){
+                    $options .= '<a href="'.route('sales.edit',['id'=>$key->id]).'" class="btn btn-purple btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>';
+                }
+
+                if (array_search("PSSLD",$page)){
+                    $options .= '<a href="javascript:;" class="btn btn-pink btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase('.$key->id.')">Delete</a>';
+                }
+
+                if ($key->approve == 0){
+                    $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$key->id,'role'=>session('role')]));
+                    if (array_search("PSSLA",$page)){
+                        $options .= '<a href="finspot:FingerspotVer;'.$url_register.'" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales</a>';
+                    }
+
+                }else{
+                    $count_temp = TempSales::where('trx_id',$key->id)->count('trx_id');
+                    $status_temp = TempSales::where('trx_id',$key->id)->where('status',1)->count('trx_id');
+
+                    if($count_temp > 0 && $status_temp == 1){
+                        $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$key->id,'role'=>session('role')]));
+                        if (array_search("PSSLA",$page)){
+                            $options .= '<a href="finspot:FingerspotVer;'.$url_register.'" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales yang sudah diupdate</a>';
+                        }
+                    }else{
+                        $options .= '<a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Sales sudah di approve</a>';
+                    }
+                }
+
+                if (array_search("PSSLN",$page)){
+                    $options .= '<a href="javascript:;" class="btn btn-info btn-trans waves-effect w-md waves-danger m-b-5" onclick="previewInvoice('.$key->id.')"><i class="fa fa-file-pdf-o"></i> Preview Invoice</a>';
+                }
+
+                if (array_search("PSSLP",$page)){
+                    $jenis = "print";
+                    $options .= '<input type="hidden" id="route'.$key->id.'" value="'.route('invoicePrint',['jenis' =>$jenis,'trx_id' => $key->id]).'">
+                    <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="printPdf('.$key->id.')"><i class="fa fa-file-pdf-o"></i> Print Invoice</a>';
+                }
+            $detail->put('no', $i++);
+            $detail->put('trx_id', $trxModal);
+            $detail->put('trx_date', $key->trx_date);
+            $detail->put('customer', $key->customer->apname);
+            $detail->put('creator', $key->creator()->first()->name);
+            $detail->put('total',$key->ttl_trx);
+            $detail->put('option', $options);
+            $data->push($detail);
+        }
+
+        $response = array(
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecordwithFilter,
+            'data' => $data,
+        );
+
+        return $response;
+    }
 }
