@@ -124,6 +124,7 @@
         $('#responsive-datatable').DataTable({
             "processing" : true,
             "serverSide" : true,
+            "order": [[0, "desc"]],
             "ajax" : {
                 "url" : "{{ route('salesData') }}",
                 "type" : "POST",
@@ -142,4 +143,96 @@
             ],oLanguage : {sProcessing: "<div id='loader'></div>"},
         });
     });
+
+    function deletePurchase(id){
+        var token = $("meta[name='csrf-token']").attr("content");
+
+        swal({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!',
+            confirmButtonClass: 'btn btn-success',
+            cancelButtonClass: 'btn btn-danger m-l-10',
+            buttonsStyling: false
+        }).then(function () {
+            $.ajax({
+                url: "sales/"+id,
+                type: 'DELETE',
+                data: {
+                    "id": id,
+                    "_token": token,
+                },
+            }).done(function (data) {
+                swal(
+                    'Deleted!',
+                    'Your file has been deleted.',
+                    'success'
+                )
+                location.reload();
+            }).fail(function (msg) {
+                swal(
+                    'Failed',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            });
+
+        }, function (dismiss) {
+            // dismiss can be 'cancel', 'overlay',
+            // 'close', and 'timer'
+            if (dismiss === 'cancel') {
+                console.log("eh ga kehapus");
+                swal(
+                    'Cancelled',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            }
+        })
+    }
+
+    function getDetail(id){
+        $.ajax({
+            url : "{{route('sales.show',['id'=>1])}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                id:id,
+            },
+        }).done(function (data) {
+            $('#modalView').html(data);
+            $('#modalLarge').modal("show");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+
+    function previewInvoice(id){
+        $.ajax({
+            url : "{{route('invoicePrint')}}",
+            type : "get",
+            dataType: 'json',
+            data:{
+                trx_id:id,
+                jenis:"Show"
+            },
+        }).done(function (data) {
+            $('#modalView').html(data);
+            $('#modalLarge').modal("show");
+        }).fail(function (msg) {
+            alert('Gagal menampilkan data, silahkan refresh halaman.');
+        });
+    }
+
+    function printPdf(id){
+        windowUrl = $('#route'+id).val();
+        console.log(windowUrl)
+        windowName = "Invoice";
+        var printWindow = window.open(windowUrl, windowName, 'left=50000,top=50000,width=0,height=0');
+        printWindow.focus();
+        printWindow.print();
+    }
 </script>
