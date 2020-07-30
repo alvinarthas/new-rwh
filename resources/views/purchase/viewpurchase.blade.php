@@ -22,7 +22,7 @@
     }
 </style>
 
-<form class="form-horizontal" role="form" action="{{ route('exportSO') }}" enctype="multipart/form-data" method="POST">
+<form class="form-horizontal" role="form" action="{{ route('exportPO') }}" enctype="multipart/form-data" method="POST">
     @csrf
     <div class="row">
         <div class="col-12">
@@ -33,19 +33,19 @@
                             Cetak Excel
                         </span>
                     </button>
-                    <input type="hidden" id="start" name="start" value="{{$transaksi['start']}}">
-                    <input type="hidden" id="end" name="end" value="{{$transaksi['end']}}">
-                    <input type="hidden" id="trx_method" name="trx_method" value="{{$method}}">
+                    <input type="hidden" name="bulan" value="{{$bulan}}">
+                    <input type="hidden" name="tahun" value="{{$tahun}}">
                     <input type="hidden" id="param" name="param" value="{{$param}}">
                 </div>
                 <table id="responsive-datatable" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                     <thead>
                         <th>No</th>
                         <th>Transaction ID</th>
-                        <th>Transaction Date</th>
-                        <th>Customer</th>
+                        <th>Posting Period</th>
+                        <th>Supplier</th>
+                        <th>PO Date</th>
+                        <th>Notes</th>
                         <th>Creator</th>
-                        <th>Total</th>
                         <th>Option</th>
                     </thead>
                 </table>
@@ -54,56 +54,12 @@
     </div>
 </form>
 
-<div class="card-box">
-    <h4 class="m-t-0 header-title">Transaksi Detail</h4>
-    <div class="col-12">
-        <div class="p-20">
-            <div class="form-group row">
-                <label class="col-2 col-form-label">Start Date</label>
-                <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="{{$transaksi['start']}}" readonly>
-                </div>
-            </div>
-            <div class="form-group row">
-                <label class="col-2 col-form-label">End Date</label>
-                <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="{{$transaksi['end']}}" readonly>
-                </div>
-            </div>
-            <div class="form-group row">
-                <label class="col-2 col-form-label">Total Transaksi</label>
-                <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="{{$transaksi['ttl_trx']}}" readonly>
-                </div>
-            </div>
-            <div class="form-group row">
-                <label class="col-2 col-form-label">Total Pendapatan</label>
-                <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($transaksi['ttl_pemasukan'],2,",",".")}}" readonly>
-                </div>
-            </div>
-            <div class="form-group row">
-                <label class="col-2 col-form-label">Total BV</label>
-                <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="Rp {{number_format($transaksi['ttl_total'],2,",",".")}}" readonly>
-                </div>
-            </div>
-            <div class="form-group row">
-                <label class="col-2 col-form-label">Total Qty</label>
-                <div class="col-10">
-                    <input type="text" class="form-control" parsley-trigger="change" value="{{$transaksi['ttl_count']}}" readonly>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!--  Modal content for the above example -->
 <div class="modal fade bs-example-modal-lg" id="modalLarge" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
     <div class="modal-dialog modal-lg" id="do-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="myLargeModalLabel">Sales Order Detail</h4>
+                <h4 class="modal-title" id="myLargeModalLabel">Purchase Order Detail</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true" id="closemodal">×</button>
             </div>
             <div class="modal-body" id="modalView">
@@ -116,23 +72,23 @@
     $(document).ready(function () {
         var column = [{data : 'no', name : 'no', searchable : false},
             {data : 'trx_id', name : 'trx_id'},
-            {data : "trx_date",name : "trx_date"},
-            {data : "customer", name : "customer"},
+            {data : "period",name : "period"},
+            {data : "supplier", name : "supplier"},
+            {data : "tgl", name : "tgl"},
+            {data : "notes", name : "notes"},
             {data : "creator", name : "creator"},
-            {data : "total", name : "total", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' )},
             {data : "option", name : "option", orderable : false, searchable : false}];
         $('#responsive-datatable').DataTable({
             "processing" : true,
             "serverSide" : true,
             "order": [[0, "desc"]],
             "ajax" : {
-                "url" : "{{ route('salesData') }}",
+                "url" : "{{ route('purchaseData') }}",
                 "type" : "POST",
                 "data" : {
-                    "start_date" : $("#start").val(),
-                    "end_date" : $("#end").val(),
+                    "month" : $("#bulan").val(),
+                    "year" : $("#tahun").val(),
                     "param" : $("#param").val(),
-                    "trx_method" : $("#trx_method").val(),
                     "_token" : $("meta[name='csrf-token']").attr("content"),
                 }
             },"columns" : column,"columnDefs" : [
@@ -144,7 +100,7 @@
         });
     });
 
-    function deleteSales(id){
+    function deletePurchase(id){
         var token = $("meta[name='csrf-token']").attr("content");
 
         swal({
@@ -159,7 +115,7 @@
             buttonsStyling: false
         }).then(function () {
             $.ajax({
-                url: "sales/"+id,
+                url: "purchase/"+id,
                 type: 'DELETE',
                 data: {
                     "id": id,
@@ -196,7 +152,7 @@
 
     function getDetail(id){
         $.ajax({
-            url : "{{route('sales.show',['id'=>1])}}",
+            url : "{{route('purchase.show',['id'=>1])}}",
             type : "get",
             dataType: 'json',
             data:{
@@ -208,31 +164,5 @@
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });
-    }
-
-    function previewInvoice(id){
-        $.ajax({
-            url : "{{route('invoicePrint')}}",
-            type : "get",
-            dataType: 'json',
-            data:{
-                trx_id:id,
-                jenis:"Show"
-            },
-        }).done(function (data) {
-            $('#modalView').html(data);
-            $('#modalLarge').modal("show");
-        }).fail(function (msg) {
-            alert('Gagal menampilkan data, silahkan refresh halaman.');
-        });
-    }
-
-    function printPdf(id){
-        windowUrl = $('#route'+id).val();
-        console.log(windowUrl)
-        windowName = "Invoice";
-        var printWindow = window.open(windowUrl, windowName, 'left=50000,top=50000,width=0,height=0');
-        printWindow.focus();
-        printWindow.print();
     }
 </script>

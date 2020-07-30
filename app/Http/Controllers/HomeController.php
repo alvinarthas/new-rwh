@@ -42,6 +42,7 @@ class HomeController extends Controller
             $data = Task::getTask($page);
 
             $birth = Customer::getBirthday();
+
             if(session('role') == 'Direktur Utama'){
                 // Get Sisa Hutang Piutang
                 $hutang = Perusahaan::sisaHutang();
@@ -68,9 +69,9 @@ class HomeController extends Controller
             }
             if($role == "Superadmin" || $role == "Direktur Utama" || $role == "General Manager" || $role == "Assistant General Manager"){
                 return view('welcome.welcome',compact('user','bonus','hutang','piutang','data','deppurchase','depsales','birth'));
-            }else{
-                return view('home.maintenance');
             }
+            //     return view('home.maintenance');
+            // }
 
         }else{
             return view('login.login');
