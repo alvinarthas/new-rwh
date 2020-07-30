@@ -58,16 +58,19 @@
                         <div class="col-10">
                             <select class="form-control select2" parsley-trigger="change" name="status_rek" id="status_rek">
                                 @isset($banm->status)
-                                    @if($banm->status == "Aktif")
-                                        <option value="Aktif" selected>Aktif</option>
-                                        <option value="Tidak Aktif">Tidak Aktif</option>
-                                    @elseif($banm->status == "Tidak Aktif")
-                                        <option value="Aktif" >Aktif</option>
-                                        <option value="Tidak Aktif" selected>Tidak Aktif</option>
-                                    @endif
+                                    <option value="#" disabled>Pilih Status Rekening</option>
+                                    @foreach($statusrek as $status)
+                                        @if($status->id == $banm->status)
+                                            <option value="{{ $status->id }}" selected>{{ $status->status }}</option>
+                                        @else
+                                            <option value="{{ $status->id }}" selected>{{ $status->status }}</option>
+                                        @endif
+                                    @endforeach
                                 @else
-                                    <option value="Aktif" selected>Aktif</option>
-                                    <option value="Tidak Aktif">Tidak Aktif</option>
+                                    <option value="#" selected disabled>Pilih Status Rekening</option>
+                                    @foreach($statusrek as $status)
+                                        <option value="{{ $status->id }}">{{ $status->status }}</option>
+                                    @endforeach
                                 @endisset
                             </select>
                         </div>
@@ -88,7 +91,7 @@
                                     <option value="Yes" selected>Yes</option>
                                     <option value="No">No</option>
                                 @endisset
-                                
+
                             </select>
                         </div>
                     </div>
@@ -106,7 +109,7 @@
                     </div>
                 </div>
             </div>
-        </div>     
+        </div>
         <div class="form-group text-right m-b-0">
             <button class="btn btn-primary waves-effect waves-light" type="submit">
                 Submit
@@ -138,13 +141,13 @@
     function formatState (opt) {
         if (!opt.id) {
             return opt.text.toUpperCase();
-        } 
+        }
 
-        var optimage = $(opt.element).attr('data-image'); 
+        var optimage = $(opt.element).attr('data-image');
         console.log(optimage)
         if(!optimage){
         return opt.text.toUpperCase();
-        } else {                    
+        } else {
             var $opt = $(
             '<span><img src="' + optimage + '" width="60px" /> ' + opt.text.toUpperCase() + '</span>'
             );

@@ -43,6 +43,33 @@ use Carbon\Carbon;
 class TestController extends Controller
 {
     public function index(){
+        $bankmember = BankMember::all();
+
+        $countAktif=0;
+        $countTidak=0;
+        $countElse=0;
+
+        foreach($bankmember as $bm){
+            if($bm->status == "Aktif"){
+                // $bm->status = 1;
+                // $bm->save();
+                $countAktif++;
+            }elseif($bm->status == "Tidak Aktif"){
+                // $bm->status = 2;
+                // $bm->save();
+                $countTidak++;
+            }else{
+                // $bm->status = 3;
+                // $bm->save();
+                $countElse++;
+            }
+        }
+        echo $countAktif."<br>";
+        echo $countTidak."<br>";
+        echo $countElse."<br>";
+    }
+
+    public function indexcheckduplicateid(){
         $bonus = Bonus::all();
         $no = 1;
         foreach($bonus as $b){

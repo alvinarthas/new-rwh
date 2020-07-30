@@ -17,6 +17,7 @@ use App\Perusahaan;
 use App\Bank;
 use App\PerusahaanMember;
 use App\BankMember;
+use App\StatusRek;
 use App\MenuMapping;
 
 class MemberController extends Controller
@@ -35,6 +36,30 @@ class MemberController extends Controller
         $page = MenuMapping::getMap(session('user_id'),"MBMM");
 
         return view('member.index',compact('keyword','perusahaan','bank','page'));
+    }
+
+    public function index_new(Request $request)
+    {
+        if ($request->ajax()) {
+            $jenis = $request->jenis;
+            $perusahaan = $request->perusahaan;
+            $bank = $request->bank;
+            return response()->json(view('member.list_baru',compact('jenis','perusahaan','bank'))->render());
+        }else{
+            $perusahaan = Perusahaan::orderBy('nama')->get();
+            $bank = Bank::bankMember();
+            $statusrek = StatusRek::all();
+            $page = MenuMapping::getMap(session('user_id'),"MBMM");
+
+            return view('member.index_baru',compact('statusrek','perusahaan','bank','page'));
+        }
+    }
+
+    public function getDataMember(Request $request){
+        if($request->ajax()){
+            $datas = Member::viewMember($request);
+            echo json_encode($datas);
+        }
     }
 
     public function ajxmember(Request $request){

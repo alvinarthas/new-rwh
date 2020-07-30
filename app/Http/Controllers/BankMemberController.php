@@ -8,6 +8,7 @@ use App\Exceptions\Handler;
 
 use App\Bank;
 use App\BankMember;
+use App\StatusRek;
 
 class BankMemberController extends Controller
 {
@@ -15,9 +16,10 @@ class BankMemberController extends Controller
         $ktp = $request->get('ktp');
         $jenis = "create";
         $banks = Bank::all();
+        $statusrek = StatusRek::all();
 
         if ($request->ajax()) {
-            return response()->json(view('member.bankmember.form',compact('ktp','jenis','banks'))->render());
+            return response()->json(view('member.bankmember.form',compact('ktp','jenis','banks','statusrek'))->render());
         }
     }
 
@@ -29,7 +31,7 @@ class BankMemberController extends Controller
             'rekening' => 'string',
             'atm' => 'required',
             'tabungan' => 'required',
-            'status' => 'string',
+            'status' => 'integer',
             'p_status' => 'string',
             'scanatm' => 'image',
             'scantabungan' => 'image',
@@ -85,9 +87,10 @@ class BankMemberController extends Controller
         $jenis = "edit";
         $banks = Bank::all();
         $banm = BankMember::where('id',$request->get('bid'))->first();
+        $statusrek = StatusRek::all();
 
         if ($request->ajax()) {
-            return response()->json(view('member.bankmember.form',compact('ktp','jenis','banks','banm'))->render());
+            return response()->json(view('member.bankmember.form',compact('ktp','jenis','banks','banm', 'statusrek'))->render());
         }
     }
 
@@ -97,7 +100,7 @@ class BankMemberController extends Controller
             'bank' => 'string',
             'cabang' => 'string',
             'rekening' => 'string',
-            'status' => 'string',
+            'status' => 'integer',
             'p_status' => 'string',
             'scanatm' => 'image',
             'scantabungan' => 'image',

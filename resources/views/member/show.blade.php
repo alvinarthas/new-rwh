@@ -240,7 +240,7 @@ Informasi Data Member
                                     {{-- <td>{{$bm->norek}}</td> --}}
                                     {{-- <td>{{$bm->noatm}}</td> --}}
                                     <td>{{$bm->cabbank}}</td>
-                                    <td>{{$bm->status}}</td>
+                                    <td>{{$bm->statusrek->status}}</td>
                                     <td>{{$bm->p_status}}</td>
                                     <td>
                                         @if (array_search("MBMMBU",$page))

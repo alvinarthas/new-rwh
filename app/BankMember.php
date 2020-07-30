@@ -12,10 +12,24 @@ class BankMember extends Model
     ];
 
     public static function getData($ktp){
-        return BankMember::where('ktp',$ktp)->select('norek','scantabungan','scanatm','status')->first();
+        $bankmember = BankMember::where('ktp',$ktp)->select('norek','scantabungan','scanatm','status');
+        $countbm = $bankmember->count();
+        $data = collect();
+
+        if($countbm > 1){
+            $data = $bankmember->where('status', 1)->first();
+        }else{
+            $data = $bankmember->first();
+        }
+
+        return $data;
     }
 
     public function bank(){
         return $this->belongsTo('App\Bank');
+    }
+
+    public function statusrek(){
+        return $this->belongsTo('App\StatusRek', 'status', 'id');
     }
 }

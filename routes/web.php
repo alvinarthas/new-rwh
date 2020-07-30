@@ -172,6 +172,9 @@ Route::middleware(['checkUser'])->group(function () {
         Route::get('/ajxaddrowcetak', 'MemberController@ajxAddRowCetak')->name('ajxAddRowCetak');
         Route::post('/exportmember', 'MemberController@exportMember')->name('exportMember');
         Route::get('/synchmember', 'MemberController@makeSynch')->name('createsynchmember');
+        Route::get('/index_new', 'MemberController@index_new')->name('indexMemberNew');
+        Route::post('/getDataMember', 'MemberController@getDataMember')->name('getDataMember');
+
 
     // Bank Member
         Route::get('/bankmember','BankMemberController@create')->name('createBankMember');

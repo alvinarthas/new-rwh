@@ -3,6 +3,8 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 use App\BankMember;
 
@@ -62,5 +64,142 @@ class Member extends Model
         }
         $data->push($people->links());
         return $data;
+    }
+
+    public static function viewMember(Request $request){
+        $jenis = $request->jenis;
+        $perusahaan = $request->perusahaan;
+        $bank = $request->bank;
+
+        $draw = $request->draw;
+        $row = $request->start;
+        $rowperpage = $request->length; // Rows display per page
+        $columnIndex = $request['order'][0]['column']; // Column index
+        $columnName = $request['columns'][$columnIndex]['data']; // Column name
+        $columnSortOrder = $request['order'][0]['dir']; // asc or desc
+        $searchValue = $request['search']['value']; // Search value
+
+        $member = Member::select('id','ktp','nama','scanktp','cetak');
+
+        if($jenis == 1){
+            $array = array_values(array_column(DB::select("SELECT ktp FROM perusahaanmember WHERE perusahaan_id = $perusahaan"),'ktp'));
+            $member->whereIn('ktp',$array);
+        }elseif($jenis == 2){
+            $array = array_values(array_column(DB::select("SELECT ktp FROM perusahaanmember WHERE perusahaan_id = $perusahaan"),'ktp'));
+            $member->whereNotIn('ktp',$array);
+        }elseif($jenis == 4){
+            $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember WHERE bank_id =$bank"),'ktp'));
+            $member->whereIn('ktp',$array);
+        }elseif($jenis == 5){
+            $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember where status=1"),'ktp'));
+            $member->whereIn('ktp', $array);
+        }elseif($jenis == 6){
+            $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember where status=2"),'ktp'));
+            $member->whereIn('ktp', $array);
+        }elseif($jenis == 7){
+            $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember where status=3"),'ktp'));
+            $member->whereIn('ktp', $array);
+        }elseif($jenis == 8){
+            $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember where status=4"),'ktp'));
+            $member->whereIn('ktp', $array);
+        }
+
+        $totalRecords = $member->count();
+
+        if($searchValue != ''){
+            if($jenis == 1){
+                $noid = PerusahaanMember::select('ktp')->where('perusahaan_id', $perusahaan)->where('noid', 'LIKE', '%'.$searchValue.'%')->get();
+            }elseif($jenis == 2){
+                $noid = PerusahaanMember::select('ktp')->where('perusahaan_id', '!=', $perusahaan)->where('noid', 'LIKE', '%'.$searchValue.'%')->get();
+            }else{
+                $noid = PerusahaanMember::select('ktp')->where('noid', 'LIKE', '%'.$searchValue.'%')->get();
+            }
+            if($jenis == 4){
+                $norek = BankMember::select('ktp')->where('bank_id', $bank)->where('norek', 'LIKE', '%'.$searchValue.'%')->get();
+            }elseif($jenis == 5 OR $jenis == 6 OR $jenis == 7 OR $jenis == 8){
+                $norek = BankMember::select('ktp')->where('status', $jenis-4)->where('norek', 'LIKE', '%'.$searchValue.'%')->get();
+            }else{
+                $norek = BankMember::select('ktp')->where('norek', 'LIKE', '%'.$searchValue.'%')->get();
+            }
+
+            // echo $raw;
+            $member->where('nama', 'LIKE', '%'.$searchValue.'%')->orWhere('ktp', 'LIKE', '%'.$searchValue.'%')->orWhereIn('ktp', $norek)->orWhereIn('ktp', $noid);
+        }
+
+        $totalRecordwithFilter = $member->count();
+
+        if($columnName == "no"){
+            $member->orderBy('id', $columnSortOrder);
+        }else{
+            $member->orderBy($columnName, $columnSortOrder);
+        }
+
+        $member = $member->offset($row)->limit($rowperpage)->get();
+
+        $data = collect();
+        $i = 1;
+
+        foreach($member as $key){
+            $detail = collect();
+
+            $button = '<a href="'.route('member.show',['id'=>$key->ktp]).'">'.$key->nama.'</a>';
+
+            if($key->scanktp == "noimage.jpg" OR $key->scanktp == ''){
+                $scanktp = "Empty";
+            }else{
+                $scanktp = "Have Filled";
+            }
+
+            $tabungan = BankMember::getData($key->ktp);
+            $scantabungan = "";
+
+            if($tabungan <> NULL){
+                if($tabungan->scantabungan == "noimage.png"){
+                    $scantabungan = "Empty";
+                }else{
+                    $scantabungan = "Have Filled";
+                }
+
+                if($tabungan->scanatm == "noimage.png"){
+                    $scanatm = "Empty";
+                }else{
+                    $scanatm = "Have Filled";
+                }
+
+                $status = $tabungan->statusrek->status;
+            }else{
+                $scantabungan = "Empty";
+                $scanatm = "Empty";
+                $status = "Empty";
+            }
+
+            if($key->cetak == 1){
+                $cetak = "Sudah dicetak";
+            }else{
+                $cetak = "Belum dicetak";
+            }
+
+            $detail->put('no', $i++);
+            $detail->put('nama', $button);
+            $detail->put('gambar_ktp', $scanktp);
+            $detail->put('gambar_tabungan', $scantabungan);
+            $detail->put('gambar_atm', $scanatm);
+            $detail->put('status_rekening', $status);
+            $detail->put('status_cetak',$cetak);
+            $data->push($detail);
+        }
+
+        // echo "<pre>";
+        // print_r($data);
+        // die();
+
+        $response = array(
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecordwithFilter,
+            'data' => $data,
+        );
+
+        return $response;
     }
 }
