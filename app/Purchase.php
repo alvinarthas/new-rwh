@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 use App\PurchasePayment;
 use App\PurchaseDetail;
@@ -398,7 +399,7 @@ class Purchase extends Model
 
             // Search Based on Supplier Name
             $purchase = $purchase->orWhereHas('supplier', function ($query) use ($searchValue) {
-                $query->where('nama', 'like', $searchValue.'%');
+                $query->where('nama', 'like', '%'.$searchValue.'%');
             });
             // or Search Based on Creator Name
             $purchase = $purchase->orWhereHas('creator', function ($query) use ($searchValue) {
@@ -441,58 +442,47 @@ class Purchase extends Model
 
         foreach($purchase as $key){
             $detail = collect();
+            $period = date("F", mktime(0, 0, 0, $key->month, 10))." ".$key->year;
             $options = '';
             $trxModal = '';
 
-                if ($key->method <> 0){
-                    $trxModal .= '<td><a href="javascript:;" onclick="getDetail('.$key->id.')" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">'.$key->online()->first()->kode_trx.$key->online_id.'</a></td>';
-                }else{
-                    $trxModal .= '<td><a href="javascript:;" onclick="getDetail('.$key->id.')" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">SO.'.$key->id.'</a></td>';
+                $trxModal .= '<td><a href="javascript:;" onclick="getDetail('.$key->id.')" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">PO.'.$key->id.'</a></td>';
+
+                if (array_search("PUPUU",$page)){
+                    $options .= '<a href="'.route('purchase.edit',['id'=>$key->id]).'" class="btn btn-purple btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>';
                 }
 
-                if (array_search("PSSLU",$page)){
-                    $options .= '<a href="'.route('sales.edit',['id'=>$key->id]).'" class="btn btn-purple btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>';
-                }
-
-                if (array_search("PSSLD",$page)){
+                if (array_search("PUPUD",$page)){
                     $options .= '<a href="javascript:;" class="btn btn-pink btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase('.$key->id.')">Delete</a>';
                 }
 
                 if ($key->approve == 0){
-                    $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$key->id,'role'=>session('role')]));
-                    if (array_search("PSSLA",$page)){
-                        $options .= '<a href="finspot:FingerspotVer;'.$url_register.'" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales</a>';
+                    $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$key->id,'role'=>session('role')]));
+                    if (array_search("PUPUA",$page)){
+                        $options .= '<a href="finspot:FingerspotVer;'.$url_register.'" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase</a>';
                     }
 
                 }else{
-                    $count_temp = TempSales::where('trx_id',$key->id)->count('trx_id');
-                    $status_temp = TempSales::where('trx_id',$key->id)->where('status',1)->count('trx_id');
+                    $count_temp = TempPO::where('purchase_id',$key->id)->count('purchase_id');
+                    $status_temp = TempPO::where('purchase_id',$key->id)->where('status',1)->count('purchase_id');
 
                     if($count_temp > 0 && $status_temp == 1){
-                        $url_register		= base64_encode(route('salesApprove',['user_id'=>session('user_id'),'trx_id'=>$key->id,'role'=>session('role')]));
-                        if (array_search("PSSLA",$page)){
-                            $options .= '<a href="finspot:FingerspotVer;'.$url_register.'" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Sales yang sudah diupdate</a>';
+                        $url_register		= base64_encode(route('purchaseApprove',['user_id'=>session('user_id'),'trx_id'=>$key->id,'role'=>session('role')]));
+                        if (array_search("PUPUA",$page)){
+                            $options .= '<a href="finspot:FingerspotVer;'.$url_register.'" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Approve Purchase yang sudah diupdate</a>';
                         }
                     }else{
-                        $options .= '<a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Sales sudah di approve</a>';
+                        $options .= '<a class="btn btn-inverse btn-trans waves-effect w-md waves-danger m-b-5">Purchase sudah di approve</a>';
                     }
                 }
 
-                if (array_search("PSSLN",$page)){
-                    $options .= '<a href="javascript:;" class="btn btn-info btn-trans waves-effect w-md waves-danger m-b-5" onclick="previewInvoice('.$key->id.')"><i class="fa fa-file-pdf-o"></i> Preview Invoice</a>';
-                }
-
-                if (array_search("PSSLP",$page)){
-                    $jenis = "print";
-                    $options .= '<input type="hidden" id="route'.$key->id.'" value="'.route('invoicePrint',['jenis' =>$jenis,'trx_id' => $key->id]).'">
-                    <a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5" onclick="printPdf('.$key->id.')"><i class="fa fa-file-pdf-o"></i> Print Invoice</a>';
-                }
             $detail->put('no', $i++);
             $detail->put('trx_id', $trxModal);
-            $detail->put('trx_date', $key->trx_date);
-            $detail->put('customer', $key->customer->apname);
+            $detail->put('period', $period);
+            $detail->put('supplier', $key->supplier()->first()->nama);
+            $detail->put('tgl', $key->tgl);
+            $detail->put('notes',$key->notes);
             $detail->put('creator', $key->creator()->first()->name);
-            $detail->put('total',$key->ttl_trx);
             $detail->put('option', $options);
             $data->push($detail);
         }

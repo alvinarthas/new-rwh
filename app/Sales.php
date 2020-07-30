@@ -625,7 +625,7 @@ class Sales extends Model
                 }
 
                 if (array_search("PSSLD",$page)){
-                    $options .= '<a href="javascript:;" class="btn btn-pink btn-trans waves-effect w-md waves-danger m-b-5" onclick="deletePurchase('.$key->id.')">Delete</a>';
+                    $options .= '<a href="javascript:;" class="btn btn-pink btn-trans waves-effect w-md waves-danger m-b-5" onclick="deleteSales('.$key->id.')">Delete</a>';
                 }
 
                 if ($key->approve == 0){

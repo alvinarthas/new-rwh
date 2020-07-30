@@ -339,6 +339,7 @@ Route::middleware(['checkUser'])->group(function () {
     // purchase helper
     Route::get('/showpurchase','PurchaseController@showPurchase')->name('showPurchase');
     Route::get('/addpurchase','PurchaseController@addPurchase')->name('addPurchase');
+    Route::post('purchaseData','PurchaseController@purchaseData')->name('purchaseData');
     Route::get('/showindexpurchase','PurchaseController@showIndexPurchase')->name('showIndexPurchase');
     Route::get('/destroydetailpurchase','PurchaseController@destroyPurchaseDetail')->name('destroyPurchaseDetail');
     Route::post('/purchase/export/', 'PurchaseController@export')->name('exportPO');

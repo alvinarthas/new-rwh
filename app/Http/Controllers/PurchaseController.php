@@ -58,7 +58,7 @@ class PurchaseController extends Controller
         }
     }
 
-    public function showIndexPurchase(Request $request){
+    public function showIndexPurchaseOld(Request $request){
         $bulan = $request->bulan;
         $tahun = $request->tahun;
         if($request->param == "all"){
@@ -70,6 +70,23 @@ class PurchaseController extends Controller
         $page = MenuMapping::getMap(session('user_id'),"PUPU");
         if ($request->ajax()) {
             return response()->json(view('purchase.indexpurchase',compact('purchases','page', 'bulan', 'tahun'))->render());
+        }
+    }
+
+    public function showIndexPurchase(Request $request){
+        $bulan = $request->bulan;
+        $tahun = $request->tahun;
+        $param = $request->param;
+
+        if ($request->ajax()) {
+            return response()->json(view('purchase.viewpurchase',compact('param', 'bulan', 'tahun'))->render());
+        }
+    }
+
+    public function purchaseData(Request $request){
+        if($request->ajax()){
+            $datas = Purchase::purchaseData($request);
+            echo json_encode($datas);
         }
     }
 
