@@ -370,7 +370,7 @@ class Purchase extends Model
         $param = $request->param;
 
         // Start Query
-        $page = MenuMapping::getMap(session('user_id'),"PSSL");
+        $page = MenuMapping::getMap(session('user_id'),"PUPU");
 
         // Sales Initialization
         $purchase = Purchase::select('id','month','creator','year','supplier','notes','approve','tgl');
