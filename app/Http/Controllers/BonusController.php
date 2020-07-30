@@ -75,8 +75,13 @@ class BonusController extends Controller
     public function indexLaporan(Request $request)
     {
         if($request->ajax()){
-            $member = Bonus::getRealsisasiBonus($request);
-            echo json_encode($datas);
+            $tahun = $request->tahun;
+            $bulan = $request->bulan;
+            $offset = 0;
+            // $member = Bonus::getRealsisasiBonus($bulan, $tahun);
+            $bonusapa = "laporan";
+
+            return view('bonus.ajxShowBonus', compact('member', 'tahun','bulan','bonusapa', 'offset'));
         }else{
             $page = MenuMapping::getMap(session('user_id'),"BMRU");
             $bonusapa = "laporan";
@@ -752,10 +757,6 @@ class BonusController extends Controller
 
     public function updateBayar(Request $request, $id)
     {
-        // echo "<pre>";
-        // print_r($request->all());
-        // die();
-
         // Validate
         $validator = Validator::make($request->all(), [
             'tahun' => 'required',
@@ -769,14 +770,12 @@ class BonusController extends Controller
         // Validation success
         }else{
             try{
-                // echo "<pre>";
-                // print_r($request->all());
-                // die();
                 $bulan = $request->bulan;
                 $bulan_lama = $request->bulan_lama;
                 $tahun = $request->tahun;
                 $tahun_lama = $request->tahun_lama;
                 $tgl = $request->tgl_transaksi;
+                $tgl_lama = $request->tgl_lama;
                 $ctr = count($request->norekening);
                 $AccNo = $request->rekening;
                 $AccNo_lama = $request->rekening_lama;
@@ -790,33 +789,6 @@ class BonusController extends Controller
                 }else{
                     $supplier = 0;
                 }
-
-                // $cek = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', $AccNo)->where('AccPos', "Debet")->first();
-                // echo $cek;
-                // die();
-
-                // $id_jurnal = Jurnal::getJurnalID('BB');
-
-                // if($selisih!=0){
-                //     if($selisih < 0){
-                //         $pos = "Credit";
-                //         $selisih = abs($selisih);
-                //     }else{
-                //         $pos = "Debet";
-                //     }
-                //     // debet laba/rugi selisih pembayaran(penerimaan) bonus
-                //     $debet2 = new Jurnal(array(
-                //         'id_jurnal'     => $id_jurnal,
-                //         'AccNo'         => "7.2",
-                //         'AccPos'        => $pos,
-                //         'Amount'        => $selisih,
-                //         'company_id'    => 1,
-                //         'date'          => $tgl,
-                //         'description'   => $ket,
-                //         'creator'       => session('user_id')
-                //     ));
-                //     $debet2->save();
-                // }
 
                 // credit piutang bonus tertahan
                 $credit = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', "1.1.3.5")->where('AccPos', "Credit")->first();
@@ -839,12 +811,16 @@ class BonusController extends Controller
                         $ket_lama = 'penerimaan bonus ke Kas Bonus Morinda untuk '.$nama.' - bulan '.$bulan_lama.' '.$tahun_lama;
                     }
 
-                    $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun)->where('bulan', $bulan)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
+                    $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun_lama)->where('bulan', $bulan_lama)->where('tgl',$tgl_lama)->where('AccNo',$AccNo_lama)->select('id_bonus','id_jurnal')->get();
                     $num = $bonusbayar->count();
 
                     if(isset($request->bonus_lama[$i])){
                         // debet kas/bank
                         $debet = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', $AccNo_lama)->where('AccPos', "Debet")->where('description',"LIKE", $ket_lama)->first();
+                        if(empty($debet)){
+                            $ket_lama_new = 'penerimaan bonus ke '.$AccNo_lama.' untuk '.substr($norek, 1).' - bulan '.$bulan_lama.' '.$tahun_lama;
+                            $debet = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', $AccNo_lama)->where('AccPos', "Debet")->where('description',"LIKE", $ket_lama_new)->first();                                           
+                        }
                         $debet->AccNo       = $AccNo;
                         $debet->Amount      = $bonus;
                         $debet->date        = $tgl;
@@ -1777,12 +1753,9 @@ class BonusController extends Controller
 
     public function showLaporanBonus(Request $request)
     {
-        $tahun = $request->tahun;
-        $bulan = $request->bulan;
-        // $member = Bonus::getRealsisasiBonus($bulan, $tahun);
-        $bonusapa = "laporan";
-
-        return view('bonus.ajxShowBonus', compact('member', 'tahun','bulan','bonusapa'));
+        // echo $request->offset;
+        $datas = Bonus::getRealsisasiBonus($request);
+        echo json_encode($datas);
     }
 
     public function showLaporanBonusGagal(Request $request)

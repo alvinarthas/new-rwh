@@ -151,6 +151,7 @@
                                     <div class="input-group-append">
                                         <span class="input-group-text"><i class="ti-calendar"></i></span>
                                     </div>
+                                    <input type="hidden" name="tgl_lama" value="@isset($bn->tgl){{ $bn->tgl }}@endisset">
                                 </div><!-- input-group -->
                             </div>
                         </div>
@@ -1170,7 +1171,7 @@
         var bln = $("#bulan").val()
         var thn = $("#tahun").val()
         $.ajax({
-            url         :   "{{route('showLaporanBonus')}}",
+            url         :   "{{route('bonus.laporan')}}",
             data        :   {
                 bulan : bln,
                 tahun : thn,

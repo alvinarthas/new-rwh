@@ -100,7 +100,7 @@ Route::middleware(['checkUser'])->group(function () {
     Route::get('/checkEstimasiBonus', 'BonusController@checkEstimasiBonus')->name('checkEstimasiBonus');
 
     Route::get('/bonus/laporan','BonusController@indexLaporan')->name('bonus.laporan');
-    Route::get('/showBonusLaporan', 'BonusController@showLaporanBonus')->name('showLaporanBonus');
+    Route::post('/showBonusLaporan', 'BonusController@showLaporanBonus')->name('showLaporanBonus');
 
     Route::get('/bonus/estimasi', 'BonusController@indexEstimasi')->name('bonus.estimasi');
     Route::get('/showEstimasiBonus', 'BonusController@showEstimasiBonus')->name('showEstimasiBonus');

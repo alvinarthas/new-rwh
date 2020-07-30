@@ -36,18 +36,83 @@ use App\BonusBayar;
 use App\TopUpBonus;
 use GuzzleHttp\Client;
 use App\Ecommerce;
+use App\Transaksi;
 
 use Carbon\Carbon;
 
 class TestController extends Controller
 {
     public function index(){
+        $bonus = Bonus::all();
+        $no = 1;
+        foreach($bonus as $b){
+            $count_noid = PerusahaanMember::where('noid', $b->noid)->count();
+            if($count_noid == 0){
+                echo $no++.". ".$b->noid." (noid tidak ditemukan) (".$b->id_jurnal.")<br>";
+            }elseif($count_noid > 1){
+                echo $no++.". ".$b->noid." (noid ditemukan ".$count_noid.") (".$b->id_jurnal.")<br>";
+            }
+        }
+
+        $bonusbayar = BonusBayar::all();
         $nomor = 1;
-        $bonusbayar = BonusBayar::where('id_jurnal', 'BB.213')->get();
+        foreach($bonusbayar as $bb){
+            $count_norek = BankMember::where('norek', $bb->no_rek)->count();
+            if($count_norek == 0){
+                echo $nomor++.". ".$bb->no_rek." (norek tidak ditemukan) (".$bb->id_jurnal.")<br>";
+            }elseif($count_norek > 1){
+                echo $nomor++.". ".$bb->no_rek." (norek ditemukan ".$count_norek.") (".$bb->id_jurnal.")<br>";
+            }
+        }
+    }
+
+    public function indextime(){
+
+        $time_start = microtime(true);
+        $jurnal = Jurnal::all();
+        // $member = Member::select('nama', 'ktp')->limit(30);
+        // $pm = 0;
+        // $bm = 0;
+        $count = 0;
+        foreach($jurnal as $jur){
+            $count++;
+            echo $jur->id."<br>";
+            if($count == 100){
+            break;
+            }
+        }
+
+        // foreach($member as $m){
+        //     $perusahaanmember = PerusahaanMember::where('ktp', $m->ktp)->count();
+        //     $bankmember = BankMember::where('ktp', $m->ktp)->count();
+
+        //     if($perusahaanmember == 0 AND $bankmember > 0){
+        //         $pm++;
+        //     }elseif($perusahaanmember > 0 AND $bankmember == 0){
+        //         $bm++;
+        //     }
+        // }
+        // echo "tanpa NOID tapi ada rekening : ".$pm."<br>";
+        // echo "tanpa rekening tapi ada NOID : ".$bm."<br>";
+        $time_end = microtime(true);
+
+        // //dividing with 60 will give the execution time in minutes otherwise seconds
+        $execution_time = ($time_end - $time_start)/60;
+
+        // //execution time of the script
+        echo '<b>Total Execution Time:</b> '.$execution_time.' Mins';
+        die();
+    }
+
+    public function indexcheckbonussalahrek(){
+        $nomor = 1;
+        $bonusbayar = BonusBayar::where('id_jurnal', 'BB.228')->get();
         foreach($bonusbayar as $key){
             $bm = Bankmember::where('norek', $key->no_rek)->count();
             if($bm == 0){
-                echo $nomor++.". ".$key->no_rek." - Rp ".number_format($key->bonus, 2, ",", ".")."<br>";
+                // echo $nomor++.". ".$key->no_rek." - Rp ".number_format($key->bonus, 2, ",", ".")."<br>";
+                $key->no_rek = '0'.$key->no_rek;
+                $key->save();
             }
         }
     }
@@ -229,17 +294,17 @@ class TestController extends Controller
         echo "<br>";
     }
 
-    public function indexCheckPO(){
-        foreach(Product::all() as $product){
-            foreach(DeliveryDetail::where('product_id',$product->prod_id)->get() as $dd){
-                $salesdet = SalesDet::where('prod_id',$dd->product_id)->where('trx_id',$dd->sales_id)->count();
+    // public function indexCheckPO(){
+    //     foreach(Product::all() as $product){
+    //         foreach(DeliveryDetail::where('product_id',$product->prod_id)->get() as $dd){
+    //             $salesdet = SalesDet::where('prod_id',$dd->product_id)->where('trx_id',$dd->sales_id)->count();
 
-                if($checkPO == 0){
-                    echo "RD.".$detail->id." Check PO: ".$checkPO." Product: ".$product->prod_id."<br>";
-                }
-            }
-        }
-    }
+    //             if($checkPO == 0){
+    //                 echo "RD.".$detail->id." Check PO: ".$checkPO." Product: ".$product->prod_id."<br>";
+    //             }
+    //         }
+    //     }
+    // }
 
     public function indexcheckPOlama(){
         $produk = Product::all();
@@ -321,19 +386,19 @@ class TestController extends Controller
         }
     }
 
-    public function indexinsertpodettoreceive(){
-        foreach(ReceiveDet::select('id', 'prod_id', 'trx_id')->get() as $key){
-            $purchasedet = PurchaseDetail::where('prod_id', $key->prod_id)->where('trx_id', $key->trx_id)->first();
+    // public function indexinsertpodettoreceive(){
+    //     foreach(ReceiveDet::select('id', 'prod_id', 'trx_id')->get() as $key){
+    //         $purchasedet = PurchaseDetail::where('prod_id', $key->prod_id)->where('trx_id', $key->trx_id)->first();
 
-            $key->purchasedetail_id = $purchasedet->id;
-            $key->save();
-        }
+    //         $key->purchasedetail_id = $purchasedet->id;
+    //         $key->save();
+    //     }
 
-        $transaksi = Transaksi::where('id_user',$id_user)->first();
+    //     $transaksi = Transaksi::where('id_user',$id_user)->first();
 
-        // dd($transaksi->barang()->first()); // buat cek datanya ada atau enggak
-        // dd($transaksi->barang->name); // buat get name nya, kalo emng datanya ada
-    }
+    //     // dd($transaksi->barang()->first()); // buat cek datanya ada atau enggak
+    //     // dd($transaksi->barang->name); // buat get name nya, kalo emng datanya ada
+    // }
 
     public function index_sodet(){
         echo "lelele";
