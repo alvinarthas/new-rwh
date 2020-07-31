@@ -123,7 +123,7 @@
         var bank = $('#bank').val();
         console.log(jenis,perusahaan, bank)
         $.ajax({
-            url : "{{route('indexMemberNew')}}",
+            url : "{{route('member.index')}}",
             type : "get",
             dataType: 'json',
             data:{
