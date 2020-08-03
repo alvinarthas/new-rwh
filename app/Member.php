@@ -70,6 +70,7 @@ class Member extends Model
         $jenis = $request->jenis;
         $perusahaan = $request->perusahaan;
         $bank = $request->bank;
+        $statusrek = $request->statusrek;
 
         $draw = $request->draw;
         $row = $request->start;
@@ -90,17 +91,10 @@ class Member extends Model
         }elseif($jenis == 4){
             $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember WHERE bank_id =$bank"),'ktp'));
             $member->whereIn('ktp',$array);
-        }elseif($jenis == 5){
-            $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember where status=1"),'ktp'));
-            $member->whereIn('ktp', $array);
-        }elseif($jenis == 6){
-            $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember where status=2"),'ktp'));
-            $member->whereIn('ktp', $array);
-        }elseif($jenis == 7){
-            $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember where status=3"),'ktp'));
-            $member->whereIn('ktp', $array);
-        }elseif($jenis == 8){
-            $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember where status=4"),'ktp'));
+        }
+        
+        if($statusrek != "#"){
+            $array = array_values(array_column(DB::select("SELECT ktp FROM bankmember where status=$statusrek"),'ktp'));
             $member->whereIn('ktp', $array);
         }
 
@@ -116,8 +110,6 @@ class Member extends Model
             }
             if($jenis == 4){
                 $norek = BankMember::select('ktp')->where('bank_id', $bank)->where('norek', 'LIKE', '%'.$searchValue.'%')->get();
-            }elseif($jenis == 5 OR $jenis == 6 OR $jenis == 7 OR $jenis == 8){
-                $norek = BankMember::select('ktp')->where('status', $jenis-4)->where('norek', 'LIKE', '%'.$searchValue.'%')->get();
             }else{
                 $norek = BankMember::select('ktp')->where('norek', 'LIKE', '%'.$searchValue.'%')->get();
             }
@@ -150,7 +142,7 @@ class Member extends Model
                 $scanktp = "Have Filled";
             }
 
-            $tabungan = BankMember::getData($key->ktp);
+            $tabungan = BankMember::getData($key->ktp, $statusrek);
             $scantabungan = "";
 
             if($tabungan <> NULL){

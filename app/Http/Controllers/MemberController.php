@@ -30,12 +30,26 @@ class MemberController extends Controller
 
     public function index(Request $request)
     {
-        $keyword = $request->get('search');
-        $perusahaan = Perusahaan::orderBy('nama')->get();
-        $bank = Bank::bankMember();
-        $page = MenuMapping::getMap(session('user_id'),"MBMM");
+        if ($request->ajax()) {
+            $jenis = $request->jenis;
+            $perusahaan = $request->perusahaan;
+            $bank = $request->bank;
+            $statusrek = $request->statusrek;
+            return response()->json(view('member.list',compact('jenis','perusahaan','bank','statusrek'))->render());
+        }else{
+            $perusahaan = Perusahaan::orderBy('nama')->get();
+            $bank = Bank::bankMember();
+            $statusrek = StatusRek::all();
+            $page = MenuMapping::getMap(session('user_id'),"MBMM");
 
-        return view('member.index',compact('keyword','perusahaan','bank','page'));
+            return view('member.index',compact('statusrek','perusahaan','bank','page'));
+        }
+        // $keyword = $request->get('search');
+        // $perusahaan = Perusahaan::orderBy('nama')->get();
+        // $bank = Bank::bankMember();
+        // $page = MenuMapping::getMap(session('user_id'),"MBMM");
+
+        // return view('member.index',compact('keyword','perusahaan','bank','page'));
     }
 
     public function index_new(Request $request)
@@ -44,7 +58,8 @@ class MemberController extends Controller
             $jenis = $request->jenis;
             $perusahaan = $request->perusahaan;
             $bank = $request->bank;
-            return response()->json(view('member.list_baru',compact('jenis','perusahaan','bank'))->render());
+            $statusrek = $request->statusrek;
+            return response()->json(view('member.list_baru',compact('jenis','perusahaan','bank','statusrek'))->render());
         }else{
             $perusahaan = Perusahaan::orderBy('nama')->get();
             $bank = Bank::bankMember();
