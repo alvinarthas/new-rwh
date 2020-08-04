@@ -9,6 +9,7 @@ use App\DeliveryDetail;
 use App\ReceiveDet;
 use App\SalesDet;
 use App\KonversiDetail;
+use App\TransitProductDetail;
 
 class Product extends Model
 {
@@ -34,13 +35,26 @@ class Product extends Model
         return $indent;
     }
 
-    public static function getGudang($prod_id){
-        $qty_receive = ReceiveDet::where('prod_id',$prod_id)->sum('qty');
-        $qty_delivered = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
-        $konversi = KonversiDetail::getTotal($prod_id);
-        $retur = Retur::getTotal($prod_id, null);
+    public static function getGudang($prod_id,$gudang_id=null){
+        if ($gudang_id){
+            $qty_receive = ReceiveDet::where('prod_id',$prod_id)->where('gudang_id',$gudang_id)->sum('qty');
+            $qty_delivered = DeliveryDetail::where('product_id',$prod_id)->where('gudang_id',$gudang_id)->sum('qty');
+            $konversi = KonversiDetail::getTotalGudang($gudang_id,$prod_id);
+            $retur = 0;
+            // Pindah Gudang
+            $gudangKeluar = TransitProductDetail::where('product_id',$prod_id)->where('gudang_awal',$gudang_id)->sum('qty');
+            $gudangMasuk = TransitProductDetail::where('product_id',$prod_id)->where('gudang_akhir',$gudang_id)->sum('qty');
+            $sumGudang = $gudangMasuk-$gudangKeluar;
 
-        $gudang = ($qty_receive-$qty_delivered)+$konversi+$retur;
+            $gudang = ($qty_receive-$qty_delivered)+$konversi+$retur+$sumGudang;
+        }else{
+            $qty_receive = ReceiveDet::where('prod_id',$prod_id)->sum('qty');
+            $qty_delivered = DeliveryDetail::where('product_id',$prod_id)->sum('qty');
+            $konversi = KonversiDetail::getTotal($prod_id);
+            $retur = Retur::getTotal($prod_id, null);
+
+            $gudang = ($qty_receive-$qty_delivered)+$konversi+$retur;
+        }
 
         return $gudang;
     }
