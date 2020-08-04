@@ -11,15 +11,19 @@ class BankMember extends Model
         'ktp','bank_id','cabbank','norek','noatm','nobuku','creator','status','p_status','id_jurnal','scanatm','scantabungan'
     ];
 
-    public static function getData($ktp){
+    public static function getData($ktp, $statusrek){
         $bankmember = BankMember::where('ktp',$ktp)->select('norek','scantabungan','scanatm','status');
         $countbm = $bankmember->count();
         $data = collect();
 
-        if($countbm > 1){
-            $data = $bankmember->where('status', 1)->first();
+        if($statusrek == "#"){
+            if($countbm > 1){
+                $data = $bankmember->where('status', 1)->first();
+            }else{
+                $data = $bankmember->first();
+            }
         }else{
-            $data = $bankmember->first();
+            $data = $bankmember->where('status', $statusrek)->first();
         }
 
         return $data;

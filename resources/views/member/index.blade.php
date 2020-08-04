@@ -10,6 +10,7 @@
     <link href="{{ asset('assets/plugins/datatables/select.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     {{-- Select2 --}}
     <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 @section('content')
 <!-- sample modal content -->
@@ -58,6 +59,17 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Status Rekening</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="statusrek" id="statusrek" required>
+                                        <option value="#">Pilih Status Rekening</option>
+                                        @foreach($statusrek as $status)
+                                            <option value="{{ $status->id }}">{{ $status->status }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -66,29 +78,9 @@
                     <a href="javascript:;" class="btn btn-primary btn-rounded w-md waves-effect waves-light m-b-5" onclick="showMember()">Show Data</a>
                 </div>
             </div>
-            <div class="card-box" id="member-list" style="display:none">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="p-20">
-                            <a tabindex="0" class="text-danger col-4" role="button" data-toggle="tooltip" data-placement="bottom" data-trigger="focus" title="nama (spasi) <Nama Member>" data-original-title="">
-                                <i class="fa fa-info-circle"> Petunjuk Mencari Member berdasar Nama</i>
-                            </a>
-                            <a tabindex="0" class="text-inverse col-4" role="button" data-toggle="tooltip" data-placement="bottom" data-trigger="focus" title="nktp (spasi) <No KTP Member>" data-original-title="">
-                                <i class="fa fa-info-circle"></i> Petunjuk Mencari Member berdasar No KTP
-                            </a>
-                            <a tabindex="0" class="text-purple col-4" role="button" data-toggle="tooltip" data-placement="bottom" data-trigger="focus" title="nrek (spasi) <No Rekening Member>" data-original-title="">
-                                <i class="fa fa-info-circle"></i> Petunjuk Mencari Member berdasar No Rekening
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        @csrf
-                        <input type="text" class="form-control" name="search" id="search" value="{{ $keyword }}" placeholder="Masukan kata kunci pencarian..">
-                    </div>
-                </div>
-                <section class="datas" id="ajxlist">
+
+            <div id="member-list" style="display:none">
+                <section id="showmember">
                 </section>
             </div>
         </div>
@@ -115,111 +107,43 @@
 @section('script-js')
 <script>
     $(document).ready(function() {
-        $(document).on('click', '.pagination a', function (e) {
-            $('.datas').append('<img style="position: absolute; left: 0; top: 0; z-index: 100000;" src="../images/loading.gif" />');
-            var url = $(this).attr('href');
-            getDatas($(this).attr('href').split('page=')[1]);
-            e.preventDefault();
+        $(".select2").select2();
+
+        $('#jenis').on('change', function () {
+            id = $('#jenis').val();
+            console.log(id)
+            if(id == 3 || id == 5 || id == 6 || id == 7 || id == 8){
+                document.getElementById("company_show").style.display = 'none';
+                document.getElementById("bank_show").style.display = 'none';
+            }else if(id == 4){
+                document.getElementById("company_show").style.display = 'none';
+                document.getElementById("bank_show").style.display = 'block';
+            }else{
+                document.getElementById("company_show").style.display = 'block';
+                document.getElementById("bank_show").style.display = 'none';
+            }
         });
     });
-
-    $(".select2").select2();
-
-    $('#jenis').on('change', function () {
-        id = $('#jenis').val();
-        console.log(id)
-        if(id == 3){
-            document.getElementById("company_show").style.display = 'none';
-            document.getElementById("bank_show").style.display = 'none';
-        }else if(id == 4){
-            document.getElementById("company_show").style.display = 'none';
-            document.getElementById("bank_show").style.display = 'block';
-        }else{
-            document.getElementById("company_show").style.display = 'block';
-            document.getElementById("bank_show").style.display = 'none';
-        }
-    });
-
-    //setup before functions
-    var typingTimer;                //timer identifier
-    var doneTypingInterval = 1000;  //time in ms, 5 second for example
-    var $input = $('#search');
-
-    //on keyup, start the countdown
-    $input.on('keyup', function () {
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(doneTyping, doneTypingInterval);
-    });
-
-    //on keydown, clear the countdown
-    $input.on('keydown', function () {
-        clearTimeout(typingTimer);
-        // typingTimer = setTimeout(doneTyping, doneTypingInterval);
-    });
-
-    //user is "finished typing," do something
-    function doneTyping () {
-        var search = $('#search').val();
-        var jenis = $('#jenis').val();
-        var perusahaan = $('#perusahaan').val();
-        var bank = $('#bank').val();
-        console.log(search)
-        $.ajax({
-            url : 'ajxmember',
-            type : "get",
-            dataType: 'json',
-            data:{
-                search: search,
-                jenis: jenis,
-                perusahaan: perusahaan,
-                bank: bank,
-            },
-        }).done(function (data) {
-            $('.datas').html(data);
-        }).fail(function (msg) {
-            alert('Gagal menampilkan data, silahkan refresh halaman.');
-        });
-    }
-
-    function getDatas(page) {
-        var jenis = $('#jenis').val();
-        var perusahaan = $('#perusahaan').val();
-        var bank = $('#bank').val();
-        $.ajax({
-            url : 'ajxmember?page=' + page,
-            type : "get",
-            dataType: 'json',
-            data:{
-                search: $('#search').val(),
-                jenis: jenis,
-                perusahaan: perusahaan,
-                bank: bank,
-            },
-        }).done(function (data) {
-            $('.datas').html(data);
-            location.hash = page;
-        }).fail(function (msg) {
-            alert('Gagal menampilkan data, silahkan refresh halaman.');
-        });
-    }
 
     function showMember(){
         var jenis = $('#jenis').val();
         var perusahaan = $('#perusahaan').val();
         var bank = $('#bank').val();
-        console.log(jenis,perusahaan, bank)
+        var statusrek = $('#statusrek').val();
+        console.log(jenis,perusahaan, bank, statusrek)
         $.ajax({
-            url : 'ajxmember',
+            url : "{{route('member.index')}}",
             type : "get",
             dataType: 'json',
             data:{
                 jenis: jenis,
                 perusahaan: perusahaan,
                 bank: bank,
+                statusrek: statusrek,
             },
         }).done(function (data) {
             document.getElementById("member-list").style.display = 'block';
-            $('.datas').html(data);
+            $('#showmember').html(data);
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });

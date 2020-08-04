@@ -6,30 +6,6 @@
 {{-- Select2 --}}
 <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
 
-<style>
-    #loader {
-        border: 16px solid #f3f3f3;
-        border-radius: 50%;
-        border-top: 16px solid #3498db;
-        width: 50px;
-        height: 50px;
-        -webkit-animation: spin 2s linear infinite;
-        animation: spin 2s linear infinite;
-        margin-left:10px;
-        margin-right:10px;
-        margin-top:10px;
-    }
-    @-webkit-keyframes spin {
-        0% { -webkit-transform: rotate(0deg); }
-        100% { -webkit-transform: rotate(360deg); }
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-</style>
-
 <form class="form-horizontal" role="form" action="{{ route('exportMember') }}" enctype="multipart/form-data" method="POST">
     @csrf
     <div class="modal fade bs-example-modal-lg" role="dialog" aria-labelledby="myLargeModalLabel" style="display: none;" aria-hidden="true">
@@ -88,8 +64,9 @@
         </div><!-- /.modal-dialog -->
     </div>
 </form>
-<div class="card-box">
-    <table id="load" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+
+<div id="load" class="table-responsive">
+    <table class="table m-b-0">
         <thead>
             <tr>
                 <th>No</th>
@@ -101,55 +78,73 @@
                 <th>Status Cetak</th>
             </tr>
         </thead>
+        <tbody>
+            @foreach($datas as $data)
+            <tr>
+                <td>{{$i}}</td>
+                <td><a href="{{route('member.show',['id' => $data->ktp])}}">{{$data->nama}}</a></td>
+                {{-- Gambar KTP --}}
+                @if ($data->scanktp == "noimage.jpg" || $data->scanktp == '')
+                    <td>Empty</td>
+                @else
+                    <td>Have Filled</td>
+                @endif
+                {{-- Bank --}}
+                @php($tabungan = BankMember::getData($data->ktp))
+
+                @if($tabungan <> NULL)
+                    @if($tabungan->scantabungan == "noimage.jpg")
+                        <td>Empty</td>
+                    @else
+                        <td>Have Filled</td>
+                    @endif
+                    @if($tabungan->scanatm == "noimage.jpg")
+                        <td>Empty</td>
+                    @else
+                        <td>Have Filled</td>
+                    @endif
+                    @if($tabungan->status == "Aktif")
+                        <td>Aktif</td>
+                    @else
+                        <td>Tidak Aktif</td>
+                    @endif
+                @else
+                    <td>No Primary</td>
+                    <td>No Primary</td>
+                    <td>Tidak Aktif</td>
+                @endif
+                @if($data->cetak == 0)
+                    <td>Belum dicetak</td>
+                @else
+                    <td>Sudah Dicetak</td>
+                @endif
+                @php($i++)
+            </tr>
+            @endforeach
+
+        </tbody>
     </table>
+    {{ $datas->links() }}
     <input type="hidden" name="perusahaan" id="perusahaan" value="@isset($perusahaan){{ $perusahaan }}@endisset">
     <input type="hidden" name="bank" id="bank" value="@isset($bank){{ $bank }}"@endisset>
     <input type="hidden" name="jenis" id="jenis" value="@isset($jenis){{ $jenis }}@endisset">
+</div>
 
-    <div class="form-group text-right m-b-0">
-        <button class="btn btn-rounded btn-inverse w-md waves-effect waves-light m-b-5" data-toggle="modal" data-target=".bs-example-modal-lg">Cetak</button>
-    </div>
+<div class="form-group text-right m-b-0">
+    <button class="btn btn-rounded btn-inverse w-md waves-effect waves-light m-b-5" data-toggle="modal" data-target=".bs-example-modal-lg">Cetak</button>
 </div>
 
     {{-- Select2 --}}
     <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}" type="text/javascript"></script>
 
 <script>
-    $(".select2a").select2({
-        templateResult: formatState,
-        templateSelection: formatState,
-    });
-
     $(document).ready(function () {
-        $('#load').DataTable({
-            "processing" : true,
-            "serverSide" : true,
-            "ajax" : {
-                "url" : "{{ route('getDataMember') }}",
-                "type" : "POST",
-                "data" : {
-                    "perusahaan" : $("#perusahaan").val(),
-                    "bank" : $("#bank").val(),
-                    "jenis" : $("#jenis").val(),
-                    "_token" : $("meta[name='csrf-token']").attr("content"),
-                }
-            },"columns" : [{data : "no", name : "no"},
-                {data : "nama", name : "nama"},
-                {data : "gambar_ktp",name : "gambar_ktp", searchable:false, orderable:false},
-                {data : "gambar_tabungan", name : "gambar_tabungan", searchable:false, orderable:false},
-                {data : "gambar_atm", name : "gambar_atm", searchable:false, orderable:false},
-                {data : "status_rekening", name : "status_rekening", searchable:false, orderable:false},
-                {data : "status_cetak", name : "status_cetak", searchable:false, orderable:false},
-            ],"columnDefs" : [
-                {
-                    targets: '_all',
-                    type: 'natural'
-                }
-            ],"order": [[ 1, "asc" ]
-            ],oLanguage : {sProcessing: "<div id='loader'></div>"},
+        ajxMemberOrder();
+        $(".select2a").select2({
+            templateResult: formatState,
+            templateSelection: formatState,
         });
 
-        ajxMemberOrder();
         $('#menu').on('change', function () {
             id = $('#menu').val();
             pr = $('#perusahaan').val();
