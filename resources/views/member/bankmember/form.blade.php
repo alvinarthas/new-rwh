@@ -63,7 +63,7 @@
                                         @if($status->id == $banm->status)
                                             <option value="{{ $status->id }}" selected>{{ $status->status }}</option>
                                         @else
-                                            <option value="{{ $status->id }}" selected>{{ $status->status }}</option>
+                                            <option value="{{ $status->id }}">{{ $status->status }}</option>
                                         @endif
                                     @endforeach
                                 @else

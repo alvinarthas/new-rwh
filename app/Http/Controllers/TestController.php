@@ -39,10 +39,93 @@ use App\Ecommerce;
 use App\Transaksi;
 
 use Carbon\Carbon;
+use Excel;
+use App\Exports\DuplicateMemberExport;
 
 class TestController extends Controller
 {
     public function index(){
+        ini_set('max_execution_time', 3000);
+        $datas = array();
+
+        $no = 1;
+        $perusahaanmember = PerusahaanMember::groupBy('noid')->get();
+        foreach($perusahaanmember as $pm){
+            $count = PerusahaanMember::where('noid', $pm->noid)->count();
+            if($count > 1){
+                $data = PerusahaanMember::join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('noid', $pm->noid)->select('perusahaanmember.noid', 'tblmember.ktp', 'perusahaanmember.perusahaan_id', 'tblmember.nama', 'tblmember.member_id')->get();
+                // $print = $no++.". noid : ".$pm->noid.", count : ".$count." | ";
+                foreach($data as $key){
+                    $array = array(
+                        'No' => $no++,
+                        'No ID / No Rek' => $pm->noid,
+                        'Perusahaan / Bank' => $key->perusahaan->nama,
+                        'Nama' => $key->nama,
+                        'ID Member' => $key->member_id,
+                        'No KTP' => $key->ktp,
+                    );
+                    array_push($datas, $array);
+                    // $print .= $key->ktp." - ".$key->nama.", ";
+                }
+                // echo $print."<br><br>";
+            }
+        }
+
+        $bankmember = BankMember::groupBy('norek')->get();
+        foreach($bankmember as $bm){
+            $count = BankMember::where('norek', $bm->norek)->count();
+            if($count > 1){
+                $data = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('norek', $bm->norek)->get();
+                // $print = $nomor++.". norek : ".$bm->norek.", count : ".$count." | ";
+                foreach($data as $key){
+                    $array = array(
+                        'No' => $no++,
+                        'No ID / No Rek' => $bm->norek,
+                        'Perusahaan / Bank' => $key->bank->nama,
+                        'Nama' => $key->nama,
+                        'ID Member' => $key->member_id,
+                        'No KTP' => $key->ktp,
+                    );
+                    array_push($datas, $array);
+                    // $print .= $key->ktp." - ".$key->nama.", ";
+                }
+                // echo $print."<br><br>";
+            }
+        }
+        $export = new DuplicateMemberExport($datas);
+        return Excel::download($export, 'Duplicate NOID NoRek.xlsx');
+    }
+    public function indexduplicatenoidnorek(){
+        $no = 1;
+        $perusahaanmember = PerusahaanMember::groupBy('noid')->get();
+        foreach($perusahaanmember as $pm){
+            $count = PerusahaanMember::where('noid', $pm->noid)->count();
+            if($count > 1){
+                $data = PerusahaanMember::join('tblmember', 'perusahaanmember.ktp', 'tblmember.ktp')->where('noid', $pm->noid)->get();
+                $print = $no++.". noid : ".$pm->noid.", count : ".$count." | ";
+                foreach($data as $key){
+                    $print .= $key->ktp." - ".$key->nama.", ";
+                }
+                echo $print."<br><br>";
+            }
+        }
+
+        $nomor = 1;
+        $bankmember = BankMember::groupBy('norek')->get();
+        foreach($bankmember as $bm){
+            $count = BankMember::where('norek', $bm->norek)->count();
+            if($count > 1){
+                $data = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('norek', $bm->norek)->get();
+                $print = $nomor++.". norek : ".$bm->norek.", count : ".$count." | ";
+                foreach($data as $key){
+                    $print .= $key->ktp." - ".$key->nama.", ";
+                }
+                echo $print."<br><br>";
+            }
+        }
+    }
+
+    public function indexcheckstatusrek(){
         $bankmember = BankMember::all();
 
         $countAktif=0;

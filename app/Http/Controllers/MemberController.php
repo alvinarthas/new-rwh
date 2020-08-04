@@ -28,7 +28,7 @@ class MemberController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    public function index_new(Request $request)
+    public function index(Request $request)
     {
         if ($request->ajax()) {
             $jenis = $request->jenis;
@@ -52,7 +52,7 @@ class MemberController extends Controller
         // return view('member.index',compact('keyword','perusahaan','bank','page'));
     }
 
-    public function index(Request $request)
+    public function index_lama(Request $request)
     {
         if ($request->ajax()) {
             $jenis = $request->jenis;

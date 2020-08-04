@@ -14,6 +14,6 @@ class PerusahaanMember extends Model
     public $timestamps = true;
 
     public function perusahaan(){
-        return $this->belongsTo('App\Perusahaan');
+        return $this->belongsTo('App\Perusahaan','perusahaan_id', 'id');
     }
 }
