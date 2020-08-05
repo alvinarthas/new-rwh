@@ -55,10 +55,10 @@ Route::middleware(['checkUser'])->group(function () {
 
     // Receive Product
     Route::get('receiveproduct','ReceiveProductController@index')->name('receiveProd');
-    Route::get('receiveproduct/ajx','ReceiveProductController@ajx')->name('receiveProdAjx');
+    Route::post('receiveproduct/ajx','ReceiveProductController@ajx')->name('receiveProdAjx');
     Route::get('receiveproduct/add','ReceiveProductController@addBrgReceive')->name('addBrgReceive');
     Route::get('receiveproduct/view','ReceiveProductController@view')->name('viewRI');
-    Route::get('receiveproduct/detail','ReceiveProductController@detail')->name('receiveProdDet');
+    Route::get('receiveproduct/detail/{id}','ReceiveProductController@detail')->name('receiveProdDet');
     Route::post('receiveproduct/store','ReceiveProductController@store')->name('receiveProdStr');
     Route::get('receiveproduct/edit/{id}','ReceiveProductController@edit')->name('receiveProdEdit');
     Route::post('receiveproduct/addProduct','ReceiveProductController@addProduct')->name('receiveProdAddProd');

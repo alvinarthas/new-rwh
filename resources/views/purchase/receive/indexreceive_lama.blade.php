@@ -1,27 +1,7 @@
-<style>
-    #loader {
-        border: 16px solid #f3f3f3;
-        border-radius: 50%;
-        border-top: 16px solid #3498db;
-        width: 50px;
-        height: 50px;
-        -webkit-animation: spin 2s linear infinite;
-        animation: spin 2s linear infinite;
-        margin-left:10px;
-        margin-right:10px;
-        margin-top:10px;
-    }
-    @-webkit-keyframes spin {
-        0% { -webkit-transform: rotate(0deg); }
-        100% { -webkit-transform: rotate(360deg); }
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-</style>
-
+@php
+    use App\ReceiveDet;
+    use App\PurchaseDetail;
+@endphp
 <div class="card-box table-responsive">
     <ul class="nav nav-tabs">
         <li class="nav-item">
@@ -44,13 +24,31 @@
                             <thead>
                                 <th>No</th>
                                 <th>Purchase ID</th>
-                                <th>Tanggal PO</th>
                                 <th>Supplier</th>
                                 <th>Total Harga Modal</th>
                                 <th>Total Harga Distributor</th>
                                 <th>Status Terima</th>
                                 <th>Option</th>
                             </thead>
+                            <tbody>
+                                @csrf
+                                @php($i=1)
+                                @foreach ($purchases as $list)
+                                    <tr>
+                                        <td>{{$i}}</td>
+                                        <td>PO.{{$list['trx_id']}}</td>
+                                        <td>{{$list['supplier']}}</td>
+                                        <td>Rp {{number_format($list['ttl_modal'],2,",",".") }}</td>
+                                        <td>Rp {{number_format($list['ttl_dist'],2,",",".") }}</td>
+                                        @if ($list['status_receive'] == 1)
+                                            <td><a href="javascript:;" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Sudah selesai Terima Produk</a></td>
+                                        @else
+                                            <td><a href="javascript:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5">Belum selesai Terima Produk</a></td>
+                                        @endif
+                                        <td><a href="{{route('receiveProdDet',['trx_id'=>$list['trx_id']])}}" class="btn btn-primary btn-trans waves-effect w-xs waves-danger m-b-5 ">Atur</a></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -62,7 +60,6 @@
                     <div class="card-box table-responsive">
                         <table id="responsive-datatable2" class="table table-bordered table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
                             <thead>
-                                <th>No</th>
                                 <th>Transaction ID</th>
                                 <th>RP ID</th>
                                 <th>Supplier</th>
@@ -72,6 +69,32 @@
                                 <th>Unit</th>
                                 <th>Qty Receive</th>
                             </thead>
+                            <tbody>
+                                @csrf
+                                @php($i=1)
+                                @foreach ($lists as $list)
+                                    <tr>
+                                        <td><a href="{{route('receiveProdDet',['trx_id'=>$list->trx_id])}}" class="btn btn-primary btn-trans waves-effect w-xs waves-danger m-b-5 ">PO.{{$list->trx_id}}</a></td>
+                                        <td>{{$list->rp_id}}</td>
+                                        <td>{{$list->supplier}}</td>
+                                        <td>{{$list->prod_id}}</td>
+                                        <td>{{$list->prod_name}}</td>
+                                        <td>{{$list->qty}}</td>
+                                        <td>{{$list->unit}}</td>
+                                        @if ($list->qtyrec == 0)
+                                            <td><a href="javascrip:;" class="btn btn-danger btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                                        @elseif(($list->qtyrec-$list->qty) == 0 )
+                                            <td><a href="javascrip:;" class="btn btn-success btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                                        @elseif(($list->qtyrec-$list->qty) < 0 )
+                                            <td><a href="javascrip:;" class="btn btn-warning btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                                        @elseif(($list->qtyrec-$list->qty) > 0 )
+                                            <td><a href="javascrip:;" class="btn btn-custom btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                                        @else
+                                            <td><a href="javascrip:;" class="btn btn-info btn-rounded waves-effect w-xs waves-danger m-b-5 disabled">{{$list->qtyrec}}</a></td>
+                                        @endif
+                                    </tr>
+                                @endforeach
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -79,65 +102,17 @@
         </div>
     </div>
 </div>
-<input type="hidden" id="start_date" value="{{$start_date}}">
-<input type="hidden" id="end_date" value="{{$end_date}}">
 
 <script>
 // Responsive Datatable
-$('#responsive-datatable').DataTable({
-    "processing" : true,
-    "serverSide" : true,
-    "ajax" : {
-        "url" : "{{ route('receiveProdAjx') }}",
-        "type" : "POST",
-        "data" : {
-            "start_date" : $("#start_date").val(),
-            "end_date" : $("#end_date").val(),
-            "jenis" : "purchase",
-            "_token" : $("meta[name='csrf-token']").attr("content"),
-        }
-    },"columns" : [{data : "no", name : "no", searchable : false},
-            {data : "trx_id", name : "trx_id"},
-            {data : "tgl", name : "tgl"},
-            {data : "supplier", name : "supplier"},
-            {data : "total_harga", name : "total_harga", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' )},
-            {data : "total_harga_dist", name : "total_harga_dist", render: $.fn.dataTable.render.number( '.', ',', 2, 'Rp ' )},
-            {data : "status", name : "status", orderable : false, searchable :false},
-            {data : "option", name : "option", orderable : false, searchable : false}
-    ],"columnDefs" : [
-        {
-            targets: '_all',
-            type: 'natural'
-        }
-    ],oLanguage : {sProcessing: "<div id='loader'></div>"},
-});
+$('#responsive-datatable').DataTable();
 $('#responsive-datatable2').DataTable({
-    "processing" : true,
-    "serverSide" : true,
-    "ajax" : {
-        "url" : "{{ route('receiveProdAjx') }}",
-        "type" : "POST",
-        "data" : {
-            "start_date" : $("#start_date").val(),
-            "end_date" : $("#end_date").val(),
-            "jenis" : "receive",
-            "_token" : $("meta[name='csrf-token']").attr("content"),
-        }
-    },"columns" : [{data : "no", name : "no", searchable : false},
-            {data : "po_id", name : "po_id"},
-            {data : "rp_id",name : "rp_id"},
-            {data : "supplier", name : "supplier"},
-            {data : "prod_id", name : "prod_id"},
-            {data : "prod_name", name : "prod_name"},
-            {data : "qty", name : "qty"},
-            {data : "unit", name : "unit"},
-            {data : "qtyrp", name : "qtyrp", searchable: false, orderable:false},
-    ],"columnDefs": [
+    "columnDefs": [
         {
-            "targets": [ 2 ],
+            "targets": [ 1 ],
             "visible": false,
         },
-    ],oLanguage : {sProcessing: "<div id='loader'></div>"},
+    ]
 });
 
 function deletePurchase(id){

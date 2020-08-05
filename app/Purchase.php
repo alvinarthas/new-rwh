@@ -308,6 +308,100 @@ class Purchase extends Model
         return $data;
     }
 
+    public static function getReceiveDet(Request $request){
+        $start = $request->start_date;
+        $end = $request->end_date;
+        $draw = $request->draw;
+        $row = $request->start;
+        $rowperpage = $request->length; // Rows display per page
+        $columnIndex = $request['order'][0]['column']; // Column index
+        $columnName = $request['columns'][$columnIndex]['data']; // Column name
+        $columnSortOrder = $request['order'][0]['dir']; // asc or desc
+        $searchValue = $request['search']['value']; // Search value
+
+        $purchase = Purchase::join('tblpotrxdet', 'tblpotrxdet.trx_id', 'tblpotrx.id')->join('tblperusahaan', 'tblpotrx.supplier', 'tblperusahaan.id')->select('tblpotrx.id', 'tblperusahaan.nama AS supplier_name','tblpotrx.jurnal_id', DB::Raw('SUM(tblpotrxdet.price * tblpotrxdet.qty) AS ttl_price'), DB::Raw('SUM(tblpotrxdet.price_dist * tblpotrxdet.qty) AS ttl_price_dist'), 'tblpotrx.tgl', 'tblpotrx.total_harga_modal', 'tblpotrx.total_harga_dist')->where('tblpotrx.approve', 1);
+
+        if($start <> NULL && $end <> NULL){
+            $purchase->whereBetween('tblpotrx.tgl',[$start,$end]);
+        }
+
+        $purchase->groupBy('tblpotrxdet.trx_id');
+
+        $totalRecords = 0;
+        foreach($purchase->get() as $count){
+            $totalRecords++;
+        }
+
+        if($searchValue != ''){
+            $purchase = $purchase->where('tblpotrx.jurnal_id', 'LIKE', '%'.$searchValue.'%')->orWhere('tblpotrx.tgl', 'LIKE', '%'.$searchValue.'%')->orWhere('tblperusahaan.nama', 'LIKE', '%'.$searchValue.'%')->orWhere('tblpotrx.total_harga_modal', 'LIKE', '%'.$searchValue.'%')->orWhere('tblpotrx.total_harga_dist', 'LIKE', '%'.$searchValue.'%');
+        }
+
+        $totalRecordwithFilter = 0;
+        foreach($purchase->get() as $count){
+            $totalRecordwithFilter++;
+        }
+
+        if($columnName == "no"){
+            $purchase = $purchase->orderBy('id', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }elseif($columnName == "purchase_id"){
+            $purchase = $purchase->orderBy('jurnal_id', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }elseif($columnName == "supplier"){
+            $purchase = $purchase->orderBy('supplier_name', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }elseif($columnName == "total_harga"){
+            $purchase = $purchase->orderBy('total_harga_modal', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }elseif($columnName == "total_harga_dist"){
+            $purchase = $purchase->orderBy('total_harga_dist', $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }else{
+            $purchase = $purchase->orderBy($columnName, $columnSortOrder)->offset($row)->limit($rowperpage)->get();
+        }
+
+        $data = collect();
+        $nomor = 1;
+        foreach($purchase as $key){
+            $purchasedet = PurchaseDetail::where('trx_id',$key->id)->select('*',DB::Raw('SUM(qty) as sum_qty'))->groupBy('prod_id')->get();
+            
+            $detcount = $purchasedet->count();
+
+            $count = 0;
+            foreach($purchasedet as $pd){
+                $count_rp = ReceiveDet::where('trx_id',$key->id)->where('prod_id',$pd->prod_id)->sum('qty');
+    
+                if($pd->sum_qty == $count_rp){
+                    $count++;
+                }
+            }
+
+            if($detcount == $count){
+                $status = '<a href="javascrip:;" class="btn btn-success btn-trans waves-effect w-md waves-danger m-b-5">Sudah selesai melakukan Delivery</a>';
+            }else{
+                $status = '<a href="javascrip:;" class="btn btn-danger btn-trans waves-effect w-md waves-danger m-b-5">Belum selesai melakukan Delivery</a>';
+            }
+
+            $button = '<a href="receiveproduct/detail/'.$key->id.'" class="btn btn-primary btn-rounded waves-effect w-md waves-danger m-b-5">Atur</a>';
+
+            $detail = collect();
+            $detail->put('no', $nomor++);
+            $detail->put('trx_id', $key->jurnal_id);
+            $detail->put('tgl', $key->tgl);
+            $detail->put('supplier', $key->supplier_name);
+            $detail->put('total_harga', $key->total_harga_modal);
+            $detail->put('total_harga_dist', $key->total_harga_dist);
+            $detail->put('status', $status);
+            $detail->put('option', $button);
+            $data->push($detail);
+        }
+
+        $response = array(
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecordwithFilter,
+            'data' => $data,
+        );
+
+        return $response;
+    }
+
+
     public static function recylePurchase($id){
         $purchase = Purchase::where('id',$id)->first();
 

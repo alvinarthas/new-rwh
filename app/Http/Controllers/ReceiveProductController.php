@@ -18,8 +18,16 @@ use App\Gudang;
 
 class ReceiveProductController extends Controller
 {
-    public function index(){
-        return view('purchase.receive.index');
+    public function index(Request $request){
+        if ($request->ajax()) {
+            $start_date = $request->start_date;
+            $end_date = $request->end_date;
+            $purchases = Purchase::checkReceive($start_date, $end_date);
+            $page = MenuMapping::getMap(session('user_id'),"PURP");
+            return response()->json(view('purchase.receive.indexreceive',compact('purchases','page','start_date','end_date'))->render());
+        }else{
+            return view('purchase.receive.index');
+        }
     }
 
     public function view(Request $request){
@@ -33,32 +41,23 @@ class ReceiveProductController extends Controller
     }
 
     public function ajx(Request $request){
-        if($request->jenis == "all"){
-            $lists = json_decode (json_encode (ReceiveDet::listReceiveAll()), FALSE);
-        }else{
-            // $bulan_start = date('m',strtotime($request->start));
-            // $bulan_end = date('m',strtotime($request->end));
-
-            // $tahun_start = date('Y',strtotime($request->start));
-            // $tahun_end = date('Y',strtotime($request->end));
-
-            $lists = json_decode (json_encode (ReceiveDet::listReceive($request->start,$request->end)), FALSE);
-        }
-
-
         if ($request->ajax()) {
-            $purchases = Purchase::checkReceive($request->start, $request->end);
-            $page = MenuMapping::getMap(session('user_id'),"PURP");
-            return response()->json(view('purchase.receive.indexreceive',compact('purchases', 'lists','page'))->render());
+            if($request->jenis == "purchase"){
+                $datas = Purchase::getReceiveDet($request);
+                echo json_encode($datas);
+            }elseif($request->jenis == "receive"){
+                $datas = ReceiveDet::getReceiveDet($request);
+                echo json_encode($datas);
+            }
         }
     }
 
-    public function detail(Request $request){
-        $trx = Purchase::where('id',$request->trx_id)->first();
-        $details = json_decode (json_encode (ReceiveDet::detailPurchase($request->trx_id)), FALSE);
-        $producttrx = PurchaseDetail::where('trx_id',$request->trx_id)->select('id','prod_id', 'price')->get();
+    public function detail(Request $request, $id){
+        $trx = Purchase::where('id',$id)->first();
+        $details = json_decode (json_encode (ReceiveDet::detailPurchase($id)), FALSE);
+        $producttrx = PurchaseDetail::where('trx_id',$id)->select('id','prod_id', 'price')->get();
         $page = MenuMapping::getMap(session('user_id'),"PURP");
-        $receives = ReceiveDet::where('trx_id',$request->trx_id)->groupBy('id_jurnal')->get();
+        $receives = ReceiveDet::where('trx_id',$id)->groupBy('id_jurnal')->get();
         $gudangs = Gudang::all();
 
         return view('purchase.receive.form',compact('trx','details','producttrx','receives','page', 'gudangs'));
