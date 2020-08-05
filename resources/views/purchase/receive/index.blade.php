@@ -87,12 +87,12 @@ List Receive Product
         end = $('#end').val();
         
         $.ajax({
-            url : "{{route('receiveProdAjx')}}",
+            url : "{{route('receiveProd')}}",
             type : "get",
             dataType: 'json',
             data:{
-                start: start,
-                end: end,
+                start_date: start,
+                end_date: end,
                 jenis: id,
             },
         }).done(function (data) {
