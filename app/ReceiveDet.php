@@ -35,7 +35,7 @@ class ReceiveDet extends Model
     public static function getReceiveDet(Request $request){
         $start = $request->start_date;
         $end = $request->end_date;
-        
+
         $draw = $request->draw;
         $row = $request->start;
         $rowperpage = $request->length; // Rows display per page
@@ -53,9 +53,9 @@ class ReceiveDet extends Model
         $totalRecords = $purchase->count();
 
         if($searchValue != ''){
-            $raw = ReceiveDet::select('trx_id')->where('id_jurnal', 'LIKE', '%'.$searchValue)->get();
+            $raw = ReceiveDet::select('trx_id')->where('id_jurnal', 'LIKE', '%'.$searchValue.'%')->get();
             // echo $raw;
-            $purchase->where('tblpotrx.jurnal_id', 'LIKE', '%'.$searchValue.'%')->orWhere('tblperusahaan.nama', 'LIKE', '%'.$searchValue.'%')->orWhere('tblpotrxdet.prod_id', 'LIKE', '%'.$searchValue.'%')->orWhere('tblproduct.name', 'LIKE', '%'.$searchValue.'%')->orWhereIn('tblpotrx.id', $raw);
+            $purchase->where('tblpotrx.jurnal_id', 'LIKE', '%'.$searchValue.'%')->orWhere('tblperusahaan.nama', 'LIKE', '%'.$searchValue.'%')->orWhere('tblpotrxdet.prod_id', 'LIKE', '%'.$searchValue.'%')->orWhere('tblproduct.name', 'LIKE', '%'.$searchValue.'%')->orWhere('tblpotrxdet.qty', 'LIKE', '%'.$searchValue.'%')->orWhere('tblpotrxdet.unit', 'LIKE', '%'.$searchValue.'%')->orWhereIn('tblpotrx.id', $raw);
         }
 
         $totalRecordwithFilter = $purchase->count();
@@ -115,7 +115,7 @@ class ReceiveDet extends Model
             $detail->put('supplier', $key->supplier_name);
             $detail->put('prod_id', $key->prod_id);
             $detail->put('prod_name', $key->prodname." - (Rp ".number_format($key->price, 2, ",", ".").")");
-            $detail->put('qtypo', $key->qty);
+            $detail->put('qty', $key->qty);
             $detail->put('unit', $key->unit);
             $detail->put('qtyrp', $qtyrp);
             $data->push($detail);

@@ -129,9 +129,9 @@ $('#responsive-datatable2').DataTable({
             {data : "supplier", name : "supplier"},
             {data : "prod_id", name : "prod_id"},
             {data : "prod_name", name : "prod_name"},
-            {data : "qtypo", name : "qtypo"},
+            {data : "qty", name : "qty"},
             {data : "unit", name : "unit"},
-            {data : "qtyrp", name : "qtyrp"},
+            {data : "qtyrp", name : "qtyrp", searchable: false, orderable:false},
     ],"columnDefs": [
         {
             "targets": [ 2 ],
