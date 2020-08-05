@@ -557,7 +557,7 @@ class Sales extends Model
             $numID = preg_replace('/[^0-9]/', '', $searchValue);
 
             // Search based on total_harga+ongkir
-            $sales = $sales->orWhereRaw('(ttl_harga+ongkir) LIKE ?', $searchValue.'%');
+            $sales = $sales->orWhereRaw('(ttl_harga+ongkir) LIKE ?', $numID.'%');
 
             // Search Based on Customer Name
             $sales = $sales->orWhereHas('customer', function ($query) use ($searchValue) {
@@ -572,20 +572,20 @@ class Sales extends Model
             $sales = $sales->orWhere('trx_date','like',$searchValue.'%');
 
             // or Search Based on TRX ID
-                // Check in TOKO ONLINE
-                if (is_numeric($numID) && $charID!=''){
-                    $ecom = Ecommerce::select('id','kode_trx')->where('kode_trx','like',$charID.'%');
-
-                    if ($ecom->count() > 0) {
-                        $ecom = $ecom->first();
-
-                        $sales = $sales->where('method',$ecom->id)->orWhere('online_id',$numID);
-                    }
-                }
-
             $sales = $sales->orWhere('id',$numID);
 
+            // Check in TOKO ONLINE
+            // if (is_numeric($numID) && $charID!=''){
+
+                $ecom = Ecommerce::select('id','kode_trx')->where('kode_trx','like',$charID.'%');
+                if ($ecom->count() > 0) {
+                    $ecom = $ecom->first();
+
+                    $sales = $sales->where('method',$ecom->id);
+                }
+            // }
         }
+        // dd($sales->toSql());
 
         $totalRecordwithFilter = $sales->count();
 
@@ -615,7 +615,7 @@ class Sales extends Model
             $trxModal = '';
 
                 if ($key->method <> 0){
-                    $trxModal .= '<td><a href="javascript:;" onclick="getDetail('.$key->id.')" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">'.$key->online()->first()->kode_trx.$key->online_id.'</a></td>';
+                    $trxModal .= '<td><a href="javascript:;" onclick="getDetail('.$key->id.')" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">'.$key->online()->first()->kode_trx.'.'.$key->online_id.'</a></td>';
                 }else{
                     $trxModal .= '<td><a href="javascript:;" onclick="getDetail('.$key->id.')" class="btn btn-primary btn-trans waves-effect w-md waves-danger m-b-5">SO.'.$key->id.'</a></td>';
                 }

@@ -38,7 +38,7 @@ class SalesController extends Controller
         return view('sales.index',compact('page'));
     }
 
-    public function showIndexSales(Request $request){
+    public function showIndexSalesNew(Request $request){
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
         $method = $request->method;
         $param = $request->param;
@@ -66,11 +66,11 @@ class SalesController extends Controller
 
         if ($request->ajax()) {
             // return response()->json(view('sales.indexsales',compact('sales','page','transaksi'))->render());
-            return response()->json(view('sales.viewsales',compact('sales','page','transaksi','method','param'))->render());
+            return response()->json(view('sales.indexsales',compact('sales','page','transaksi','method','param'))->render());
         }
     }
 
-    public function showIndexSalesNew(Request $request){
+    public function showIndexSales(Request $request){
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
         $method = $request->method;
         $param = $request->param;
