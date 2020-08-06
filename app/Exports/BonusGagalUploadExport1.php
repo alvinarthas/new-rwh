@@ -38,6 +38,7 @@ class BonusGagalUploadExport1 implements FromArray, WithHeadings, ShouldAutoSize
             'No ID',
             'No Rekening',
             'Bonus',
+            'Alasan',
         ];
     }
 }
