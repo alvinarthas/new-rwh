@@ -432,12 +432,12 @@ class BonusController extends Controller
                         $tgl = $request->tgl;
                         $AccNo = $request->AccNo;
                         $ket = 'top up bonus '.$norek.' - '.$tgl;
-    
+
                         $topup = TopUpBonus::where('no_rek', $norek)->where('tgl',$tgl)->where('AccNo',$AccNo)->select('id_bonus','id_jurnal')->get();
                         $num = $topup->count();
-    
+
                         $id_jurnal = Jurnal::getJurnalID('BT');
-    
+
                         if($bonus != 0){
                             // credit kas/bank
                             $credit = new Jurnal(array(
@@ -450,9 +450,9 @@ class BonusController extends Controller
                                 'description'   => $ket,
                                 'creator'       => session('user_id')
                             ));
-    
+
                             $credit->save();
-    
+
                             if($num==0){
                                 // debet estimasi bonus
                                 $debet = new Jurnal(array(
@@ -466,8 +466,8 @@ class BonusController extends Controller
                                     'creator'       => session('user_id')
                                 ));
                                 $debet->save();
-    
-    
+
+
                                 // Top Up Bonus
                                 $data = new TopUpBonus(array(
                                     'no_rek'    => $norek,
@@ -486,11 +486,11 @@ class BonusController extends Controller
                                 $debet->date        = $tgl;
                                 $debet->creator     = session('user_id');
                                 $debet->update();
-    
+
                                 // topup
                                 $data->bonus = $bonus;
                                 $data->creator = session('user_id');
-    
+
                                 $data->update();
                             }
                             Log::setLog('BMTUC','Create Top Up Bonus '.$id_jurnal);
@@ -2094,32 +2094,35 @@ class BonusController extends Controller
             $month = date("F", mktime(0, 0, 0, $bulan, 10));
             $filename = "Daftar Realisasi Bonus ".$month." ".$tahun." (".$tgl.")";
 
-            $member = Bonus::getRealsisasiBonus($bulan, $tahun);
+            $member = Bonus::exportRealsisasiBonus($bulan, $tahun);
             $i=1;
+            // echo "<pre>";
+            // print_r($member);
+            // die();
 
             foreach($member as $m){
-                $perhitungan = "";
-                $penerimaan = "";
+                // $perhitungan = "";
+                // $penerimaan = "";
 
-                foreach($m['perhitungan'] as $mp){
-                    $perhitungan .= $mp['noid']." \n";
-                    $perhitungan .= $mp['bonus']." \n";
-                }
-                $perhitungan .= "\n".$m['ttl_perhitungan'];
+                // foreach($m['perhitungan'] as $mp){
+                //     $perhitungan .= $mp['noid']." \n";
+                //     $perhitungan .= $mp['bonus']." \n";
+                // }
+                // $perhitungan .= "\n".$m['ttl_perhitungan'];
 
-                foreach($m['penerimaan'] as $mb){
-                    $penerimaan .= $mb['norek']." \n";
-                    $penerimaan .= $mb['bonus']." \n";
-                    $penerimaan .= $mb['tgl']." \n";
-                }
-                $penerimaan .= "\n".$m['ttl_penerimaan'];
+                // foreach($m['penerimaan'] as $mb){
+                //     $penerimaan .= $mb['norek']." \n";
+                //     $penerimaan .= $mb['bonus']." \n";
+                //     $penerimaan .= $mb['tgl']." \n";
+                // }
+                // $penerimaan .= "\n".$m['ttl_penerimaan'];
 
                 $array = array(
                     'No'   => $i++,
                     'KTP'  => $m['ktp'],
                     'Nama' => $m['nama'],
-                    'Perhitungan Bonus' => $perhitungan,
-                    'Realisasi Bonus' => $penerimaan,
+                    'Perhitungan Bonus' => $m['perhitungan'],
+                    'Realisasi Bonus' => $m['penerimaan'],
                     'Selisih' => "Rp ".number_format($m['selisih'], 2, ",", "."),
                 );
                 array_push($data, $array);
