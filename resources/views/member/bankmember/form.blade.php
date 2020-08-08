@@ -56,7 +56,7 @@
                     <div class="form-group row">
                         <label class="col-2 col-form-label">Status Rekening</label>
                         <div class="col-10">
-                            <select class="form-control select2" parsley-trigger="change" name="status_rek" id="status_rek">
+                            <select class="form-control select2" parsley-trigger="change" name="status_rekening" id="status_rekening">
                                 @isset($banm->status)
                                     <option value="#" disabled>Pilih Status Rekening</option>
                                     @foreach($statusrek as $status)

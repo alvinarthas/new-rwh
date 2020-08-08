@@ -45,6 +45,16 @@ use App\Exports\DuplicateMemberExport;
 class TestController extends Controller
 {
     public function index(){
+        $count = 0;
+        $countjurnal = 0;
+        $topup = TopUpBonus::where('AccNo', "1.1.1.2.2.000003")->where('tgl', "2020-08-06")->get();
+        foreach($topup as $t){
+            $jurnal = Jurnal::where('id_jurnal', $t->id_jurnal)->delete();
+            $t->delete();
+        }
+    }
+
+    public function indexexcel(){
         ini_set('max_execution_time', 3000);
         $datas = array();
 
