@@ -38,7 +38,7 @@ class SalesController extends Controller
         return view('sales.index',compact('page'));
     }
 
-    public function showIndexSalesNew(Request $request){
+    public function showIndexSales(Request $request){
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
         $method = $request->method;
         $param = $request->param;
@@ -70,7 +70,7 @@ class SalesController extends Controller
         }
     }
 
-    public function showIndexSales(Request $request){
+    public function showIndexSalesNew(Request $request){
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
         $method = $request->method;
         $param = $request->param;
@@ -113,6 +113,7 @@ class SalesController extends Controller
         if ($request->ajax()) {
             $sales = Sales::where('id',$request->id)->first();
             $salesdet = SalesDet::where('trx_id',$request->id)->get();
+            $totalprice = SalesDet::where('trx_id', $request->id)->sum(DB::raw('price * qty'));
             $salespay = SalesPayment::where('trx_id',$request->id)->sum('payment_amount');
 
             $count = TempSales::where('trx_id', $request->id)->count();
@@ -120,11 +121,12 @@ class SalesController extends Controller
             if($count != 0){
                 $temp_sales = TempSales::where('trx_id', $request->id)->first();
                 $temp_salesdet = TempSalesDet::where('temp_id', $temp_sales->id)->get();
+                $temp_totalprice = TempSalesDet::where('temp_id', $temp_sales->id)->sum(DB::raw('price * qty'));
                 $jenis = "double";
-                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'temp_sales', 'temp_salesdet', 'jenis'))->render());
+                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'temp_sales', 'temp_salesdet', 'temp_totalprice', 'jenis'))->render());
             }else{
                 $jenis = "double";
-                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'jenis'))->render());
+                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'totalprice', 'jenis'))->render());
             }
         }
     }

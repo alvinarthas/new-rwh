@@ -1,6 +1,7 @@
 @php
     use App\TempSales;
     use App\TempSalesDet;
+    use App\SalesDet;
 @endphp
 
 <form class="form-horizontal" role="form" action="{{ route('exportSO') }}" enctype="multipart/form-data" method="POST">
@@ -42,7 +43,8 @@
                                 <td>{{$sale->trx_date}}</td>
                                 <td>{{$sale->customer->apname}}</td>
                                 <td>{{$sale->creator()->first()->name}}</td>
-                                <td>Rp {{number_format($sale->ttl_harga+$sale->ongkir,2,",",".")}}</td>
+                                @php($totalsales = SalesDet::where('trx_id', $sale->id)->sum(DB::raw('price * qty')))
+                                <td>Rp {{number_format($totalsales+$sale->ongkir,2,",",".")}}</td>
                                 <td>
                                     @if (array_search("PSSLU",$page))
                                     <a href="{{route('sales.edit',['id'=>$sale->id])}}" class="btn btn-purple btn-trans waves-effect w-md waves-danger m-b-5">Edit</a>
