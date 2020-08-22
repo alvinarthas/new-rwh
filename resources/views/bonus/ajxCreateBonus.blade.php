@@ -425,15 +425,19 @@
             processData: false,
         }).done(function (data) {
             var row = data.length;
-            for(i=0; i<row; i++){
-                if(data[i].jenis == "berhasil"){
-                    $('#table-body').append(data[i].append);
-                    $('#ctr').val(data[i].count);
-                }else if(data[i].jenis == "bonus_gagal"){
-                    $('#table-body2').append(data[i].append);
+            if(row > 150){
+                alert('Jumlah baris data yang diupload tidak bisa lebih dari 150 baris');
+            }else{
+                for(i=0; i<row; i++){
+                    if(data[i].jenis == "berhasil"){
+                        $('#table-body').append(data[i].append);
+                        $('#ctr').val(data[i].count);
+                    }else if(data[i].jenis == "bonus_gagal"){
+                        $('#table-body2').append(data[i].append);
+                    }
                 }
+                checkTotal();
             }
-            checkTotal();
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });
@@ -502,15 +506,19 @@
         }).done(function (data) {
             console.log(data)
             var row = data.length;
-            for(i=0; i<row; i++){
-                if(data[i].jenis == "berhasil"){
-                    $('#table-body').append(data[i].append);
-                    $('#ctr').val(data[i].count);
-                }else if(data[i].jenis == "bonus_gagal"){
-                    $('#table-body2').append(data[i].append);
+            if(row > 150){
+                alert('Jumlah baris data yang diupload tidak bisa lebih dari 150 baris');
+            }else{
+                for(i=0; i<row; i++){
+                    if(data[i].jenis == "berhasil"){
+                        $('#table-body').append(data[i].append);
+                        $('#ctr').val(data[i].count);
+                    }else if(data[i].jenis == "bonus_gagal"){
+                        $('#table-body2').append(data[i].append);
+                    }
                 }
+                checkTotal();
             }
-            checkTotal();
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });
@@ -574,15 +582,19 @@
         }).done(function (data) {
             console.log(data)
             var row = data.length;
-            for(i=0; i<row; i++){
-                if(data[i].jenis == "berhasil"){
-                    $('#table-body').append(data[i].append);
-                    $('#ctr').val(data[i].count);
-                }else if(data[i].jenis == "bonus_gagal"){
-                    $('#table-body2').append(data[i].append);
+            if(row > 150){
+                alert('Jumlah baris data yang diupload tidak bisa lebih dari 150 baris');
+            }else{
+                for(i=0; i<row; i++){
+                    if(data[i].jenis == "berhasil"){
+                        $('#table-body').append(data[i].append);
+                        $('#ctr').val(data[i].count);
+                    }else if(data[i].jenis == "bonus_gagal"){
+                        $('#table-body2').append(data[i].append);
+                    }
                 }
+                checkTotal();
             }
-            checkTotal();
         }).fail(function (msg) {
             alert('Gagal menampilkan data, silahkan refresh halaman.');
         });

@@ -249,20 +249,20 @@ class Bonus extends Model
 
             foreach($perusahaanmember as $pm){
                 $bonus = Bonus::where('bulan', $bulan)->where('tahun', $tahun)->where('noid', $pm->noid)->sum('bonus');
-                $perhitungan .= $no_perhitungan++.". ".$pm->nama." ".$pm->noid."<br><b>Bonus : Rp ".number_format($bonus, 2, ",", ".")."</b><br>";
+                $perhitungan .= $no_perhitungan++.". ".$pm->nama." ".$pm->noid."\nBonus : Rp ".number_format($bonus, 2, ",", ".")."\n ";
                 $total_perhitungan += $bonus;
             }
-            $perhitungan .= "<br><b>Total : Rp ".number_format($total_perhitungan, 2, ",", ".")."</b>";
+            $perhitungan .= "\nTotal : Rp ".number_format($total_perhitungan, 2, ",", ".")."\n ";
 
             $bankmember = BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('bankmember.ktp', $m->ktp)->select('bankmember.norek', 'bankmember.bank_id', 'tblbank.nama')->get();
 
             foreach($bankmember as $bm){
                 $bonus = BonusBayar::where('bulan', $bulan)->where('tahun', $tahun)->where('no_rek', $bm->norek)->sum('bonus');
-                $penerimaan .= $no_penerimaan++.". ".$bm->nama." ".$bm->norek."<br><b>Bonus : Rp ".number_format($bonus, 2, ",", ".")."</b><br>";
+                $penerimaan .= $no_penerimaan++.". ".$bm->nama." ".$bm->norek."\nBonus : Rp ".number_format($bonus, 2, ",", ".")."\n ";
                 $total_penerimaan += $bonus;
             }
 
-            $penerimaan .= "<br><b>Total : Rp ".number_format($total_penerimaan, 2, ",", ".")."</b>";
+            $penerimaan .= "\nTotal : Rp ".number_format($total_penerimaan, 2, ",", ".")."\n ";
 
             $selisih = $total_perhitungan - $total_penerimaan;
             if($total_perhitungan != 0 || $total_penerimaan != 0){

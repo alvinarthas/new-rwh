@@ -78,7 +78,7 @@
             <div class="form-group-row">
                 <div class="form-group col-md-12">
                     <label for="salesid" class="col-form-label">Total Transaksi</label>
-                    <input type="text" class="form-control" id="ongkir" value="Rp {{number_format($temp_sales->ttl_harga + $temp_sales->ongkir, 2, ",", ".")}}" readonly>
+                    <input type="text" class="form-control" id="ongkir" value="Rp {{number_format($temp_totalprice + $temp_sales->ongkir, 2, ",", ".")}}" readonly>
                 </div>
             </div>
             <div class="form-group-row">
@@ -145,7 +145,7 @@
                                 <td>Rp {{number_format($detail->price,2,",",".")}}</td>
                                 <td>{{$detail->qty}}</td>
                                 <td>{{$detail->unit}}</td>
-                                <td>Rp {{number_format($detail->sub_ttl,2,",",".")}}</td>
+                                <td>Rp {{number_format($detail->price*$detail->qty,2,",",".")}}</td>
                                 <td>Rp {{number_format($detail->pv,2,",",".")}}</td>
                                 <td>Rp {{number_format($detail->sub_ttl_pv,2,",",".")}}</td>
                             </tr>
@@ -158,7 +158,7 @@
             <div class="form-group-row">
                 <div class="form-group col-md-12">
                     <label for="salesid" class="col-form-label">Total Transaksi</label>
-                    <input type="text" class="form-control" id="ongkir" value="Rp {{number_format($sales->ttl_harga+$sales->ongkir,2, ",", ".")}}" readonly>
+                    <input type="text" class="form-control" id="ongkir" value="Rp {{number_format($totalprice+$sales->ongkir,2, ",", ".")}}" readonly>
                 </div>
             </div>
             <div class="form-group-row">

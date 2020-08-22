@@ -37,6 +37,7 @@ class BonusGagalUploadExport2 implements FromArray, WithHeadings, ShouldAutoSize
             'No KTP',
             'No Rekening',
             'Bonus',
+            'Alasan',
         ];
     }
 }

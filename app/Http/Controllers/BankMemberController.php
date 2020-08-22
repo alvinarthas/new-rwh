@@ -31,7 +31,7 @@ class BankMemberController extends Controller
             'rekening' => 'string',
             'atm' => 'required',
             'tabungan' => 'required',
-            'status_rek' => 'integer',
+            'status_rekening' => 'required|integer',
             'p_status' => 'string',
             'scanatm' => 'image',
             'scantabungan' => 'image',
@@ -66,7 +66,7 @@ class BankMemberController extends Controller
                 'nobuku' => $request->tabungan,
                 'creator' => session('user_id'),
                 'ktp' => $request->ktp,
-                'status' => $request->status_rek,
+                'status' => $request->status_rekening,
                 'p_status' => $request->primary,
                 'scanatm' => $scanatm,
                 'scantabungan' => $scantabungan,
@@ -100,7 +100,7 @@ class BankMemberController extends Controller
             'bank' => 'string',
             'cabang' => 'string',
             'rekening' => 'string',
-            'status_rek' => 'integer',
+            'status_rekening' => 'integer',
             'p_status' => 'string',
             'scanatm' => 'image',
             'scantabungan' => 'image',
@@ -145,7 +145,7 @@ class BankMemberController extends Controller
             $bank->nobuku = $request->tabungan;
             $bank->creator = session('user_id');
             $bank->ktp = $request->ktp;
-            $bank->status = $request->status_rek;
+            $bank->status = $request->status_rekening;
             $bank->p_status = $request->primary;
             $bank->scanatm = $scanatm;
             $bank->scantabungan = $scantabungan;
