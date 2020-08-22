@@ -9,6 +9,7 @@ use App\Exports\SOExport;
 use App\Exceptions\Handler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 // Models
 use App\Log;
@@ -113,6 +114,7 @@ class SalesController extends Controller
         if ($request->ajax()) {
             $sales = Sales::where('id',$request->id)->first();
             $salesdet = SalesDet::where('trx_id',$request->id)->get();
+            $totalprice = SalesDet::where('trx_id', $request->id)->sum(DB::raw('price * qty'));
             $salespay = SalesPayment::where('trx_id',$request->id)->sum('payment_amount');
 
             $count = TempSales::where('trx_id', $request->id)->count();
@@ -120,11 +122,12 @@ class SalesController extends Controller
             if($count != 0){
                 $temp_sales = TempSales::where('trx_id', $request->id)->first();
                 $temp_salesdet = TempSalesDet::where('temp_id', $temp_sales->id)->get();
+                $temp_totalprice = TempSalesDet::where('temp_id', $temp_sales->id)->sum(DB::raw('price * qty'));
                 $jenis = "double";
-                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'temp_sales', 'temp_salesdet', 'jenis'))->render());
+                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'temp_sales', 'temp_salesdet', 'temp_totalprice', 'jenis'))->render());
             }else{
                 $jenis = "double";
-                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'jenis'))->render());
+                return response()->json(view('sales.modal',compact('sales','salesdet','salespay', 'totalprice', 'jenis'))->render());
             }
         }
     }

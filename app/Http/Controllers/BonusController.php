@@ -802,44 +802,14 @@ class BonusController extends Controller
                     $supplier = 0;
                 }
 
-                // credit piutang bonus tertahan
-                $credit = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', "1.1.3.5")->where('AccPos', "Credit")->first();
-                $credit->Amount      = $total_bonus;
-                $credit->date        = $tgl;
-                $credit->description = $ket;
-                $credit->creator     = session('user_id');
-                $credit->update();
-
                 for($i=0;$i<$ctr;$i++){
                     $norek = $request->norekening[$i];
                     $bonus = $request->bonus[$i];
-
-                    if($AccNo != "1.1.1.1.000003"){
-                        $ket = 'penerimaan bonus ke '.$AccNo.' untuk '.$norek.' - bulan '.$bulan.' '.$tahun;
-                        $ket_lama = 'penerimaan bonus ke '.$AccNo_lama.' untuk '.$norek.' - bulan '.$bulan_lama.' '.$tahun_lama;
-                    }else{
-                        $nama = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('norek', $norek)->first()->nama;
-                        $ket = 'penerimaan bonus ke Kas Bonus Morinda untuk '.$nama.' - bulan '.$bulan.' '.$tahun;
-                        $ket_lama = 'penerimaan bonus ke Kas Bonus Morinda untuk '.$nama.' - bulan '.$bulan_lama.' '.$tahun_lama;
-                    }
 
                     $bonusbayar = BonusBayar::where('no_rek', $norek)->where('tahun', $tahun_lama)->where('bulan', $bulan_lama)->where('tgl',$tgl_lama)->where('AccNo',$AccNo_lama)->select('id_bonus','id_jurnal')->get();
                     $num = $bonusbayar->count();
 
                     if(isset($request->bonus_lama[$i])){
-                        // debet kas/bank
-                        $debet = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', $AccNo_lama)->where('AccPos', "Debet")->where('description',"LIKE", $ket_lama)->first();
-                        if(empty($debet)){
-                            $ket_lama_new = 'penerimaan bonus ke '.$AccNo_lama.' untuk '.substr($norek, 1).' - bulan '.$bulan_lama.' '.$tahun_lama;
-                            $debet = Jurnal::where('id_jurnal', $id_jurnal_lama)->where('AccNo', $AccNo_lama)->where('AccPos', "Debet")->where('description',"LIKE", $ket_lama_new)->first();
-                        }
-                        $debet->AccNo       = $AccNo;
-                        $debet->Amount      = $bonus;
-                        $debet->date        = $tgl;
-                        $debet->description = $ket;
-                        $debet->creator     = session('user_id');
-                        $debet->update();
-
                         $id_bonus = $request->id_bonus[$i];
                         $data = BonusBayar::where('id_bonus',$id_bonus)->first();
 
@@ -852,20 +822,6 @@ class BonusController extends Controller
                         $data->creator = session('user_id');
                         $data->update();
                     }else{
-                        // debet kas/bank
-                        // debet kas/bank
-                        $debet = new Jurnal(array(
-                            'id_jurnal'     => $id_jurnal_lama,
-                            'AccNo'         => $AccNo,
-                            'AccPos'        => "Debet",
-                            'Amount'        => $bonus,
-                            'company_id'    => 1,
-                            'date'          => $tgl,
-                            'description'   => $ket,
-                            'creator'       => session('user_id')
-                        ));
-                        $debet->save();
-
                         // bonus bayar
                         $data = new BonusBayar(array(
                             'no_rek'    => $norek,
@@ -881,6 +837,7 @@ class BonusController extends Controller
                         $data->save();
                     }
                 }
+                BonusBayar::recycleBonusBayar($id_jurnal_lama)
                 Log::setLog('BMBBU','Update Penerimaan Bonus '.$id_jurnal_lama);
 
                 return redirect()->route('bonus.penerimaan')->with('status', 'Data berhasil disimpan');

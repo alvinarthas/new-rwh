@@ -4,6 +4,8 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Jurnal;
+
 class BonusBayar extends Model
 {
     protected $table ='tblbonusbayar';
@@ -12,6 +14,46 @@ class BonusBayar extends Model
         'no_rek','tgl','bulan','tahun','bonus', 'creator', 'id_jurnal', 'AccNo', 'supplier'
     ];
 
+    public static function recycleBonusBayar($id_jurnal){
+        $total_bonus = 0;
+        $bonusbayar = BonusBayar::where('id_jurnal', $id_jurnal)->get();
+        $data = BonusBayar::where('id_jurnal', $id_jurnal)->first();
 
+        Jurnal::where('id_jurnal', $id_jurnal)->where('AccPos', 'Debet')->delete();
+        
+        foreach($bonusbayar as $bb){
+            if($bb->AccNo != "1.1.1.1.000003"){
+                $ket = 'penerimaan bonus ke '.$bb->AccNo.' untuk '.$bb->norek.' - bulan '.$bb->bulan.' '.$bb->tahun;
+            }else{
+                $nama = BankMember::join('tblmember', 'bankmember.ktp', 'tblmember.ktp')->where('norek', $bb->norek)->first()->nama;
+                $ket = 'penerimaan bonus ke Kas Bonus Morinda untuk '.$nama.' - bulan '.$bb->bulan.' '.$bb->tahun;
+            }
+
+            // debet kas/bank
+            $debet = new Jurnal(array(
+                'id_jurnal'     => $id_jurnal,
+                'AccNo'         => $bb->AccNo,
+                'AccPos'        => "Debet",
+                'Amount'        => $bb->bonus,
+                'company_id'    => 1,
+                'date'          => $bb->tgl,
+                'description'   => $ket,
+                'creator'       => session('user_id')
+            ));
+            $debet->save();
+
+            $total_bonus += $bb->bonus;
+        }
+
+        $ket = 'penerimaan bonus ke '.$data->AccNo.' - bulan '.$data->bulan.' '.$data->tahun;
+
+        // credit piutang bonus tertahan
+        $credit = Jurnal::where('id_jurnal', $id_jurnal)->where('AccNo', '1.1.3.5')->where('AccPos', 'Credit')->first();
+        $credit->Amount      = $total_bonus;
+        $credit->date        = $data->tgl;
+        $credit->description = $ket;
+        $credit->creator     = session('user_id');
+        $credit->update();
+    }
 
 }

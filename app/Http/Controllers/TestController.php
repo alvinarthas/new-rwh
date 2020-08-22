@@ -45,6 +45,25 @@ use App\Exports\DuplicateMemberExport;
 class TestController extends Controller
 {
     public function index(){
+        $jurnal = Jurnal::whereBetween('date', ['2020-05-01', '2020-08-11'])->orderBy('date', 'asc')->get();
+        $no = 1;
+        foreach($jurnal as $jn){
+            $debet = Jurnal::where('id_jurnal', $jn->id_jurnal)->where('AccPos', 'Debet')->sum('Amount');
+            $credit = Jurnal::where('id_jurnal', $jn->id_jurnal)->where('AccPos', 'Credit')->sum('Amount');
+
+            if($debet != $credit){
+                if($debet == 0 || $credit == 0){
+                    // echo $no++.". ".$jn->date." - ".$jn->id_jurnal.", Debet:".$debet.", Credit:".$credit."<br>";
+                    Jurnal::where('id_jurnal', $jn->id_jurnal)->delete();
+                }else{
+                    echo $no++.". ".$jn->date." - ".$jn->id_jurnal.", Debet:".$debet.", Credit:".$credit."<br>";
+
+                }
+            }
+        }
+    }
+
+    public function indexdeletetopup(){
         $count = 0;
         $countjurnal = 0;
         $topup = TopUpBonus::where('AccNo', "1.1.1.2.2.000003")->where('tgl', "2020-08-06")->get();
