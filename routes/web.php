@@ -91,7 +91,7 @@ Route::middleware(['checkUser'])->group(function () {
     Route::post('/bonus/topup/create','BonusController@storeTopup')->name('bonus.storetopup');
     Route::get('/bonus/topup/{id}/edit','BonusController@editTopup')->name('bonus.edittopup');
     Route::put('/bonus/topup/{id}/edit','BonusController@updateTopup')->name('bonus.updatetopup');
-    Route::delete('/bonus/topup/{id}/delete', 'BonusController@destroyTopup')->name('bonus.deletetopup');
+    Route::delete('/bonus/topup/delete', 'BonusController@destroyTopup')->name('bonus.deletetopup');
     Route::get('/showBonusTopup', 'BonusController@showBonusTopup')->name('showBonusTopup');
     Route::get('/createBonusTopup', 'BonusController@createBonusTopup')->name('createBonusTopup');
     Route::post('/uploadBonusTopup', 'BonusController@uploadBonusTopup')->name('uploadBonusTopup');

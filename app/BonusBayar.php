@@ -14,7 +14,7 @@ class BonusBayar extends Model
         'no_rek','tgl','bulan','tahun','bonus', 'creator', 'id_jurnal', 'AccNo', 'supplier'
     ];
 
-    public static function recycleBonusBayar($id_jurnal){
+    public static function recyclePenerimaanBonus($id_jurnal){
         $total_bonus = 0;
         $bonusbayar = BonusBayar::where('id_jurnal', $id_jurnal)->get();
         $data = BonusBayar::where('id_jurnal', $id_jurnal)->first();
@@ -30,17 +30,19 @@ class BonusBayar extends Model
             }
 
             // debet kas/bank
-            $debet = new Jurnal(array(
-                'id_jurnal'     => $id_jurnal,
-                'AccNo'         => $bb->AccNo,
-                'AccPos'        => "Debet",
-                'Amount'        => $bb->bonus,
-                'company_id'    => 1,
-                'date'          => $bb->tgl,
-                'description'   => $ket,
-                'creator'       => session('user_id')
-            ));
-            $debet->save();
+            Jurnal::addJurnal($id_jurnal,$bb->bonus,$bb->tgl,$ket,$bb->AccNo,'Debet',session('user_id'));
+
+            // $debet = new Jurnal(array(
+            //     'id_jurnal'     => $id_jurnal,
+            //     'AccNo'         => $bb->AccNo,
+            //     'AccPos'        => "Debet",
+            //     'Amount'        => $bb->bonus,
+            //     'company_id'    => 1,
+            //     'date'          => $bb->tgl,
+            //     'description'   => $ket,
+            //     'creator'       => session('user_id')
+            // ));
+            // $debet->save();
 
             $total_bonus += $bb->bonus;
         }

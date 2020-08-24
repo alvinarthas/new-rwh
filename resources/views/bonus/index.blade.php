@@ -14,6 +14,8 @@
     <link href="{{ asset('assets/plugins/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css"/>
     <!--datepicker-->
     <link href="{{ asset('assets/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
+    <!-- Sweet Alert css -->
+    <link href="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
     <!--Token-->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
@@ -209,26 +211,31 @@
                                             <a href="{{route('bonus.edit',['id'=>$b->id_bonus])}}" class="btn btn-info btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
                                         @endif
                                         @if (array_search("BMPBD",$page))
-                                            <form class="" action="{{ route('bonus.destroy', ['id' => $b->id_jurnal]) }}" method="post">
+                                            <a href="javascript:;" id="{{$b->id_jurnal}}" onclick="deleteBonus('{{$b->id_jurnal}}', 'perhitungan')" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5 delete"> Delete</a>
+                                            {{-- <form class="" action="{{ route('bonus.destroy', ['id' => $b->id_jurnal]) }}" method="post">
                                                 {{ csrf_field() }}
                                                 {{ method_field('delete') }}
                                                 <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
-                                            </form>
+                                            </form> --}}
                                         @endif
                                     @elseif($bonusapa=="pembayaran")
                                         @if (array_search("BMBBU",$page))
                                             <a href="{{route('bonus.editPenerimaan',['id'=>$b->id_bonus])}}" class="btn btn-info btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
                                         @endif
                                         @if (array_search("BMBBD",$page))
-                                            <form class="" action="{{ route('bonus.deletePenerimaan', ['id' => $b->id_jurnal]) }}" method="post">
+                                            <a href="javascript:;" id="{{$b->id_jurnal}}" onclick="deleteBonus('{{$b->id_jurnal}}', 'penerimaan')" class="btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5 delete"> Delete</a>
+                                            {{-- <form class="" action="{{ route('bonus.deletePenerimaan', ['id' => $b->id_jurnal]) }}" method="post">
                                                 {{ csrf_field() }}
                                                 {{ method_field('delete') }}
                                                 <button type="submit" class="btn btn-danger btn-rounded waves-effect waves-light w-md m-b-5">Hapus </button>
-                                            </form>
+                                            </form> --}}
                                         @endif
                                     @elseif($bonusapa=="topup")
                                         @if (array_search("BMTUU",$page))
                                             <a href="{{route('bonus.edittopup',['id'=>$b->id_bonus])}}" class="btn btn-info btn-rounded waves-effect waves-light w-md m-b-5">Update</a>
+                                        @endif
+                                        @if (array_search("BMTUD",$page))
+                                            <a href='javascript:;' onclick='deleteBonus("", "topup", "{{$b->tgl}}", "{{$b->AccNo}}")' class='btn btn-danger btn-rounded waves-effect w-md waves-danger m-b-5 delete'> Delete</a>
                                         @endif
                                         {{-- @if (array_search("BMTUD",$page))
                                             <form class="" action="{{ route('bonus.deletetopup', ['id' => $b->tgl]) }}" method="post">
@@ -642,6 +649,11 @@
 
     <!-- Datepicker -->
     <script src="{{ asset('assets/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
+
+    <!-- Sweet Alert Js  -->
+    <script src="{{ asset('assets/plugins/sweet-alert/sweetalert2.min.js') }}"></script>
+    <script src="{{ asset('assets/pages/jquery.sweet-alert.init.js') }}"></script>
+
 @endsection
 
 @section('script-js')
@@ -715,6 +727,73 @@
         });
 
     });
+
+    function deleteBonus(id, bonusapa, tgl=null, accno=null){
+        var token = $("meta[name='csrf-token']").attr("content");
+        if(bonusapa=="perhitungan"){
+            var url = "/bonus/"+id;
+            var datas = {
+                "id":id,
+                "_token": token,
+            }
+        }else if(bonusapa=="penerimaan"){
+            var url = "/bonus/bayar/"+id+"/delete";
+            var datas = {
+                "id":id,
+                "_token": token,
+            }
+        }else if(bonusapa=="topup"){
+            var url = "/bonus/topup/delete";
+            var datas = {
+                "tgl":tgl,
+                "AccNo":accno,
+                "_token": token,
+            }
+        }
+        console.log(id, bonusapa);
+
+        swal({
+            title: 'Apa kamu yakin akan menghapus semua data '+id+'?',
+            text: "Kamu tidak akan dapat mengembalikan data yang sudah terhapus!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Tidak, Batalkan!',
+            confirmButtonClass: 'btn btn-success',
+            cancelButtonClass: 'btn btn-danger m-l-10',
+            buttonsStyling: false
+        }).then(function () {
+            $.ajax({
+                url: url,
+                type: 'DELETE',
+                data: datas,
+            }).done(function (data) {
+                swal(
+                    'Deleted!',
+                    'Your file has been deleted.',
+                    'success'
+                )
+                location.reload();
+            }).fail(function (msg) {
+                swal(
+                    'Failed',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            });
+
+        }, function (dismiss) {
+            // dismiss can be 'cancel', 'overlay',
+            // 'close', and 'timer'
+            if (dismiss === 'cancel') {
+                swal(
+                    'Cancelled',
+                    'Your imaginary file is safe :)',
+                    'error'
+                )
+            }
+        })
+    }
 
     function ajx_member(){
         var bid = $("#bank_id").val()
@@ -916,6 +995,7 @@
             dataType : "json",
             data :{
                 id : id,
+                id_jurnal : $("#id_jurnal_lama").val(),
                 _token : token,
             },
             success	:	function(data){

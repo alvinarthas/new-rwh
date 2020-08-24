@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 use App\Member;
 use App\BonusBayar;
+use App\Jurnal;
 use App\PerusahaanMember;
 use App\BankMember;
 
@@ -20,6 +21,10 @@ class Bonus extends Model
     ];
 
     public $timestamps = true;
+
+    public function perusahaan(){
+        return $this->belongsTo('App\Perusahaan','perusahaan_id','id');
+    }
 
     public function rolemapping(){
         return $this->belongsTo('App\RoleMapping','username','username');
@@ -231,6 +236,29 @@ class Bonus extends Model
 
     //     return $response;
     // }
+
+    public static function recyclePerhitunganBonus($id_jurnal){
+        $total_bonus = Bonus::where('id_jurnal', $id_jurnal)->sum('bonus');
+        $data = Bonus::where('id_jurnal', $id_jurnal)->first();
+        $user_id = session('user_id');
+
+        $ket = 'perhitungan bonus '.$data->perusahaan->nama.' - bulan '.$data->bulan.' '.$data->tahun;
+        // debet Piutang Bonus
+        $debet = Jurnal::where('id_jurnal', $id_jurnal)->where('AccNo', "1.1.3.5")->where('AccPos', "Debet")->first();
+        $debet->Amount      = $total_bonus;
+        $debet->date        = $data->tgl;
+        $debet->description = $ket;
+        $debet->creator     = $user_id;
+        $debet->update();
+
+        // credit Estimasi Bonus
+        $credit = Jurnal::where('id_jurnal', $id_jurnal)->where('AccNo', '1.1.3.4')->where('AccPos', 'Credit')->first();
+        $credit->Amount      = $total_bonus;
+        $credit->date        = $data->tgl;
+        $credit->description = $ket;
+        $credit->creator     = $user_id;
+        $credit->update();
+    }
 
     public static function exportRealsisasiBonus($bulan, $tahun){
         $member = Member::select('ktp','nama')->orderBy('nama','asc')->get();
