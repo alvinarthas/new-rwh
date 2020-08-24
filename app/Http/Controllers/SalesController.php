@@ -8,8 +8,8 @@ use Carbon\Carbon;
 use App\Exports\SOExport;
 use App\Exceptions\Handler;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 // Models
 use App\Log;
