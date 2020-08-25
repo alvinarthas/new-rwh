@@ -44,6 +44,10 @@ use App\Exports\DuplicateMemberExport;
 
 class TestController extends Controller
 {
+    public function baruu(){
+        echo "TILIK";
+    }
+
     public function index(){
         $jurnal = Jurnal::whereBetween('date', ['2020-05-01', '2020-08-11'])->orderBy('date', 'asc')->get();
         $no = 1;
