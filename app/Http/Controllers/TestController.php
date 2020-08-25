@@ -51,6 +51,7 @@ class TestController extends Controller
     public function index(){
         $jurnal = Jurnal::whereBetween('date', ['2020-05-01', '2020-08-11'])->orderBy('date', 'asc')->get();
         $no = 1;
+        echo "TAIK ANJING";
         foreach($jurnal as $jn){
             $debet = Jurnal::where('id_jurnal', $jn->id_jurnal)->where('AccPos', 'Debet')->sum('Amount');
             $credit = Jurnal::where('id_jurnal', $jn->id_jurnal)->where('AccPos', 'Credit')->sum('Amount');
