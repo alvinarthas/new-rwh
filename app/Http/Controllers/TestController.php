@@ -45,7 +45,7 @@ use App\Exports\DuplicateMemberExport;
 class TestController extends Controller
 {
     public function baruu(){
-        echo "TILIK kucing";
+        echo "TILIK ANJING";
     }
 
     public function index(){
