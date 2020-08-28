@@ -88,8 +88,8 @@ class Bonus extends Model
 
             foreach($perusahaanmember as $pm){
                 $bonus = Bonus::where('bulan', $bulan)->where('tahun', $tahun)->where('noid', $pm->noid)->sum('bonus');
-                $perhitungan .= $no_perhitungan++.". ".$pm->nama." ".$pm->noid."<br>";
-                $perhitungan .= "Bonus : Rp ".number_format($bonus, 2, ",", ".")."<br>";
+                $perhitungan .= $no_perhitungan++.". ".$pm->nama." <b>".$pm->noid."</b><br>";
+                $perhitungan .= "Bonus : <b>Rp ".number_format($bonus, 2, ",", ".")."</b><br><br>";
                 $total_perhitungan += $bonus;
             }
             $perhitungan .= "<br><b>Total : Rp ".number_format($total_perhitungan, 2, ",", ".")."</b>";
@@ -97,12 +97,13 @@ class Bonus extends Model
             $bankmember = BankMember::join('tblbank', 'bankmember.bank_id', 'tblbank.id')->where('bankmember.ktp', $m->ktp)->select('bankmember.norek', 'bankmember.bank_id', 'tblbank.nama')->get();
 
             foreach($bankmember as $bm){
-                $bonusbayar = BonusBayar::where('bulan', $bulan)->where('tahun', $tahun)->where('no_rek', $bm->norek)->orderBy('tgl', 'desc')->select('tgl')->get();
+                $bonusbayar = BonusBayar::where('bulan', $bulan)->where('tahun', $tahun)->where('no_rek', $bm->norek)->orderBy('tgl', 'desc')->select('tgl', 'AccNo')->get();
                 foreach($bonusbayar as $key){
-                    $amount = BonusBayar::where('bulan', $bulan)->where('tahun', $tahun)->where('no_rek', $bm->norek)->where('tgl', $key->tgl)->sum('bonus');
-                    $penerimaan .= $no_penerimaan++.". ".$bm->nama." ".$bm->norek."<br>";
-                    $penerimaan .= "Bonus : Rp ".number_format($amount, 2, ",", ".")."<br>";
+                    $amount = BonusBayar::where('bulan', $bulan)->where('tahun', $tahun)->where('no_rek', $bm->norek)->where('tgl', $key->tgl)->where('AccNo', $key->AccNo)->sum('bonus');
+                    $penerimaan .= $no_penerimaan++.". ".$bm->nama." <b>".$bm->norek."</b><br>";
+                    $penerimaan .= "Account : ".$key->coa->AccName."</br>";
                     $penerimaan .= "Tgl : ".$key->tgl."<br>";
+                    $penerimaan .= "Bonus : <b>Rp ".number_format($amount, 2, ",", ".")."</b><br><br>";
                     $total_penerimaan += $amount;
                 }
             }

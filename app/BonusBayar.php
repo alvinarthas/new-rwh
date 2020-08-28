@@ -14,13 +14,17 @@ class BonusBayar extends Model
         'no_rek','tgl','bulan','tahun','bonus', 'creator', 'id_jurnal', 'AccNo', 'supplier'
     ];
 
+    public function coa(){
+        return $this->belongsTo('App\Coa','AccNo','AccNo');
+    }
+
     public static function recyclePenerimaanBonus($id_jurnal){
         $total_bonus = 0;
         $bonusbayar = BonusBayar::where('id_jurnal', $id_jurnal)->get();
         $data = BonusBayar::where('id_jurnal', $id_jurnal)->first();
 
         Jurnal::where('id_jurnal', $id_jurnal)->where('AccPos', 'Debet')->delete();
-        
+
         foreach($bonusbayar as $bb){
             if($bb->AccNo != "1.1.1.1.000003"){
                 $ket = 'penerimaan bonus ke '.$bb->AccNo.' untuk '.$bb->norek.' - bulan '.$bb->bulan.' '.$bb->tahun;
