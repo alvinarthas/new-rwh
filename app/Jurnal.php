@@ -193,7 +193,9 @@ class Jurnal extends Model
         $totalRecords = $jurnal->count();
 
         if($searchValue != ''){
-            $jurnal->where('id_jurnal', 'LIKE', '%'.$searchValue.'%')->orWhere('Amount', 'LIKE', '%'.$searchValue.'%')->orWhere('date', 'LIKE', '%'.$searchValue.'%')->orWhere('description', 'LIKE', '%'.$searchValue.'%')->orWhere('notes_item', 'LIKE', '%'.$searchValue.'%');
+            $jurnal->where(function ($query) use ($searchValue) {
+                $query->where('id_jurnal', 'LIKE', '%'.$searchValue.'%')->orWhere('Amount', 'LIKE', '%'.$searchValue.'%')->orWhere('date', 'LIKE', '%'.$searchValue.'%')->orWhere('description', 'LIKE', '%'.$searchValue.'%')->orWhere('notes_item', 'LIKE', '%'.$searchValue.'%');
+            });
         }
 
         $totalRecordwithFilter = $jurnal->count();
