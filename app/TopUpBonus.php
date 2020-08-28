@@ -33,4 +33,22 @@ class TopUpBonus extends Model
         Jurnal::addJurnal($id_jurnal,$data->bonus,$data->tgl,$ket,$data->AccNo,"Credit",$user_id);
     }
 
+    public static function recycleTopUpBonusAll($tgl, $AccNo){
+        $datas = TopupBonus::where('tgl', $tgl)->where('AccNo',$AccNo)->get();
+        Jurnal::where('id_jurnal', 'LIKE', 'BT.%')->where('date', $tgl)->where('AccNo', $AccNo)->delete();
+        $user_id = session('user_id');
+
+        foreach($datas as $data){
+            $ket = 'top up bonus '.$data->norek.' - '.$data->tgl;
+
+            // debet estimasi bonus
+            Jurnal::addJurnal($data->id_jurnal, $data->bonus, $data->tgl, $ket, "1.1.3.4", "Debet", $user_id);
+
+            // credit kas/bank
+            Jurnal::addJurnal($data->id_jurnal, $data->bonus, $data->tgl, $ket, $data->AccNo, "Credit", $user_id);
+        }
+
+
+    }
+
 }

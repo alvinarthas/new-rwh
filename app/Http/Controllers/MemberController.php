@@ -18,6 +18,7 @@ use App\Bank;
 use App\PerusahaanMember;
 use App\BankMember;
 use App\StatusRek;
+use App\StatusNoid;
 use App\MenuMapping;
 
 class MemberController extends Controller
@@ -35,14 +36,16 @@ class MemberController extends Controller
             $perusahaan = $request->perusahaan;
             $bank = $request->bank;
             $statusrek = $request->statusrek;
-            return response()->json(view('member.list',compact('jenis','perusahaan','bank','statusrek'))->render());
+            $statusnoid = $request->statusnoid;
+            return response()->json(view('member.list',compact('jenis','perusahaan','bank','statusrek','statusnoid'))->render());
         }else{
             $perusahaan = Perusahaan::orderBy('nama')->get();
             $bank = Bank::bankMember();
             $statusrek = StatusRek::all();
+            $statusnoid = StatusNoid::all();
             $page = MenuMapping::getMap(session('user_id'),"MBMM");
 
-            return view('member.index',compact('statusrek','perusahaan','bank','page'));
+            return view('member.index',compact('statusrek','statusnoid','perusahaan','bank','page'));
         }
         // $keyword = $request->get('search');
         // $perusahaan = Perusahaan::orderBy('nama')->get();
@@ -70,6 +73,7 @@ class MemberController extends Controller
         }
     }
 
+    // Get Member baru (serverless)
     public function getDataMember(Request $request){
         if($request->ajax()){
             $datas = Member::viewMember($request);
@@ -77,6 +81,7 @@ class MemberController extends Controller
         }
     }
 
+    // Get Member lama (Sudah tidak dipakai)
     public function ajxmember(Request $request){
         $keyword = $request->get('search');
         $jenis = $request->get('jenis');

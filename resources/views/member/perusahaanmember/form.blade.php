@@ -48,6 +48,25 @@
                             <input type="text" class="form-control" parsley-trigger="change" required name="posisi" id="posisi" value="@isset($perid->posisi){{$perid->posisi}}@endisset">
                         </div>
                     </div>
+                    <div class="form-group row">
+                        <label class="col-2 col-form-label">Status Akun</label>
+                        <div class="col-10">
+                            <select class="form-control select2" parsley-trigger="change" name="status" id="status">
+                                <option value="#" disabled selected>Pilih Status Akun</option>
+                                @foreach ($statusnoid as $stat)
+                                    @isset($perid->status)
+                                        @if ($stat->id == $perid->status)
+                                            <option value="{{$stat->id}}" selected>{{$stat->status}}</option>
+                                        @else
+                                            <option value="{{$stat->id}}">{{$stat->status}}</option>
+                                        @endif
+                                    @else
+                                        <option value="{{$stat->id}}">{{$stat->status}}</option>
+                                    @endisset
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

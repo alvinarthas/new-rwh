@@ -63,8 +63,19 @@
                                 <label class="col-2 col-form-label">Status Rekening</label>
                                 <div class="col-10">
                                     <select class="form-control select2" parsley-trigger="change" name="statusrek" id="statusrek" required>
-                                        <option value="#">Pilih Status Rekening</option>
+                                        <option value="#" selected>Semua Status</option>
                                         @foreach($statusrek as $status)
+                                            <option value="{{ $status->id }}">{{ $status->status }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-2 col-form-label">Status Keanggotaan Member</label>
+                                <div class="col-10">
+                                    <select class="form-control select2" parsley-trigger="change" name="statusnoid" id="statusnoid" required>
+                                        <option value="#" selected>Semua Status</option>
+                                        @foreach($statusnoid as $status)
                                             <option value="{{ $status->id }}">{{ $status->status }}</option>
                                         @endforeach
                                     </select>

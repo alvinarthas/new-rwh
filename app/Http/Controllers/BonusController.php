@@ -725,7 +725,6 @@ class BonusController extends Controller
                         $data->AccNo = $AccNo;
                         $data->creator = $user_id;
                         $data->update();
-                        $id_jurnal = $data->id_jurnal;
                     }else{
                         // $id_jurnal = $request->id_jurnal[$i];
                         $id_jurnal = Jurnal::getJurnalID('BT');
@@ -741,9 +740,9 @@ class BonusController extends Controller
                         ));
                         $data->save();
                     }
-                    TopUpBonus::recycleTopUpBonus($id_jurnal);
-                    Log::setLog('BMTUU','Update Top Up Bonus '.$tgl.' AccNo :'.$AccNo);
                 }
+                TopUpBonus::recycleTopUpBonusAll($tgl, $AccNo);
+                Log::setLog('BMTUU','Update Top Up Bonus '.$tgl.' AccNo :'.$AccNo);
 
                 return redirect()->route('bonus.topup')->with('status', 'Data berhasil disimpan');
             }catch(\Exception $e){

@@ -106,6 +106,7 @@
     <input type="hidden" name="bank" id="bank" value="@isset($bank){{ $bank }}"@endisset>
     <input type="hidden" name="jenis" id="jenis" value="@isset($jenis){{ $jenis }}@endisset">
     <input type="hidden" name="statusrek" id="statusrek" value="@isset($statusrek){{ $statusrek }}@endisset">
+    <input type="hidden" name="statusnoid" id="statusnoid" value="@isset($statusnoid){{ $statusnoid }}@endisset">
 
     <div class="form-group text-right m-b-0">
         <button class="btn btn-rounded btn-inverse w-md waves-effect waves-light m-b-5" data-toggle="modal" data-target=".bs-example-modal-lg">Cetak</button>
@@ -133,6 +134,7 @@
                     "bank" : $("#bank").val(),
                     "jenis" : $("#jenis").val(),
                     "statusrek" : $("#statusrek").val(),
+                    "statusnoid" : $("#statusnoid").val(),
                     "_token" : $("meta[name='csrf-token']").attr("content"),
                 }
             },"columns" : [{data : "no", name : "no"},

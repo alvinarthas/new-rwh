@@ -285,6 +285,7 @@ Informasi Data Member
                             <th>Nama Perusahaan</th>
                             <th>Nomor ID</th>
                             <th>Password</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </thead>
     
@@ -296,6 +297,7 @@ Informasi Data Member
                                     <td>{{$pm->perusahaan->nama}}</td>
                                     <td>{{$pm->noid}}</td>
                                     <td>{{$pm->passid}}</td>
+                                    <td>{{$pm->statusnoid->status}}</td>
                                     <td>
                                         @if (array_search("MBMMPU",$page))
                                             <a href="javascript:;" class="btn btn-info btn-rounded waves-effect w-md waves-info m-b-5" onclick="funcPerusahaan('edit',{{$pm->id}})">Update</a>

@@ -6,8 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Exceptions\Handler;
 
-use App\PerusahaanMember;
 use App\Perusahaan;
+use App\PerusahaanMember;
+use App\StatusNoid;
 
 class PerusahaanMemberController extends Controller
 {
@@ -15,9 +16,10 @@ class PerusahaanMemberController extends Controller
         $ktp = $request->get('ktp');
         $jenis = "create";
         $perusahaan = Perusahaan::all();
+        $statusnoid = StatusNoid::all();
         
         if ($request->ajax()) {
-            return response()->json(view('member.perusahaanmember.form',compact('ktp','jenis','perusahaan'))->render());
+            return response()->json(view('member.perusahaanmember.form',compact('ktp','jenis','perusahaan','statusnoid'))->render());
         }
     }
 
@@ -27,7 +29,8 @@ class PerusahaanMemberController extends Controller
             'perusahaan' => 'required|string',
             'nomorid' => 'string',
             'password' => 'string',
-            'posisi' => 'string'
+            'posisi' => 'string',
+            'status' => 'required|integer'
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -42,6 +45,7 @@ class PerusahaanMemberController extends Controller
                 'creator' => session('user_id'),
                 'ktp' => $request->ktp,
                 'posisi' => $request->posisi,
+                'status' => $request->status,
             ));
             // success
             try{
@@ -58,9 +62,10 @@ class PerusahaanMemberController extends Controller
         $jenis = "edit";
         $perusahaan = Perusahaan::all();
         $perid = PerusahaanMember::where('id',$request->get('pid'))->first();
+        $statusnoid = StatusNoid::all();
 
         if ($request->ajax()) {
-            return response()->json(view('member.perusahaanmember.form',compact('ktp','jenis','perusahaan','perid'))->render());
+            return response()->json(view('member.perusahaanmember.form',compact('ktp','jenis','perusahaan','perid','statusnoid'))->render());
         }
     }   
 
@@ -70,7 +75,8 @@ class PerusahaanMemberController extends Controller
             'perusahaan' => 'required|string',
             'nomorid' => 'string',
             'password' => 'string',
-            'posisi' => 'string'
+            'posisi' => 'string',
+            'status' => 'required|integer',
         ]);
         // IF Validation fail
         if ($validator->fails()) {
@@ -85,6 +91,7 @@ class PerusahaanMemberController extends Controller
             $perusahaan->creator = session('user_id');
             $perusahaan->ktp = $request->ktp;
             $perusahaan->posisi = $request->posisi;
+            $perusahaan->status = $request->status;
             try{
                 $perusahaan->update();
                 return redirect()->route('member.show',['id'=>$request->ktp])->with('status', 'Data berhasil diubah');

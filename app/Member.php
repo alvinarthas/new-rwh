@@ -71,6 +71,7 @@ class Member extends Model
         $perusahaan = $request->perusahaan;
         $bank = $request->bank;
         $statusrek = $request->statusrek;
+        $statusnoid = $request->statusnoid;
 
         $draw = $request->draw;
         $row = $request->start;
@@ -98,15 +99,32 @@ class Member extends Model
             $member->whereIn('ktp', $array);
         }
 
+        if($statusnoid != "#"){
+            $array = array_values(array_column(DB::select("SELECT ktp FROM perusahaanmember where status=$statusnoid"),'ktp'));
+            $member->whereIn('ktp', $array);
+        }
+
         $totalRecords = $member->count();
 
         if($searchValue != ''){
             if($jenis == 1){
-                $noid = PerusahaanMember::select('ktp')->where('perusahaan_id', $perusahaan)->where('noid', 'LIKE', '%'.$searchValue.'%')->get();
+                $permem = PerusahaanMember::select('ktp')->where('perusahaan_id', $perusahaan)->where('noid', 'LIKE', '%'.$searchValue.'%');
+                if($statusnoid != "#"){
+                    $permem->where('status', $statusnoid);
+                }
+                $noid = $permem->get();
             }elseif($jenis == 2){
-                $noid = PerusahaanMember::select('ktp')->where('perusahaan_id', '!=', $perusahaan)->where('noid', 'LIKE', '%'.$searchValue.'%')->get();
+                $permem = PerusahaanMember::select('ktp')->where('perusahaan_id', '!=', $perusahaan)->where('noid', 'LIKE', '%'.$searchValue.'%');
+                if($statusnoid != "#"){
+                    $permem->where('status', $statusnoid);
+                }
+                $noid = $permem->get();
             }else{
-                $noid = PerusahaanMember::select('ktp')->where('noid', 'LIKE', '%'.$searchValue.'%')->get();
+                $permem = PerusahaanMember::select('ktp')->where('noid', 'LIKE', '%'.$searchValue.'%');
+                if($statusnoid != "#"){
+                    $permem->where('status', $statusnoid);
+                }
+                $noid = $permem->get();
             }
             if($jenis == 4){
                 $norek = BankMember::select('ktp')->where('bank_id', $bank)->where('norek', 'LIKE', '%'.$searchValue.'%')->get();
@@ -115,7 +133,7 @@ class Member extends Model
             }
 
             // echo $raw;
-            $member->where('nama', 'LIKE', '%'.$searchValue.'%')->orWhere('ktp', 'LIKE', '%'.$searchValue.'%')->orWhereIn('ktp', $norek)->orWhereIn('ktp', $noid);
+            $member->where('nama', 'LIKE', '%'.$searchValue.'%')->orWhere('ktp', 'LIKE', '%'.$searchValue.'%')->orWhereIn('ktp', $noid)->orWhereIn('ktp', $norek);
         }
 
         $totalRecordwithFilter = $member->count();

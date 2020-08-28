@@ -45,6 +45,10 @@ use App\Exports\DuplicateMemberExport;
 class TestController extends Controller
 {
     public function index(){
+        echo ":)";
+    }
+
+    public function indexjurnalbalance(){
         $jurnal = Jurnal::whereBetween('date', ['2020-05-01', '2020-08-11'])->orderBy('date', 'asc')->get();
         $no = 1;
         foreach($jurnal as $jn){
