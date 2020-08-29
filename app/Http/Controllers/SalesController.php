@@ -39,7 +39,7 @@ class SalesController extends Controller
         return view('sales.index',compact('page'));
     }
 
-    public function showIndexSales(Request $request){
+    public function showIndexSalesOld(Request $request){
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
         $method = $request->method;
         $param = $request->param;
@@ -71,7 +71,7 @@ class SalesController extends Controller
         }
     }
 
-    public function showIndexSalesNew(Request $request){
+    public function showIndexSales(Request $request){
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
         $method = $request->method;
         $param = $request->param;
