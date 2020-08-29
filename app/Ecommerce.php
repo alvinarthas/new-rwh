@@ -12,4 +12,15 @@ class Ecommerce extends Model
     ];
 
     public $timestamps = true;
+
+    public static function getKode(){
+        $data = collect();
+
+        foreach(Ecommerce::select('id','kode_trx')->get() as $key){
+            $data->put($key->id,$key->kode_trx);
+        }
+        $data->put(0,'SO');
+
+        return $data->toArray();
+    }
 }

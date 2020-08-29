@@ -523,6 +523,7 @@ class Sales extends Model
 
         // Start Query
         $page = MenuMapping::getMap(session('user_id'),"PSSL");
+        $ecom = Ecommerce::getKode();
 
         // Sales Initialization
         $sales = Sales::select('id','trx_date','creator','ttl_harga','customer_id','ongkir','approve','method','online_id', DB::raw('SUM(ttl_harga+ongkir) as ttl_trx'));
@@ -551,13 +552,45 @@ class Sales extends Model
 
         // Search based on param
         if($searchValue != ''){
-
             // GET Char of TRX ID
             $charID = preg_replace("/[^a-zA-Z]/", "", $searchValue);
             $numID = preg_replace('/[^0-9]/', '', $searchValue);
 
-            // Search based on total_harga+ongkir
-            $sales = $sales->orWhereRaw('(ttl_harga+ongkir) LIKE ?', $numID.'%');
+            // Check Ecom Code
+            $checkEcom = preg_filter('~' . strtoupper($charID) . '~', '$0', $ecom);
+            if($checkEcom){
+                $ecomId = array_key_first($checkEcom);
+
+                if($param == "all"){
+                    if(array_search("PSSLV",$page) && array_search("PSSLVO",$page)){
+                        $sales = $sales->where('method',$ecomId);
+                    }else if(array_search("PSSLV",$page)){
+                        $sales = $sales->where('method',0);
+                    }else if(array_search("PSSLVO",$page)){
+                        $sales = $sales->where('method','NOT LIKE',0)->where('method',$ecomId);
+                    }
+                }else{
+                    // Query By Date Range & Method
+                    if ($method == "*"){
+                        $sales = $sales->where('method',$ecomId);
+                    }elseif ($method == 0) {
+                        $sales = $sales->where('method',0);
+                    }elseif ($method == 1){
+                        $sales = $sales->where('method','NOT LIKE',0)->where('method',$ecomId);
+                    }
+                }
+
+                if(is_numeric($numID)){
+                    if($ecomId <> "0"){
+                        $sales = $sales->where('online_id','like', $numID.'%');
+                    }else{
+                        $sales = $sales->where('id','like', $numID.'%');
+                    }
+                }
+
+                // Search based on total_harga+ongkir
+                $sales = $sales->orWhereRaw('(ttl_harga+ongkir) LIKE ?', $numID.'%');
+            }
 
             // Search Based on Customer Name
             $sales = $sales->orWhereHas('customer', function ($query) use ($searchValue) {
@@ -570,20 +603,6 @@ class Sales extends Model
 
             // or Search Based on TRX DATE
             $sales = $sales->orWhere('trx_date','like',$searchValue.'%');
-
-            // or Search Based on TRX ID
-            $sales = $sales->orWhere('id',$numID);
-
-            // Check in TOKO ONLINE
-            // if (is_numeric($numID) && $charID!=''){
-
-                $ecom = Ecommerce::select('id','kode_trx')->where('kode_trx','like',$charID.'%');
-                if ($ecom->count() > 0) {
-                    $ecom = $ecom->first();
-
-                    $sales = $sales->where('method',$ecom->id);
-                }
-            // }
         }
         // dd($sales->toSql());
 
